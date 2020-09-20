@@ -1,0 +1,70 @@
+/* Full screen */
+.widget-scene-canvas {
+	height: 100% !important;
+}
+
+.margin--top-large {
+	margin-top: 1.5rem;
+}
+
+/* game status div */
+.game-layout__status {
+	opacity: 0.8;
+	top: 0.5rem;
+}
+.game-layout__guess-map,
+.game-layout__status {
+	right: 0.5rem;
+}
+
+/* results containers */
+.result__rating-container {
+	display: none;
+}
+.result__bottom-card {
+	max-width: 40rem;
+}
+.result__bottom {
+	border-radius: 10px;
+	opacity: 0.9;
+	bottom: 0;
+	position: absolute;
+	width: 100%;
+}
+.result__more {
+	display: none;
+}
+/* Remove challenge div */
+.game-settings .radio-box:nth-child(2) {
+	display: none;
+}
+
+/* Remove zoom */
+.hud-button-group:last-child {
+	display: none;
+}
+/* Remove geoguessr guess polyline */
+.result-map__line {
+	display: none;
+}
+
+/* Map infowindow */
+.gm-ui-hover-effect {
+	display: none !important;
+}
+.gm-style-iw-c {
+	top: -4px !important;
+	padding: 10px 0px 0px 17px !important;
+}
+.gm-style-iw-t::after {
+	top: -4px !important;
+}
+.gm-iw__content {
+	text-align: center;
+	font-weight: bold;
+}
+/* Remove google footprint */
+.gmnoprint,
+.gm-style-cc {
+	display: none;
+}

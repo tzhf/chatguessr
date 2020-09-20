@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Settings</title>
+		<link rel="stylesheet" href="./settings.css" />
+	</head>
+	<body>
+		<div class="settings-container">
+			<div class="tab">
+				<button class="tablinks" onclick="openTab(event, 'gameSettings')" id="defaultOpen">Game Settings</button>
+				<button class="tablinks" onclick="openTab(event, 'twitchSettings')">Twitch Settings</button>
+				<button class="tablinks" onclick="openTab(event, 'twitchConnect')">Twitch Connect</button>
+			</div>
+
+			<div id="gameSettings" class="tabcontent">
+				<h2>Game Settings</h2>
+				<label class="checkbox-container">
+					No car
+					<input type="checkbox" id="noCar" />
+					<span class="checkmark"></span>
+				</label>
+				<label class="checkbox-container">
+					No Compass
+					<input type="checkbox" id="noCompass" />
+					<span class="checkmark"></span>
+				</label>
+				<input type="button" class="btn save" value="SAVE" onclick="gameSettingsForm()" />
+				<input type="button" class="btn danger" id="clearStatsBtn" value="Clear all stats" onclick="clearStats()" />
+			</div>
+
+			<div id="twitchSettings" class="tabcontent">
+				<h2>Twitch Settings</h2>
+				<label class="checkbox-container">
+					Show "&lt;User&gt; guessed"
+					<input type="checkbox" id="showHasGuessed" />
+					<span class="checkmark"></span>
+				</label>
+				<div class="grid__col">
+					<div class="col">
+						<h3>User commands</h3>
+						<div class="form__group">
+							<div data-tip="Guess command">
+								<input class="form__field" type="text" id="guessCmd" spellcheck="false" required />
+							</div>
+							<label class="form__label">Make guess :</label>
+						</div>
+						<div class="form__group">
+							<div data-tip="Displays user stats in chat">
+								<input class="form__field" type="text" id="userGetStatsCmd" spellcheck="false" required />
+							</div>
+							<label class="form__label">Get user stats :</label>
+						</div>
+						<div class="form__group">
+							<div data-tip="Clear user stats">
+								<input class="form__field" type="text" id="userClearStatsCmd" spellcheck="false" required />
+							</div>
+							<label class="form__label">Clear user stats :</label>
+						</div>
+					</div>
+					<div class="col">
+						<h3>Streamer commands</h3>
+						<div class="form__group">
+							<div data-tip="Type this command followed by the @User and the streak to set. e.g: !setstreak @B1ntulu 42">
+								<input class="form__field" type="text" id="setStreakCmd" spellcheck="false" required />
+							</div>
+							<label class="form__label">Set @user streak : </label>
+						</div>
+						<div class="form__group">
+							<div data-tip="Clear all users stats">
+								<input class="form__field" type="text" id="clearAllStatsCmd" spellcheck="false" required />
+							</div>
+							<label class="form__label">Clear all stats : </label>
+						</div>
+					</div>
+				</div>
+				<input type="button" class="btn save" value="SAVE" onclick="twitchCommandsForm()" />
+			</div>
+
+			<div id="twitchConnect" class="tabcontent">
+				<h2>Status: <span id="twitchStatus"></span></h2>
+				<form name="twitch-form" onsubmit="twitchSettingsForm(event)">
+					<div class="form__group">
+						<div data-tip="Your streamer account">
+							<input class="form__field" type="text" id="channelName" spellcheck="false" required />
+						</div>
+						<label class="form__label">Channel Name :</label>
+					</div>
+					<div class="form__group">
+						<div data-tip="Fill in your channel if you don't want to use a bot account. However a bot is recommended to handle the whispers.">
+							<input class="form__field" type="text" id="botUsername" spellcheck="false" required />
+						</div>
+						<label class="form__label">Bot Name :</label>
+					</div>
+					<div class="form__group">
+						<div data-tip="If you use a bot account you need to be authenticated as the bot when you generate the token.">
+							<input class="form__field" type="password" id="token" spellcheck="false" required />
+						</div>
+						<label class="form__label">OAuth Token :</label>
+						<a href="https://twitchapps.com/tmi/" class="oauth-link" target="_blank">get oAuth Token</a>
+					</div>
+					<input type="submit" class="btn save" value="SAVE" />
+				</form>
+			</div>
+		</div>
+		<script src="./script.js"></script>
+	</body>
+</html>

@@ -1,0 +1,291 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
+* {
+	margin: 0;
+	padding: 0;
+}
+
+a {
+	color: inherit;
+	text-decoration: inherit;
+}
+
+h2,
+h3 {
+	margin: 5px 0 15px 0;
+}
+
+#twitchStatus {
+	font-size: 18px;
+}
+
+.settings-container {
+	font-family: "Montserrat", sans-serif;
+	background-color: rgba(0, 0, 0, 0.7);
+	color: #fff;
+	position: absolute;
+	overflow: hidden;
+	top: 4px;
+	left: 4px;
+	right: 4px;
+	bottom: 4px;
+	padding: 10px;
+	border-radius: 10px;
+	-webkit-app-region: drag;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.grid__col {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-gap: 10px;
+}
+
+/* TABS */
+.tab {
+	overflow: hidden;
+	background-color: #2e2e2e8a;
+	border-radius: 5px;
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+}
+
+.tab button {
+	background-color: inherit;
+	float: left;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	padding: 15px 5px;
+	transition: 0.3s;
+	font-size: 17px;
+	font-weight: 700;
+	color: #fff;
+	-webkit-app-region: no-drag;
+}
+.tab button:hover {
+	background-color: #55cf92;
+}
+.tab button.active {
+	background-color: #55cf92;
+}
+
+.tabcontent {
+	display: none;
+	padding: 6px 12px;
+	border-top: none;
+}
+
+/* FORM */
+.form__group {
+	-webkit-app-region: no-drag;
+	position: relative;
+	padding: 15px 0 0;
+	margin-bottom: 10px;
+	width: 100%;
+}
+
+.form__field {
+	font-family: inherit;
+	width: 100%;
+	border: 0;
+	border-bottom: 2px solid #ffffff;
+	outline: 0;
+	font-size: 1rem;
+	color: #fff;
+	padding: 5px 0;
+	background: transparent;
+	transition: border-color 0.3s;
+	margin-bottom: 4px;
+}
+.form__field::placeholder {
+	color: transparent;
+}
+.form__field:placeholder-shown ~ .form__label {
+	font-size: 1rem;
+	cursor: text;
+	top: 10px;
+}
+
+.form__label {
+	position: absolute;
+	top: 0;
+	display: block;
+	transition: 0.2s;
+	font-size: 1rem;
+	color: #ffffff;
+}
+
+.form__field:focus {
+	padding-bottom: 4px;
+	font-weight: 700;
+	border-width: 3px;
+	border-image: linear-gradient(to right, #15a094, #4cffa5);
+	border-image-slice: 1;
+}
+.form__field:focus ~ .form__label {
+	position: absolute;
+	top: 0;
+	display: block;
+	transition: 0.2s;
+	font-size: 1rem;
+	color: #1ae0b6;
+	font-weight: 700;
+}
+
+.form__field:required,
+.form__field:invalid {
+	box-shadow: none;
+}
+
+.btn {
+	width: 100%;
+	margin: auto;
+	padding: 16px 32px;
+	margin-bottom: 4px;
+	font-family: inherit;
+	font-weight: 700;
+	color: white;
+	border: none;
+	-webkit-app-region: no-drag;
+	cursor: pointer;
+}
+
+.save {
+	background-color: #5ad497;
+}
+.save:hover {
+	background-color: #56ca90;
+}
+.save:active {
+	background-color: #4eb883;
+}
+.danger {
+	background-color: #c9534e;
+}
+.danger:hover {
+	background-color: #bd4e4a;
+}
+.danger:active {
+	background-color: #b64945;
+}
+
+.btn:disabled,
+.btn[disabled] {
+	background-color: #cccccc;
+	color: #666666;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+.btn:focus {
+	outline: none;
+}
+
+.oauth-link {
+	font-size: 10px;
+	font-style: italic;
+}
+.oauth-link:hover {
+	color: rgb(233, 233, 233);
+}
+
+/* CHECKBOXES */
+.checkbox-container {
+	display: block;
+	position: relative;
+	padding-left: 35px;
+	margin-bottom: 12px;
+	cursor: pointer;
+	font-size: 16px;
+	-webkit-app-region: no-drag;
+}
+
+.checkbox-container input {
+	position: absolute;
+	opacity: 0;
+	cursor: pointer;
+	height: 0;
+	width: 0;
+}
+
+.checkmark {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 20px;
+	width: 20px;
+	background-color: #eee;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+	background-color: #ccc;
+}
+
+.checkbox-container input:checked ~ .checkmark {
+	background-color: #55cf92;
+}
+
+.checkmark:after {
+	content: "";
+	position: absolute;
+	display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+	display: block;
+}
+
+.checkbox-container .checkmark:after {
+	left: 7px;
+	top: 4px;
+	width: 4px;
+	height: 8px;
+	border: solid white;
+	border-width: 0 3px 3px 0;
+	-webkit-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	transform: rotate(45deg);
+}
+
+/* TOOLTIPS */
+[data-tip] {
+	position: relative;
+}
+[data-tip]:before {
+	content: "";
+	display: none;
+	content: "";
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-bottom: 5px solid rgb(255, 255, 255);
+	position: absolute;
+	top: 30px;
+	right: 35px;
+	z-index: 8;
+	font-size: 0;
+	line-height: 0;
+	width: 0;
+	height: 0;
+}
+[data-tip]:after {
+	width: 200px;
+	display: none;
+	content: attr(data-tip);
+	position: absolute;
+	top: 35px;
+	right: 0px;
+	padding: 12px;
+	background: #ffffff;
+	color: rgb(26, 26, 26);
+	z-index: 999;
+	font-size: 14px;
+	font-weight: 700;
+	border-radius: 5px;
+	word-wrap: break-word;
+	text-align: center;
+}
+[data-tip]:hover:before,
+[data-tip]:hover:after {
+	display: block;
+}

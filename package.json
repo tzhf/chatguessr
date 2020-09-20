@@ -1,0 +1,39 @@
+{
+	"name": "chatguessr",
+	"version": "1.0.0",
+	"description": "Chatbot for Geoguessr",
+	"main": "./src/main.js",
+	"scripts": {
+		"start": "electron .",
+		"pack": "electron-builder --dir",
+		"dist": "electron-builder",
+		"postinstall": "electron-builder install-app-deps"
+	},
+	"author": "MrAmericanMike & T.Zhf",
+	"license": "ISC",
+	"devDependencies": {
+		"electron": "^9.1.0",
+		"electron-builder": "^22.8.1"
+	},
+	"dependencies": {
+		"axios": "^0.20.0",
+		"codegrid-js": "git+https://github.com/hlaw/codegrid-js.git",
+		"dotenv": "^8.2.0",
+		"electron-store": "^6.0.0",
+		"hastebin.js": "^1.3.2",
+		"tmi.js": "^1.5.0"
+	},
+	"build": {
+		"appId": "chatguessr",
+		"productName": "Chatguessr",
+		"win": {
+			"target": "NSIS",
+			"icon": "build/icon.ico"
+		}
+	},
+	"nsis": {
+		"createDesktopShortcut": true,
+		"createStartMenuShortcut": true,
+		"deleteAppDataOnUninstall": true
+	}
+}

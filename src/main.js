@@ -23,13 +23,16 @@ const game = new Game();
 const hastebin = require("hastebin.js");
 const haste = new hastebin();
 
+const GameHelper = require("./utils/GameHelper");
+
 const init = () => {
+
 	mainWindow = new MainWindow();
 	settingsWindow = new SettingsWindow();
 	settingsWindow.setParentWindow(mainWindow);
 
 	mainWindow.webContents.on("did-navigate-in-page", (e, url) => {
-		if (url.includes("/game/")) {
+		if (GameHelper.isGameURL(url)) {
 			mainWindow.webContents.send("in-game", settings.noCar, settings.noCompass);
 			if (game.url === url) {
 				game.startGame(url).then(() => {

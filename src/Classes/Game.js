@@ -1,15 +1,14 @@
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
+require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
-const Guess = require("./Guess");
-const User = require("./User");
-
-const Store = require("electron-store");
-const store = new Store();
 const axios = require("axios");
 
+const Store = require("../utils/Store");
+const GameHelper = require("../utils/GameHelper");
+const countryCodes = require("../utils/countryCodes");
 // const CG = require("codegrid-js").CodeGrid();
-const countryCodes = require("./countryCodes");
+
+const Guess = require("./Guess");
 
 class Game {
 	constructor() {
@@ -27,7 +26,7 @@ class Game {
 	}
 
 	init = () => {
-		this.previousGuesses = store.get("previousGuesses", [[], []]);
+		this.previousGuesses = Store.get("previousGuesses", [[], []]);
 	};
 
 	fetchSeed = async (url) => {
@@ -47,7 +46,7 @@ class Game {
 	startGame = async (url) => {
 		this.url = url;
 		this.seed = await this.fetchSeed(this.url);
-		this.mapScale = this.calculateScale(this.seed.bounds);
+		this.mapScale = GameHelper.calculateScale(this.seed.bounds);
 		this.currentLocation = this.getCurrentLocation();
 		this.country = await this.getCountryCode(this.currentLocation);
 		this.inGame = true;
@@ -59,25 +58,27 @@ class Game {
 	};
 
 	openGuesses = () => (this.guessesOpen = true);
+
 	closeGuesses = () => (this.guessesOpen = false);
 
 	processUserGuess = async (userstate, message) => {
-		if (!this.isCoordinates(message)) return;
-		if (this.hasGuessedThisRound(userstate.username, this.guesses)) return "alreadyGuessed";
+		if (!GameHelper.isCoordinates(message)) return;
+		if (hasGuessedThisRound(userstate.username)) return "alreadyGuessed";
+
 		const guessLocation = { lat: Number.parseFloat(message.split(",")[0]), lng: Number.parseFloat(message.split(",")[1]) };
 		if (this.hasPastedPreviousGuess(userstate.username, guessLocation)) return "pastedPreviousGuess";
 
-		const user = this.getOrCreateUser(userstate.username, userstate["display-name"]);
+		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
 		const guessedCountry = await this.getCountryCode(guessLocation);
 		guessedCountry === this.country ? user.addStreak() : user.setStreak(0);
 
-		const distance = this.haversineDistance(guessLocation, this.currentLocation);
-		const score = this.calculateScore(distance, this.mapScale);
+		const distance = GameHelper.haversineDistance(guessLocation, this.currentLocation);
+		const score = GameHelper.calculateScore(distance, this.mapScale);
 		if (score == 5000) user.nbPerfect++;
 		user.calcMeanScore(score);
 
 		user.nbGuesses++;
-		store.set(`users.${userstate.username}`, user);
+		Store.saveUser(userstate.username, user);
 
 		const guess = new Guess(userstate.username, userstate["display-name"], userstate.color, user.streak, guessLocation, distance, score);
 		this.guesses.push(guess);
@@ -110,27 +111,27 @@ class Game {
 	processStreamerGuess = async (channelName) => {
 		let i = 2;
 		if (this.seed.state === "finished") i = 1;
-		const streamer = this.getOrCreateUser(channelName, channelName);
+		const streamer = Store.getOrCreateUser(channelName, channelName);
 		const streamerGuess = this.seed.player.guesses[this.seed.round - i];
 		const guessLocation = { lat: streamerGuess.lat, lng: streamerGuess.lng };
 
 		const guessedCountry = await this.getCountryCode(guessLocation);
 		guessedCountry === this.country ? streamer.addStreak() : streamer.setStreak(0);
 
-		const distance = this.haversineDistance(guessLocation, this.getCurrentLocation(i));
-		let score = this.calculateScore(distance, this.mapScale);
+		const distance = GameHelper.haversineDistance(guessLocation, this.getCurrentLocation(i));
+		let score = GameHelper.calculateScore(distance, this.mapScale);
 		if (streamerGuess.timedOut) score = 0;
 		if (score == 5000) streamer.nbPerfect++;
 		streamer.calcMeanScore(score);
 
 		streamer.nbGuesses++;
-		store.set(`users.${channelName}`, streamer);
+		Store.saveUser(channelName, streamer);
 
 		const guess = new Guess(channelName, channelName, "#FF000", streamer.streak, guessLocation, distance, score);
 		this.guesses.push(guess);
 		this.pushToTotal(guess);
 
-		// this.previousGuesses[1].push({ username: channelName });
+		this.previousGuesses[1].push({ username: channelName });
 		this.checkUsersStreak();
 	};
 
@@ -178,29 +179,21 @@ class Game {
 		// }).then((code) => countryCodes[code.toUpperCase()]);
 	};
 
-	getOrCreateUser = (user, username) => {
-		const storedUser = store.get(`users.${user}`);
-		if (!storedUser) {
-			return new User(user, username);
-		} else {
-			return new User(...Object.values(storedUser));
-		}
-	};
-
 	checkUsersStreak = () => {
 		this.previousGuesses[0] = this.previousGuesses[1];
 		this.previousGuesses[1] = [];
-		store.set("previousGuesses", this.previousGuesses);
-		const users = store.get("users");
+		console.log(this.previousGuesses);
+		Store.set("previousGuesses", this.previousGuesses);
+		const users = Store.getUsers();
 		if (users) {
 			Object.keys(users).forEach((user) => {
-				if (!this.previousGuesses[0].some((previousGuess) => previousGuess.username === user)) store.set(`users.${user}.streak`, 0);
+				if (!this.previousGuesses[0].some((previousGuess) => previousGuess.username === user)) Store.setUserStreak(user, 0);
 			});
 		}
 	};
 
-	hasGuessedThisRound = (user, guesses) => guesses.some((guess) => guess.user === user);
-	isCoordinates = (coordinates) => coordinates.match(/^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/g);
+	hasGuessedThisRound = (user) => this.guesses.some((guess) => guess.user === user);
+
 	hasPastedPreviousGuess = (username, guessLocation) => {
 		return (
 			this.previousGuesses[0].filter(
@@ -209,21 +202,9 @@ class Game {
 		);
 	};
 
-	haversineDistance = (mk1, mk2) => {
-		const R = 6371.071;
-		const rlat1 = mk1.lat * (Math.PI / 180);
-		const rlat2 = mk2.lat * (Math.PI / 180);
-		const difflat = rlat2 - rlat1;
-		const difflon = (mk2.lng - mk1.lng) * (Math.PI / 180);
-		const km = 2 * R * Math.asin(Math.sqrt(Math.sin(difflat / 2) * Math.sin(difflat / 2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.sin(difflon / 2) * Math.sin(difflon / 2)));
-		return km;
-	};
-	calculateScale = (bounds) => this.haversineDistance({ lat: bounds.min.lat, lng: bounds.min.lng }, { lat: bounds.max.lat, lng: bounds.max.lng }) / 7.458421;
-	calculateScore = (distance, scale) => Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale));
-	sortByDistance = (guesses) => guesses.sort((a, b) => a.distance - b.distance);
-	sortByScore = (guesses) => guesses.sort((a, b) => b.score - a.score);
-	getSortedTotal = () => this.sortByScore(this.total);
-	getSortedGuesses = () => this.sortByDistance(this.guesses);
+	getSortedTotal = () => GameHelper.sortByScore(this.total);
+
+	getSortedGuesses = () => GameHelper.sortByDistance(this.guesses);
 }
 
 module.exports = Game;

@@ -7,7 +7,7 @@ class Preloader {
 		files.forEach((file) => {
 			promises.push(
 				fs
-					.readFile(path.join(__dirname, `components/${file}`), "utf8")
+					.readFile(path.join(__dirname, `../components/${file}`), "utf8")
 					.then((data) => data.toString())
 					.catch((error) => error)
 			);

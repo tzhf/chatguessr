@@ -4,7 +4,7 @@ const path = require("path");
 const defaultProps = {
 	show: false,
 	webPreferences: {
-		preload: path.join(__dirname, "preload.js"),
+		preload: path.join(__dirname, "../preload.js"),
 		enableRemoteModule: true,
 		// devTools: false,
 	},

@@ -1,4 +1,4 @@
-const Preloader = require("./Preloader");
+const Preloader = require("./utils/Preloader");
 const Scoreboard = require("./components/scoreboard/Scoreboard");
 
 if (document.readyState == "loading") {
@@ -104,90 +104,6 @@ const init = (scoreboard) => {
 	});
 };
 
-const hijackMap = (MAP) => {
-	const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
-	const GOOGLE_MAPS_PROMISE = new Promise((resolve, reject) => {
-		let scriptObserver = new MutationObserver((mutations) => {
-			for (const mutation of mutations) {
-				for (const node of mutation.addedNodes) {
-					if (node.tagName === "SCRIPT" && node.src.startsWith(MAPS_API_URL)) {
-						node.onload = () => {
-							scriptObserver.disconnect();
-							scriptObserver = undefined;
-							resolve();
-						};
-					}
-				}
-			}
-		});
-
-		let bodyDone = false;
-		let headDone = false;
-
-		new MutationObserver((_, observer) => {
-			if (!bodyDone && document.body) {
-				if (scriptObserver) {
-					scriptObserver.observe(document.body, {
-						childList: true,
-					});
-					bodyDone = true;
-				}
-			}
-			if (!headDone && document.head) {
-				if (scriptObserver) {
-					scriptObserver.observe(document.head, {
-						childList: true,
-					});
-					headDone = true;
-				}
-			}
-			if (headDone && bodyDone) {
-				observer.disconnect();
-			}
-		}).observe(document.documentElement, {
-			childList: true,
-			subtree: true,
-		});
-	});
-
-	function runAsClient(f) {
-		const script = document.createElement("script");
-		script.type = "text/javascript";
-		script.text = `(${f.toString()})()`;
-		document.body.appendChild(script);
-	}
-
-	GOOGLE_MAPS_PROMISE.then(() => {
-		runAsClient(() => {
-			const google = window.google;
-			const isGamePage = () => location.pathname.startsWith("/challenge/") || location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
-			const onMapUpdate = (map) => {
-				try {
-					if (!isGamePage()) return;
-					MAP = map;
-				} catch (error) {
-					console.error("GeoguessrHijackMap Error:", error);
-				}
-			};
-
-			const oldMap = google.maps.Map;
-			google.maps.Map = Object.assign(
-				function (...args) {
-					const res = oldMap.apply(this, args);
-					this.addListener("idle", () => {
-						if (MAP != null) return;
-						onMapUpdate(this);
-					});
-					return res;
-				},
-				{
-					prototype: Object.create(oldMap.prototype),
-				}
-			);
-		});
-	});
-};
-
 let markers = [];
 let polylines = [];
 
@@ -273,7 +189,91 @@ const clearMarkers = () => {
 	}
 };
 
-function drParseNoCompass(noCompass) {
+const hijackMap = () => {
+	const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
+	const GOOGLE_MAPS_PROMISE = new Promise((resolve, reject) => {
+		let scriptObserver = new MutationObserver((mutations) => {
+			for (const mutation of mutations) {
+				for (const node of mutation.addedNodes) {
+					if (node.tagName === "SCRIPT" && node.src.startsWith(MAPS_API_URL)) {
+						node.onload = () => {
+							scriptObserver.disconnect();
+							scriptObserver = undefined;
+							resolve();
+						};
+					}
+				}
+			}
+		});
+
+		let bodyDone = false;
+		let headDone = false;
+
+		new MutationObserver((_, observer) => {
+			if (!bodyDone && document.body) {
+				if (scriptObserver) {
+					scriptObserver.observe(document.body, {
+						childList: true,
+					});
+					bodyDone = true;
+				}
+			}
+			if (!headDone && document.head) {
+				if (scriptObserver) {
+					scriptObserver.observe(document.head, {
+						childList: true,
+					});
+					headDone = true;
+				}
+			}
+			if (headDone && bodyDone) {
+				observer.disconnect();
+			}
+		}).observe(document.documentElement, {
+			childList: true,
+			subtree: true,
+		});
+	});
+
+	function runAsClient(f) {
+		const script = document.createElement("script");
+		script.type = "text/javascript";
+		script.text = `(${f.toString()})()`;
+		document.body.appendChild(script);
+	}
+
+	GOOGLE_MAPS_PROMISE.then(() => {
+		runAsClient(() => {
+			const google = window.google;
+			const isGamePage = () => location.pathname.startsWith("/challenge/") || location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
+			const onMapUpdate = (map) => {
+				try {
+					if (!isGamePage()) return;
+					MAP = map;
+				} catch (error) {
+					console.error("GeoguessrHijackMap Error:", error);
+				}
+			};
+
+			const oldMap = google.maps.Map;
+			google.maps.Map = Object.assign(
+				function (...args) {
+					const res = oldMap.apply(this, args);
+					this.addListener("idle", () => {
+						if (MAP != null) return;
+						onMapUpdate(this);
+					});
+					return res;
+				},
+				{
+					prototype: Object.create(oldMap.prototype),
+				}
+			);
+		});
+	});
+};
+
+const drParseNoCompass = (noCompass) => {
 	const addCompassStyle = () => {
 		const style = document.createElement("style");
 		style.id = "noCompass";
@@ -287,9 +287,9 @@ function drParseNoCompass(noCompass) {
 	} else {
 		if (style) style.remove();
 	}
-}
+};
 
-function drParseNoCar(noCar) {
+const drParseNoCar = (noCar) => {
 	if (!noCar) return;
 
 	const OPTIONS = {
@@ -384,4 +384,4 @@ gl_FragColor=i;
 		}
 		return f.apply(this, arguments);
 	};
-}
+};

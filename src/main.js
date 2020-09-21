@@ -1,32 +1,23 @@
 const { app, ipcMain, globalShortcut } = require("electron");
-const MainWindow = require("./MainWindow");
-const SettingsWindow = require("./components/settings/SettingsWindow");
-let mainWindow;
-let settingsWindow;
+const MainWindow = require("./Windows/MainWindow");
+const SettingsWindow = require("./Windows/settings/SettingsWindow");
 
-const Settings = require("./components/settings/Settings");
-const Store = require("electron-store");
-const store = new Store();
-const getSettings = () => {
-	const storedSettings = store.get("settings");
-	if (!storedSettings) return new Settings();
-	return new Settings(...Object.values(storedSettings));
-};
-const settings = getSettings();
+const Game = require("./Classes/Game");
+const GameHelper = require("./utils/GameHelper");
+const game = new Game();
+
+const Store = require("./utils/Store");
+const settings = Store.getSettings();
 
 const tmi = require("tmi.js");
 let client;
 
-const Game = require("./Game");
-const game = new Game();
-
 const hastebin = require("hastebin.js");
 const haste = new hastebin();
 
-const GameHelper = require("./utils/GameHelper");
-
+let mainWindow;
+let settingsWindow;
 const init = () => {
-
 	mainWindow = new MainWindow();
 	settingsWindow = new SettingsWindow();
 	settingsWindow.setParentWindow(mainWindow);
@@ -80,18 +71,18 @@ const init = () => {
 			mainWindow.reload(); // may cause issues when reloading in game
 		}
 		settings.setGameSettings(noCar, noCompass);
-		store.set("settings", settings);
+		Store.setSettings(settings);
 	});
 
 	ipcMain.on("twitch-commands-form", (e, guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed) => {
 		settings.setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed);
-		store.set("settings", settings);
+		Store.setSettings(settings);
 		settingsWindow.hide();
 	});
 
 	ipcMain.on("twitch-settings-form", (e, channelName, botUsername, token) => {
 		settings.setTwitchSettings(channelName, botUsername, token);
-		store.set("settings", settings);
+		Store.setSettings(settings);
 		if (client.readyState() === "OPEN") client.disconnect();
 		loadTmi();
 	});
@@ -220,7 +211,7 @@ const tmiListening = () => {
 	client.on("chat", (channel, userstate, message, self) => {
 		if (self) return;
 		if (message.toLowerCase() === settings.userGetStatsCmd) {
-			const userInfo = store.get(`users.${userstate.username}`);
+			const userInfo = Store.getUser(userstate.username);
 			if (userInfo) {
 				return client.say(
 					channel,
@@ -238,17 +229,17 @@ const tmiListening = () => {
 		}
 
 		if (message.toLowerCase() === "!best") {
-			const storedUsers = store.get("users");
+			const storedUsers = Store.getUsers();
+			if (!storedUsers) return client.say(channel, `No streak established yet.`);
 			const bestStreak = Math.max(...Object.values(storedUsers).map((o) => o.streak));
-			if (!storedUsers && bestStreak < 1) return client.say(channel, `No streak established yet.`);
 			const user = Object.keys(storedUsers).filter((user) => storedUsers[user].streak === bestStreak);
 			return client.say(channel, `Channel best streak: ${bestStreak} by ${user}`);
 		}
 
 		if (message.toLowerCase() === settings.userClearStatsCmd) {
-			const userInfo = store.get(`users.${userstate.username}`);
+			const userInfo = Store.getUser(userstate.username);
 			if (!userInfo) return client.say(channel, `${userstate["display-name"]} you've never guessed yet.`);
-			store.delete(`users.${userstate.username}`);
+			Store.deleteUser(userstate.username);
 			return client.say(channel, `${userstate["display-name"]} 🗑️ stats cleared !`);
 		}
 
@@ -261,9 +252,9 @@ const tmiListening = () => {
 			if (!Number.isInteger(newStreak)) return client.action(channel, `Invalid number.`);
 			if (msgArr[1].charAt(0) === "@") msgArr[1] = msgArr[1].substring(1);
 			const user = msgArr[1].toLowerCase();
-			const storedUser = store.get(`users.${user}`);
+			const storedUser = Store.getUser(user);
 			if (!storedUser) return client.action(channel, `${user} has never guessed.`);
-			store.set(`users.${user}.streak`, newStreak);
+			Store.setUserStreak(user, newStreak);
 			return client.action(channel, `${user} streak set to ${newStreak}`);
 		}
 
@@ -272,9 +263,7 @@ const tmiListening = () => {
 };
 
 const clearStats = () => {
-	store.delete("users");
-	store.delete("stats");
-	store.delete("previousGuesses");
+	Store.clearStats();
 	client.action(settings.channelName, "🗑️ All stats have been cleared.");
 };
 

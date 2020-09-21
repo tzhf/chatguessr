@@ -235,9 +235,11 @@ const tmiListening = () => {
 		}
 
 		if (message.toLowerCase() === "!best") {
-			const bestStreak = store.get("stats.bestStreak");
-			if (!bestStreak) return client.say(channel, `No streak established yet.`);
-			return client.say(channel, `Channel best streak: ${bestStreak.streak} by ${bestStreak.username}`);
+			const storedUsers = store.get("users");
+			const bestStreak = Math.max(...Object.values(storedUsers).map((o) => o.streak));
+			if (!storedUsers && bestStreak < 1) return client.say(channel, `No streak established yet.`);
+			const user = Object.keys(storedUsers).filter((user) => storedUsers[user].streak === bestStreak);
+			return client.say(channel, `Channel best streak: ${bestStreak} by ${user}`);
 		}
 
 		if (message.toLowerCase() === settings.userClearStatsCmd) {
@@ -248,12 +250,14 @@ const tmiListening = () => {
 		}
 
 		if (userstate.username != settings.channelName) return; // !streamer commands
+
 		if (message.toLowerCase().startsWith(settings.setStreakCmd)) {
-			const msgArray = message.split(" ");
-			if (!msgArray[1].charAt(0) === "@") return client.action(channel, "Valid command: !setstreak @user 42");
-			const newStreak = parseFloat(msgArray[2]);
-			if (!Number.isInteger(newStreak)) return client.action(channel, "Invalid number");
-			const user = msgArray[1].substring(1).toLowerCase();
+			const msgArr = message.split(" ");
+			if (msgArr.length != 3) return client.action(channel, `Valid command: ${settings.setStreakCmd} user 42`);
+			const newStreak = parseFloat(msgArr[2]);
+			if (!Number.isInteger(newStreak)) return client.action(channel, `Invalid number.`);
+			if (msgArr[1].charAt(0) === "@") msgArr[1] = msgArr[1].substring(1);
+			const user = msgArr[1].toLowerCase();
 			const storedUser = store.get(`users.${user}`);
 			if (!storedUser) return client.action(channel, `${user} has never guessed.`);
 			store.set(`users.${user}.streak`, newStreak);

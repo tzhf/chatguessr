@@ -23,13 +23,11 @@ class Game {
 		this.total = [];
 		this.previousGuesses;
 		this.guessesOpen = false;
-		this.bestStreak;
 		this.init();
 	}
 
 	init = () => {
 		this.previousGuesses = store.get("previousGuesses", [[], []]);
-		this.bestStreak = store.get("stats.bestStreak", { streak: 0, user: "" });
 	};
 
 	fetchSeed = async (url) => {
@@ -72,7 +70,6 @@ class Game {
 		const user = this.getOrCreateUser(userstate.username, userstate["display-name"]);
 		const guessedCountry = await this.getCountryCode(guessLocation);
 		guessedCountry === this.country ? user.addStreak() : user.setStreak(0);
-		if (user.streak > this.bestStreak.streak) this.setBestStreak(user.streak, userstate.username);
 
 		const distance = this.haversineDistance(guessLocation, this.currentLocation);
 		const score = this.calculateScore(distance, this.mapScale);
@@ -119,7 +116,6 @@ class Game {
 
 		const guessedCountry = await this.getCountryCode(guessLocation);
 		guessedCountry === this.country ? streamer.addStreak() : streamer.setStreak(0);
-		if (streamer.streak > this.bestStreak.streak) this.setBestStreak(streamer.streak, channelName);
 
 		const distance = this.haversineDistance(guessLocation, this.getCurrentLocation(i));
 		let score = this.calculateScore(distance, this.mapScale);
@@ -156,11 +152,6 @@ class Game {
 		this.country = await this.getCountryCode(this.currentLocation);
 		console.log("next country: " + this.country);
 		this.guesses = [];
-	};
-
-	setBestStreak = (streak, username) => {
-		this.bestStreak = { streak, username };
-		store.set("stats.bestStreak", this.bestStreak);
 	};
 
 	clearGuesses = () => {

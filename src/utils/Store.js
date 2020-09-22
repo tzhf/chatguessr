@@ -9,6 +9,7 @@ class Store {
 	 * Get stored object, returns defaults if not found
 	 * @param {string} arg
 	 * @param {*} defaults
+	 * @returns {*} defaults
 	 */
 	static get = (key, defaults) => store.get(key, defaults);
 

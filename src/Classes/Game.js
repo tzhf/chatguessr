@@ -41,13 +41,7 @@ class Game {
 
 	closeGuesses = () => (this.guessesOpen = false);
 
-	processUserGuess = async (userstate, message) => {
-		if (!GameHelper.isCoordinates(message)) return;
-		if (this.hasGuessedThisRound(userstate.username)) return "alreadyGuessed";
-
-		const guessLocation = { lat: Number.parseFloat(message.split(",")[0]), lng: Number.parseFloat(message.split(",")[1]) };
-		if (this.hasPastedPreviousGuess(userstate.username, guessLocation)) return "pastedPreviousGuess";
-
+	processUserGuess = async (userstate, guessLocation) => {
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
 		const guessedCountry = await GameHelper.getCountryCode(guessLocation);
 		guessedCountry === this.country ? user.addStreak() : user.setStreak(0);

@@ -10,13 +10,14 @@ const Store = require("./utils/Store");
 const settings = Store.getSettings();
 
 const tmi = require("tmi.js");
-let client;
 
 const hastebin = require("hastebin.js");
 const haste = new hastebin();
 
+let client;
 let mainWindow;
 let settingsWindow;
+
 const init = () => {
 	mainWindow = new MainWindow();
 	settingsWindow = new SettingsWindow();
@@ -198,9 +199,18 @@ const tmiListening = () => {
 		if (self) return;
 		if (game.guessesOpen && message.startsWith(settings.guessCmd)) {
 			message = message.split(settings.guessCmd)[1].trim();
-			game.processUserGuess(userstate, message).then((res) => {
-				if (res === "alreadyGuessed") return client.say(settings.channelName, `${userstate["display-name"]} you already guessed`);
-				if (res === "pastedPreviousGuess") return client.say(settings.channelName, `${userstate["display-name"]} seems like you pasted your previous guess :)`);
+			if (!GameHelper.isCoordinates(message)) return;
+
+			if (game.hasGuessedThisRound(userstate.username)) {
+				return client.say(settings.channelName, `${userstate["display-name"]} you already guessed`);
+			}
+
+			const guessLocation = { lat: parseFloat(message.split(",")[0]), lng: parseFloat(message.split(",")[1]) };
+			if (game.hasPastedPreviousGuess(userstate.username, guessLocation)) {
+				return client.say(settings.channelName, `${userstate["display-name"]} seems like you pasted your previous guess :)`);
+			}
+
+			game.processUserGuess(userstate, guessLocation).then((res) => {
 				const { guess, nbGuesses } = res;
 				mainWindow.webContents.send("render-user-guess", guess, nbGuesses);
 				if (settings.showHasGuessed) return client.say(settings.channelName, `${userstate["display-name"]} guessed`);

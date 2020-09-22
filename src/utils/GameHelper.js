@@ -1,19 +1,25 @@
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../../.env") });
+
+const axios = require("axios");
+const countryCodes = require("./countryCodes");
+
 class GameHelper {
 	/**
 	 * Checks if '/game/' is in the URL
-	 * On fail it returns false
 	 * @param {string} url Game URL
+	 * @returns {boolean}
 	 */
 	static isGameURL = (url) => url.includes("/game/");
 
 	/**
 	 * Gets the Game ID from a game URL
 	 * Checks if ID is 16 characters in length
-	 * On fail it returns false
 	 * @param {string} url Game URL
+	 * @returns {string|boolean} id or false
 	 */
 	static getGameId = (url) => {
-		let id = url.substring(url.lastIndexOf("/") + 1);
+		const id = url.substring(url.lastIndexOf("/") + 1);
 		if (id.length == 16) {
 			return id;
 		} else {
@@ -22,15 +28,52 @@ class GameHelper {
 	};
 
 	/**
+	 * Fetch a game seed
+	 * @param {string} url
+	 * @returns {Promise} Seed Promise
+	 */
+	static fetchSeed = async (url) => {
+		return axios
+			.get(`https://www.geoguessr.com/api/v3/games/${url.substring(url.lastIndexOf("/") + 1)}`)
+			.then((res) => res.data)
+			.catch((error) => console.log(error));
+	};
+
+	/**
+	 * Returns a country code
+	 * @param {Object} location {lat, lng}
+	 * @returns {Promise} Country code Promise
+	 */
+	static getCountryCode = async (location) => {
+		return axios
+			.get(`https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`)
+			.then((res) => countryCodes[res.data.countryCode])
+			.catch((error) => console.log(error));
+
+		// return axios
+		// 	.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.lat},${location.lng}&result_type=country&key=${process.env.GMAPS_KEY}`)
+		// 	.then((res) => countryCodes[res.data.results[0].address_components[0].short_name])
+		// 	.catch((error) => console.log(error));
+
+		// return new Promise((resolve, reject) => {
+		// 	CG.getCode(location.lat, location.lng, (error, code) => {
+		// 		resolve(code);
+		// 		reject(new Error(error));
+		// 	});
+		// }).then((code) => countryCodes[code.toUpperCase()]);
+	};
+
+	/**
 	 * Check if the param is coordinates
-	 * On fail it returns false
 	 * @param {string} coordinates
+	 * @returns {boolean}
 	 */
 	static isCoordinates = (coordinates) => coordinates.match(/^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/g);
 
 	/**
-	 * Returns scale
+	 * Returns map scale
 	 * @param {Object} bounds map bounds
+	 * @returns {number} map scale
 	 */
 	static calculateScale = (bounds) => this.haversineDistance({ lat: bounds.min.lat, lng: bounds.min.lng }, { lat: bounds.max.lat, lng: bounds.max.lng }) / 7.458421;
 
@@ -38,6 +81,7 @@ class GameHelper {
 	 * Returns distance in km between two coordinates
 	 * @param {Object} mk1 {lat, lng}
 	 * @param {Object} mk2 {lat, lng}
+	 * @returns {number} km
 	 */
 	static haversineDistance = (mk1, mk2) => {
 		const R = 6371.071;
@@ -53,18 +97,21 @@ class GameHelper {
 	 * Returns score based on distance and scale
 	 * @param {number} distance
 	 * @param {number} scale
+	 * @returns {number} score
 	 */
 	static calculateScore = (distance, scale) => Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale));
 
 	/**
-	 * Returns sorted guesses by distance ASC
+	 * Returns guesses sorted by distance ASC
 	 * @param {array} guesses
+	 * @returns {array} guesses
 	 */
 	static sortByDistance = (guesses) => guesses.sort((a, b) => a.distance - b.distance);
 
 	/**
-	 * Returns sorted guesses by score DESC
+	 * Returns guesses sorted by score DESC
 	 * @param {array} guesses
+	 * @returns {array} guesses
 	 */
 	static sortByScore = (guesses) => guesses.sort((a, b) => b.score - a.score);
 }

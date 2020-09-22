@@ -2,6 +2,11 @@ const fs = require("fs").promises;
 const path = require("path");
 
 class Preloader {
+	/**
+	 * Takes an array of files in components folder
+	 * Returns an array of string
+	 * @param {array} files array of string ["file1", "file2"...]
+	 */
 	static preload(files) {
 		let promises = [];
 		files.forEach((file) => {

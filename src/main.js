@@ -27,7 +27,7 @@ const init = () => {
 			mainWindow.webContents.send("in-game", settings.noCar, settings.noCompass);
 			if (game.url === url) {
 				game.startGame(url).then(() => {
-					client.action(settings.channelName, `🌎 Round ${game.seed.round} has started`);
+					client.action(settings.channelName, `🌎 Round ${game.getRound()} has started`);
 					openGuesses();
 				});
 			} else {
@@ -56,8 +56,8 @@ const init = () => {
 				}
 			`);
 		if (game.seed.timeLimit != 0 && game.seed.state != "finished") {
-			game.fetchSeed(game.url).then((seedData) => {
-				if (seedData.round != game.seed.round || seedData.state === "finished") {
+			GameHelper.fetchSeed(game.url).then((seedData) => {
+				if (seedData.round != game.getRound() || seedData.state === "finished") {
 					makeGuess();
 				}
 			});
@@ -110,8 +110,8 @@ const init = () => {
 		await game.makeGuess(settings.channelName);
 		const sortedGuesses = game.getSortedGuesses();
 		mainWindow.webContents.send("show-round-results", game.currentLocation, sortedGuesses);
-		const link = await makeHastebin(sortedGuesses, game.seed.round, game.currentLocation);
-		client.action(settings.channelName, `🌎 Round ${game.seed.round} has finished. Congrats ${sortedGuesses[0].username}! Check out the round results here: ${link}`);
+		const link = await makeHastebin(sortedGuesses, game.getRound(), game.currentLocation);
+		client.action(settings.channelName, `🌎 Round ${game.getRound()} has finished. Congrats ${sortedGuesses[0].username}! Check out the round results here: ${link}`);
 	};
 
 	ipcMain.on("next-round-click", () => nextRound());
@@ -121,7 +121,7 @@ const init = () => {
 			processTotalResults();
 		} else {
 			mainWindow.webContents.send("next-round");
-			client.action(settings.channelName, `🌎 Round ${game.seed.round} has started`);
+			client.action(settings.channelName, `🌎 Round ${game.getRound()} has started`);
 			openGuesses();
 		}
 	};

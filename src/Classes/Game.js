@@ -1,13 +1,6 @@
-const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../../.env") });
-
-const axios = require("axios");
-
 const Store = require("../utils/Store");
 const GameHelper = require("../utils/GameHelper");
-const countryCodes = require("../utils/countryCodes");
 // const CG = require("codegrid-js").CodeGrid();
-
 const Guess = require("./Guess");
 
 class Game {
@@ -26,29 +19,16 @@ class Game {
 	}
 
 	init = () => {
+		// TODO change all this previousGuesses implementation
 		this.previousGuesses = Store.get("previousGuesses", [[], []]);
-	};
-
-	fetchSeed = async (url) => {
-		return axios
-			.get(`https://www.geoguessr.com/api/v3/games/${url.substring(url.lastIndexOf("/") + 1)}`)
-			.then((res) => res.data)
-			.catch((error) => console.log(error));
-	};
-
-	getCurrentLocation = (i = 1) => {
-		return {
-			lat: this.seed.rounds[this.seed.round - i].lat,
-			lng: this.seed.rounds[this.seed.round - i].lng,
-		};
 	};
 
 	startGame = async (url) => {
 		this.url = url;
-		this.seed = await this.fetchSeed(this.url);
+		this.seed = await GameHelper.fetchSeed(this.url);
 		this.mapScale = GameHelper.calculateScale(this.seed.bounds);
 		this.currentLocation = this.getCurrentLocation();
-		this.country = await this.getCountryCode(this.currentLocation);
+		this.country = await GameHelper.getCountryCode(this.currentLocation);
 		this.inGame = true;
 	};
 
@@ -63,13 +43,13 @@ class Game {
 
 	processUserGuess = async (userstate, message) => {
 		if (!GameHelper.isCoordinates(message)) return;
-		if (hasGuessedThisRound(userstate.username)) return "alreadyGuessed";
+		if (this.hasGuessedThisRound(userstate.username)) return "alreadyGuessed";
 
 		const guessLocation = { lat: Number.parseFloat(message.split(",")[0]), lng: Number.parseFloat(message.split(",")[1]) };
 		if (this.hasPastedPreviousGuess(userstate.username, guessLocation)) return "pastedPreviousGuess";
 
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
-		const guessedCountry = await this.getCountryCode(guessLocation);
+		const guessedCountry = await GameHelper.getCountryCode(guessLocation);
 		guessedCountry === this.country ? user.addStreak() : user.setStreak(0);
 
 		const distance = GameHelper.haversineDistance(guessLocation, this.currentLocation);
@@ -93,7 +73,7 @@ class Game {
 			let i = 1;
 			const fetchNextRound = () => {
 				setTimeout(async () => {
-					const newSeed = await this.fetchSeed(this.url);
+					const newSeed = await GameHelper.fetchSeed(this.url);
 					if (i <= 30 && newSeed.round === this.seed.round && newSeed.state != "finished") {
 						console.log(`fetched round ${newSeed.round}. Same round. Try again`);
 						fetchNextRound();
@@ -115,7 +95,7 @@ class Game {
 		const streamerGuess = this.seed.player.guesses[this.seed.round - i];
 		const guessLocation = { lat: streamerGuess.lat, lng: streamerGuess.lng };
 
-		const guessedCountry = await this.getCountryCode(guessLocation);
+		const guessedCountry = await GameHelper.getCountryCode(guessLocation);
 		guessedCountry === this.country ? streamer.addStreak() : streamer.setStreak(0);
 
 		const distance = GameHelper.haversineDistance(guessLocation, this.getCurrentLocation(i));
@@ -150,7 +130,7 @@ class Game {
 
 	nextRound = async () => {
 		this.currentLocation = this.getCurrentLocation();
-		this.country = await this.getCountryCode(this.currentLocation);
+		this.country = await GameHelper.getCountryCode(this.currentLocation);
 		console.log("next country: " + this.country);
 		this.guesses = [];
 	};
@@ -160,29 +140,9 @@ class Game {
 		this.total = [];
 	};
 
-	getCountryCode = async (location) => {
-		return axios
-			.get(`https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`)
-			.then((res) => countryCodes[res.data.countryCode])
-			.catch((error) => console.log(error));
-
-		// return axios
-		// 	.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.lat},${location.lng}&result_type=country&key=${process.env.GMAPS_KEY}`)
-		// 	.then((res) => countryCodes[res.data.results[0].address_components[0].short_name])
-		// 	.catch((error) => console.log(error));
-
-		// return new Promise((resolve, reject) => {
-		// 	CG.getCode(location.lat, location.lng, (error, code) => {
-		// 		resolve(code);
-		// 		reject(new Error(error));
-		// 	});
-		// }).then((code) => countryCodes[code.toUpperCase()]);
-	};
-
 	checkUsersStreak = () => {
 		this.previousGuesses[0] = this.previousGuesses[1];
 		this.previousGuesses[1] = [];
-		console.log(this.previousGuesses);
 		Store.set("previousGuesses", this.previousGuesses);
 		const users = Store.getUsers();
 		if (users) {
@@ -191,6 +151,15 @@ class Game {
 			});
 		}
 	};
+
+	getCurrentLocation = (i = 1) => {
+		return {
+			lat: this.seed.rounds[this.seed.round - i].lat,
+			lng: this.seed.rounds[this.seed.round - i].lng,
+		};
+	};
+
+	getRound = () => this.seed.round;
 
 	hasGuessedThisRound = (user) => this.guesses.some((guess) => guess.user === user);
 

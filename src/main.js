@@ -10,9 +10,7 @@ const Store = require("./utils/Store");
 const settings = Store.getSettings();
 
 const tmi = require("tmi.js");
-
-const hastebin = require("hastebin.js");
-const haste = new hastebin();
+const Hastebin = require("./utils/Hastebin");
 
 let client;
 let mainWindow;
@@ -25,19 +23,19 @@ const init = () => {
 
 	mainWindow.webContents.on("did-navigate-in-page", (e, url) => {
 		if (GameHelper.isGameURL(url)) {
-			mainWindow.webContents.send("in-game", settings.noCar, settings.noCompass);
 			if (game.url === url) {
 				game.startGame(url).then(() => {
-					client.action(settings.channelName, `🌎 Round ${game.getRound()} has started`);
+					client.action(settings.channelName, `🌎 Round ${game.round} has started`);
 					openGuesses();
 				});
 			} else {
 				game.clearGuesses();
 				game.startGame(url).then(() => {
-					client.action(settings.channelName, `🌎 A new seed of "${game.seed.mapName}" has started`);
+					client.action(settings.channelName, `🌎 A new seed of "${game.mapName}" has started`);
 					openGuesses();
 				});
 			}
+			mainWindow.webContents.send("in-game", settings.noCar, settings.noCompass);
 		} else {
 			game.outGame();
 			mainWindow.webContents.send("out-game");
@@ -58,7 +56,7 @@ const init = () => {
 			`);
 		if (game.seed.timeLimit != 0 && game.seed.state != "finished") {
 			GameHelper.fetchSeed(game.url).then((seedData) => {
-				if (seedData.round != game.getRound() || seedData.state === "finished") {
+				if (seedData.round != game.round || seedData.state === "finished") {
 					makeGuess();
 				}
 			});
@@ -75,11 +73,14 @@ const init = () => {
 		Store.setSettings(settings);
 	});
 
-	ipcMain.on("twitch-commands-form", (e, guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed) => {
-		settings.setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed);
-		Store.setSettings(settings);
-		settingsWindow.hide();
-	});
+	ipcMain.on(
+		"twitch-commands-form",
+		(e, guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed) => {
+			settings.setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed);
+			Store.setSettings(settings);
+			settingsWindow.hide();
+		}
+	);
 
 	ipcMain.on("twitch-settings-form", (e, channelName, botUsername, token) => {
 		settings.setTwitchSettings(channelName, botUsername, token);
@@ -109,49 +110,35 @@ const init = () => {
 		closeGuesses();
 		mainWindow.webContents.send("pre-round-results");
 		await game.makeGuess(settings.channelName);
-		const sortedGuesses = game.getSortedGuesses();
-		mainWindow.webContents.send("show-round-results", game.currentLocation, sortedGuesses);
-		const link = await makeHastebin(sortedGuesses, game.getRound(), game.currentLocation);
-		client.action(settings.channelName, `🌎 Round ${game.getRound()} has finished. Congrats ${sortedGuesses[0].username}! Check out the round results here: ${link}`);
+		const scores = game.getRoundScores();
+		mainWindow.webContents.send("show-round-results", game.location, scores);
+
+		client.action(
+			settings.channelName,
+			`🌎 Round ${game.seed.state === "finished" ? game.round : game.round - 1} has finished. Congrats ${scores[0].username}!`
+		);
 	};
 
 	ipcMain.on("next-round-click", () => nextRound());
 	const nextRound = () => {
 		game.nextRound();
 		if (game.seed.state === "finished") {
-			processTotalResults();
+			processTotalScores();
 		} else {
 			mainWindow.webContents.send("next-round");
-			client.action(settings.channelName, `🌎 Round ${game.getRound()} has started`);
+			client.action(settings.channelName, `🌎 Round ${game.round} has started`);
 			openGuesses();
 		}
 	};
 
-	const processTotalResults = async () => {
-		const totalResults = game.getSortedTotal();
-		const link = await makeHastebin(totalResults);
-		mainWindow.webContents.send("show-total-results", totalResults);
-		client.action(settings.channelName, `🌎 Game finished. Congrats ${totalResults[0].username} 🏆! Check out the full results here: ${link}`);
-	};
-
-	const makeHastebin = (results, round, location) => {
-		let str = `# ${game.seed.mapName} ${round ? "Round " + round : "Total"} Highscores :
-${"=".repeat(game.seed.mapName.length + (round ? 23 : 19))}
-`;
-		results.forEach((guess, index) => {
-			str += `
-${index + 1}.${index + 1 <= 10 ? "  " : " "}${guess.username}${" ".repeat(30 - guess.username.length)}${" ".repeat(5 - guess.score.toString().length)}${guess.score}${
-				round ? "" : " [" + guess.nbGuesses + "]"
-			}`;
-		});
-		if (location) {
-			const url = `http://maps.google.com/maps?q=&layer=c&cbll=${location.lat},${location.lng}`;
-			str += `
-
-${url}
-${"=".repeat(url.length)}`;
-		}
-		return haste.post(str).then((link) => link);
+	const processTotalScores = async () => {
+		const totalScores = game.getTotalScores();
+		const link = await Hastebin.makeHastebin(totalScores, game.mapName);
+		mainWindow.webContents.send("show-total-results", totalScores);
+		client.action(
+			settings.channelName,
+			`🌎 Game finished. Congrats ${totalScores[0].username} 🏆! Check out the full results here: ${link}`
+		);
 	};
 
 	ipcMain.on("clearStats", () => clearStats());
@@ -230,7 +217,8 @@ const tmiListening = () => {
 						Best streak: ${userInfo.bestStreak}.
 						Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses} (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).
 						Avg. score: ${Math.round(userInfo.meanScore)}.
-						Perfects: ${Math.round(userInfo.nbPerfect)}.
+						Victories: ${userInfo.victories}.
+						Perfects: ${userInfo.perfects}.
 					`
 				);
 			} else {
@@ -239,11 +227,16 @@ const tmiListening = () => {
 		}
 
 		if (message.toLowerCase() === "!best") {
-			const storedUsers = Store.getUsers();
-			if (!storedUsers) return client.say(channel, `No streak established yet.`);
-			const bestStreak = Math.max(...Object.values(storedUsers).map((o) => o.streak));
-			const user = Object.keys(storedUsers).filter((user) => storedUsers[user].streak === bestStreak);
-			return client.say(channel, `Channel best streak: ${bestStreak} by ${user}`);
+			const best = Store.getBest();
+			if (!best) return client.say(channel, "No stats available.");
+			return client.say(
+				channel,
+				`	Channel's best:
+					Streak: ${best.streak.streak} ${best.streak.streak > 0 ? " (" + best.streak.user + ")" : ""}.
+					Avg. score: ${Math.round(best.meanScore.meanScore)} (${best.meanScore.user}).
+					Victories: ${best.victories.victories} ${best.victories.victories > 0 ? " (" + best.victories.user + ")" : ""}.
+				`
+			);
 		}
 
 		if (message.toLowerCase() === settings.userClearStatsCmd) {
@@ -253,7 +246,7 @@ const tmiListening = () => {
 			return client.say(channel, `${userstate["display-name"]} 🗑️ stats cleared !`);
 		}
 
-		if (userstate.username != settings.channelName) return; // !streamer commands
+		if (userstate.username != settings.channelName) return; //! streamer commands
 
 		if (message.toLowerCase().startsWith(settings.setStreakCmd)) {
 			const msgArr = message.split(" ");

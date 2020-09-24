@@ -4,13 +4,25 @@ const GameHelper = require("../utils/GameHelper");
 const Guess = require("./Guess");
 
 class Game {
+	/**
+	 * @param {boolean} inGame
+	 * @param {string} url
+	 * @param {Object} seed collection
+	 * @param {number} mapScale
+	 * @param {string} country
+	 * @param {Object} location {lat, lng}
+	 * @param {Guess[]} guesses
+	 * @param {Guess[]} total
+	 * @param {Array} country
+	 * @param {boolean} guessesOpen
+	 */
 	constructor() {
 		this.inGame = false;
 		this.url;
 		this.seed;
 		this.mapScale;
 		this.country;
-		this.currentLocation;
+		this.location;
 		this.guesses = [];
 		this.total = [];
 		this.previousGuesses;
@@ -23,13 +35,23 @@ class Game {
 		this.previousGuesses = Store.get("previousGuesses", [[], []]);
 	};
 
+	/**
+	 * @param  {string} url
+	 */
 	startGame = async (url) => {
 		this.url = url;
 		this.seed = await GameHelper.fetchSeed(this.url);
 		this.mapScale = GameHelper.calculateScale(this.seed.bounds);
-		this.currentLocation = this.getCurrentLocation();
-		this.country = await GameHelper.getCountryCode(this.currentLocation);
+		this.location = this.getLocation();
+		this.country = await GameHelper.getCountryCode(this.location);
 		this.inGame = true;
+	};
+
+	nextRound = async () => {
+		this.location = this.getLocation();
+		this.country = await GameHelper.getCountryCode(this.location);
+		console.log("next country: " + this.country);
+		this.guesses = [];
 	};
 
 	outGame = () => {
@@ -41,27 +63,40 @@ class Game {
 
 	closeGuesses = () => (this.guessesOpen = false);
 
-	processUserGuess = async (userstate, guessLocation) => {
+	clearGuesses = () => {
+		this.guesses = [];
+		this.total = [];
+	};
+
+	/**
+	 * @param {Object} userstate
+	 * @param {Object} userGuess {lat, lng}
+	 * @returns {Object} {Guess, nbGuesses}
+	 */
+	processUserGuess = async (userstate, userGuess) => {
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
-		const guessedCountry = await GameHelper.getCountryCode(guessLocation);
+		const guessedCountry = await GameHelper.getCountryCode(userGuess);
 		guessedCountry === this.country ? user.addStreak() : user.setStreak(0);
 
-		const distance = GameHelper.haversineDistance(guessLocation, this.currentLocation);
+		const distance = GameHelper.haversineDistance(userGuess, this.location);
 		const score = GameHelper.calculateScore(distance, this.mapScale);
-		if (score == 5000) user.nbPerfect++;
+		if (score == 5000) user.perfects++;
 		user.calcMeanScore(score);
 
 		user.nbGuesses++;
 		Store.saveUser(userstate.username, user);
 
-		const guess = new Guess(userstate.username, userstate["display-name"], userstate.color, user.streak, guessLocation, distance, score);
+		const guess = new Guess(userstate.username, userstate["display-name"], userstate.color, user.streak, userGuess, distance, score);
 		this.guesses.push(guess);
 		this.pushToTotal(guess);
 
-		this.previousGuesses[1].push({ username: userstate.username, guessLocation });
+		this.previousGuesses[1].push({ ...guess });
 		return { guess: guess, nbGuesses: this.guesses.length };
 	};
 
+	/**
+	 * @param  {string} channelName
+	 */
 	makeGuess = (channelName) => {
 		return new Promise((resolve, reject) => {
 			let i = 1;
@@ -82,33 +117,39 @@ class Game {
 		});
 	};
 
+	/**
+	 * @param  {string} channelName
+	 */
 	processStreamerGuess = async (channelName) => {
 		let i = 2;
 		if (this.seed.state === "finished") i = 1;
 		const streamer = Store.getOrCreateUser(channelName, channelName);
 		const streamerGuess = this.seed.player.guesses[this.seed.round - i];
-		const guessLocation = { lat: streamerGuess.lat, lng: streamerGuess.lng };
+		const guessPosition = { lat: streamerGuess.lat, lng: streamerGuess.lng };
 
-		const guessedCountry = await GameHelper.getCountryCode(guessLocation);
+		const guessedCountry = await GameHelper.getCountryCode(guessPosition);
 		guessedCountry === this.country ? streamer.addStreak() : streamer.setStreak(0);
 
-		const distance = GameHelper.haversineDistance(guessLocation, this.getCurrentLocation(i));
+		const distance = GameHelper.haversineDistance(guessPosition, this.getLocation(i));
 		let score = GameHelper.calculateScore(distance, this.mapScale);
 		if (streamerGuess.timedOut) score = 0;
-		if (score == 5000) streamer.nbPerfect++;
+		if (score == 5000) streamer.perfects++;
 		streamer.calcMeanScore(score);
 
 		streamer.nbGuesses++;
 		Store.saveUser(channelName, streamer);
 
-		const guess = new Guess(channelName, channelName, "#FF000", streamer.streak, guessLocation, distance, score);
+		const guess = new Guess(channelName, channelName, "#FF000", streamer.streak, guessPosition, distance, score);
 		this.guesses.push(guess);
 		this.pushToTotal(guess);
 
-		this.previousGuesses[1].push({ username: channelName });
+		this.previousGuesses[1].push({ user: channelName });
 		this.checkUsersStreak();
 	};
 
+	/**
+	 * @param  {Guess} guess
+	 */
 	pushToTotal = (guess) => {
 		const index = this.total.findIndex((e) => e.user === guess.user);
 		if (index != -1) {
@@ -122,16 +163,11 @@ class Game {
 		}
 	};
 
-	nextRound = async () => {
-		this.currentLocation = this.getCurrentLocation();
-		this.country = await GameHelper.getCountryCode(this.currentLocation);
-		console.log("next country: " + this.country);
-		this.guesses = [];
-	};
-
-	clearGuesses = () => {
-		this.guesses = [];
-		this.total = [];
+	getLocation = (i = 1) => {
+		return {
+			lat: this.seed.rounds[this.seed.round - i].lat,
+			lng: this.seed.rounds[this.seed.round - i].lng,
+		};
 	};
 
 	checkUsersStreak = () => {
@@ -139,35 +175,55 @@ class Game {
 		this.previousGuesses[1] = [];
 		Store.set("previousGuesses", this.previousGuesses);
 		const users = Store.getUsers();
-		if (users) {
-			Object.keys(users).forEach((user) => {
-				if (!this.previousGuesses[0].some((previousGuess) => previousGuess.username === user)) Store.setUserStreak(user, 0);
-			});
-		}
+		if (!users) return;
+		Object.keys(users).forEach((user) => {
+			if (!this.previousGuesses[0].some((previousGuess) => previousGuess.user === user)) Store.setUserStreak(user, 0);
+		});
 	};
 
-	getCurrentLocation = (i = 1) => {
-		return {
-			lat: this.seed.rounds[this.seed.round - i].lat,
-			lng: this.seed.rounds[this.seed.round - i].lng,
-		};
-	};
-
-	getRound = () => this.seed.round;
-
+	/**
+	 *
+	 * @param {string} user
+	 * @returns {boolean}
+	 */
 	hasGuessedThisRound = (user) => this.guesses.some((guess) => guess.user === user);
 
-	hasPastedPreviousGuess = (username, guessLocation) => {
-		return (
-			this.previousGuesses[0].filter(
-				(previousGuess) => previousGuess.username === username && previousGuess.guessLocation.lat === guessLocation.lat && previousGuess.guessLocation.lng === guessLocation.lng
-			).length > 0
-		);
-	};
+	/**
+	 * @param  {string} username
+	 * @param  {Object} position {lat, lng}
+	 * @returns {boolean}
+	 */
+	hasPastedPreviousGuess = (user, position) =>
+		this.previousGuesses[0].filter(
+			(guess) => guess.user === user && guess.position.lat === position.lat && guess.position.lng === position.lng
+		).length > 0;
 
-	getSortedTotal = () => GameHelper.sortByScore(this.total);
+	/**
+	 * @returns {Guess[]} sorted guesses by Distance
+	 */
+	getRoundScores = () => GameHelper.sortByDistance(this.guesses);
 
-	getSortedGuesses = () => GameHelper.sortByDistance(this.guesses);
+	/**
+	 * @returns {Guess[]} sorted guesses by Score
+	 */
+	getTotalScores() {
+		const scores = GameHelper.sortByScore(this.total);
+		// TODO: Remember to check equality
+		Store.userAddVictory(scores[0].user);
+		return scores;
+	}
+
+	get mapName() {
+		return this.seed.mapName;
+	}
+
+	get round() {
+		return this.seed.round;
+	}
+
+	get currentLoc() {
+		return this.location;
+	}
 }
 
 module.exports = Game;

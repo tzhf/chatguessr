@@ -1,13 +1,7 @@
 const Preloader = require("./utils/Preloader");
 const Scoreboard = require("./components/scoreboard/Scoreboard");
 
-if (document.readyState == "loading") {
-	document.addEventListener("DOMContentLoaded", DOMLoaded);
-} else {
-	DOMLoaded();
-}
-
-async function DOMLoaded() {
+window.addEventListener("DOMContentLoaded", async () => {
 	console.log("DOM loaded");
 	window.ipcRenderer = require("electron").ipcRenderer;
 	window.MAP = null;
@@ -22,7 +16,7 @@ async function DOMLoaded() {
 	const scoreboard = new Scoreboard(scoreboardHTML, scoreboardCSS);
 	init(scoreboard);
 	hijackMap();
-}
+});
 
 const loadScripts = (styles, jQuery, jQueryUI) => {
 	console.log("scripts loaded");
@@ -108,6 +102,7 @@ let markers = [];
 let polylines = [];
 
 const populateMap = (location, guesses) => {
+	console.log("populateMap -> guesses", guesses);
 	const infowindow = new google.maps.InfoWindow();
 	// let bounds = new google.maps.LatLngBounds();
 	const markerIcon = {
@@ -245,7 +240,10 @@ const hijackMap = () => {
 	GOOGLE_MAPS_PROMISE.then(() => {
 		runAsClient(() => {
 			const google = window.google;
-			const isGamePage = () => location.pathname.startsWith("/challenge/") || location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
+			const isGamePage = () =>
+				location.pathname.startsWith("/challenge/") ||
+				location.pathname.startsWith("/results/") ||
+				location.pathname.startsWith("/game/");
 			const onMapUpdate = (map) => {
 				try {
 					if (!isGamePage()) return;
@@ -292,59 +290,54 @@ const drParseNoCompass = (noCompass) => {
 const drParseNoCar = (noCar) => {
 	if (!noCar) return;
 
-	const OPTIONS = {
-		colorR: 0.5,
-		colorG: 0.5,
-		colorB: 0.5,
-	};
+	const OPTIONS = { colorR: 0.5, colorG: 0.5, colorB: 0.5 };
 	const vertexOld =
 		"const float f=3.1415926;varying vec3 a;uniform vec4 b;attribute vec3 c;attribute vec2 d;uniform mat4 e;void main(){vec4 g=vec4(c,1);gl_Position=e*g;a=vec3(d.xy*b.xy+b.zw,1);a*=length(c);}";
-
 	const fragOld =
 		"precision highp float;const float h=3.1415926;varying vec3 a;uniform vec4 b;uniform float f;uniform sampler2D g;void main(){vec4 i=vec4(texture2DProj(g,a).rgb,f);gl_FragColor=i;}";
-
 	const vertexNew = `
-const float f=3.1415926;
-varying vec3 a;
-varying vec3 potato;
-uniform vec4 b;
-attribute vec3 c;
-attribute vec2 d;
-uniform mat4 e;
-void main(){
-	vec4 g=vec4(c,1);
-	gl_Position=e*g;
-	a = vec3(d.xy * b.xy + b.zw,1);
-	a *= length(c);
-
-	potato = vec3(d.xy, 1.0) * length(c);
-}`;
+		const float f=3.1415926;
+		varying vec3 a;
+		varying vec3 potato;
+		uniform vec4 b;
+		attribute vec3 c;
+		attribute vec2 d;
+		uniform mat4 e;
+		void main(){
+			vec4 g=vec4(c,1);
+			gl_Position=e*g;
+			a = vec3(d.xy * b.xy + b.zw,1);
+			a *= length(c);
+			potato = vec3(d.xy, 1.0) * length(c);
+		}
+	`;
 
 	const fragNew = `
-precision highp float;
-const float h=3.1415926;
-varying vec3 a;
-varying vec3 potato;
-uniform vec4 b;
-uniform float f;
-uniform sampler2D g;
-void main(){
+		precision highp float;
+		const float h=3.1415926;
+		varying vec3 a;
+		varying vec3 potato;
+		uniform vec4 b;
+		uniform float f;
+		uniform sampler2D g;
+		void main(){
 
-vec2 aD = potato.xy / a.z;
-float thetaD = aD.y;
+		vec2 aD = potato.xy / a.z;
+		float thetaD = aD.y;
 
-float thresholdD1 = 0.6;
-float thresholdD2 = 0.7;
+		float thresholdD1 = 0.6;
+		float thresholdD2 = 0.7;
 
-float x = aD.x;
-float y = abs(4.0*x - 2.0);
-float phiD = smoothstep(0.0, 1.0, y > 1.0 ? 2.0 - y : y);
+		float x = aD.x;
+		float y = abs(4.0*x - 2.0);
+		float phiD = smoothstep(0.0, 1.0, y > 1.0 ? 2.0 - y : y);
 
-vec4 i = vec4(thetaD > mix(thresholdD1, thresholdD2, phiD)
-? vec3(float(${OPTIONS.colorR}), float(${OPTIONS.colorG}), float(${OPTIONS.colorB})) // texture2DProj(g,a).rgb * 0.25
-: texture2DProj(g,a).rgb,f);
-gl_FragColor=i;
-}`;
+		vec4 i = vec4(thetaD > mix(thresholdD1, thresholdD2, phiD)
+		? vec3(float(${OPTIONS.colorR}), float(${OPTIONS.colorG}), float(${OPTIONS.colorB})) // texture2DProj(g,a).rgb * 0.25
+		: texture2DProj(g,a).rgb,f);
+		gl_FragColor=i;
+		}
+	`;
 
 	function installShaderSource(ctx) {
 		const g = ctx.shaderSource;

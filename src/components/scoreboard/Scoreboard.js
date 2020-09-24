@@ -1,7 +1,10 @@
-const Store = require("electron-store");
-const store = new Store();
+const Store = require("../../utils/Store");
 
 class Scoreboard {
+	/**
+	 * @param  {string} html
+	 * @param  {string} css
+	 */
 	constructor(html, css) {
 		this.html = html;
 		this.css = css;
@@ -16,7 +19,7 @@ class Scoreboard {
 	}
 
 	init() {
-		this.position = store.get("scoreboard.position", { top: 55, left: 5, width: 390, height: 340 });
+		this.position = Store.getScoreboardPosition({ top: 55, left: 5, width: 390, height: 340 });
 		this.scoreboardContainer = document.createElement("div");
 		this.scoreboardContainer.setAttribute("id", "scoreboardContainer");
 		this.scoreboardContainer.innerHTML = this.html;
@@ -51,7 +54,7 @@ class Scoreboard {
 				const currentPosition = this.getPosition();
 				if (JSON.stringify(this.position) !== JSON.stringify(currentPosition)) {
 					this.setPosition(currentPosition);
-					store.set("scoreboard.position", currentPosition);
+					Store.setScoreboardPosition(currentPosition);
 				}
 			});
 
@@ -94,13 +97,26 @@ class Scoreboard {
 		this.guessList.innerHTML = html;
 	};
 
-	getPosition = () => ({ top: this.scoreboard.position().top, left: this.scoreboard.position().left, width: this.scoreboard.width(), height: this.scoreboard.height() });
+	getPosition = () => ({
+		top: this.scoreboard.position().top,
+		left: this.scoreboard.position().left,
+		width: this.scoreboard.width(),
+		height: this.scoreboard.height(),
+	});
+
 	setPosition = (position) => (this.position = position);
+
 	setTitle = (title) => (this.scoreboardTitle.textContent = title);
+
 	show = (state) => (this.scoreboardContainer.style.display = state ? "block" : "none");
+
 	showSwitch = (state) => (this.switchContainer.style.display = state ? "block" : "none");
+
 	switchOn = (state) => (this.switchBtn.checked = state);
+
 	emptyGuessList = () => (this.guessList.textContent = "");
+
 	toMeter = (distance) => (distance >= 1 ? parseFloat(distance.toFixed(1)) + "km" : parseInt(distance * 1000) + "m");
 }
+
 module.exports = Scoreboard;

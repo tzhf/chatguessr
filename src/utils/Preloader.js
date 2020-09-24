@@ -6,6 +6,7 @@ class Preloader {
 	 * Takes an array of files in components folder
 	 * Returns an array of string
 	 * @param {string[]} files ["file1", "file2"...]
+	 * @returns {Promise} files to string
 	 */
 	static preload(files) {
 		let promises = [];

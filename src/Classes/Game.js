@@ -1,21 +1,8 @@
 const Store = require("../utils/Store");
 const GameHelper = require("../utils/GameHelper");
-// const CG = require("codegrid-js").CodeGrid();
 const Guess = require("./Guess");
 
 class Game {
-	/**
-	 * @param {boolean} inGame
-	 * @param {string} url
-	 * @param {Object} seed collection
-	 * @param {number} mapScale
-	 * @param {string} country
-	 * @param {Object} location {lat, lng}
-	 * @param {Guess[]} guesses
-	 * @param {Guess[]} total
-	 * @param {Array} country
-	 * @param {boolean} guessesOpen
-	 */
 	constructor() {
 		this.inGame = false;
 		this.url;
@@ -71,7 +58,7 @@ class Game {
 	/**
 	 * @param {Object} userstate
 	 * @param {Object} userGuess {lat, lng}
-	 * @returns {Object} {Guess, nbGuesses}
+	 * @return {Promise} {Guess, nbGuesses}
 	 */
 	processUserGuess = async (userstate, userGuess) => {
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
@@ -182,29 +169,26 @@ class Game {
 	};
 
 	/**
-	 *
 	 * @param {string} user
-	 * @returns {boolean}
+	 * @return {boolean}
 	 */
 	hasGuessedThisRound = (user) => this.guesses.some((guess) => guess.user === user);
 
 	/**
-	 * @param  {string} username
+	 * @param  {string} user
 	 * @param  {Object} position {lat, lng}
-	 * @returns {boolean}
+	 * @return {boolean}
 	 */
 	hasPastedPreviousGuess = (user, position) =>
-		this.previousGuesses[0].filter(
-			(guess) => guess.user === user && guess.position.lat === position.lat && guess.position.lng === position.lng
-		).length > 0;
+		this.previousGuesses[0].filter((guess) => guess.user === user && guess.position.lat === position.lat && guess.position.lng === position.lng).length > 0;
 
 	/**
-	 * @returns {Guess[]} sorted guesses by Distance
+	 * @return {Guess[]} sorted guesses by Distance
 	 */
 	getRoundScores = () => GameHelper.sortByDistance(this.guesses);
 
 	/**
-	 * @returns {Guess[]} sorted guesses by Score
+	 * @return {Guess[]} sorted guesses by Score
 	 */
 	getTotalScores() {
 		const scores = GameHelper.sortByScore(this.total);

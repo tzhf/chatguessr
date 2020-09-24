@@ -8,7 +8,7 @@ class Store {
 	/**
 	 * @param {string} key
 	 * @param {*} defaults
-	 * @returns {*} returns defaults if not found
+	 * @return {*} returns defaults if not found
 	 */
 	static get = (key, defaults) => store.get(key, defaults);
 
@@ -26,7 +26,7 @@ class Store {
 	//* Settings
 	/**
 	 * Returns stored settings or a new Settings instance
-	 * @returns {Settings} Settings
+	 * @return {Settings} Settings
 	 */
 	static getSettings = () => {
 		const storedSettings = store.get("settings");
@@ -45,7 +45,7 @@ class Store {
 	 * Returns a user or a new User instance
 	 * @param {string} user
 	 * @param {string} username
-	 * @returns {User} User
+	 * @return {User} User
 	 */
 	static getOrCreateUser = (user, username) => {
 		const storedUser = this.getUser(user);
@@ -59,13 +59,13 @@ class Store {
 	/**
 	 * Returns a user
 	 * @param {string} user
-	 * @returns {User} User
+	 * @return {User} User
 	 */
 	static getUser = (user) => store.get(`users.${user}`);
 
 	/**
 	 * Get all users
-	 * @returns {User[]} Users
+	 * @return {User[]} Users
 	 */
 	static getUsers = () => store.get("users");
 
@@ -100,8 +100,8 @@ class Store {
 	};
 
 	/**
-	 * Get best stats
-	 * @returns {Object} collection
+	 * Returns best stats
+	 * @return {Object} collection
 	 */
 	static getBest = () => {
 		const storedUsers = this.getUsers();
@@ -136,7 +136,7 @@ class Store {
 	/**
 	 * Returns defaults if not found
 	 * @param {Object} defaults
-	 * @returns {Object} position
+	 * @return {Object} position
 	 */
 	static getScoreboardPosition = (defaults) => store.get("scoreboard.postion", defaults);
 

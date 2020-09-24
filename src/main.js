@@ -73,14 +73,11 @@ const init = () => {
 		Store.setSettings(settings);
 	});
 
-	ipcMain.on(
-		"twitch-commands-form",
-		(e, guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed) => {
-			settings.setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed);
-			Store.setSettings(settings);
-			settingsWindow.hide();
-		}
-	);
+	ipcMain.on("twitch-commands-form", (e, guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed) => {
+		settings.setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed);
+		Store.setSettings(settings);
+		settingsWindow.hide();
+	});
 
 	ipcMain.on("twitch-settings-form", (e, channelName, botUsername, token) => {
 		settings.setTwitchSettings(channelName, botUsername, token);
@@ -135,10 +132,7 @@ const init = () => {
 		const totalScores = game.getTotalScores();
 		const link = await Hastebin.makeHastebin(totalScores, game.mapName);
 		mainWindow.webContents.send("show-total-results", totalScores);
-		client.action(
-			settings.channelName,
-			`🌎 Game finished. Congrats ${totalScores[0].username} 🏆! Check out the full results here: ${link}`
-		);
+		client.action(settings.channelName, `🌎 Game finished. Congrats ${totalScores[0].username} 🏆! Check out the full results here: ${link}`);
 	};
 
 	ipcMain.on("clearStats", () => clearStats());

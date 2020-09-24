@@ -2,13 +2,14 @@ const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
 const axios = require("axios");
+// const CG = require("codegrid-js").CodeGrid();
 const countryCodes = require("./countryCodes");
 
 class GameHelper {
 	/**
 	 * Checks if '/game/' is in the URL
 	 * @param {string} url Game URL
-	 * @returns {boolean}
+	 * @return {boolean}
 	 */
 	static isGameURL = (url) => url.includes("/game/");
 
@@ -16,7 +17,7 @@ class GameHelper {
 	 * Gets the Game ID from a game URL
 	 * Checks if ID is 16 characters in length
 	 * @param {string} url Game URL
-	 * @returns {string|boolean} id or false
+	 * @return {string|boolean} id or false
 	 */
 	static getGameId = (url) => {
 		const id = url.substring(url.lastIndexOf("/") + 1);
@@ -30,7 +31,7 @@ class GameHelper {
 	/**
 	 * Fetch a game seed
 	 * @param {string} url
-	 * @returns {Promise} Seed Promise
+	 * @return {Promise} Seed Promise
 	 */
 	static fetchSeed = async (url) => {
 		return axios
@@ -40,9 +41,9 @@ class GameHelper {
 	};
 
 	/**
-	 * Returns a country code
+	 * Return a country code
 	 * @param {Object} location {lat, lng}
-	 * @returns {Promise} Country code Promise
+	 * @return {Promise} Country code Promise
 	 */
 	static getCountryCode = async (location) => {
 		return axios
@@ -66,22 +67,26 @@ class GameHelper {
 	/**
 	 * Check if the param is coordinates
 	 * @param {string} coordinates
-	 * @returns {boolean}
+	 * @return {boolean}
 	 */
-	static isCoordinates = (coordinates) => coordinates.match(/^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/g);
+	static isCoordinates = (coordinates) => {
+		const regex = /^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/g;
+		return regex.test(coordinates);
+	};
 
 	/**
-	 * Returns map scale
+	 * Return map scale
 	 * @param {Object} bounds map bounds
-	 * @returns {number} map scale
+	 * @return {number} map scale
 	 */
-	static calculateScale = (bounds) => this.haversineDistance({ lat: bounds.min.lat, lng: bounds.min.lng }, { lat: bounds.max.lat, lng: bounds.max.lng }) / 7.458421;
+	static calculateScale = (bounds) =>
+		GameHelper.haversineDistance({ lat: bounds.min.lat, lng: bounds.min.lng }, { lat: bounds.max.lat, lng: bounds.max.lng }) / 7.458421;
 
 	/**
-	 * Returns distance in km between two coordinates
+	 * Return distance in km between two coordinates
 	 * @param {Object} mk1 {lat, lng}
 	 * @param {Object} mk2 {lat, lng}
-	 * @returns {number} km
+	 * @return {number} km
 	 */
 	static haversineDistance = (mk1, mk2) => {
 		const R = 6371.071;
@@ -89,29 +94,34 @@ class GameHelper {
 		const rlat2 = mk2.lat * (Math.PI / 180);
 		const difflat = rlat2 - rlat1;
 		const difflon = (mk2.lng - mk1.lng) * (Math.PI / 180);
-		const km = 2 * R * Math.asin(Math.sqrt(Math.sin(difflat / 2) * Math.sin(difflat / 2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.sin(difflon / 2) * Math.sin(difflon / 2)));
+		const km =
+			2 *
+			R *
+			Math.asin(
+				Math.sqrt(Math.sin(difflat / 2) * Math.sin(difflat / 2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.sin(difflon / 2) * Math.sin(difflon / 2))
+			);
 		return km;
 	};
 
 	/**
-	 * Returns score based on distance and scale
+	 * Return score based on distance and scale
 	 * @param {number} distance
 	 * @param {number} scale
-	 * @returns {number} score
+	 * @return {number} score
 	 */
 	static calculateScore = (distance, scale) => Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale));
 
 	/**
-	 * Returns guesses sorted by distance ASC
+	 * Return guesses sorted by distance ASC
 	 * @param {array} guesses
-	 * @returns {array} guesses
+	 * @return {array} guesses
 	 */
 	static sortByDistance = (guesses) => guesses.sort((a, b) => a.distance - b.distance);
 
 	/**
-	 * Returns guesses sorted by score DESC
+	 * Return guesses sorted by score DESC
 	 * @param {array} guesses
-	 * @returns {array} guesses
+	 * @return {array} guesses
 	 */
 	static sortByScore = (guesses) => guesses.sort((a, b) => b.score - a.score);
 }

@@ -10,17 +10,7 @@ class User {
 	 * @param  {number} victories=0
 	 * @param  {number} meanScore=null
 	 */
-	constructor(
-		user,
-		username,
-		streak = 0,
-		bestStreak = 0,
-		correctGuesses = 0,
-		nbGuesses = 0,
-		perfects = 0,
-		victories = 0,
-		meanScore = null
-	) {
+	constructor(user, username, streak = 0, bestStreak = 0, correctGuesses = 0, nbGuesses = 0, perfects = 0, victories = 0, meanScore = null) {
 		this.user = user;
 		this.username = username;
 		this.streak = streak;

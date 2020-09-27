@@ -128,7 +128,7 @@ const init = () => {
 
 	ipcMain.on("clearStats", () => clearStats());
 
-	globalShortcut.register("CommandOrControl+R", () => false);
+	// globalShortcut.register("CommandOrControl+R", () => false);
 	// globalShortcut.register("CommandOrControl+Shift+R", () => false);
 	globalShortcut.register("Escape", () => settingsWindow.hide());
 	globalShortcut.register("CommandOrControl+P", () => {

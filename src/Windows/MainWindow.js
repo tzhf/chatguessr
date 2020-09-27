@@ -6,7 +6,7 @@ const defaultProps = {
 	webPreferences: {
 		preload: path.join(__dirname, "../preload.js"),
 		enableRemoteModule: true,
-		// devTools: false,
+		devTools: false,
 	},
 };
 

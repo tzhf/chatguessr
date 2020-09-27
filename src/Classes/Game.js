@@ -1,4 +1,3 @@
-// @ts-check
 const Store = require("../utils/Store");
 const GameHelper = require("../utils/GameHelper");
 const Guess = require("./Guess");

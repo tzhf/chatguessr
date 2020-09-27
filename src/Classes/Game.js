@@ -20,7 +20,7 @@ class Game {
 
 	init = () => {
 		// TODO change all this previousGuesses implementation
-		this.previousGuesses = Store.get("previousGuesses", [[], []]);
+		this.previousGuesses = Store.get("previousGuesses", []);
 	};
 
 	/**
@@ -48,9 +48,13 @@ class Game {
 		this.closeGuesses();
 	};
 
-	openGuesses = () => (this.guessesOpen = true);
+	openGuesses = () => {
+		this.guessesOpen = true;
+	};
 
-	closeGuesses = () => (this.guessesOpen = false);
+	closeGuesses = () => {
+		this.guessesOpen = false;
+	};
 
 	clearGuesses = () => {
 		this.guesses = [];
@@ -68,8 +72,11 @@ class Game {
 		if (this.hasPastedPreviousGuess(userstate.username, userGuess)) return "pastedPreviousGuess";
 
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
-		const guessedCountry = await GameHelper.getCountryCode(userGuess);
-		guessedCountry === this.country ? user.addStreak() : user.setStreak(0);
+
+		if (!this.isMultiGuess) {
+			const guessedCountry = await GameHelper.getCountryCode(userGuess);
+			guessedCountry === this.country ? user.addStreak() : user.setStreak(0);
+		}
 
 		const distance = GameHelper.haversineDistance(userGuess, this.location);
 		const score = GameHelper.calculateScore(distance, this.mapScale);
@@ -79,7 +86,7 @@ class Game {
 		user.nbGuesses++;
 		Store.saveUser(userstate.username, user);
 
-		const guess = new Guess(userstate.username, userstate["display-name"], userstate.color, user.streak, userGuess, distance, score);
+		const guess = new Guess(userstate.username, userstate["display-name"], userstate.color, userGuess, distance, score, user.streak);
 
 		// Modify guess or push it
 		if (this.isMultiGuess && index != -1) {
@@ -89,7 +96,7 @@ class Game {
 			this.guesses.push(guess);
 		}
 
-		this.previousGuesses[1].push(guess);
+		// this.previousGuesses[1].push(guess);
 		return { guess: guess, nbGuesses: this.guesses.length };
 	};
 
@@ -108,12 +115,34 @@ class Game {
 						i++;
 					} else {
 						this.seed = newSeed;
-						this.processStreamerGuess(channelName).then(() => resolve());
+						if (this.isMultiGuess) {
+							this.processMultiGuesses().then(() => {
+								this.processStreamerGuess(channelName).then(() => resolve());
+							});
+						} else {
+							this.processStreamerGuess(channelName).then(() => resolve());
+						}
 					}
 				}, 100);
 			};
 			fetchNextRound();
 		});
+	};
+
+	processMultiGuesses = () => {
+		let promises = [];
+		this.guesses.forEach(async (guess, index) => {
+			promises.push(
+				new Promise(async (resolve, reject) => {
+					const guessedCountry = await GameHelper.getCountryCode(guess.position);
+					guessedCountry === this.country ? guess.streak++ : (guess.streak = 0);
+					this.guesses[index].streak = guess.streak;
+					Store.setUserStreak(guess.user, guess.streak);
+					resolve();
+				})
+			);
+		});
+		return Promise.all(promises);
 	};
 
 	/**
@@ -138,12 +167,11 @@ class Game {
 		streamer.nbGuesses++;
 		Store.saveUser(channelName, streamer);
 
-		const guess = new Guess(channelName, channelName, "#4ddb7c", streamer.streak, guessPosition, distance, score);
+		const guess = new Guess(channelName, channelName, "#4ddb7c", guessPosition, distance, score, streamer.streak);
 		this.guesses.push(guess);
 
 		this.guesses.forEach((guess) => this.pushToTotal(guess));
 
-		this.previousGuesses[1].push({ user: channelName });
 		this.checkUsersStreak();
 	};
 
@@ -170,13 +198,13 @@ class Game {
 	};
 
 	checkUsersStreak = () => {
-		this.previousGuesses[0] = this.previousGuesses[1];
-		this.previousGuesses[1] = [];
+		this.previousGuesses = [...this.guesses];
 		Store.set("previousGuesses", this.previousGuesses);
+
 		const users = Store.getUsers();
 		if (!users) return;
 		Object.keys(users).forEach((user) => {
-			if (!this.previousGuesses[0].some((previousGuess) => previousGuess.user === user)) Store.setUserStreak(user, 0);
+			if (!this.previousGuesses.some((previousGuess) => previousGuess.user === user)) Store.setUserStreak(user, 0);
 		});
 	};
 
@@ -193,8 +221,8 @@ class Game {
 	 */
 	hasPastedPreviousGuess = (user, position) => {
 		const filter = (guess) => guess.user === user && guess.position.lat === position.lat && guess.position.lng === position.lng;
-		if (this.isMultiGuess) return this.guesses.filter(filter).length > 0;
-		return this.previousGuesses[0].filter(filter).length > 0;
+		if (this.isMultiGuess) return this.previousGuesses.filter(filter).length > 0;
+		return this.previousGuesses.filter(filter).length > 0;
 	};
 
 	/**
@@ -215,7 +243,9 @@ class Game {
 	/**
 	 * @param {boolean} bool
 	 */
-	setMultiGuess = (bool) => (this.isMultiGuess = bool);
+	setMultiGuess = (bool) => {
+		this.isMultiGuess = bool;
+	};
 
 	get mapName() {
 		return this.seed.mapName;

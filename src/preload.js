@@ -1,6 +1,5 @@
 const Preloader = require("./utils/Preloader");
 const Scoreboard = require("./components/scoreboard/Scoreboard");
-console.log("yes");
 
 let styles, jQuery, jQueryUI, scoreboardHTML, scoreboardCSS;
 

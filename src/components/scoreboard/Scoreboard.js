@@ -12,6 +12,7 @@ class Scoreboard {
 		this.title;
 		this.switchContainer;
 		this.switchBtn;
+		this.guessListContainer;
 		this.guessList;
 		this.isMultiGuess;
 		this.init(html, css);
@@ -64,6 +65,27 @@ class Scoreboard {
 				ipcRenderer.send("close-guesses");
 			}
 		});
+
+		const speed = 60;
+		const guessListContainer = this.guessListContainer;
+		const guessList = this.guessList;
+		let position = guessListContainer.offsetHeight;
+		let animateData = requestAnimationFrame(scroller);
+
+		function scroller() {
+			if (guessList.offsetHeight > guessListContainer.offsetHeight) {
+				position = position - speed / 100;
+				const newPos = position + "px";
+				guessList.style.marginTop = newPos;
+
+				if (guessList.offsetHeight + position <= 0) {
+					position = guessList.offsetHeight;
+				}
+			} else {
+				guessList.style.marginTop = 0;
+			}
+			animateData = requestAnimationFrame(scroller);
+		}
 	}
 
 	/**
@@ -111,7 +133,7 @@ class Scoreboard {
 			guessItem.className = "guess-item expand";
 			guessItem.id = `guess-${guess.user}`;
 			guessItem.innerHTML = `
-				<span class="username truncate-long-text" style="color:${guess.color}">${guess.username} guessed</span>
+				<span class="username truncate-long-text" style="color:${guess.color}">${guess.username}</span>
 			`;
 			this.guessList.appendChild(guessItem);
 		} else {

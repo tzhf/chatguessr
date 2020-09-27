@@ -113,7 +113,7 @@ const init = () => {
 		if (game.seed.state === "finished") {
 			processTotalScores();
 		} else {
-			mainWindow.webContents.send("next-round", game.isMultiGuess);
+			mainWindow.webContents.send("next-round");
 			client.action(settings.channelName, `🌎 Round ${game.round} has started`);
 			openGuesses();
 		}

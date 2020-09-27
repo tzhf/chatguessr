@@ -20,7 +20,10 @@ class Preloader {
 		});
 
 		return Promise.all(promises)
-			.then((res) => res)
+			.then((res) => {
+				console.log("files loaded");
+				return res;
+			})
 			.catch((error) => console.error("Something went wrong reading files:", error));
 	}
 }

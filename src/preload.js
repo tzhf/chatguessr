@@ -1,17 +1,24 @@
 const Preloader = require("./utils/Preloader");
 const Scoreboard = require("./components/scoreboard/Scoreboard");
+console.log("yes");
 
-window.addEventListener("DOMContentLoaded", async () => {
-	console.log("DOM loaded");
-	window.ipcRenderer = require("electron").ipcRenderer;
-	window.MAP = null;
-	const [styles, jQuery, jQueryUI, scoreboardHTML, scoreboardCSS] = await Preloader.preload([
+let styles, jQuery, jQueryUI, scoreboardHTML, scoreboardCSS;
+
+(async function preload() {
+	[styles, jQuery, jQueryUI, scoreboardHTML, scoreboardCSS] = await Preloader.preload([
 		"styles.css",
 		"jquery.min.js",
 		"jquery-ui.min.js",
 		"scoreboard/scoreboard.html",
 		"scoreboard/scoreboard.css",
 	]);
+})();
+
+window.addEventListener("DOMContentLoaded", async () => {
+	console.log("DOM loaded");
+	window.ipcRenderer = require("electron").ipcRenderer;
+	window.MAP = null;
+
 	loadScripts(styles, jQuery, jQueryUI);
 	const scoreboard = new Scoreboard(scoreboardHTML, scoreboardCSS);
 	init(scoreboard);

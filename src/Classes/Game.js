@@ -64,7 +64,7 @@ class Game {
 	 */
 	processUserGuess = async (userstate, userGuess) => {
 		const index = this.hasGuessedThisRound(userstate.username);
-		// if (!this.isMultiGuess && index != -1) return "alreadyGuessed";
+		if (!this.isMultiGuess && index != -1) return "alreadyGuessed";
 		if (this.hasPastedPreviousGuess(userstate.username, userGuess)) return "pastedPreviousGuess";
 
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);

@@ -7,6 +7,11 @@
 	margin-top: 1.5rem;
 }
 
+/* removing country & explorer mod divs */
+.sidebar-anchor__item:nth-child(-n+2) {
+	display: none;
+}
+
 /* game status div */
 .game-layout__status {
 	opacity: 0.8;

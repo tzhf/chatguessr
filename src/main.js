@@ -1,3 +1,4 @@
+// @ts-check
 const { app, ipcMain, globalShortcut } = require("electron");
 const MainWindow = require("./Windows/MainWindow");
 const SettingsWindow = require("./Windows/settings/SettingsWindow");
@@ -23,19 +24,12 @@ const init = () => {
 
 	mainWindow.webContents.on("did-navigate-in-page", (e, url) => {
 		if (GameHelper.isGameURL(url)) {
-			if (game.url === url) {
-				game.startGame(url).then(() => {
-					client.action(settings.channelName, `🌎 Round ${game.round} has started`);
-					openGuesses();
-				});
-			} else {
-				game.clearGuesses();
-				game.startGame(url).then(() => {
-					client.action(settings.channelName, `🌎 A new seed of "${game.mapName}" has started`);
-					openGuesses();
-				});
-			}
-			mainWindow.webContents.send("in-game", settings.noCar, settings.noCompass);
+			game.setMultiGuess(settings.isMultiGuess);
+			game.startGame(url).then(() => {
+				client.action(settings.channelName, `${game.round == 1 ? "🌎 A new seed of " + game.mapName : "🌎 Round " + game.round} has started`);
+				mainWindow.webContents.send("in-game", game.isMultiGuess, settings.noCar, settings.noCompass);
+				openGuesses();
+			});
 		} else {
 			game.outGame();
 			mainWindow.webContents.send("out-game");
@@ -43,7 +37,7 @@ const init = () => {
 	});
 
 	mainWindow.webContents.on("did-stop-loading", () => {
-		if (!game.inGame) return;
+		if (!game.isInGame) return;
 		mainWindow.webContents.executeJavaScript(`
 				guessBtn = document.querySelector('[data-qa="perform-guess"]');
 				if(guessBtn) {
@@ -63,13 +57,13 @@ const init = () => {
 		}
 	});
 
-	ipcMain.on("game-form", (e, noCar, noCompass) => {
-		mainWindow.webContents.send("game-settings-change", noCar, noCompass);
+	ipcMain.on("game-form", (e, isMultiGuess, noCar, noCompass) => {
+		mainWindow.webContents.send("game-settings-change", isMultiGuess, noCar, noCompass);
 		settingsWindow.hide();
 		if (settings.noCar != noCar) {
 			mainWindow.reload(); // may cause issues when reloading in game
 		}
-		settings.setGameSettings(noCar, noCompass);
+		settings.setGameSettings(isMultiGuess, noCar, noCompass);
 		Store.setSettings(settings);
 	});
 
@@ -82,7 +76,7 @@ const init = () => {
 	ipcMain.on("twitch-settings-form", (e, channelName, botUsername, token) => {
 		settings.setTwitchSettings(channelName, botUsername, token);
 		Store.setSettings(settings);
-		if (client.readyState() === "OPEN") client.disconnect();
+		if (client && client.readyState() === "OPEN") client.disconnect();
 		loadTmi();
 	});
 
@@ -110,10 +104,7 @@ const init = () => {
 		const scores = game.getRoundScores();
 		mainWindow.webContents.send("show-round-results", game.location, scores);
 
-		client.action(
-			settings.channelName,
-			`🌎 Round ${game.seed.state === "finished" ? game.round : game.round - 1} has finished. Congrats ${scores[0].username}!`
-		);
+		client.action(settings.channelName, `🌎 Round ${game.seed.state === "finished" ? game.round : game.round - 1} has finished. Congrats ${scores[0].username}!`);
 	};
 
 	ipcMain.on("next-round-click", () => nextRound());
@@ -122,7 +113,7 @@ const init = () => {
 		if (game.seed.state === "finished") {
 			processTotalScores();
 		} else {
-			mainWindow.webContents.send("next-round");
+			mainWindow.webContents.send("next-round", game.isMultiGuess);
 			client.action(settings.channelName, `🌎 Round ${game.round} has started`);
 			openGuesses();
 		}
@@ -147,6 +138,7 @@ const init = () => {
 };
 
 const loadTmi = () => {
+	if (!settings.channelName) return;
 	const options = {
 		options: { debug: true },
 		connection: {
@@ -160,10 +152,13 @@ const loadTmi = () => {
 		channels: [settings.channelName],
 	};
 	client = new tmi.Client(options);
-	client.connect(tmiListening()).catch((error) => {
-		settingsWindow.webContents.send("twitch-error", error);
-		console.error(error);
-	});
+	client
+		.connect()
+		.then(() => tmiListening())
+		.catch((error) => {
+			settingsWindow.webContents.send("twitch-error", error);
+			console.error(error);
+		});
 };
 
 const tmiListening = () => {
@@ -181,19 +176,18 @@ const tmiListening = () => {
 		if (game.guessesOpen && message.startsWith(settings.guessCmd)) {
 			message = message.split(settings.guessCmd)[1].trim();
 			if (!GameHelper.isCoordinates(message)) return;
-
-			if (game.hasGuessedThisRound(userstate.username)) {
-				return client.say(settings.channelName, `${userstate["display-name"]} you already guessed`);
-			}
-
 			const guessLocation = { lat: parseFloat(message.split(",")[0]), lng: parseFloat(message.split(",")[1]) };
-			if (game.hasPastedPreviousGuess(userstate.username, guessLocation)) {
-				return client.say(settings.channelName, `${userstate["display-name"]} seems like you pasted your previous guess :)`);
-			}
-
 			game.processUserGuess(userstate, guessLocation).then((res) => {
+				if (res === "alreadyGuessed") return client.say(settings.channelName, `${userstate["display-name"]} you already guessed`);
+				if (res === "pastedPreviousGuess") return client.say(settings.channelName, `${userstate["display-name"]} you pasted your previous guess :)`);
 				const { guess, nbGuesses } = res;
-				mainWindow.webContents.send("render-user-guess", guess, nbGuesses);
+
+				if (game.isMultiGuess) {
+					mainWindow.webContents.send("render-multiguess", guess, nbGuesses);
+					if (guess.guessChanged && settings.showHasGuessed) return client.say(settings.channelName, `${userstate["display-name"]} guess changed`);
+				} else {
+					mainWindow.webContents.send("render-guess", guess, nbGuesses);
+				}
 				if (settings.showHasGuessed) return client.say(settings.channelName, `${userstate["display-name"]} guessed`);
 			});
 		}

@@ -1,10 +1,12 @@
+// @ts-check
 const Store = require("../utils/Store");
 const GameHelper = require("../utils/GameHelper");
 const Guess = require("./Guess");
 
 class Game {
 	constructor() {
-		this.inGame = false;
+		this.isInGame = false;
+		this.isMultiGuess = true;
 		this.url;
 		this.seed;
 		this.mapScale;
@@ -26,12 +28,13 @@ class Game {
 	 * @param  {string} url
 	 */
 	startGame = async (url) => {
+		this.clearGuesses();
 		this.url = url;
 		this.seed = await GameHelper.fetchSeed(this.url);
 		this.mapScale = GameHelper.calculateScale(this.seed.bounds);
 		this.location = this.getLocation();
 		this.country = await GameHelper.getCountryCode(this.location);
-		this.inGame = true;
+		this.isInGame = true;
 	};
 
 	nextRound = async () => {
@@ -42,7 +45,7 @@ class Game {
 	};
 
 	outGame = () => {
-		this.inGame = false;
+		this.isInGame = false;
 		this.closeGuesses();
 	};
 
@@ -61,6 +64,10 @@ class Game {
 	 * @return {Promise} {Guess, nbGuesses}
 	 */
 	processUserGuess = async (userstate, userGuess) => {
+		const index = this.hasGuessedThisRound(userstate.username);
+		if (!this.isMultiGuess && index != -1) return "alreadyGuessed";
+		if (this.hasPastedPreviousGuess(userstate.username, userGuess)) return "pastedPreviousGuess";
+
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
 		const guessedCountry = await GameHelper.getCountryCode(userGuess);
 		guessedCountry === this.country ? user.addStreak() : user.setStreak(0);
@@ -74,10 +81,16 @@ class Game {
 		Store.saveUser(userstate.username, user);
 
 		const guess = new Guess(userstate.username, userstate["display-name"], userstate.color, user.streak, userGuess, distance, score);
-		this.guesses.push(guess);
-		this.pushToTotal(guess);
 
-		this.previousGuesses[1].push({ ...guess });
+		// Modify guess or push it
+		if (this.isMultiGuess && index != -1) {
+			this.guesses[index] = guess;
+			this.guesses[index].guessChanged = true;
+		} else {
+			this.guesses.push(guess);
+		}
+
+		this.previousGuesses[1].push(guess);
 		return { guess: guess, nbGuesses: this.guesses.length };
 	};
 
@@ -126,9 +139,10 @@ class Game {
 		streamer.nbGuesses++;
 		Store.saveUser(channelName, streamer);
 
-		const guess = new Guess(channelName, channelName, "#FF000", streamer.streak, guessPosition, distance, score);
+		const guess = new Guess(channelName, channelName, "#4ddb7c", streamer.streak, guessPosition, distance, score);
 		this.guesses.push(guess);
-		this.pushToTotal(guess);
+
+		this.guesses.forEach((guess) => this.pushToTotal(guess));
 
 		this.previousGuesses[1].push({ user: channelName });
 		this.checkUsersStreak();
@@ -143,10 +157,9 @@ class Game {
 			this.total[index].score += guess.score;
 			this.total[index].distance += guess.distance;
 			this.total[index].streak = guess.streak;
-			this.total[index].nbGuesses++;
+			this.total[index].guessedRounds++;
 		} else {
-			guess.nbGuesses = 1;
-			this.total.push(guess);
+			this.total.push({ ...guess, guessedRounds: 1 });
 		}
 	};
 
@@ -170,17 +183,20 @@ class Game {
 
 	/**
 	 * @param {string} user
-	 * @return {boolean}
+	 * @return {number} index
 	 */
-	hasGuessedThisRound = (user) => this.guesses.some((guess) => guess.user === user);
+	hasGuessedThisRound = (user) => this.guesses.findIndex((e) => e.user === user);
 
 	/**
 	 * @param  {string} user
 	 * @param  {Object} position {lat, lng}
 	 * @return {boolean}
 	 */
-	hasPastedPreviousGuess = (user, position) =>
-		this.previousGuesses[0].filter((guess) => guess.user === user && guess.position.lat === position.lat && guess.position.lng === position.lng).length > 0;
+	hasPastedPreviousGuess = (user, position) => {
+		const filter = (guess) => guess.user === user && guess.position.lat === position.lat && guess.position.lng === position.lng;
+		if (this.isMultiGuess) return this.guesses.filter(filter).length > 0;
+		return this.previousGuesses[0].filter(filter).length > 0;
+	};
 
 	/**
 	 * @return {Guess[]} sorted guesses by Distance
@@ -196,6 +212,11 @@ class Game {
 		Store.userAddVictory(scores[0].user);
 		return scores;
 	}
+
+	/**
+	 * @param {boolean} bool
+	 */
+	setMultiGuess = (bool) => (this.isMultiGuess = bool);
 
 	get mapName() {
 		return this.seed.mapName;

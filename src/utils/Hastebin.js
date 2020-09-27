@@ -9,13 +9,13 @@ class Hastebin {
 	 */
 	static makeHastebin = (scores, mapName) => {
 		let str = `# ${mapName} Total Highscores :
-${"=".repeat(mapName.length) + 19}
+${"=".repeat(mapName.length + 21)}
 `;
 		scores.forEach((score, index) => {
 			str += `
-${index + 1}.${index + 1 <= 10 ? "  " : " "}${score.username}${" ".repeat(30 - score.username.length)}${" ".repeat(5 - score.score.toString().length)}${
-				score.score
-			}[${score.nbGuesses}]`;
+${index + 1}.${index + 1 <= 10 ? "  " : " "}${score.username}${" ".repeat(30 - score.username.length)}${" ".repeat(5 - score.score.toString().length)}${score.score}[${
+				score.guessedRounds
+			}]`;
 		});
 		// 		if (location) {
 		// 			const url = `http://maps.google.com/maps?q=&layer=c&cbll=${location.lat},${location.lng}`;

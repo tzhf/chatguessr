@@ -1,16 +1,17 @@
 class Settings {
 	/**
-	 * @param  {string} channelName=""
-	 * @param  {string} botUsername=""
-	 * @param  {string} token=""
-	 * @param  {string} guessCmd="!g"
-	 * @param  {string} userGetStatsCmd="!me"
-	 * @param  {string} userClearStatsCmd="!clear"
-	 * @param  {string} clearAllStatsCmd="!clearall"
-	 * @param  {string} setStreakCmd="!setstreak"
-	 * @param  {boolean} showHasGuessed=true
-	 * @param  {boolean} noCar=false
-	 * @param  {boolean} noCompass=false
+	 * @param {string} channelName=""
+	 * @param {string} botUsername=""
+	 * @param {string} token=""
+	 * @param {string} guessCmd="!g"
+	 * @param {string} userGetStatsCmd="!me"
+	 * @param {string} userClearStatsCmd="!clear"
+	 * @param {string} clearAllStatsCmd="!clearall"
+	 * @param {string} setStreakCmd="!setstreak"
+	 * @param {boolean} showHasGuessed=true
+	 * @param {boolean} isMultiGuess=false
+	 * @param {boolean} noCar=false
+	 * @param {boolean} noCompass=false
 	 */
 	constructor(
 		channelName = "",
@@ -22,6 +23,7 @@ class Settings {
 		clearAllStatsCmd = "!clearall",
 		setStreakCmd = "!setstreak",
 		showHasGuessed = true,
+		isMultiGuess = false,
 		noCar = false,
 		noCompass = false
 	) {
@@ -34,6 +36,7 @@ class Settings {
 		this.clearAllStatsCmd = clearAllStatsCmd;
 		this.setStreakCmd = setStreakCmd;
 		this.showHasGuessed = showHasGuessed;
+		this.isMultiGuess = isMultiGuess;
 		this.noCar = noCar;
 		this.noCompass = noCompass;
 	}
@@ -42,7 +45,8 @@ class Settings {
 	 * @param  {boolean} noCar
 	 * @param  {boolean} noCompass
 	 */
-	setGameSettings(noCar, noCompass) {
+	setGameSettings(isMultiGuess, noCar, noCompass) {
+		this.isMultiGuess = isMultiGuess;
 		this.noCar = noCar;
 		this.noCompass = noCompass;
 	}

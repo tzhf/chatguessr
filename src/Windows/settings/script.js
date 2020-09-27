@@ -11,6 +11,7 @@ const elements = [
 	clearAllStatsCmd,
 	setStreakCmd,
 	showHasGuessed,
+	isMultiGuess,
 	noCar,
 	noCompass,
 	clearStatsBtn,
@@ -29,6 +30,7 @@ ipcRenderer.on("render-settings", (e, settings) => {
 	clearAllStatsCmd.value = settings.clearAllStatsCmd;
 	setStreakCmd.value = settings.setStreakCmd;
 	showHasGuessed.checked = settings.showHasGuessed;
+	isMultiGuess.checked = settings.isMultiGuess;
 	noCar.checked = settings.noCar;
 	noCompass.checked = settings.noCompass;
 });
@@ -49,11 +51,19 @@ ipcRenderer.on("twitch-error", (e, error) => {
 });
 
 const gameSettingsForm = () => {
-	ipcRenderer.send("game-form", noCar.checked, noCompass.checked);
+	ipcRenderer.send("game-form", isMultiGuess.checked, noCar.checked, noCompass.checked);
 };
 
 const twitchCommandsForm = () => {
-	ipcRenderer.send("twitch-commands-form", guessCmd.value, userGetStatsCmd.value, userClearStatsCmd.value, clearAllStatsCmd.value, setStreakCmd.value, showHasGuessed.checked);
+	ipcRenderer.send(
+		"twitch-commands-form",
+		guessCmd.value,
+		userGetStatsCmd.value,
+		userClearStatsCmd.value,
+		clearAllStatsCmd.value,
+		setStreakCmd.value,
+		showHasGuessed.checked
+	);
 };
 
 const twitchSettingsForm = (e) => {

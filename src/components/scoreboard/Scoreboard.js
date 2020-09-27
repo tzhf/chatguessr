@@ -6,34 +6,33 @@ class Scoreboard {
 	 * @param  {string} css
 	 */
 	constructor(html, css) {
-		this.html = html;
-		this.css = css;
 		this.position;
-		this.scoreboardContainer;
+		this.container;
 		this.scoreboard;
-		this.scoreboardTitle;
+		this.title;
 		this.switchContainer;
 		this.switchBtn;
 		this.guessList;
-		this.init();
+		this.isMultiGuess;
+		this.init(html, css);
 	}
 
-	init() {
+	init(html, css) {
 		this.position = Store.getScoreboardPosition({ top: 55, left: 5, width: 390, height: 340 });
-		this.scoreboardContainer = document.createElement("div");
-		this.scoreboardContainer.setAttribute("id", "scoreboardContainer");
-		this.scoreboardContainer.innerHTML = this.html;
-		document.body.appendChild(this.scoreboardContainer);
+		this.container = document.createElement("div");
+		this.container.setAttribute("id", "scoreboardContainer");
+		this.container.innerHTML = html;
+		document.body.appendChild(this.container);
 
 		const style = document.createElement("style");
-		style.innerHTML = this.css;
+		style.innerHTML = css;
 		document.body.appendChild(style);
 
-		this.scoreboardTitle = this.scoreboardContainer.querySelector("#scoreboardTitle");
-		this.switchContainer = this.scoreboardContainer.querySelector("#switchContainer");
-		this.switchBtn = this.scoreboardContainer.querySelector("#switchBtn");
-		this.guessListContainer = this.scoreboardContainer.querySelector("#guessListContainer");
-		this.guessList = this.scoreboardContainer.querySelector("#guessList");
+		this.title = this.container.querySelector("#scoreboardTitle");
+		this.switchContainer = this.container.querySelector("#switchContainer");
+		this.switchBtn = this.container.querySelector("#switchBtn");
+		this.guessListContainer = this.container.querySelector("#guessListContainer");
+		this.guessList = this.container.querySelector("#guessList");
 
 		this.scoreboard = $("#scoreboard");
 		this.scoreboard.css("top", this.position.top);
@@ -67,6 +66,31 @@ class Scoreboard {
 		});
 	}
 
+	/**
+	 * @param {boolean} isMultiGuess
+	 */
+	show = (isMultiGuess) => {
+		this.isMultiGuess = isMultiGuess;
+		this.setMultiGuessStyle();
+		this.container.style.display = "block";
+	};
+
+	hide = () => (this.container.style.display = "none");
+
+	setMultiGuessStyle = () => {
+		const style = document.getElementById("multiGuess");
+		if (this.isMultiGuess) {
+			if (!style) {
+				const style = document.createElement("style");
+				style.id = "multiGuess";
+				style.innerHTML = `.guess-list-header{display:none;}.guess-item{display:block;}`;
+				document.body.appendChild(style);
+			}
+		} else {
+			if (style) style.remove();
+		}
+	};
+
 	renderGuess = (guess) => {
 		const guessItem = document.createElement("DIV");
 		guessItem.className = "guess-item expand";
@@ -80,17 +104,35 @@ class Scoreboard {
 		this.guessList.appendChild(guessItem);
 	};
 
+	renderMultiGuess = (guess) => {
+		let guessItem = document.getElementById(`guess-${guess.user}`);
+		if (!guessItem) {
+			guessItem = document.createElement("DIV");
+			guessItem.className = "guess-item expand";
+			guessItem.id = `guess-${guess.user}`;
+			guessItem.innerHTML = `
+				<span class="username truncate-long-text" style="color:${guess.color}">${guess.username} guessed</span>
+			`;
+			this.guessList.appendChild(guessItem);
+		} else {
+			guessItem.remove();
+			this.guessList.appendChild(guessItem);
+		}
+	};
+
 	displayScores = (scores, isTotal) => {
+		const style = document.getElementById("multiGuess");
+		if (style) style.remove();
 		let html = "";
 		scores.forEach((guess, index) => {
-			const color = index == 0 ? "#FFD700" : index == 1 ? "#C9C9C9" : index == 2 ? "#B27F60" : guess.color;
+			const color = index == 0 ? "#E3BB39" : index == 1 ? "#C9C9C9" : index == 2 ? "#A3682E" : guess.color;
 			html += `
 					<div class="guess-item expand">
 						<span>${index + 1}</span>
 						<span class="username truncate-long-text" style="color:${color}">${guess.username}</span>
 						<span>${guess.streak}</span>
 						<span>${this.toMeter(guess.distance)}</span>
-						<span>${guess.score} ${isTotal ? "[" + guess.nbGuesses + "]" : ""}</span>
+						<span>${guess.score}${isTotal ? " [" + guess.guessedRounds + "]" : ""}</span>
 					</div>
 				`;
 		});
@@ -106,9 +148,7 @@ class Scoreboard {
 
 	setPosition = (position) => (this.position = position);
 
-	setTitle = (title) => (this.scoreboardTitle.textContent = title);
-
-	show = (state) => (this.scoreboardContainer.style.display = state ? "block" : "none");
+	setTitle = (title) => (this.title.textContent = title);
 
 	showSwitch = (state) => (this.switchContainer.style.display = state ? "block" : "none");
 

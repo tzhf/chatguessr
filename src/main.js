@@ -58,13 +58,13 @@ const init = () => {
 	});
 
 	ipcMain.on("game-form", (e, isMultiGuess, noCar, noCompass) => {
-		mainWindow.webContents.send("game-settings-change", isMultiGuess, noCar, noCompass);
+		mainWindow.webContents.send("game-settings-change", noCar, noCompass);
 		settingsWindow.hide();
+		settings.setGameSettings(isMultiGuess, noCar, noCompass);
+		Store.setSettings(settings);
 		if (settings.noCar != noCar) {
 			mainWindow.reload(); // may cause issues when reloading in game
 		}
-		settings.setGameSettings(isMultiGuess, noCar, noCompass);
-		Store.setSettings(settings);
 	});
 
 	ipcMain.on("twitch-commands-form", (e, guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed) => {
@@ -128,8 +128,8 @@ const init = () => {
 
 	ipcMain.on("clearStats", () => clearStats());
 
-	// globalShortcut.register("CommandOrControl+R", () => false);
-	// globalShortcut.register("CommandOrControl+Shift+R", () => false);
+	globalShortcut.register("CommandOrControl+R", () => false);
+	globalShortcut.register("CommandOrControl+Shift+R", () => false);
 	globalShortcut.register("Escape", () => settingsWindow.hide());
 	globalShortcut.register("CommandOrControl+P", () => {
 		settingsWindow.webContents.send("render-settings", settings);

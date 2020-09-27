@@ -43,23 +43,25 @@ const init = (scoreboard) => {
 
 	const hideTopBar = document.createElement("style");
 	hideTopBar.innerHTML = `.layout{--layout-header-height:0rem;}.header__right{display:none;}.game-layout__panorama-canvas{height:100%;}.header__logo-image{margin-top: 10px;opacity: 0.9;}`;
-	ipcRenderer.on("in-game", (e, noCar, noCompass) => {
+
+	ipcRenderer.on("in-game", (e, isMultiGuess, noCar, noCompass) => {
 		document.body.appendChild(hideTopBar);
 		scoreboard.setTitle("GUESSES (0)");
-		scoreboard.show(true);
+		scoreboard.show(isMultiGuess);
 		drParseNoCar(noCar);
 		drParseNoCompass(noCompass);
 	});
 
 	ipcRenderer.on("out-game", () => {
 		hideTopBar.remove();
-		scoreboard.show(false);
+		scoreboard.hide();
 		scoreboard.emptyGuessList();
 		markerRemover.remove();
 		clearMarkers();
 	});
 
 	ipcRenderer.on("next-round", () => {
+		scoreboard.setMultiGuessStyle();
 		scoreboard.setTitle("GUESSES (0)");
 		scoreboard.showSwitch(true);
 		scoreboard.emptyGuessList();
@@ -69,9 +71,14 @@ const init = (scoreboard) => {
 		}, 500);
 	});
 
-	ipcRenderer.on("render-user-guess", (e, guess, nbGuesses) => {
+	ipcRenderer.on("render-guess", (e, guess, nbGuesses) => {
 		scoreboard.setTitle(`GUESSES (${nbGuesses})`);
 		scoreboard.renderGuess(guess);
+	});
+
+	ipcRenderer.on("render-multiguess", (e, guess, nbGuesses) => {
+		scoreboard.setTitle(`GUESSES (${nbGuesses})`);
+		scoreboard.renderMultiGuess(guess);
 	});
 
 	ipcRenderer.on("pre-round-results", () => {
@@ -102,10 +109,9 @@ let markers = [];
 let polylines = [];
 
 const populateMap = (location, guesses) => {
-	console.log("populateMap -> guesses", guesses);
 	const infowindow = new google.maps.InfoWindow();
-	// let bounds = new google.maps.LatLngBounds();
-	const markerIcon = {
+	const bounds = new google.maps.LatLngBounds();
+	const icon = {
 		path: `M13.04,41.77c-0.11-1.29-0.35-3.2-0.99-5.42c-0.91-3.17-4.74-9.54-5.49-10.79c-3.64-6.1-5.46-9.21-5.45-12.07
 			c0.03-4.57,2.77-7.72,3.21-8.22c0.52-0.58,4.12-4.47,9.8-4.17c4.73,0.24,7.67,3.23,8.45,4.07c0.47,0.51,3.22,3.61,3.31,8.11
 			c0.06,3.01-1.89,6.26-5.78,12.77c-0.18,0.3-4.15,6.95-5.1,10.26c-0.64,2.24-0.89,4.17-1,5.48C13.68,41.78,13.36,41.78,13.04,41.77z
@@ -120,25 +126,25 @@ const populateMap = (location, guesses) => {
 	};
 
 	const locationMarker = new google.maps.Marker({
-		position: { lat: location.lat, lng: location.lng },
+		position: location,
 		url: `http://maps.google.com/maps?q=&layer=c&cbll=${location.lat},${location.lng}`,
-		icon: markerIcon,
+		icon: icon,
 		map: MAP,
 	});
 	google.maps.event.addListener(locationMarker, "click", () => {
 		window.open(locationMarker.url, "_blank");
 	});
 	markers.push(locationMarker);
-	// bounds.extend({ lat: location.lat, lng: location.lng });
+	bounds.extend(location);
 
-	markerIcon.scale = 1;
+	icon.scale = 1;
 	guesses.forEach((guess, index) => {
-		const color = index == 0 ? "#FFD700" : index == 1 ? "#C9C9C9" : index == 2 ? "#B27F60" : guess.color;
-		markerIcon.fillColor = color;
+		const color = index == 0 ? "#E3BB39" : index == 1 ? "#C9C9C9" : index == 2 ? "#A3682E" : guess.color;
+		icon.fillColor = color;
 
 		const guessMarker = new google.maps.Marker({
 			position: guess.position,
-			icon: markerIcon,
+			icon: icon,
 			map: MAP,
 			label: { color: "#000", fontWeight: "bold", fontSize: "16px", text: `${index + 1}` },
 		});
@@ -156,7 +162,7 @@ const populateMap = (location, guesses) => {
 			infowindow.close();
 		});
 		markers.push(guessMarker);
-		// bounds.extend({ lat: guess.location.lat, lng: guess.location.lng });
+		bounds.extend(guess.position);
 
 		polylines.push(
 			new google.maps.Polyline({
@@ -165,14 +171,11 @@ const populateMap = (location, guesses) => {
 				strokeOpacity: 0.6,
 				geodesic: true,
 				map: MAP,
-				path: [
-					{ lat: guess.position.lat, lng: guess.position.lng },
-					{ lat: location.lat, lng: location.lng },
-				],
+				path: [guess.position, location],
 			})
 		);
 	});
-	// MAP.fitBounds(bounds);
+	MAP.fitBounds(bounds);
 };
 
 const clearMarkers = () => {
@@ -240,13 +243,12 @@ const hijackMap = () => {
 	GOOGLE_MAPS_PROMISE.then(() => {
 		runAsClient(() => {
 			const google = window.google;
-			const isGamePage = () =>
-				location.pathname.startsWith("/challenge/") ||
-				location.pathname.startsWith("/results/") ||
-				location.pathname.startsWith("/game/");
+			const isGamePage = () => location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
 			const onMapUpdate = (map) => {
 				try {
+					console.log("not in game");
 					if (!isGamePage()) return;
+					console.log("MAP found");
 					MAP = map;
 				} catch (error) {
 					console.error("GeoguessrHijackMap Error:", error);

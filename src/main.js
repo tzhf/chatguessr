@@ -58,19 +58,19 @@ const init = () => {
 	});
 
 	ipcMain.on("game-form", (e, isMultiGuess, noCar, noCompass) => {
-		mainWindow.webContents.send("game-settings-change", noCar, noCompass);
 		settingsWindow.hide();
-		settings.setGameSettings(isMultiGuess, noCar, noCompass);
-		Store.setSettings(settings);
+		mainWindow.webContents.send("game-settings-change", noCar, noCompass);
 		if (settings.noCar != noCar) {
 			mainWindow.reload(); // may cause issues when reloading in game
 		}
+		settings.setGameSettings(isMultiGuess, noCar, noCompass);
+		Store.setSettings(settings);
 	});
 
 	ipcMain.on("twitch-commands-form", (e, guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed) => {
+		settingsWindow.hide();
 		settings.setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed);
 		Store.setSettings(settings);
-		settingsWindow.hide();
 	});
 
 	ipcMain.on("twitch-settings-form", (e, channelName, botUsername, token) => {

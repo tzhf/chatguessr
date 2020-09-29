@@ -79,7 +79,7 @@ class RoomSocket{
 // TODO: Uncomment this to run this file from console using node as an example.
 // Create an instance of this class where you really consider it appropriate.
 
-
+/*
 const RS = new RoomSocket();
 
 // Replace "test" with the real bot name in all lowercase (for consistency)
@@ -89,7 +89,7 @@ RS.addBot("test").then((res) => {
 .catch((error) => {
     console.log(error);
 });
-
+*/
 
 module.exports = RoomSocket;
 

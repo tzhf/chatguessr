@@ -10,7 +10,7 @@ const defaultProps = {
 	maximizable: false,
 	transparent: true,
 	webPreferences: {
-		devTools: false,
+		// devTools: false,
 		nodeIntegration: true,
 	},
 };

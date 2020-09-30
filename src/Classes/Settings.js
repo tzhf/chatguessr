@@ -49,18 +49,14 @@ class Settings {
 	}
 
 	/**
-	 * @param {string} guessCmd
-	 * @param {string} userGetStatsCmd
-	 * @param {string} userClearStatsCmd
-	 * @param {string} setStreakCmd
-	 * @param {boolean} showHasGuessed
+	 * @param {Object} commands
 	 */
-	setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, setStreakCmd, showHasGuessed) {
-		this.guessCmd = guessCmd;
-		this.userGetStatsCmd = userGetStatsCmd;
-		this.userClearStatsCmd = userClearStatsCmd;
-		this.setStreakCmd = setStreakCmd;
-		this.showHasGuessed = showHasGuessed;
+	setTwitchCommands(commands) {
+		this.guessCmd = commands.guess;
+		this.userGetStatsCmd = commands.userGetStats;
+		this.userClearStatsCmd = commands.userClearStats;
+		this.setStreakCmd = commands.setStreak;
+		this.showHasGuessed = commands.showHasGuessed;
 	}
 
 	/**

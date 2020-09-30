@@ -23,8 +23,8 @@ const initWindows = () => {
 	settingsWindow.setParentWindow(mainWindow);
 
 	ipcMain.on("game-form", (e, isMultiGuess, noCar, noCompass) => {
-		settingsWindow.hide();
 		mainWindow.webContents.send("game-settings-change", noCar, noCompass);
+		settingsWindow.hide();
 
 		if (settings.noCar != noCar) {
 			mainWindow.reload(); // may cause issues when reloading in game
@@ -33,9 +33,9 @@ const initWindows = () => {
 		Store.setSettings(settings);
 	});
 
-	ipcMain.on("twitch-commands-form", (e, guessCmd, userGetStatsCmd, userClearStatsCmd, setStreakCmd, showHasGuessed) => {
+	ipcMain.on("twitch-commands-form", (e, commands) => {
 		settingsWindow.hide();
-		settings.setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, setStreakCmd, showHasGuessed);
+		settings.setTwitchCommands(commands);
 		Store.setSettings(settings);
 	});
 
@@ -56,7 +56,6 @@ const initWindows = () => {
 };
 
 const gameHandlers = () => {
-	console.log("yes");
 	mainWindow.webContents.on("did-navigate-in-page", (e, url) => {
 		if (GameHelper.isGameURL(url)) {
 			game.setMultiGuess(settings.isMultiGuess);
@@ -165,7 +164,7 @@ const initTmi = () => {
 
 	client
 		.connect()
-		.then(tmiListening())
+		.then(tmiListening)
 		.catch((error) => {
 			settingsWindow.webContents.send("twitch-error", error);
 			console.error(error);

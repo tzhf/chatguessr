@@ -46,6 +46,7 @@ ipcRenderer.on("twitch-disconnected", () => {
 
 ipcRenderer.on("twitch-error", (e, error) => {
 	twitchStatus.textContent = error;
+	twitchStatus.style.color = "#ed2453";
 });
 
 const gameSettingsForm = () => {
@@ -53,7 +54,13 @@ const gameSettingsForm = () => {
 };
 
 const twitchCommandsForm = () => {
-	ipcRenderer.send("twitch-commands-form", guessCmd.value, userGetStatsCmd.value, userClearStatsCmd.value, setStreakCmd.value, showHasGuessed.checked);
+	ipcRenderer.send("twitch-commands-form", {
+		guess: guessCmd.value,
+		userGetStats: userGetStatsCmd.value,
+		userClearStats: userClearStatsCmd.value,
+		setStreak: setStreakCmd.value,
+		showHasGuessed: showHasGuessed.checked,
+	});
 };
 
 const twitchSettingsForm = (e) => {

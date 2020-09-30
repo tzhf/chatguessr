@@ -116,7 +116,7 @@ let polylines = [];
 
 const populateMap = (location, guesses) => {
 	const infowindow = new google.maps.InfoWindow();
-	const bounds = new google.maps.LatLngBounds();
+	// const bounds = new google.maps.LatLngBounds();
 	const icon = {
 		path: `M13.04,41.77c-0.11-1.29-0.35-3.2-0.99-5.42c-0.91-3.17-4.74-9.54-5.49-10.79c-3.64-6.1-5.46-9.21-5.45-12.07
 			c0.03-4.57,2.77-7.72,3.21-8.22c0.52-0.58,4.12-4.47,9.8-4.17c4.73,0.24,7.67,3.23,8.45,4.07c0.47,0.51,3.22,3.61,3.31,8.11
@@ -141,7 +141,7 @@ const populateMap = (location, guesses) => {
 		window.open(locationMarker.url, "_blank");
 	});
 	markers.push(locationMarker);
-	bounds.extend(location);
+	// bounds.extend(location);
 
 	icon.scale = 1;
 	guesses.forEach((guess, index) => {
@@ -168,7 +168,7 @@ const populateMap = (location, guesses) => {
 			infowindow.close();
 		});
 		markers.push(guessMarker);
-		bounds.extend(guess.position);
+		// bounds.extend(guess.position);
 
 		polylines.push(
 			new google.maps.Polyline({
@@ -181,7 +181,7 @@ const populateMap = (location, guesses) => {
 			})
 		);
 	});
-	MAP.fitBounds(bounds);
+	// MAP.fitBounds(bounds);
 };
 
 const clearMarkers = () => {

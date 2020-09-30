@@ -4,6 +4,7 @@ const store = new ElectronStore();
 const User = require("../Classes/User");
 const Settings = require("../Classes/Settings");
 
+store.clear();
 class Store {
 	/**
 	 * @param {string} key

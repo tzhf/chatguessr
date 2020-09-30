@@ -17,11 +17,46 @@ let client;
 let mainWindow;
 let settingsWindow;
 
-const init = () => {
+const initWindows = () => {
 	mainWindow = new MainWindow();
 	settingsWindow = new SettingsWindow();
 	settingsWindow.setParentWindow(mainWindow);
 
+	ipcMain.on("game-form", (e, isMultiGuess, noCar, noCompass) => {
+		settingsWindow.hide();
+		mainWindow.webContents.send("game-settings-change", noCar, noCompass);
+
+		if (settings.noCar != noCar) {
+			mainWindow.reload(); // may cause issues when reloading in game
+		}
+		settings.setGameSettings(isMultiGuess, noCar, noCompass);
+		Store.setSettings(settings);
+	});
+
+	ipcMain.on("twitch-commands-form", (e, guessCmd, userGetStatsCmd, userClearStatsCmd, setStreakCmd, showHasGuessed) => {
+		settingsWindow.hide();
+		settings.setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, setStreakCmd, showHasGuessed);
+		Store.setSettings(settings);
+	});
+
+	ipcMain.on("twitch-settings-form", (e, channelName, botUsername, token) => {
+		settings.setTwitchSettings(channelName, botUsername, token);
+		Store.setSettings(settings);
+		if (client && client.readyState() === "OPEN") client.disconnect();
+		initTmi();
+	});
+
+	// globalShortcut.register("CommandOrControl+R", () => false);
+	// globalShortcut.register("CommandOrControl+Shift+R", () => false);
+	globalShortcut.register("Escape", () => settingsWindow.hide());
+	globalShortcut.register("CommandOrControl+P", () => {
+		settingsWindow.webContents.send("render-settings", settings);
+		settingsWindow.show();
+	});
+};
+
+const gameHandlers = () => {
+	console.log("yes");
 	mainWindow.webContents.on("did-navigate-in-page", (e, url) => {
 		if (GameHelper.isGameURL(url)) {
 			game.setMultiGuess(settings.isMultiGuess);
@@ -48,6 +83,7 @@ const init = () => {
 					nextRoundBtn.addEventListener("click", () => ipcRenderer.send('next-round-click'));
 				}
 			`);
+
 		if (game.seed.timeLimit != 0 && game.seed.state != "finished") {
 			GameHelper.fetchSeed(game.url).then((seedData) => {
 				if (seedData.round != game.round || seedData.state === "finished") {
@@ -57,30 +93,8 @@ const init = () => {
 		}
 	});
 
-	ipcMain.on("game-form", (e, isMultiGuess, noCar, noCompass) => {
-		settingsWindow.hide();
-		mainWindow.webContents.send("game-settings-change", noCar, noCompass);
-		if (settings.noCar != noCar) {
-			mainWindow.reload(); // may cause issues when reloading in game
-		}
-		settings.setGameSettings(isMultiGuess, noCar, noCompass);
-		Store.setSettings(settings);
-	});
-
-	ipcMain.on("twitch-commands-form", (e, guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed) => {
-		settingsWindow.hide();
-		settings.setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed);
-		Store.setSettings(settings);
-	});
-
-	ipcMain.on("twitch-settings-form", (e, channelName, botUsername, token) => {
-		settings.setTwitchSettings(channelName, botUsername, token);
-		Store.setSettings(settings);
-		if (client && client.readyState() === "OPEN") client.disconnect();
-		loadTmi();
-	});
-
 	ipcMain.on("open-guesses", () => openGuesses());
+
 	const openGuesses = () => {
 		game.openGuesses();
 		mainWindow.webContents.send("switch-on");
@@ -91,23 +105,25 @@ const init = () => {
 		closeGuesses();
 		client.action(settings.channelName, "Guesses are closed.");
 	});
+
 	const closeGuesses = () => {
 		game.closeGuesses();
 		mainWindow.webContents.send("switch-off");
 	};
 
 	ipcMain.on("make-guess-click", () => makeGuess());
+
 	const makeGuess = async () => {
 		closeGuesses();
 		mainWindow.webContents.send("pre-round-results");
 		await game.makeGuess(settings.channelName);
 		const scores = game.getRoundScores();
 		mainWindow.webContents.send("show-round-results", game.location, scores);
-
 		client.action(settings.channelName, `🌎 Round ${game.seed.state === "finished" ? game.round : game.round - 1} has finished. Congrats ${scores[0].username}!`);
 	};
 
 	ipcMain.on("next-round-click", () => nextRound());
+
 	const nextRound = () => {
 		game.nextRound();
 		if (game.seed.state === "finished") {
@@ -127,18 +143,9 @@ const init = () => {
 	};
 
 	ipcMain.on("clearStats", () => clearStats());
-
-	globalShortcut.register("CommandOrControl+R", () => false);
-	globalShortcut.register("CommandOrControl+Shift+R", () => false);
-	globalShortcut.register("Escape", () => settingsWindow.hide());
-	globalShortcut.register("CommandOrControl+P", () => {
-		settingsWindow.webContents.send("render-settings", settings);
-		settingsWindow.show();
-	});
 };
 
-const loadTmi = () => {
-	if (!settings.channelName) return;
+const initTmi = () => {
 	const options = {
 		options: { debug: true },
 		connection: {
@@ -151,22 +158,26 @@ const loadTmi = () => {
 		},
 		channels: [settings.channelName],
 	};
+	// @ts-ignore
 	client = new tmi.Client(options);
+
+	if (!settings.channelName) return;
+
 	client
 		.connect()
-		.then(() => tmiListening())
+		.then(tmiListening())
 		.catch((error) => {
 			settingsWindow.webContents.send("twitch-error", error);
 			console.error(error);
 		});
-};
 
-const tmiListening = () => {
 	client.on("connected", () => {
 		settingsWindow.webContents.send("twitch-connected");
 		client.action(settings.channelName, "is now connected");
 	});
+};
 
+const tmiListening = () => {
 	client.on("disconnected", () => {
 		settingsWindow.webContents.send("twitch-disconnected");
 	});
@@ -176,12 +187,13 @@ const tmiListening = () => {
 		if (game.guessesOpen && message.startsWith(settings.guessCmd)) {
 			message = message.split(settings.guessCmd)[1].trim();
 			if (!GameHelper.isCoordinates(message)) return;
+
 			const guessLocation = { lat: parseFloat(message.split(",")[0]), lng: parseFloat(message.split(",")[1]) };
 			game.processUserGuess(userstate, guessLocation).then((res) => {
 				if (res === "alreadyGuessed") return client.say(settings.channelName, `${userstate["display-name"]} you already guessed`);
 				if (res === "pastedPreviousGuess") return client.say(settings.channelName, `${userstate["display-name"]} you pasted your previous guess :)`);
-				const { guess, nbGuesses } = res;
 
+				const { guess, nbGuesses } = res;
 				if (game.isMultiGuess) {
 					mainWindow.webContents.send("render-multiguess", guess, nbGuesses);
 					if (guess.guessChanged && settings.showHasGuessed) return client.say(settings.channelName, `${userstate["display-name"]} guess changed`);
@@ -230,26 +242,29 @@ const tmiListening = () => {
 		if (message.toLowerCase() === settings.userClearStatsCmd) {
 			const userInfo = Store.getUser(userstate.username);
 			if (!userInfo) return client.say(channel, `${userstate["display-name"]} you've never guessed yet.`);
+
 			Store.deleteUser(userstate.username);
 			return client.say(channel, `${userstate["display-name"]} 🗑️ stats cleared !`);
 		}
 
-		if (userstate.username != settings.channelName) return; //! streamer commands
+		//! streamer commands
+		if (userstate.username != settings.channelName) return;
 
 		if (message.toLowerCase().startsWith(settings.setStreakCmd)) {
 			const msgArr = message.split(" ");
 			if (msgArr.length != 3) return client.action(channel, `Valid command: ${settings.setStreakCmd} user 42`);
+
 			const newStreak = parseFloat(msgArr[2]);
 			if (!Number.isInteger(newStreak)) return client.action(channel, `Invalid number.`);
 			if (msgArr[1].charAt(0) === "@") msgArr[1] = msgArr[1].substring(1);
+
 			const user = msgArr[1].toLowerCase();
 			const storedUser = Store.getUser(user);
 			if (!storedUser) return client.action(channel, `${user} has never guessed.`);
+
 			Store.setUserStreak(user, newStreak);
 			return client.action(channel, `${user} streak set to ${newStreak}`);
 		}
-
-		if (message.toLowerCase() === settings.clearAllStatsCmd) clearStats();
 	});
 };
 
@@ -258,4 +273,4 @@ const clearStats = () => {
 	client.action(settings.channelName, "🗑️ All stats have been cleared.");
 };
 
-app.whenReady().then(init).then(loadTmi);
+app.whenReady().then(initWindows).then(initTmi).then(gameHandlers);

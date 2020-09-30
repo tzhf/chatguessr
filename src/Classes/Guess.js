@@ -11,7 +11,7 @@ class Guess {
 	constructor(user, username, color, position, distance, score, streak) {
 		this.user = user;
 		this.username = username;
-		this.color = color;
+		this.color = color === null ? "#FFFFFF" : color;
 		this.position = position;
 		this.distance = distance;
 		this.score = score;

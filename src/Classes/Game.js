@@ -96,7 +96,6 @@ class Game {
 			this.guesses.push(guess);
 		}
 
-		// this.previousGuesses[1].push(guess);
 		return { guess: guess, nbGuesses: this.guesses.length };
 	};
 

@@ -6,7 +6,6 @@ class Settings {
 	 * @param {string} guessCmd="!g"
 	 * @param {string} userGetStatsCmd="!me"
 	 * @param {string} userClearStatsCmd="!clear"
-	 * @param {string} clearAllStatsCmd="!clearall"
 	 * @param {string} setStreakCmd="!setstreak"
 	 * @param {boolean} showHasGuessed=true
 	 * @param {boolean} isMultiGuess=false
@@ -20,7 +19,6 @@ class Settings {
 		guessCmd = "!g",
 		userGetStatsCmd = "!me",
 		userClearStatsCmd = "!clear",
-		clearAllStatsCmd = "!clearall",
 		setStreakCmd = "!setstreak",
 		showHasGuessed = true,
 		isMultiGuess = false,
@@ -33,7 +31,6 @@ class Settings {
 		this.guessCmd = guessCmd;
 		this.userGetStatsCmd = userGetStatsCmd;
 		this.userClearStatsCmd = userClearStatsCmd;
-		this.clearAllStatsCmd = clearAllStatsCmd;
 		this.setStreakCmd = setStreakCmd;
 		this.showHasGuessed = showHasGuessed;
 		this.isMultiGuess = isMultiGuess;
@@ -42,8 +39,8 @@ class Settings {
 	}
 
 	/**
-	 * @param  {boolean} noCar
-	 * @param  {boolean} noCompass
+	 * @param {boolean} noCar
+	 * @param {boolean} noCompass
 	 */
 	setGameSettings(isMultiGuess, noCar, noCompass) {
 		this.isMultiGuess = isMultiGuess;
@@ -52,26 +49,24 @@ class Settings {
 	}
 
 	/**
-	 * @param  {string} guessCmd
-	 * @param  {string} userGetStatsCmd
-	 * @param  {string} userClearStatsCmd
-	 * @param  {string} clearAllStatsCmd
-	 * @param  {string} setStreakCmd
-	 * @param  {boolean} showHasGuessed
+	 * @param {string} guessCmd
+	 * @param {string} userGetStatsCmd
+	 * @param {string} userClearStatsCmd
+	 * @param {string} setStreakCmd
+	 * @param {boolean} showHasGuessed
 	 */
-	setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, clearAllStatsCmd, setStreakCmd, showHasGuessed) {
+	setTwitchCommands(guessCmd, userGetStatsCmd, userClearStatsCmd, setStreakCmd, showHasGuessed) {
 		this.guessCmd = guessCmd;
 		this.userGetStatsCmd = userGetStatsCmd;
 		this.userClearStatsCmd = userClearStatsCmd;
-		this.clearAllStatsCmd = clearAllStatsCmd;
 		this.setStreakCmd = setStreakCmd;
 		this.showHasGuessed = showHasGuessed;
 	}
 
 	/**
-	 * @param  {string} channelName
-	 * @param  {string} botUsername
-	 * @param  {string} token
+	 * @param {string} channelName
+	 * @param {string} botUsername
+	 * @param {string} token
 	 */
 	setTwitchSettings(channelName, botUsername, token) {
 		this.channelName = channelName;

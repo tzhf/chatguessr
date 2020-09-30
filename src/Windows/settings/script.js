@@ -8,7 +8,6 @@ const elements = [
 	guessCmd,
 	userGetStatsCmd,
 	userClearStatsCmd,
-	clearAllStatsCmd,
 	setStreakCmd,
 	showHasGuessed,
 	isMultiGuess,
@@ -27,7 +26,6 @@ ipcRenderer.on("render-settings", (e, settings) => {
 	guessCmd.value = settings.guessCmd;
 	userGetStatsCmd.value = settings.userGetStatsCmd;
 	userClearStatsCmd.value = settings.userClearStatsCmd;
-	clearAllStatsCmd.value = settings.clearAllStatsCmd;
 	setStreakCmd.value = settings.setStreakCmd;
 	showHasGuessed.checked = settings.showHasGuessed;
 	isMultiGuess.checked = settings.isMultiGuess;
@@ -55,15 +53,7 @@ const gameSettingsForm = () => {
 };
 
 const twitchCommandsForm = () => {
-	ipcRenderer.send(
-		"twitch-commands-form",
-		guessCmd.value,
-		userGetStatsCmd.value,
-		userClearStatsCmd.value,
-		clearAllStatsCmd.value,
-		setStreakCmd.value,
-		showHasGuessed.checked
-	);
+	ipcRenderer.send("twitch-commands-form", guessCmd.value, userGetStatsCmd.value, userClearStatsCmd.value, setStreakCmd.value, showHasGuessed.checked);
 };
 
 const twitchSettingsForm = (e) => {
@@ -83,7 +73,7 @@ const clearStatsConfirm = () => {
 };
 
 const openTab = (evt, tab) => {
-	let tabcontent = document.getElementsByClassName("tabcontent");
+	const tabcontent = document.getElementsByClassName("tabcontent");
 	for (let i = 0; i < tabcontent.length; i++) {
 		tabcontent[i].style.display = "none";
 	}

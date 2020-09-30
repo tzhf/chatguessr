@@ -6,7 +6,7 @@ const defaultProps = {
 	webPreferences: {
 		preload: path.join(__dirname, "../preload.js"),
 		enableRemoteModule: true,
-		devTools: false,
+		// devTools: false,
 	},
 };
 
@@ -17,9 +17,7 @@ class MainWindow extends BrowserWindow {
 		this.setMenuBarVisibility(false);
 		this.loadURL("https://www.geoguessr.com");
 		this.maximize();
-		this.once("ready-to-show", () => {
-			this.show();
-		});
+		this.once("ready-to-show", () => this.show());
 
 		this.webContents.on("new-window", (e, link) => {
 			e.preventDefault();

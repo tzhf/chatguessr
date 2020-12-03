@@ -221,9 +221,7 @@ const tmiListening = () => {
 		message = message.toLowerCase();
 
 		if (message === settings.userGetStatsCmd) {
-			console.log(userstate.username);
 			const userInfo = Store.getUser(userstate.username);
-			console.log(userInfo);
 			if (userInfo) {
 				return client.say(
 					channel,

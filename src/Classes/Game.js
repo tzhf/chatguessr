@@ -39,7 +39,7 @@ class Game {
 	nextRound = async () => {
 		this.location = this.getLocation();
 		this.country = await GameHelper.getCountryCode(this.location);
-		console.log("next country: " + this.country);
+		// console.log("next country: " + this.country);
 		this.guesses = [];
 	};
 
@@ -68,6 +68,7 @@ class Game {
 	 */
 	processUserGuess = async (userstate, userGuess) => {
 		const index = this.hasGuessedThisRound(userstate.username);
+
 		if (!this.isMultiGuess && index != -1) return "alreadyGuessed";
 		if (this.hasPastedPreviousGuess(userstate.username, userGuess)) return "pastedPreviousGuess";
 
@@ -86,7 +87,7 @@ class Game {
 		user.nbGuesses++;
 		Store.saveUser(userstate.username, user);
 
-		const guess = new Guess(userstate.username, userstate["display-name"], userstate.color, userGuess, distance, score, user.streak);
+		const guess = new Guess(userstate.username, userstate["display-name"], userstate.color, user.flag, userGuess, distance, score, user.streak);
 
 		// Modify guess or push it
 		if (this.isMultiGuess && index != -1) {
@@ -96,7 +97,7 @@ class Game {
 			this.guesses.push(guess);
 		}
 
-		return { guess: guess, nbGuesses: this.guesses.length };
+		return { guess: guess, user: user, nbGuesses: this.guesses.length };
 	};
 
 	/**
@@ -109,7 +110,7 @@ class Game {
 				setTimeout(async () => {
 					const newSeed = await GameHelper.fetchSeed(this.url);
 					if (i <= 30 && newSeed.round === this.seed.round && newSeed.state != "finished") {
-						console.log(`fetched round ${newSeed.round}. Same round. Try again`);
+						// console.log(`fetched round ${newSeed.round}. Same round. Try again`);
 						fetchNextRound();
 						i++;
 					} else {
@@ -150,7 +151,8 @@ class Game {
 	processStreamerGuess = async (channelName) => {
 		let i = 2;
 		if (this.seed.state === "finished") i = 1;
-		const streamer = Store.getOrCreateUser(channelName, channelName);
+		const streamer = Store.getOrCreateUser(channelName.toLowerCase(), channelName);
+		console.log(streamer);
 		const streamerGuess = this.seed.player.guesses[this.seed.round - i];
 		const guessPosition = { lat: streamerGuess.lat, lng: streamerGuess.lng };
 
@@ -164,9 +166,9 @@ class Game {
 		streamer.calcMeanScore(score);
 
 		streamer.nbGuesses++;
-		Store.saveUser(channelName, streamer);
+		Store.saveUser(channelName.toLowerCase(), streamer);
 
-		const guess = new Guess(channelName, channelName, "#4ddb7c", guessPosition, distance, score, streamer.streak);
+		const guess = new Guess(channelName, channelName, "#4ddb7c", streamer.flag, guessPosition, distance, score, streamer.streak);
 		this.guesses.push(guess);
 
 		this.guesses.forEach((guess) => this.pushToTotal(guess));
@@ -183,18 +185,17 @@ class Game {
 			this.total[index].score += guess.score;
 			this.total[index].distance += guess.distance;
 			this.total[index].streak = guess.streak;
+			this.total[index].color = guess.color;
+			this.total[index].flag = guess.flag;
 			this.total[index].guessedRounds++;
 		} else {
 			this.total.push({ ...guess, guessedRounds: 1 });
 		}
 	};
 
-	getLocation = (i = 1) => {
-		return {
-			lat: this.seed.rounds[this.seed.round - i].lat,
-			lng: this.seed.rounds[this.seed.round - i].lng,
-		};
-	};
+	getLocation = (i = 1) => this.seed.rounds[this.seed.round - i];
+
+	getLocations = () => this.seed.rounds;
 
 	checkUsersStreak = () => {
 		this.previousGuesses = [...this.guesses];

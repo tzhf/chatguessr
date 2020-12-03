@@ -13,7 +13,7 @@ class Preloader {
 		files.forEach((file) => {
 			promises.push(
 				fs
-					.readFile(path.join(__dirname, `../components/${file}`), "utf8")
+					.readFile(path.join(__dirname, `../public/${file}`), "utf8")
 					.then((data) => data.toString())
 					.catch((error) => error)
 			);
@@ -21,7 +21,7 @@ class Preloader {
 
 		return Promise.all(promises)
 			.then((res) => {
-				console.log("files loaded");
+				// console.log("files loaded");
 				return res;
 			})
 			.catch((error) => console.error("Something went wrong reading files:", error));

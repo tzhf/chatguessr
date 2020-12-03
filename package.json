@@ -1,6 +1,6 @@
 {
 	"name": "chatguessr",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "Chatbot for Geoguessr",
 	"main": "./src/main.js",
 	"scripts": {
@@ -9,7 +9,7 @@
 		"dist": "electron-builder",
 		"postinstall": "electron-builder install-app-deps"
 	},
-	"author": "MrAmericanMike & T.Zhf",
+	"author": "MrAmericanMike & T.ZHF",
 	"license": "ISC",
 	"devDependencies": {
 		"electron": "^9.1.0",
@@ -23,7 +23,7 @@
 		"tmi.js": "^1.5.0"
 	},
 	"build": {
-		"appId": "chatguessr",
+		"appId": "Chatguessr",
 		"productName": "Chatguessr",
 		"win": {
 			"target": "NSIS",

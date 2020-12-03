@@ -16,20 +16,23 @@
 
 			<div id="gameSettings" class="tabcontent">
 				<h2>Game Settings</h2>
-				<div data-tip="Allow users to change their guess. Streaks, scores & distances won't be displayed on the scoreboard.">
-					<label class="checkbox-container">Allow second guesses
+				<div data-tip="Allow users to change their guess. Streaks, scores & distances won't be displayed on the leaderboard.">
+					<label class="checkbox-container">
+						Multiguess mode
 						<input type="checkbox" id="isMultiGuess" />
 						<span class="checkmark"></span>
 					</label>
 				</div>
 				<div data-tip="Hide the google car.">
-					<label class="checkbox-container">No car
+					<label class="checkbox-container"
+						>No car
 						<input type="checkbox" id="noCar" />
 						<span class="checkmark"></span>
 					</label>
 				</div>
 				<div data-tip="Hide the compass.">
-					<label class="checkbox-container">No Compass
+					<label class="checkbox-container"
+						>No Compass
 						<input type="checkbox" id="noCompass" />
 						<span class="checkmark"></span>
 					</label>
@@ -41,7 +44,7 @@
 			<div id="twitchSettings" class="tabcontent">
 				<h2>Twitch Settings</h2>
 				<label class="checkbox-container">
-					Show "&lt;User&gt; guessed"
+					<div data-tip="Display &lt;User&gt; guessed in chat">Display guess confirmation</div>
 					<input type="checkbox" id="showHasGuessed" />
 					<span class="checkmark"></span>
 				</label>
@@ -82,6 +85,7 @@
 
 			<div id="twitchConnect" class="tabcontent">
 				<h2>Status: <span id="twitchStatus"></span></h2>
+				<span id="cgLink"></span>
 				<form name="twitch-form" onsubmit="twitchSettingsForm(event)">
 					<div class="form__group">
 						<div data-tip="Your streamer account">

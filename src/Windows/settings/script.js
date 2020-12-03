@@ -1,10 +1,11 @@
 const ipcRenderer = require("electron").ipcRenderer;
 
-const elements = [
+const elements = {
 	channelName,
 	botUsername,
 	token,
 	twitchStatus,
+	cgLink,
 	guessCmd,
 	userGetStatsCmd,
 	userClearStatsCmd,
@@ -14,10 +15,10 @@ const elements = [
 	noCar,
 	noCompass,
 	clearStatsBtn,
-];
-elements.forEach((element) => {
+};
+for (element in elements) {
 	element = document.getElementById(element);
-});
+}
 
 ipcRenderer.on("render-settings", (e, settings) => {
 	channelName.value = settings.channelName;
@@ -33,13 +34,23 @@ ipcRenderer.on("render-settings", (e, settings) => {
 	noCompass.checked = settings.noCompass;
 });
 
-ipcRenderer.on("twitch-connected", () => {
-	console.log("llo");
+ipcRenderer.on("twitch-connected", (e, botUsername) => {
+	const linkStr = `https://chatguessr.com/map/?bot=${botUsername}`;
+	const link = document.createElement("a");
+	link.href = linkStr;
+	link.innerText = linkStr;
+	link.setAttribute("target", "_blank");
+
+	cgLink.textContent = "Your cg link: ";
+	cgLink.appendChild(link);
+	cgLink.style.display = "block";
+
 	twitchStatus.textContent = "Connected";
 	twitchStatus.style.color = "#3fe077";
 });
 
 ipcRenderer.on("twitch-disconnected", () => {
+	cgLink.style.display = "none";
 	twitchStatus.textContent = "Disconnected";
 	twitchStatus.style.color = "#ed2453";
 });
@@ -79,16 +90,16 @@ const clearStatsConfirm = () => {
 	ipcRenderer.send("clearStats");
 };
 
-const openTab = (evt, tab) => {
+const openTab = (e, tab) => {
 	const tabcontent = document.getElementsByClassName("tabcontent");
 	for (let i = 0; i < tabcontent.length; i++) {
 		tabcontent[i].style.display = "none";
 	}
-	let tablinks = document.getElementsByClassName("tablinks");
+	const tablinks = document.getElementsByClassName("tablinks");
 	for (let i = 0; i < tablinks.length; i++) {
 		tablinks[i].className = tablinks[i].className.replace(" active", "");
 	}
 	document.getElementById(tab).style.display = "block";
-	evt.currentTarget.className += " active";
+	e.currentTarget.className += " active";
 };
 document.getElementById("defaultOpen").click();

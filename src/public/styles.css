@@ -8,12 +8,13 @@
 }
 
 /*  remove explorer mode and streak menu links */
-.default-sidebar-content .sidebar-anchor:nth-child(1) li:nth-child(-n+2) {
-	display:none
+.default-sidebar-content .sidebar-anchor:nth-child(1) li:nth-child(-n + 2) {
+	display: none;
 }
 
 /* removing streaks, education banners */
-.streak-banner, .education-banner {
+.streak-banner,
+.education-banner {
 	display: none;
 }
 
@@ -29,7 +30,7 @@
 
 /* results containers */
 .result__rating-container,
-.result__more  {
+.result__more {
 	display: none;
 }
 .result__bottom-card {

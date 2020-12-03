@@ -1,80 +1,98 @@
 const Preloader = require("./utils/Preloader");
-const Scoreboard = require("./components/scoreboard/Scoreboard");
+const Scoreboard = require("./public/scoreboard/Scoreboard");
 
-let styles, jQuery, jQueryUI, scoreboardHTML, scoreboardCSS;
+let styles, jQuery, jQueryUI, datatables, scoreboardHTML, scoreboardCSS, flagIcon;
 
 (async function preload() {
-	[styles, jQuery, jQueryUI, scoreboardHTML, scoreboardCSS] = await Preloader.preload([
+	[styles, jQuery, jQueryUI, datatables, scoreboardHTML, scoreboardCSS, flagIcon] = await Preloader.preload([
 		"styles.css",
 		"jquery.min.js",
 		"jquery-ui.min.js",
+		"datatables.bundle.min.js",
 		"scoreboard/scoreboard.html",
 		"scoreboard/scoreboard.css",
+		"flag-icon.min.css",
 	]);
 })();
 
 window.addEventListener("DOMContentLoaded", async () => {
-	console.log("DOM loaded");
+	// console.log("DOM loaded");
 	window.ipcRenderer = require("electron").ipcRenderer;
 	window.MAP = null;
 
-	loadScripts(styles, jQuery, jQueryUI);
-	const scoreboard = new Scoreboard(scoreboardHTML, scoreboardCSS);
+	loadScripts(styles, jQuery, jQueryUI, datatables, flagIcon);
+
+	const scoreboardContainer = document.createElement("div");
+	scoreboardContainer.setAttribute("id", "scoreboardContainer");
+	scoreboardContainer.innerHTML = scoreboardHTML;
+	document.body.appendChild(scoreboardContainer);
+
+	const style = document.createElement("style");
+	style.innerHTML = scoreboardCSS;
+	document.body.appendChild(style);
+
+	const scoreboard = new Scoreboard();
 	init(scoreboard);
 	hijackMap();
 });
 
-const loadScripts = (styles, jQuery, jQueryUI) => {
-	console.log("scripts loaded");
-	const style = document.createElement("style");
-	style.innerHTML = styles;
-	document.body.appendChild(style);
+function loadScripts(styles, jQuery, jQueryUI, datatables, flagIcon) {
+	const _styles = document.createElement("style");
+	_styles.innerHTML = styles;
+	document.body.appendChild(_styles);
 
-	const jquery = document.createElement("script");
-	jquery.innerHTML = jQuery;
-	document.body.appendChild(jquery);
+	const _jQuery = document.createElement("script");
+	_jQuery.innerHTML = jQuery;
+	document.body.appendChild(_jQuery);
 
-	const jqueryUi = document.createElement("script");
-	jqueryUi.innerHTML = jQueryUI;
-	document.body.appendChild(jqueryUi);
-};
+	const _jqueryUI = document.createElement("script");
+	_jqueryUI.innerHTML = jQueryUI;
+	document.body.appendChild(_jqueryUI);
 
-const init = (scoreboard) => {
-	console.log("init/scoreboard loaded");
+	const _datatables = document.createElement("script");
+	_datatables.innerHTML = datatables;
+	document.body.appendChild(_datatables);
+
+	const _flagIcon = document.createElement("style");
+	_flagIcon.innerHTML = flagIcon;
+	document.body.appendChild(_flagIcon);
+
+	// console.log("scripts loaded");
+}
+
+function init(scoreboard) {
+	// console.log("init/scoreboard loaded");
+
 	const markerRemover = document.createElement("style");
-	markerRemover.innerHTML = ".map-pin { display: none }";
-
-	ipcRenderer.on("switch-on", () => scoreboard.switchOn(true));
-	ipcRenderer.on("switch-off", () => scoreboard.switchOn(false));
+	markerRemover.innerHTML = ".map-pin { display: none; }";
 
 	const hideTopBar = document.createElement("style");
 	hideTopBar.innerHTML = `.layout{--layout-header-height:0rem;}.header__right{display:none;}.game-layout__panorama-canvas{height:100%;}.header__logo-image{margin-top: 10px;opacity: 0.9;}`;
 
+	ipcRenderer.on("switch-on", () => scoreboard.switchOn(true));
+	ipcRenderer.on("switch-off", () => scoreboard.switchOn(false));
+
 	ipcRenderer.on("in-game", (e, isMultiGuess, noCar, noCompass) => {
 		document.body.appendChild(hideTopBar);
-		scoreboard.setTitle("GUESSES (0)");
-		scoreboard.show(isMultiGuess);
+		scoreboard.reset(isMultiGuess);
+		scoreboard.show();
 		drParseNoCar(noCar);
 		drParseNoCompass(noCompass);
 	});
 
 	ipcRenderer.on("out-game", () => {
-		hideTopBar.remove();
 		scoreboard.hide();
-		scoreboard.emptyGuessList();
+		hideTopBar.remove();
 		markerRemover.remove();
 		clearMarkers();
 	});
 
-	ipcRenderer.on("next-round", () => {
-		scoreboard.setMultiGuessStyle();
-		scoreboard.setTitle("GUESSES (0)");
-		scoreboard.showSwitch(true);
-		scoreboard.emptyGuessList();
+	ipcRenderer.on("next-round", (e, isMultiGuess) => {
+		scoreboard.reset(isMultiGuess);
 		setTimeout(() => {
 			clearMarkers();
 			markerRemover.remove();
-		}, 500);
+		}, 1000);
 	});
 
 	ipcRenderer.on("render-guess", (e, guess, nbGuesses) => {
@@ -82,24 +100,24 @@ const init = (scoreboard) => {
 		scoreboard.renderGuess(guess);
 	});
 
-	ipcRenderer.on("render-multiguess", (e, guess, nbGuesses) => {
+	ipcRenderer.on("render-multiguess", (e, guesses, nbGuesses) => {
 		scoreboard.setTitle(`GUESSES (${nbGuesses})`);
-		scoreboard.renderMultiGuess(guess);
+		scoreboard.renderMultiGuess(guesses);
 	});
 
 	ipcRenderer.on("pre-round-results", () => {
 		document.body.appendChild(markerRemover);
-		scoreboard.setTitle("ROUND RESULTS");
-		scoreboard.showSwitch(false);
 	});
 
-	ipcRenderer.on("show-round-results", (e, location, guesses) => {
+	ipcRenderer.on("show-round-results", (e, round, location, guesses) => {
+		scoreboard.setTitle(`ROUND ${round} RESULTS`);
+		scoreboard.showSwitch(false);
 		scoreboard.displayScores(guesses);
 		populateMap(location, guesses);
 	});
 
 	ipcRenderer.on("show-total-results", (e, total) => {
-		scoreboard.setTitle("TOTAL RESULTS");
+		scoreboard.setTitle("HIGHSCORES");
 		scoreboard.showSwitch(false);
 		scoreboard.displayScores(total, true);
 		clearMarkers();
@@ -109,12 +127,11 @@ const init = (scoreboard) => {
 		drParseNoCar(noCar);
 		drParseNoCompass(noCompass);
 	});
-};
+}
 
 let markers = [];
 let polylines = [];
-
-const populateMap = (location, guesses) => {
+function populateMap(location, guesses) {
 	const infowindow = new google.maps.InfoWindow();
 	// const bounds = new google.maps.LatLngBounds();
 	const icon = {
@@ -157,7 +174,7 @@ const populateMap = (location, guesses) => {
 		google.maps.event.addListener(guessMarker, "mouseover", () => {
 			infowindow.setContent(`
 				<p class="gm-iw__content">
-					<span style="font-size:14px;">${guess.username}</span><br>
+					<span style="font-size:14px;">${guess.flag ? `<span class="flag-icon flag-icon-${guess.flag}"></span>` : ""}${guess.username}</span><br>
 					${guess.distance >= 1 ? parseFloat(guess.distance.toFixed(1)) + "km" : parseInt(guess.distance * 1000) + "m"}<br>
 					${guess.score}
 				</p>
@@ -182,18 +199,18 @@ const populateMap = (location, guesses) => {
 		);
 	});
 	// MAP.fitBounds(bounds);
-};
+}
 
-const clearMarkers = () => {
+function clearMarkers() {
 	while (markers[0]) {
 		markers.pop().setMap(null);
 	}
 	while (polylines[0]) {
 		polylines.pop().setMap(null);
 	}
-};
+}
 
-const hijackMap = () => {
+function hijackMap() {
 	const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
 	const GOOGLE_MAPS_PROMISE = new Promise((resolve, reject) => {
 		let scriptObserver = new MutationObserver((mutations) => {
@@ -252,9 +269,9 @@ const hijackMap = () => {
 			const isGamePage = () => location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
 			const onMapUpdate = (map) => {
 				try {
-					console.log("not in game");
+					// console.log("not in game");
 					if (!isGamePage()) return;
-					console.log("MAP found");
+					// console.log("MAP found");
 					MAP = map;
 				} catch (error) {
 					console.error("GeoguessrHijackMap Error:", error);
@@ -277,9 +294,9 @@ const hijackMap = () => {
 			);
 		});
 	});
-};
+}
 
-const drParseNoCompass = (noCompass) => {
+function drParseNoCompass(noCompass) {
 	const addCompassStyle = () => {
 		const style = document.createElement("style");
 		style.id = "noCompass";
@@ -293,9 +310,9 @@ const drParseNoCompass = (noCompass) => {
 	} else {
 		if (style) style.remove();
 	}
-};
+}
 
-const drParseNoCar = (noCar) => {
+function drParseNoCar(noCar) {
 	if (!noCar) return;
 
 	const OPTIONS = { colorR: 0.5, colorG: 0.5, colorB: 0.5 };
@@ -385,4 +402,4 @@ const drParseNoCar = (noCar) => {
 		}
 		return f.apply(this, arguments);
 	};
-};
+}

@@ -41,7 +41,7 @@ class GameHelper {
 	};
 
 	/**
-	 * Return a country code
+	 * Returns a country code
 	 * @param {Object} location {lat, lng}
 	 * @return {Promise} Country code Promise
 	 */
@@ -49,19 +49,16 @@ class GameHelper {
 		return axios
 			.get(`https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`)
 			.then((res) => countryCodes[res.data.countryCode])
-			.catch((error) => console.log(error));
-
-		// return axios
-		// 	.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.lat},${location.lng}&result_type=country&key=${process.env.GMAPS_KEY}`)
-		// 	.then((res) => countryCodes[res.data.results[0].address_components[0].short_name])
-		// 	.catch((error) => console.log(error));
-
-		// return new Promise((resolve, reject) => {
-		// 	CG.getCode(location.lat, location.lng, (error, code) => {
-		// 		resolve(code);
-		// 		reject(new Error(error));
-		// 	});
-		// }).then((code) => countryCodes[code.toUpperCase()]);
+			.catch((error) => {
+				// console.log(error);
+				// if BDC returns an error use CodeGrid
+				return new Promise((resolve, reject) => {
+					CG.getCode(location.lat, location.lng, (error, code) => {
+						resolve(code);
+						reject(new Error(error));
+					});
+				}).then((code) => countryCodes[code.toUpperCase()]);
+			});
 	};
 
 	/**
@@ -75,7 +72,7 @@ class GameHelper {
 	};
 
 	/**
-	 * Return map scale
+	 * Returns map scale
 	 * @param {Object} bounds map bounds
 	 * @return {number} map scale
 	 */
@@ -83,7 +80,7 @@ class GameHelper {
 		GameHelper.haversineDistance({ lat: bounds.min.lat, lng: bounds.min.lng }, { lat: bounds.max.lat, lng: bounds.max.lng }) / 7.458421;
 
 	/**
-	 * Return distance in km between two coordinates
+	 * Returns distance in km between two coordinates
 	 * @param {Object} mk1 {lat, lng}
 	 * @param {Object} mk2 {lat, lng}
 	 * @return {number} km
@@ -97,14 +94,12 @@ class GameHelper {
 		const km =
 			2 *
 			R *
-			Math.asin(
-				Math.sqrt(Math.sin(difflat / 2) * Math.sin(difflat / 2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.sin(difflon / 2) * Math.sin(difflon / 2))
-			);
+			Math.asin(Math.sqrt(Math.sin(difflat / 2) * Math.sin(difflat / 2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.sin(difflon / 2) * Math.sin(difflon / 2)));
 		return km;
 	};
 
 	/**
-	 * Return score based on distance and scale
+	 * Returns score based on distance and scale
 	 * @param {number} distance
 	 * @param {number} scale
 	 * @return {number} score
@@ -112,18 +107,30 @@ class GameHelper {
 	static calculateScore = (distance, scale) => Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale));
 
 	/**
-	 * Return guesses sorted by distance ASC
+	 * Returns guesses sorted by distance ASC
 	 * @param {array} guesses
 	 * @return {array} guesses
 	 */
 	static sortByDistance = (guesses) => guesses.sort((a, b) => a.distance - b.distance);
 
 	/**
-	 * Return guesses sorted by score DESC
+	 * Returns guesses sorted by score DESC
 	 * @param {array} guesses
 	 * @return {array} guesses
 	 */
 	static sortByScore = (guesses) => guesses.sort((a, b) => b.score - a.score);
+
+	/**
+	 * Returns antipote lat
+	 * @param {number} lat
+	 */
+	static getAntipodeLat = (lat) => lat * -1;
+
+	/**
+	 * Returns antipode lng
+	 * @param {number} lng
+	 */
+	static getAntipodeLng = (lng) => (lng > 0 ? lng - 180 : lng + 180);
 }
 
 module.exports = GameHelper;

@@ -7,23 +7,31 @@ class Hastebin {
 	 * @param  {string} mapName
 	 * @return {Promise} link
 	 */
-	static makeHastebin = (scores, mapName) => {
-		let str = `# ${mapName} Total Highscores :
-${"=".repeat(mapName.length + 21)}
+	static makeHastebin = (mapName, scores, locations) => {
+		let str = `# ${mapName} Highscores :
+${"-".repeat(mapName.length + 13)}
 `;
 		scores.forEach((score, index) => {
 			str += `
-${index + 1}.${index + 1 <= 10 ? "  " : " "}${score.username}${" ".repeat(30 - score.username.length)}${" ".repeat(5 - score.score.toString().length)}${score.score}[${
+${index + 1}.${index + 1 < 10 ? "  " : " "}${score.username}${" ".repeat(30 - score.username.length)}${" ".repeat(5 - score.score.toString().length)}${score.score} [${
 				score.guessedRounds
 			}]`;
 		});
-		// 		if (location) {
-		// 			const url = `http://maps.google.com/maps?q=&layer=c&cbll=${location.lat},${location.lng}`;
-		// 			str += `
 
-		// ${url}
-		// ${"=".repeat(url.length)}`;
-		// 		}
+		str += `
+
+${"-".repeat(43)}`;
+
+		locations.forEach((location, index) => {
+			const url = `maps.google.com/maps?q=&layer=c&cbll=${location.lat},${location.lng}`;
+
+			str += `
+
+Round ${index + 1}:
+${url}
+${"-".repeat(url.length)}`;
+		});
+
 		return haste.post(str).then((link) => link);
 	};
 }

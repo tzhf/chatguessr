@@ -1,18 +1,20 @@
 class User {
 	/**
-	 * @param  {string} user
-	 * @param  {string} username
-	 * @param  {number} streak=0
-	 * @param  {number} bestStreak=0
-	 * @param  {number} correctGuesses=0
-	 * @param  {number} nbGuesses=0
-	 * @param  {number} perfects=0
-	 * @param  {number} victories=0
-	 * @param  {number} meanScore=null
+	 * @param {String} user
+	 * @param {String} username
+	 * @param {String} flag=""
+	 * @param {Number} streak=0
+	 * @param {Number} bestStreak=0
+	 * @param {Number} correctGuesses=0
+	 * @param {Number} nbGuesses=0
+	 * @param {Number} perfects=0
+	 * @param {Number} victories=0
+	 * @param {Number} meanScore=null
 	 */
-	constructor(user, username, streak = 0, bestStreak = 0, correctGuesses = 0, nbGuesses = 0, perfects = 0, victories = 0, meanScore = null) {
+	constructor(user, username, flag = "", streak = 0, bestStreak = 0, correctGuesses = 0, nbGuesses = 0, perfects = 0, victories = 0, meanScore = null) {
 		this.user = user;
 		this.username = username;
+		this.flag = flag;
 		this.streak = streak;
 		this.bestStreak = bestStreak;
 		this.correctGuesses = correctGuesses;
@@ -22,17 +24,14 @@ class User {
 		this.meanScore = meanScore;
 	}
 
-	/**
-	 * Add 1 to streak and correctGuesses.
-	 */
+	/* Add 1 to streak and correctGuesses. */
 	addStreak() {
 		this.streak++;
 		this.correctGuesses++;
 		if (this.streak > this.bestStreak) this.bestStreak = this.streak;
 	}
 
-	/**
-	 * Set user streak
+	/** Set user streak
 	 * @param {Number} number
 	 */
 	setStreak(number) {
@@ -40,8 +39,14 @@ class User {
 		if (this.streak > this.bestStreak) this.bestStreak = this.streak;
 	}
 
-	/**
-	 * Calculate mean score
+	/** Set a country flag
+	 * @param {String} flag country code
+	 */
+	setFlag(flag) {
+		this.flag = flag;
+	}
+
+	/** Calculate mean score
 	 * @param {Number} score
 	 */
 	calcMeanScore(score) {

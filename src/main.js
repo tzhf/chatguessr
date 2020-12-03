@@ -1,10 +1,10 @@
-// @ts-check
 const { app, ipcMain, globalShortcut } = require("electron");
 const MainWindow = require("./Windows/MainWindow");
 const SettingsWindow = require("./Windows/settings/SettingsWindow");
 
 const Game = require("./Classes/Game");
 const GameHelper = require("./utils/GameHelper");
+const countryCodesNames = require("./utils/countryCodesNames");
 const game = new Game();
 
 const Store = require("./utils/Store");
@@ -18,6 +18,8 @@ let mainWindow;
 let settingsWindow;
 
 const initWindows = () => {
+	Store.checkVersion();
+
 	mainWindow = new MainWindow();
 	settingsWindow = new SettingsWindow();
 	settingsWindow.setParentWindow(mainWindow);
@@ -46,8 +48,8 @@ const initWindows = () => {
 		initTmi();
 	});
 
-	// globalShortcut.register("CommandOrControl+R", () => false);
-	// globalShortcut.register("CommandOrControl+Shift+R", () => false);
+	globalShortcut.register("CommandOrControl+R", () => false);
+	globalShortcut.register("CommandOrControl+Shift+R", () => false);
 	globalShortcut.register("Escape", () => settingsWindow.hide());
 	globalShortcut.register("CommandOrControl+P", () => {
 		settingsWindow.webContents.send("render-settings", settings);
@@ -75,11 +77,17 @@ const gameHandlers = () => {
 		mainWindow.webContents.executeJavaScript(`
 				guessBtn = document.querySelector('[data-qa="perform-guess"]');
 				if(guessBtn) {
-					guessBtn.addEventListener("click", () => ipcRenderer.send('make-guess-click'));
+					guessBtn.addEventListener("click", () => {
+						guessBtn.setAttribute('disabled', 'disabled');
+						ipcRenderer.send('make-guess-click');
+					});
 				}
 				nextRoundBtn = document.querySelector('[data-qa="close-round-result"]');
 				if(nextRoundBtn) {
-					nextRoundBtn.addEventListener("click", () => ipcRenderer.send('next-round-click'));
+					nextRoundBtn.addEventListener("click", () => {
+						nextRoundBtn.setAttribute('disabled', 'disabled');
+						ipcRenderer.send('next-round-click');
+					});
 				}
 			`);
 
@@ -117,8 +125,9 @@ const gameHandlers = () => {
 		mainWindow.webContents.send("pre-round-results");
 		await game.makeGuess(settings.channelName);
 		const scores = game.getRoundScores();
-		mainWindow.webContents.send("show-round-results", game.location, scores);
-		client.action(settings.channelName, `🌎 Round ${game.seed.state === "finished" ? game.round : game.round - 1} has finished. Congrats ${scores[0].username}!`);
+		const round = game.seed.state === "finished" ? game.round : game.round - 1;
+		mainWindow.webContents.send("show-round-results", round, game.location, scores);
+		client.action(settings.channelName, `🌎 Round ${round} has finished. Congrats ${scores[0].username} !`);
 	};
 
 	ipcMain.on("next-round-click", () => nextRound());
@@ -128,7 +137,7 @@ const gameHandlers = () => {
 		if (game.seed.state === "finished") {
 			processTotalScores();
 		} else {
-			mainWindow.webContents.send("next-round");
+			mainWindow.webContents.send("next-round", game.isMultiGuess);
 			client.action(settings.channelName, `🌎 Round ${game.round} has started`);
 			openGuesses();
 		}
@@ -136,9 +145,10 @@ const gameHandlers = () => {
 
 	const processTotalScores = async () => {
 		const totalScores = game.getTotalScores();
-		const link = await Hastebin.makeHastebin(totalScores, game.mapName);
+		const locations = game.getLocations();
+		const link = await Hastebin.makeHastebin(game.mapName, totalScores, locations);
 		mainWindow.webContents.send("show-total-results", totalScores);
-		client.action(settings.channelName, `🌎 Game finished. Congrats ${totalScores[0].username} 🏆! Check out the full results here: ${link}`);
+		client.action(settings.channelName, `🌎 Game finished. Congrats ${totalScores[0].username} 🏆 ! Game summary: ${link}`);
 	};
 
 	ipcMain.on("clearStats", () => clearStats());
@@ -157,7 +167,7 @@ const initTmi = () => {
 		},
 		channels: [settings.channelName],
 	};
-	// @ts-ignore
+
 	client = new tmi.Client(options);
 
 	if (!settings.channelName) return;
@@ -171,7 +181,7 @@ const initTmi = () => {
 		});
 
 	client.on("connected", () => {
-		settingsWindow.webContents.send("twitch-connected");
+		settingsWindow.webContents.send("twitch-connected", settings.botUsername);
 		client.action(settings.channelName, "is now connected");
 	});
 };
@@ -183,36 +193,42 @@ const tmiListening = () => {
 
 	client.on("whisper", async (from, userstate, message, self) => {
 		if (self) return;
-		if (game.guessesOpen && message.startsWith(settings.guessCmd)) {
-			message = message.split(settings.guessCmd)[1].trim();
+		if (game.guessesOpen && message.startsWith("!g")) {
+			message = message.split("!g")[1].trim();
 			if (!GameHelper.isCoordinates(message)) return;
 
 			const guessLocation = { lat: parseFloat(message.split(",")[0]), lng: parseFloat(message.split(",")[1]) };
+
 			game.processUserGuess(userstate, guessLocation).then((res) => {
 				if (res === "alreadyGuessed") return client.say(settings.channelName, `${userstate["display-name"]} you already guessed`);
 				if (res === "pastedPreviousGuess") return client.say(settings.channelName, `${userstate["display-name"]} you pasted your previous guess :)`);
 
-				const { guess, nbGuesses } = res;
+				const { guess, user, nbGuesses } = res;
+
 				if (game.isMultiGuess) {
-					mainWindow.webContents.send("render-multiguess", guess, nbGuesses);
-					if (guess.guessChanged && settings.showHasGuessed) return client.say(settings.channelName, `${userstate["display-name"]} guess changed`);
+					mainWindow.webContents.send("render-multiguess", game.guesses, nbGuesses);
+					if (guess.guessChanged) return client.say(settings.channelName, `${toEmojiFlag(user.flag)} ${userstate["display-name"]} guess changed`);
 				} else {
 					mainWindow.webContents.send("render-guess", guess, nbGuesses);
 				}
-				if (settings.showHasGuessed) return client.say(settings.channelName, `${userstate["display-name"]} guessed`);
+				if (settings.showHasGuessed) return client.say(settings.channelName, `${toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
 			});
 		}
 	});
 
 	client.on("chat", (channel, userstate, message, self) => {
-		if (self) return;
-		if (message.toLowerCase() === settings.userGetStatsCmd) {
+		if (self || message.charAt(0) != "!") return;
+		message = message.toLowerCase();
+
+		if (message === settings.userGetStatsCmd) {
+			console.log(userstate.username);
 			const userInfo = Store.getUser(userstate.username);
+			console.log(userInfo);
 			if (userInfo) {
 				return client.say(
 					channel,
 					`
-						${userstate["display-name"]}: Current streak: ${userInfo.streak}.
+						${toEmojiFlag(userInfo.flag)} ${userstate["display-name"]} : Current streak: ${userInfo.streak}.
 						Best streak: ${userInfo.bestStreak}.
 						Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses} (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).
 						Avg. score: ${Math.round(userInfo.meanScore)}.
@@ -225,31 +241,56 @@ const tmiListening = () => {
 			}
 		}
 
-		if (message.toLowerCase() === "!best") {
+		if (message === "!best") {
 			const best = Store.getBest();
 			if (!best) return client.say(channel, "No stats available.");
+
 			return client.say(
 				channel,
 				`	Channel's best:
-					Streak: ${best.streak.streak} ${best.streak.streak > 0 ? " (" + best.streak.user + ")" : ""}.
-					Avg. score: ${Math.round(best.meanScore.meanScore)} (${best.meanScore.user}).
-					Victories: ${best.victories.victories} ${best.victories.victories > 0 ? " (" + best.victories.user + ")" : ""}.
+					Streak: ${best.streak.streak}${best.streak.streak > 0 ? " (" + best.streak.user + ")" : ""}.
+					Victories: ${best.victories.victories}${best.victories.victories > 0 ? " (" + best.victories.user + ")" : ""}.
+					Perfects: ${Math.round(best.perfects.perfects)}${best.perfects.perfects > 0 ? " (" + best.perfects.user + ")" : ""}.
 				`
 			);
 		}
 
-		if (message.toLowerCase() === settings.userClearStatsCmd) {
+		if (message.startsWith("!flag")) {
+			const countryReq = message.substr(message.indexOf(" ") + 1);
+			const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
+
+			if (countryReq === "none") {
+				user.setFlag("");
+				Store.saveUser(userstate.username, user);
+				return client.say(channel, `${userstate["display-name"]} flag removed`);
+			}
+
+			if (countryReq === "random") {
+				const rndCode = countryCodesNames[Math.floor(Math.random() * countryCodesNames.length)].code;
+				user.setFlag(rndCode);
+				Store.saveUser(userstate.username, user);
+				return client.say(channel, `${userstate["display-name"]} got ${toEmojiFlag(user.flag)}`);
+			}
+
+			const country = findCountry(countryReq);
+			if (!country) return client.say(channel, `${userstate["display-name"]} no country found`);
+
+			user.setFlag(country.code);
+			Store.saveUser(userstate.username, user);
+		}
+
+		if (message === settings.userClearStatsCmd) {
 			const userInfo = Store.getUser(userstate.username);
 			if (!userInfo) return client.say(channel, `${userstate["display-name"]} you've never guessed yet.`);
-
 			Store.deleteUser(userstate.username);
-			return client.say(channel, `${userstate["display-name"]} 🗑️ stats cleared !`);
+
+			return client.say(channel, `${toEmojiFlag(userInfo.flag)} ${userstate["display-name"]} 🗑️ stats cleared !`);
 		}
 
 		//! streamer commands
 		if (userstate.username != settings.channelName) return;
 
-		if (message.toLowerCase().startsWith(settings.setStreakCmd)) {
+		if (message.startsWith(settings.setStreakCmd)) {
 			const msgArr = message.split(" ");
 			if (msgArr.length != 3) return client.action(channel, `Valid command: ${settings.setStreakCmd} user 42`);
 
@@ -257,15 +298,40 @@ const tmiListening = () => {
 			if (!Number.isInteger(newStreak)) return client.action(channel, `Invalid number.`);
 			if (msgArr[1].charAt(0) === "@") msgArr[1] = msgArr[1].substring(1);
 
-			const user = msgArr[1].toLowerCase();
+			const user = msgArr[1];
 			const storedUser = Store.getUser(user);
 			if (!storedUser) return client.action(channel, `${user} has never guessed.`);
-
 			Store.setUserStreak(user, newStreak);
+
 			return client.action(channel, `${user} streak set to ${newStreak}`);
 		}
 	});
 };
+
+/** Replace special chars
+ * @param {String} val
+ */
+const normalize = (val) => val.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+/** Matches words above 3 letters
+ * @param {String} input
+ * @param {String} key
+ */
+const isMatch = (input, key) => input.length >= 3 && key.includes(input) && input.length <= key.length;
+
+/** Find country by code or name
+ * @param {String} input
+ * @return {Object} countryCodesNames
+ */
+const findCountry = (input) => {
+	const normalized = normalize(input);
+	return countryCodesNames.find((country) => country.code === normalized || isMatch(normalized, country.names.toLowerCase()));
+};
+
+/** Converts a country code into an emoji flag
+ * @param {String} value
+ */
+const toEmojiFlag = (value) => value.toUpperCase().replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
 
 const clearStats = () => {
 	Store.clearStats();

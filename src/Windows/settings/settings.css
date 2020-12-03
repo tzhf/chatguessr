@@ -4,18 +4,19 @@
 	padding: 0;
 }
 
-a {
-	color: inherit;
-	text-decoration: inherit;
-}
-
 h2,
 h3 {
 	margin: 5px 0 15px 0;
 }
 
-#twitchStatus {
-	font-size: 18px;
+a {
+	font-size: 14px;
+	color: inherit;
+	text-decoration: inherit;
+	-webkit-app-region: no-drag;
+}
+a:hover {
+	color: #e9e7e7;
 }
 
 .settings-container {
@@ -182,8 +183,20 @@ h3 {
 	outline: none;
 }
 
+#cgLink {
+	display: none;
+	padding: 5px;
+	background-color: #5ad497;
+	margin-bottom: 15px;
+	border: 1px solid white;
+}
+
+#twitchStatus {
+	font-size: 18px;
+}
+
 .oauth-link {
-	font-size: 10px;
+	font-size: 12px;
 	font-style: italic;
 }
 .oauth-link:hover {

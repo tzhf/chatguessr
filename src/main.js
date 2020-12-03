@@ -13,6 +13,8 @@ const settings = Store.getSettings();
 const tmi = require("tmi.js");
 const Hastebin = require("./utils/Hastebin");
 
+const Server = require("./utils/Server");
+
 let client;
 let mainWindow;
 let settingsWindow;
@@ -336,4 +338,5 @@ const clearStats = () => {
 	client.action(settings.channelName, "🗑️ All stats have been cleared.");
 };
 
-app.whenReady().then(initWindows).then(initTmi).then(gameHandlers);
+app.whenReady().then(initWindows).then(initTmi).then(gameHandlers).then(Server.init);
+

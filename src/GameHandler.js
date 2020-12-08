@@ -183,6 +183,7 @@ class GameHandler {
 
 		TMI.client.on("chat", (channel, userstate, message, self) => {
 			if (self || !message.startsWith("!")) return;
+			message = message.toLowerCase();
 
 			if (message === settings.userGetStatsCmd) {
 				const userInfo = Store.getUser(userstate.username);

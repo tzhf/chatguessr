@@ -70,7 +70,7 @@ const countryCodesNames = [
 	{ code: "es", names: "Spain" },
 	{ code: "esct", names: "Catalonia, Catalunya, catalunia" },
 	{ code: "esga", names: "Galicia" },
-	{ code: "espv", names: "Pais Vasco, Basque Country" },
+	{ code: "espv", names: "Basque Country, euskadi, Pais Vasco" },
 	{ code: "et", names: "Ethiopia" },
 	{ code: "eu", names: "Europe" },
 	{ code: "fi", names: "Finland" },

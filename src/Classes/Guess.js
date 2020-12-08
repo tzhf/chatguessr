@@ -13,7 +13,7 @@ class Guess {
 	constructor(user, username, color, flag, position, streak, distance, score, modified = false) {
 		this.user = user;
 		this.username = username;
-		this.color = color === "" ? "#FFFFFF" : color;
+		this.color = color === null ? "#FFF" : color;
 		this.flag = flag;
 		this.position = position;
 		this.streak = streak;

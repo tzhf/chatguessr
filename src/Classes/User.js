@@ -10,8 +10,21 @@ class User {
 	 * @param {Number} perfects=0
 	 * @param {Number} victories=0
 	 * @param {Number} meanScore=null
+	 * @param {Object} previousGuess=null
 	 */
-	constructor(user, username, flag = "", streak = 0, bestStreak = 0, correctGuesses = 0, nbGuesses = 0, perfects = 0, victories = 0, meanScore = null) {
+	constructor(
+		user,
+		username,
+		flag = "",
+		streak = 0,
+		bestStreak = 0,
+		correctGuesses = 0,
+		nbGuesses = 0,
+		perfects = 0,
+		victories = 0,
+		meanScore = null,
+		previousGuess = null
+	) {
 		this.user = user;
 		this.username = username;
 		this.flag = flag;
@@ -22,6 +35,7 @@ class User {
 		this.perfects = perfects;
 		this.victories = victories;
 		this.meanScore = meanScore;
+		this.previousGuess = previousGuess;
 	}
 
 	/* Add 1 to streak and correctGuesses. */
@@ -37,6 +51,13 @@ class User {
 	setStreak(number) {
 		this.streak = number;
 		if (this.streak > this.bestStreak) this.bestStreak = this.streak;
+	}
+
+	/** Set previous guess
+	 * @param {Object} location
+	 */
+	setPreviousGuess(location) {
+		this.previousGuess = location;
 	}
 
 	/** Set a country flag

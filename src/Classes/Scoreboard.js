@@ -1,10 +1,6 @@
-const Store = require("../../utils/Store");
+// const Store = require("../../utils/Store");
 
 class Scoreboard {
-	/**
-	 * @param {String} html
-	 * @param {String} css
-	 */
 	constructor() {
 		this.position;
 		this.container;
@@ -22,7 +18,7 @@ class Scoreboard {
 	}
 
 	init() {
-		this.position = Store.getScoreboardPosition({ top: 55, left: 5, width: 380, height: 180 });
+		this.position = getCookie("scoreboard_position", { top: 55, left: 5, width: 380, height: 180 });
 		this.container = $("#scoreboardContainer");
 		this.title = $("#scoreboardTitle");
 		this.switchContainer = $("#switchContainer");
@@ -45,7 +41,7 @@ class Scoreboard {
 				const currentPosition = this.getPosition();
 				if (JSON.stringify(this.position) !== JSON.stringify(currentPosition)) {
 					this.setPosition(currentPosition);
-					Store.setScoreboardPosition(currentPosition);
+					setCookie("scoreboard_position", JSON.stringify(currentPosition));
 				}
 			});
 
@@ -117,7 +113,7 @@ class Scoreboard {
 				this.columnState.push({ column, state });
 			}
 
-			setCookie("CG_ColVis", JSON.stringify(this.columnState), 30);
+			setCookie("CG_ColVis", JSON.stringify(this.columnState));
 		});
 
 		// ColVis Cookies
@@ -240,7 +236,7 @@ class Scoreboard {
 		this.table.rows.add(rows).draw();
 	};
 
-	displayScores = (scores, isTotal) => {
+	displayScores = (scores, isTotal = false) => {
 		this.isResults = true;
 		if (scores[0]) scores[0].color = "#E3BB39";
 		if (scores[1]) scores[1].color = "#C9C9C9";

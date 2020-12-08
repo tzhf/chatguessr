@@ -1,23 +1,25 @@
 class Guess {
 	/**
-	 * @param {string} user
-	 * @param {string} username
-	 * @param {string} color
-	 * @param {string} flag
+	 * @param {String} user
+	 * @param {String} username
+	 * @param {String} color
+	 * @param {String} flag
 	 * @param {Object} position {lat, lng}
-	 * @param {number} distance
-	 * @param {number} score
-	 * @param {number} streak
+	 * @param {Number} streak
+	 * @param {Number} distance
+	 * @param {Number} score
+	 * @param {Boolean} modified
 	 */
-	constructor(user, username, color, flag, position, distance, score, streak) {
+	constructor(user, username, color, flag, position, streak, distance, score, modified = false) {
 		this.user = user;
 		this.username = username;
-		this.color = color === null ? "#FFFFFF" : color;
+		this.color = color === "" ? "#FFFFFF" : color;
 		this.flag = flag;
 		this.position = position;
+		this.streak = streak;
 		this.distance = distance;
 		this.score = score;
-		this.streak = streak;
+		this.modified = modified;
 	}
 }
 

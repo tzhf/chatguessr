@@ -2,8 +2,10 @@ const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
 const axios = require("axios");
-// const CG = require("codegrid-js").CodeGrid();
+
+const CG = require("codegrid-js").CodeGrid();
 const countryCodes = require("./countryCodes");
+const countryCodesNames = require("./countryCodesNames");
 
 class GameHelper {
 	/**
@@ -50,7 +52,7 @@ class GameHelper {
 			.get(`https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`)
 			.then((res) => countryCodes[res.data.countryCode])
 			.catch((error) => {
-				// console.log(error);
+				console.log(error);
 				// if BDC returns an error use CodeGrid
 				return new Promise((resolve, reject) => {
 					CG.getCode(location.lat, location.lng, (error, code) => {
@@ -131,6 +133,36 @@ class GameHelper {
 	 * @param {number} lng
 	 */
 	static getAntipodeLng = (lng) => (lng > 0 ? lng - 180 : lng + 180);
+
+	/** Converts a country code into an emoji flag
+	 * @param {String} value
+	 */
+	static toEmojiFlag = (value) => value.toUpperCase().replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+
+	/** Replace special chars
+	 * @param {String} val
+	 */
+	static normalize = (val) => val.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+	/** Matches words above 3 letters
+	 * @param {String} input
+	 * @param {String} key
+	 */
+	static isMatch = (input, key) => input.length >= 3 && key.includes(input) && input.length <= key.length;
+
+	/** Find country by code or name
+	 * @param {String} input
+	 * @return {Object} countryCodesNames
+	 */
+	static findCountry = (input) => {
+		const normalized = GameHelper.normalize(input);
+		return countryCodesNames.find((country) => country.code === normalized || GameHelper.isMatch(normalized, country.names.toLowerCase()));
+	};
+
+	/** Return a random country code
+	 * @return {String}
+	 */
+	static getRandomFlag = () => countryCodesNames[Math.floor(Math.random() * countryCodesNames.length)].code;
 }
 
 module.exports = GameHelper;

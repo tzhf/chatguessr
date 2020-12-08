@@ -3,6 +3,7 @@ require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
 const ElectronStore = require("electron-store");
 const store = new ElectronStore();
+// store.clear();
 
 const User = require("../Classes/User");
 const Settings = require("../Classes/Settings");
@@ -135,21 +136,8 @@ class Store {
 	 */
 	static clearStats = () => {
 		store.delete("users");
-		store.delete("previousGuesses");
+		store.delete("lastRoundPlayers");
 	};
-
-	/**
-	 * Returns defaults if not found
-	 * @param {Object} defaults
-	 * @return {Object} position
-	 */
-	static getScoreboardPosition = (defaults) => store.get("scoreboard.postion", defaults);
-
-	/**
-	 * Store scoreboard position
-	 * @param {Object} position { top, left, width, height }
-	 */
-	static setScoreboardPosition = (position) => store.set("scoreboard.postion", position);
 
 	// Delete users on the new version to avoid stats glitchs (investigate why this happens)
 	static checkVersion = () => {
@@ -158,7 +146,7 @@ class Store {
 
 		if (!version || version != curr_ver) {
 			store.set("current_version", curr_ver);
-			store.delete("users");
+			Store.clearStats();
 		}
 	};
 }

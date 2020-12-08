@@ -1,98 +1,98 @@
-const Preloader = require("./utils/Preloader");
-const Scoreboard = require("./public/scoreboard/Scoreboard");
+const Scoreboard = require("./Classes/Scoreboard");
 
-let styles, jQuery, jQueryUI, datatables, scoreboardHTML, scoreboardCSS, flagIcon;
+const path = require("path");
+const { ipcRenderer } = require("electron");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
+const port = process.env.SERVER_PORT;
 
-(async function preload() {
-	[styles, jQuery, jQueryUI, datatables, scoreboardHTML, scoreboardCSS, flagIcon] = await Preloader.preload([
-		"styles.css",
-		"jquery.min.js",
-		"jquery-ui.min.js",
-		"datatables.bundle.min.js",
-		"scoreboard/scoreboard.html",
-		"scoreboard/scoreboard.css",
-		"flag-icon.min.css",
-	]);
-})();
-
-window.addEventListener("DOMContentLoaded", async () => {
-	// console.log("DOM loaded");
+window.addEventListener("DOMContentLoaded", () => {
 	window.ipcRenderer = require("electron").ipcRenderer;
+	window.$ = window.jQuery = require("jquery");
 	window.MAP = null;
+	hijackMap();
 
-	loadScripts(styles, jQuery, jQueryUI, datatables, flagIcon);
+	const head = document.getElementsByTagName("head")[0];
+
+	const styles = document.createElement("link");
+	styles.rel = "stylesheet";
+	styles.type = "text/css";
+	styles.href = `http://localhost:${port}/styles.css`;
+	head.appendChild(styles);
 
 	const scoreboardContainer = document.createElement("div");
 	scoreboardContainer.setAttribute("id", "scoreboardContainer");
-	scoreboardContainer.innerHTML = scoreboardHTML;
+	scoreboardContainer.innerHTML = `
+		<div id='scoreboard'>
+			<div id='scoreboardHeader'>
+				<span></span>
+				<span id='scoreboardTitle'>GUESSES (0)</span>
+				<label id='switchContainer'>
+					<input id='switchBtn' type='checkbox' />
+					<div class='slider'></div>
+				</label>
+			</div>
+			<table id='datatable' width='100%'>
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Player</th>
+						<th>Streak</th>
+						<th>Distance</th>
+						<th>Score</th>
+					</tr>
+				</thead>
+				<tbody id='guessList'></tbody>
+			</table>
+		</div>`;
 	document.body.appendChild(scoreboardContainer);
 
-	const style = document.createElement("style");
-	style.innerHTML = scoreboardCSS;
-	document.body.appendChild(style);
+	const flagIcon = document.createElement("link");
+	flagIcon.rel = "stylesheet";
+	flagIcon.type = "text/css";
+	flagIcon.href = `http://localhost:${port}/flag-icon.min.css`;
+	head.appendChild(flagIcon);
 
-	const scoreboard = new Scoreboard();
-	init(scoreboard);
-	hijackMap();
+	const jqueryUI = document.createElement("script");
+	jqueryUI.type = "text/javascript";
+	jqueryUI.src = `http://localhost:${port}/jquery-ui.min.js`;
+	jqueryUI.addEventListener("load", () => loadDatatables());
+	document.body.appendChild(jqueryUI);
+
+	const loadDatatables = () => {
+		const datatables = document.createElement("script");
+		datatables.type = "text/javascript";
+		datatables.src = `http://localhost:${port}/datatables.bundle.min.js`;
+		datatables.addEventListener("load", () => init());
+		document.body.appendChild(datatables);
+	};
 });
 
-function loadScripts(styles, jQuery, jQueryUI, datatables, flagIcon) {
-	const _styles = document.createElement("style");
-	_styles.innerHTML = styles;
-	document.body.appendChild(_styles);
-
-	const _jQuery = document.createElement("script");
-	_jQuery.innerHTML = jQuery;
-	document.body.appendChild(_jQuery);
-
-	const _jqueryUI = document.createElement("script");
-	_jqueryUI.innerHTML = jQueryUI;
-	document.body.appendChild(_jqueryUI);
-
-	const _datatables = document.createElement("script");
-	_datatables.innerHTML = datatables;
-	document.body.appendChild(_datatables);
-
-	const _flagIcon = document.createElement("style");
-	_flagIcon.innerHTML = flagIcon;
-	document.body.appendChild(_flagIcon);
-
-	// console.log("scripts loaded");
-}
-
-function init(scoreboard) {
-	// console.log("init/scoreboard loaded");
-
+const init = () => {
 	const markerRemover = document.createElement("style");
 	markerRemover.innerHTML = ".map-pin { display: none; }";
 
 	const hideTopBar = document.createElement("style");
 	hideTopBar.innerHTML = `.layout{--layout-header-height:0rem;}.header__right{display:none;}.game-layout__panorama-canvas{height:100%;}.header__logo-image{margin-top: 10px;opacity: 0.9;}`;
 
-	ipcRenderer.on("switch-on", () => scoreboard.switchOn(true));
-	ipcRenderer.on("switch-off", () => scoreboard.switchOn(false));
+	const scoreboard = new Scoreboard();
 
-	ipcRenderer.on("in-game", (e, isMultiGuess, noCar, noCompass) => {
+	ipcRenderer.on("game-started", (e, isMultiGuess) => {
+		scoreboard.show();
 		document.body.appendChild(hideTopBar);
 		scoreboard.reset(isMultiGuess);
+	});
+
+	ipcRenderer.on("refreshed-in-game", (e, noCar, noCompass) => {
 		scoreboard.show();
 		drParseNoCar(noCar);
 		drParseNoCompass(noCompass);
 	});
 
-	ipcRenderer.on("out-game", () => {
-		scoreboard.hide();
+	ipcRenderer.on("game-quitted", () => {
 		hideTopBar.remove();
 		markerRemover.remove();
+		scoreboard.hide();
 		clearMarkers();
-	});
-
-	ipcRenderer.on("next-round", (e, isMultiGuess) => {
-		scoreboard.reset(isMultiGuess);
-		setTimeout(() => {
-			clearMarkers();
-			markerRemover.remove();
-		}, 1000);
 	});
 
 	ipcRenderer.on("render-guess", (e, guess, nbGuesses) => {
@@ -109,29 +109,42 @@ function init(scoreboard) {
 		document.body.appendChild(markerRemover);
 	});
 
-	ipcRenderer.on("show-round-results", (e, round, location, guesses) => {
+	ipcRenderer.on("show-round-results", (e, round, location, scores) => {
 		scoreboard.setTitle(`ROUND ${round} RESULTS`);
+		scoreboard.displayScores(scores);
 		scoreboard.showSwitch(false);
-		scoreboard.displayScores(guesses);
-		populateMap(location, guesses);
+		populateMap(location, scores);
 	});
 
-	ipcRenderer.on("show-total-results", (e, total) => {
+	ipcRenderer.on("show-final-results", (e, totalScores) => {
+		document.body.appendChild(markerRemover);
 		scoreboard.setTitle("HIGHSCORES");
 		scoreboard.showSwitch(false);
-		scoreboard.displayScores(total, true);
+		scoreboard.displayScores(totalScores, true);
 		clearMarkers();
 	});
+
+	ipcRenderer.on("next-round", (e, isMultiGuess) => {
+		scoreboard.reset(isMultiGuess);
+		scoreboard.showSwitch(true);
+		setTimeout(() => {
+			markerRemover.remove();
+			clearMarkers();
+		}, 1000);
+	});
+
+	ipcRenderer.on("switch-on", () => scoreboard.switchOn(true));
+	ipcRenderer.on("switch-off", () => scoreboard.switchOn(false));
 
 	ipcRenderer.on("game-settings-change", (e, noCar, noCompass) => {
 		drParseNoCar(noCar);
 		drParseNoCompass(noCompass);
 	});
-}
+};
 
 let markers = [];
 let polylines = [];
-function populateMap(location, guesses) {
+function populateMap(location, scores) {
 	const infowindow = new google.maps.InfoWindow();
 	// const bounds = new google.maps.LatLngBounds();
 	const icon = {
@@ -158,15 +171,14 @@ function populateMap(location, guesses) {
 		window.open(locationMarker.url, "_blank");
 	});
 	markers.push(locationMarker);
-	// bounds.extend(location);
 
 	icon.scale = 1;
-	guesses.forEach((guess, index) => {
-		const color = index == 0 ? "#E3BB39" : index == 1 ? "#C9C9C9" : index == 2 ? "#A3682E" : guess.color;
+	scores.forEach((score, index) => {
+		const color = index == 0 ? "#E3BB39" : index == 1 ? "#C9C9C9" : index == 2 ? "#A3682E" : score.color;
 		icon.fillColor = color;
 
 		const guessMarker = new google.maps.Marker({
-			position: guess.position,
+			position: score.position,
 			icon: icon,
 			map: MAP,
 			label: { color: "#000", fontWeight: "bold", fontSize: "16px", text: `${index + 1}` },
@@ -174,9 +186,9 @@ function populateMap(location, guesses) {
 		google.maps.event.addListener(guessMarker, "mouseover", () => {
 			infowindow.setContent(`
 				<p class="gm-iw__content">
-					<span style="font-size:14px;">${guess.flag ? `<span class="flag-icon flag-icon-${guess.flag}"></span>` : ""}${guess.username}</span><br>
-					${guess.distance >= 1 ? parseFloat(guess.distance.toFixed(1)) + "km" : parseInt(guess.distance * 1000) + "m"}<br>
-					${guess.score}
+					<span style="font-size:14px;">${score.flag ? `<span class="flag-icon flag-icon-${score.flag}"></span>` : ""}${score.username}</span><br>
+					${score.distance >= 1 ? parseFloat(score.distance.toFixed(1)) + "km" : parseInt(score.distance * 1000) + "m"}<br>
+					${score.score}
 				</p>
 			`);
 			infowindow.open(MAP, guessMarker);
@@ -185,7 +197,7 @@ function populateMap(location, guesses) {
 			infowindow.close();
 		});
 		markers.push(guessMarker);
-		// bounds.extend(guess.position);
+		// bounds.extend(score.position);
 
 		polylines.push(
 			new google.maps.Polyline({
@@ -194,7 +206,7 @@ function populateMap(location, guesses) {
 				strokeOpacity: 0.6,
 				geodesic: true,
 				map: MAP,
-				path: [guess.position, location],
+				path: [score.position, location],
 			})
 		);
 	});
@@ -269,9 +281,7 @@ function hijackMap() {
 			const isGamePage = () => location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
 			const onMapUpdate = (map) => {
 				try {
-					// console.log("not in game");
 					if (!isGamePage()) return;
-					// console.log("MAP found");
 					MAP = map;
 				} catch (error) {
 					console.error("GeoguessrHijackMap Error:", error);
@@ -297,16 +307,14 @@ function hijackMap() {
 }
 
 function drParseNoCompass(noCompass) {
-	const addCompassStyle = () => {
-		const style = document.createElement("style");
-		style.id = "noCompass";
-		style.innerHTML = ".compass { display: none }";
-		document.head.appendChild(style);
-	};
-
 	const style = document.getElementById("noCompass");
 	if (noCompass) {
-		if (!style) addCompassStyle();
+		if (!style) {
+			const style = document.createElement("style");
+			style.id = "noCompass";
+			style.innerHTML = ".compass { display: none }";
+			document.head.appendChild(style);
+		}
 	} else {
 		if (style) style.remove();
 	}

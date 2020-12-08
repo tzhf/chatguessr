@@ -1,16 +1,16 @@
 class Settings {
 	/**
-	 * @param {string} channelName=""
-	 * @param {string} botUsername=""
-	 * @param {string} token=""
-	 * @param {string} guessCmd="!g"
-	 * @param {string} userGetStatsCmd="!me"
-	 * @param {string} userClearStatsCmd="!clear"
-	 * @param {string} setStreakCmd="!setstreak"
-	 * @param {boolean} showHasGuessed=true
-	 * @param {boolean} isMultiGuess=false
-	 * @param {boolean} noCar=false
-	 * @param {boolean} noCompass=false
+	 * @param {String} channelName=""
+	 * @param {String} botUsername=""
+	 * @param {String} token=""
+	 * @param {String} guessCmd="!g"
+	 * @param {String} userGetStatsCmd="!me"
+	 * @param {String} userClearStatsCmd="!clear"
+	 * @param {String} setStreakCmd="!setstreak"
+	 * @param {Boolean} showHasGuessed=true
+	 * @param {Boolean} isMultiGuess=false
+	 * @param {Boolean} noCar=false
+	 * @param {Boolean} noCompass=false
 	 */
 	constructor(
 		channelName = "",

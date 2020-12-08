@@ -1,0 +1,14 @@
+TODO LIST
+
+✔ Install Express and create a local server @done(20-12-03 20:40)
+☐ Switch tmi.js to Twitch-JS
+☐ Move all Twitch-JS Stuff (tmi.js) to it's own utils module
+☐ Move from main.js all the utility methods to some helper module
+
+
+CHANGELOG & NOTES
+
+
+
+
+

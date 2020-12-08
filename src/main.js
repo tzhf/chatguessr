@@ -6,7 +6,7 @@ const server = express();
 const port = process.env.SERVER_PORT;
 const cors = require("cors");
 
-const { app, globalShortcut } = require("electron");
+const { app, BrowserWindow, globalShortcut } = require("electron");
 
 const MainWindow = require("./Windows/MainWindow");
 const SettingsWindow = require("./Windows/Settings/SettingsWindow");
@@ -39,6 +39,12 @@ const initWindow = () => {
 };
 
 app.whenReady().then(startServer);
+
+app.on("activate", () => {
+	if (BrowserWindow.getAllWindows().length === 0) {
+		startServer();
+	}
+});
 
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {

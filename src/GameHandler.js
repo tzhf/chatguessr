@@ -40,7 +40,7 @@ class GameHandler {
 
 		this.win.webContents.on("did-frame-finish-load", () => {
 			if (!game.isInGame) return;
-			this.win.webContents.send("refreshed-in-game", settings.noCar, settings.noCompass);
+			this.win.webContents.send("refreshed-in-game", settings.noCompass);
 			// Checks and update seed when the game has refreshed
 			// update the current location if it was skipped
 			// if the streamer has guessed returns scores
@@ -106,12 +106,11 @@ class GameHandler {
 		};
 
 		ipcMain.on("game-form", (e, isMultiGuess, noCar, noCompass) => {
-			this.win.webContents.send("game-settings-change", noCar, noCompass);
+			this.win.webContents.send("game-settings-change", noCompass);
 			this.settingsWindow.hide();
 
-			if (settings.noCar != noCar) {
-				this.win.reload();
-			}
+			if (settings.noCar != noCar) this.win.reload();
+
 			settings.setGameSettings(isMultiGuess, noCar, noCompass);
 			Store.setSettings(settings);
 		});

@@ -5,6 +5,10 @@ const { ipcRenderer } = require("electron");
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const port = process.env.SERVER_PORT;
 
+const Store = require("./utils/Store");
+const noCar = Store.getSettings().noCar;
+drParseNoCar();
+
 window.addEventListener("DOMContentLoaded", () => {
 	window.ipcRenderer = require("electron").ipcRenderer;
 	window.$ = window.jQuery = require("jquery");
@@ -78,13 +82,12 @@ const init = () => {
 
 	ipcRenderer.on("game-started", (e, isMultiGuess) => {
 		scoreboard.show();
-		document.body.appendChild(hideTopBar);
 		scoreboard.reset(isMultiGuess);
 	});
 
-	ipcRenderer.on("refreshed-in-game", (e, noCar, noCompass) => {
+	ipcRenderer.on("refreshed-in-game", (e, noCompass) => {
 		scoreboard.show();
-		drParseNoCar(noCar);
+		document.body.appendChild(hideTopBar);
 		drParseNoCompass(noCompass);
 	});
 
@@ -105,9 +108,7 @@ const init = () => {
 		scoreboard.renderMultiGuess(guesses);
 	});
 
-	ipcRenderer.on("pre-round-results", () => {
-		document.body.appendChild(markerRemover);
-	});
+	ipcRenderer.on("pre-round-results", () => document.body.appendChild(markerRemover));
 
 	ipcRenderer.on("show-round-results", (e, round, location, scores) => {
 		scoreboard.setTitle(`ROUND ${round} RESULTS`);
@@ -136,10 +137,7 @@ const init = () => {
 	ipcRenderer.on("switch-on", () => scoreboard.switchOn(true));
 	ipcRenderer.on("switch-off", () => scoreboard.switchOn(false));
 
-	ipcRenderer.on("game-settings-change", (e, noCar, noCompass) => {
-		drParseNoCar(noCar);
-		drParseNoCompass(noCompass);
-	});
+	ipcRenderer.on("game-settings-change", (e, noCompass) => drParseNoCompass(noCompass));
 };
 
 let markers = [];
@@ -320,7 +318,7 @@ function drParseNoCompass(noCompass) {
 	}
 }
 
-function drParseNoCar(noCar) {
+function drParseNoCar() {
 	if (!noCar) return;
 
 	const OPTIONS = { colorR: 0.5, colorG: 0.5, colorB: 0.5 };

@@ -44,7 +44,6 @@ class GameHandler {
 			// Checks and update seed when the game has refreshed
 			// update the current location if it was skipped
 			// if the streamer has guessed returns scores
-
 			game.refreshSeed().then((scores) => {
 				if (scores) showResults(scores.location, scores.scores);
 			});
@@ -84,7 +83,11 @@ class GameHandler {
 			const locations = game.getLocations();
 			const link = await Hastebin.makeHastebin(game.mapName, totalScores, locations);
 			this.win.webContents.send("show-final-results", totalScores);
-			TMI.action(`🌎 Game finished. Congrats ${GameHelper.toEmojiFlag(totalScores[0].flag)} ${totalScores[0].username} 🏆 ! Game summary: ${link}`);
+			TMI.action(
+				`🌎 Game finished. Congrats ${GameHelper.toEmojiFlag(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${
+					link != undefined ? `Game summary: ${link}` : ""
+				}`
+			);
 		};
 
 		ipcMain.on("open-guesses", () => openGuesses());

@@ -63,6 +63,93 @@ class GameHelper {
 	};
 
 	/**
+	 * Returns a country code
+	 * It uses CodeGrid first and then BDC if needed
+	 * @param {Object} location {lat, lng}
+	 * @return {Promise} Country code Promise
+	 */
+	static getCountryCodeLocally = async (location) => {
+		return new Promise((resolve, reject) => {
+			let coordinates = this.getSurroundings(location);
+			let promises = [];
+			coordinates.forEach((coord) => {
+				promises.push(this.getCountryCG(coord));
+			});
+			Promise.all(promises).then((values) => {
+				let unique = new Set(values);
+				if(unique.size === 1){
+					console.log(unique.values().next().value);
+				}
+				else{
+					this.getCountryBDC(location).then((data) => resolve(data));
+				}
+			});
+		});
+	};
+
+	/**
+	 * Returns a country code (Only using BDC)
+	 * Do not use externally - Used by getCountryCodeLocally
+	 * Ultimately we will call our own API here and remove/
+	 * replace getCountryCode
+	 * @param {Object} location {lat, lng}
+	 * @return {Promise} Country code Promise
+	 */
+	static getCountryBDC = async (location) => {
+		return axios
+			.get(`https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`)
+			.then((res) => countryCodes[res.data.countryCode])
+			.catch((error) => error);
+	};
+
+	/**
+	 * Returns a country code (Only using CodeGrid)
+	 * Do not use externally - Used by getCountryCodeLocally
+	 * @param {Object} location {lat, lng}
+	 * @return {Promise} Country code Promise
+	 */
+	static getCountryCG = (location) => {
+		return new Promise((resolve, reject) => {
+			CG.getCode(location.lat, location.lng, (error, code) => {
+				if(error){
+					reject(new Error(error));
+				}
+				else{
+					resolve(countryCodes[code.toUpperCase()]);
+				}
+			});
+		})
+	};
+
+	/**
+	 * Returns an array of 9 coodinates as objects.
+	 * Each coordinate is 100 meters aways from the given
+	 * coordinate y angles from 0 to 315
+	 * The first coordinate is the original passed
+	 * @param {Object} location {lat, lng}
+	 * @return {Array} Coordinates [{lat, lng}, {lat, lng}] x 8
+	 */
+	static getSurroundings = (location) => {
+		const meters = 100;
+		const R_EARTH = 6378.137;
+		const M = (1 / ((2 * Math.PI / 360) * R_EARTH)) / 1000;
+
+		function moveFrom(coords, angle, distance){
+			let radianAngle = angle * Math.PI / 180;
+			let x = 0 + (distance * Math.cos(radianAngle));
+			let y = 0 + (distance * Math.sin(radianAngle));
+			let newLat = coords.lat + (y * M);
+			let newLng = coords.lng + (x * M) / Math.cos(coords.lat * (Math.PI / 180));
+			return { lat: newLat, lng: newLng };
+		}
+		let coordinates = [location];
+		for (let angle = 0; angle < 360; angle+=45) {
+			coordinates.push(moveFrom({lat: location.lat, lng: location.lng}, angle, meters));
+		}
+		return coordinates;
+	}
+
+	/**
 	 * Check if the param is coordinates
 	 * @param {string} coordinates
 	 * @return {boolean}

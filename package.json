@@ -23,7 +23,8 @@
 		"start": "electron .",
 		"pack": "electron-builder --dir",
 		"dist": "electron-builder",
-		"postinstall": "electron-builder install-app-deps"
+		"postinstall": "electron-builder install-app-deps",
+		"test": "node ./src/tests/GeneralTests.js"
 	},
 	"build": {
 		"appId": "chatguessr",

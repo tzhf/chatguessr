@@ -7,7 +7,6 @@ const Store = require("./utils/Store");
 const settings = Store.getSettings();
 
 const tmi = require("./Classes/tmi");
-const Hastebin = require("./utils/Hastebin");
 
 const game = new Game();
 let TMI;
@@ -81,7 +80,7 @@ class GameHandler {
 		const processTotalScores = async () => {
 			const totalScores = game.getTotalScores();
 			const locations = game.getLocations();
-			const link = await Hastebin.makeHastebin(game.mapName, totalScores, locations);
+			const link = await GameHelper.makeLink(settings.channelName, game.mapName, locations, totalScores);
 			this.win.webContents.send("show-final-results", totalScores);
 			TMI.action(
 				`🌎 Game finished. Congrats ${GameHelper.toEmojiFlag(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${
@@ -128,6 +127,15 @@ class GameHandler {
 			settings.setTwitchSettings(channelName, botUsername, token);
 			Store.setSettings(settings);
 			this.initTmi();
+		});
+
+		ipcMain.on("closeSettings", () => {
+			this.settingsWindow.hide();
+		});
+
+		ipcMain.on("clearStats", () => {
+			Store.clearStats();
+			TMI.action("All stats cleared 🗑️");
 		});
 	};
 

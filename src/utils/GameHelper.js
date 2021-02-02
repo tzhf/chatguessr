@@ -52,7 +52,6 @@ class GameHelper {
 			.get(`https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`)
 			.then((res) => countryCodes[res.data.countryCode])
 			.catch((error) => {
-				console.log(error);
 				// if BDC returns an error use CodeGrid
 				return new Promise((resolve, reject) => {
 					CG.getCode(location.lat, location.lng, (error, code) => {
@@ -122,18 +121,6 @@ class GameHelper {
 	 */
 	static sortByScore = (guesses) => guesses.sort((a, b) => b.score - a.score);
 
-	/**
-	 * Returns antipote lat
-	 * @param {number} lat
-	 */
-	static getAntipodeLat = (lat) => lat * -1;
-
-	/**
-	 * Returns antipode lng
-	 * @param {number} lng
-	 */
-	static getAntipodeLng = (lng) => (lng > 0 ? lng - 180 : lng + 180);
-
 	/** Converts a country code into an emoji flag
 	 * @param {String} value
 	 */
@@ -163,6 +150,34 @@ class GameHelper {
 	 * @return {String}
 	 */
 	static getRandomFlag = () => countryCodesNames[Math.floor(Math.random() * countryCodesNames.length)].code;
+
+	/** Make game summary link
+	 * @param  {string} streamer
+	 * @param  {string} mapName
+	 * @param  {Object[]} locations
+	 * @param  {Object[]} scores
+	 * @return {Promise} link
+	 */
+	static makeLink = (streamer, mapName, locations, scores) => {
+		let resume = "";
+		scores.forEach((score, index) => {
+			resume += `${(index + 1 + ".").padEnd(5, " ")}${score.username.padEnd(40, " ")}${score.score.toString().padStart(5, " ")} [${score.guessedRounds}]\n`;
+		});
+
+		return axios
+			.post(`${process.env.API_URL}/game`, {
+				streamer: streamer,
+				map: mapName,
+				locations: JSON.stringify(locations),
+				resume: resume,
+			})
+			.then((res) => {
+				return `${process.env.BASE_URL}/game/${res.data.code}`;
+			})
+			.catch((err) => {
+				console.log(err);
+			});
+	};
 }
 
 module.exports = GameHelper;

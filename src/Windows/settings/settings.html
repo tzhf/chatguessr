@@ -12,6 +12,7 @@
 				<button class="tablinks" onclick="openTab(event, 'gameSettings')" id="defaultOpen">Game Settings</button>
 				<button class="tablinks" onclick="openTab(event, 'twitchSettings')">Twitch Settings</button>
 				<button class="tablinks" onclick="openTab(event, 'twitchConnect')">Twitch Connect</button>
+				<button class="close" onclick="closeWindow()">X</button>
 			</div>
 
 			<div id="gameSettings" class="tabcontent">
@@ -51,12 +52,6 @@
 				<div class="grid__col">
 					<div class="col">
 						<h3>User commands</h3>
-						<div class="form__group">
-							<div data-tip="Guess command">
-								<input class="form__field" type="text" id="guessCmd" spellcheck="false" required />
-							</div>
-							<label class="form__label">Make guess :</label>
-						</div>
 						<div class="form__group">
 							<div data-tip="Displays user stats in chat">
 								<input class="form__field" type="text" id="userGetStatsCmd" spellcheck="false" required />

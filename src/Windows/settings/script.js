@@ -90,6 +90,10 @@ const clearStatsConfirm = () => {
 	ipcRenderer.send("clearStats");
 };
 
+const closeWindow = () => {
+	ipcRenderer.send("closeSettings");
+};
+
 const openTab = (e, tab) => {
 	const tabcontent = document.getElementsByClassName("tabcontent");
 	for (let i = 0; i < tabcontent.length; i++) {

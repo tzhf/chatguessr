@@ -4,13 +4,13 @@ const { BrowserWindow, shell } = require("electron");
 const defaultProps = {
 	show: false,
 	frame: false,
-	width: 550,
+	width: 600,
 	height: 450,
 	resizable: false,
 	maximizable: false,
 	transparent: true,
 	webPreferences: {
-		devTools: false,
+		// devTools: false,
 		nodeIntegration: true,
 	},
 };

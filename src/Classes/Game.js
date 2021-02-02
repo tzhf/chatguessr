@@ -83,6 +83,7 @@ class Game {
 		this.guesses.push(streamerGuess);
 		this.guesses.forEach((guess) => this.pushToTotal(guess));
 
+		// TODO: change this method, that's why it's long when too much users in db
 		this.checkUsersStreak();
 
 		if (this.seed.state != "finished") {
@@ -183,7 +184,16 @@ class Game {
 
 	getLocation = () => this.seed.rounds[this.seed.round - 1];
 
-	getLocations = () => this.seed.rounds;
+	getLocations = () => {
+		return this.seed.rounds.map((round) => {
+			return {
+				lat: round.lat,
+				lng: round.lng,
+				heading: round.heading,
+				pitch: round.pitch,
+			};
+		});
+	};
 
 	openGuesses = () => {
 		this.guessesOpen = true;

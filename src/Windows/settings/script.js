@@ -6,7 +6,7 @@ const elements = {
 	token,
 	twitchStatus,
 	cgLink,
-	guessCmd,
+	// guessCmd,
 	userGetStatsCmd,
 	userClearStatsCmd,
 	setStreakCmd,
@@ -24,7 +24,7 @@ ipcRenderer.on("render-settings", (e, settings) => {
 	channelName.value = settings.channelName;
 	botUsername.value = settings.botUsername;
 	token.value = settings.token;
-	guessCmd.value = settings.guessCmd;
+	// // guessCmd.value = settings.guessCmd;
 	userGetStatsCmd.value = settings.userGetStatsCmd;
 	userClearStatsCmd.value = settings.userClearStatsCmd;
 	setStreakCmd.value = settings.setStreakCmd;
@@ -66,7 +66,7 @@ const gameSettingsForm = () => {
 
 const twitchCommandsForm = () => {
 	ipcRenderer.send("twitch-commands-form", {
-		guess: guessCmd.value,
+		// guess: guessCmd.value,
 		userGetStats: userGetStatsCmd.value,
 		userClearStats: userClearStatsCmd.value,
 		setStreak: setStreakCmd.value,

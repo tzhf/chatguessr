@@ -16,13 +16,13 @@ class Game {
 		this.isMultiGuess = false;
 		this.guesses = [];
 		this.total = [];
-		this.lastRoundPlayers;
+		this.lastLocation = {};
 	}
 
 	init = (win, settings) => {
 		this.win = win;
 		this.settings = settings;
-		this.lastRoundPlayers = Store.get("lastRoundPlayers", []);
+		this.lastLocation = Store.get("lastLocation", {});
 	};
 
 	start = async (url, isMultiGuess) => {
@@ -83,8 +83,8 @@ class Game {
 		this.guesses.push(streamerGuess);
 		this.guesses.forEach((guess) => this.pushToTotal(guess));
 
-		// TODO: change this method, that's why it's long when too much users in db
-		this.checkUsersStreak();
+		this.lastLocation = { lat: this.location.lat, lng: this.location.lng };
+		Store.set("lastLocation", this.lastLocation);
 
 		if (this.seed.state != "finished") {
 			this.getCountry();
@@ -135,6 +135,8 @@ class Game {
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
 		if (this.hasPastedPreviousGuess(user.previousGuess, location)) return "pastedPreviousGuess";
 
+		if (JSON.stringify(user.lastLocation) != JSON.stringify(this.lastLocation)) user.setStreak(0);
+
 		if (!this.isMultiGuess) {
 			const guessedCountry = await GameHelper.getCountryCode(location);
 			guessedCountry === this.country ? user.addStreak() : user.setStreak(0);
@@ -156,7 +158,7 @@ class Game {
 			this.guesses.push(guess);
 		}
 
-		user.previousGuess = location;
+		user.setLastLocation({ lat: this.location.lat, lng: this.location.lng });
 		Store.saveUser(userstate.username, user);
 
 		return { user: user, guess: guess };
@@ -169,17 +171,6 @@ class Game {
 		} else {
 			this.win.webContents.send("final-results");
 		}
-	};
-
-	checkUsersStreak = () => {
-		this.lastRoundPlayers = this.guesses.map((a) => a.user);
-		Store.set("lastRoundPlayers", this.lastRoundPlayers);
-
-		const users = Store.getUsers();
-		if (!users) return;
-		Object.keys(users).forEach((user) => {
-			if (!this.lastRoundPlayers.includes(user)) Store.setUserStreak(user, 0);
-		});
 	};
 
 	getLocation = () => this.seed.rounds[this.seed.round - 1];

@@ -11,6 +11,7 @@ class User {
 	 * @param {Number} victories=0
 	 * @param {Number} meanScore=null
 	 * @param {Object} previousGuess=null
+	 * @param {Object} lastLocation=null
 	 */
 	constructor(
 		user,
@@ -23,7 +24,8 @@ class User {
 		perfects = 0,
 		victories = 0,
 		meanScore = null,
-		previousGuess = null
+		previousGuess = null,
+		lastLocation = null
 	) {
 		this.user = user;
 		this.username = username;
@@ -36,6 +38,7 @@ class User {
 		this.victories = victories;
 		this.meanScore = meanScore;
 		this.previousGuess = previousGuess;
+		this.lastLocation = lastLocation;
 	}
 
 	/* Add 1 to streak and correctGuesses. */
@@ -51,6 +54,13 @@ class User {
 	setStreak(number) {
 		this.streak = number;
 		if (this.streak > this.bestStreak) this.bestStreak = this.streak;
+	}
+
+	/** Set last location
+	 * @param {Object} location
+	 */
+	setLastLocation(location) {
+		this.lastLocation = location;
 	}
 
 	/** Set previous guess

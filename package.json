@@ -25,7 +25,7 @@
 		"pack": "electron-builder --dir",
 		"dist": "electron-builder",
 		"postinstall": "electron-builder install-app-deps",
-		"test": "node ./src/tests/GeneralTests.js"
+		"test": "jest"
 	},
 	"build": {
 		"appId": "chatguessr",

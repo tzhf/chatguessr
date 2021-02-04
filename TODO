@@ -1,0 +1,10 @@
+TODOS:
+
+	☐ Store users by Twitch ID in case they change their names
+	☐ Move all commands to a CommandHandler?
+	☐ Check for streamer using `badges.broadcaster`
+	☐ Make `command-prefix` a settings thing? Example ! # $ &
+	☐ Abstract response builders to it's own module
+	☐ Make GameHelper not a class
+	☐ Make Store not a class
+

@@ -211,7 +211,16 @@ class GameHelper {
 	/** Converts a country code into an emoji flag
 	 * @param {String} value
 	 */
-	static toEmojiFlag = (value) => value.toUpperCase().replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+	static toEmojiFlag = (value) => {
+		if(value.length == 2){
+			return value.toUpperCase().replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397))
+		}
+		else{
+			let flag = value.toUpperCase().substring(0,2).replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+			let region = value.toUpperCase().substring(2).replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397) + " ");
+			return `${flag} ${region}`.trim();
+		}
+	};
 
 	/** Replace special chars
 	 * @param {String} val

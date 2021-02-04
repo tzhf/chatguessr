@@ -45,6 +45,16 @@ test("Check emoji for 'AR' >> '🇦🇷'", () => {
 	)
 	.toBe("🇦🇷");
 });
-
-
+test("Check emoji for 'GBSCT' >> '🇬🇧 🇸 🇨 🇹'", () => {
+	expect(
+		GameHelper.toEmojiFlag("GBSCT")
+	)
+	.toBe("🇬🇧 🇸 🇨 🇹");
+});
+test("Check emoji for 'ESCT' >> '🇪🇸 🇨 🇹'", () => {
+	expect(
+		GameHelper.toEmojiFlag("ESCT")
+	)
+	.toBe("🇪🇸 🇨 🇹");
+});
 

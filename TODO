@@ -7,4 +7,8 @@ TODOS:
 	☐ Abstract response builders to it's own module
 	☐ Make GameHelper not a class
 	☐ Make Store not a class
+	☐ Make the game also work on challenges?
+	☐ Make it possible to open challenges links from the game itself
+		This 2 changes above should make it possible so people that
+		doesn't have pro can still use chatguessr.
 

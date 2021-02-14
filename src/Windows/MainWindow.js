@@ -23,8 +23,6 @@ class MainWindow extends BrowserWindow {
 			e.preventDefault();
 			shell.openExternal(link);
 		});
-
-		// this.webContents.openDevTools();
 	}
 }
 

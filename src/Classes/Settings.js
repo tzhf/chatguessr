@@ -3,7 +3,8 @@ class Settings {
 	 * @param {String} channelName=""
 	 * @param {String} botUsername=""
 	 * @param {String} token=""
-	 * @param {String} guessCmd="!g"
+	 * @param {String} cgCmd="!cg"
+	 * @param {String} cgMsg="To play along, go to this link, pick a location, and paste the whole command into chat: <your cg link>"
 	 * @param {String} userGetStatsCmd="!me"
 	 * @param {String} userClearStatsCmd="!clear"
 	 * @param {String} setStreakCmd="!setstreak"
@@ -16,7 +17,8 @@ class Settings {
 		channelName = "",
 		botUsername = "",
 		token = "",
-		guessCmd = "!g",
+		cgCmd = "!cg",
+		cgMsg = "To play along, go to this link, pick a location, and paste the whole command into chat: <your cg link>",
 		userGetStatsCmd = "!me",
 		userClearStatsCmd = "!clear",
 		setStreakCmd = "!setstreak",
@@ -28,7 +30,8 @@ class Settings {
 		this.channelName = channelName;
 		this.botUsername = botUsername;
 		this.token = token;
-		this.guessCmd = guessCmd;
+		this.cgCmd = cgCmd;
+		this.cgMsg = cgMsg;
 		this.userGetStatsCmd = userGetStatsCmd;
 		this.userClearStatsCmd = userClearStatsCmd;
 		this.setStreakCmd = setStreakCmd;
@@ -52,7 +55,8 @@ class Settings {
 	 * @param {Object} commands
 	 */
 	setTwitchCommands(commands) {
-		this.guessCmd = commands.guess;
+		this.cgCmd = commands.cgCmdd;
+		this.cgMsg = commands.cgMsgg;
 		this.userGetStatsCmd = commands.userGetStats;
 		this.userClearStatsCmd = commands.userClearStats;
 		this.setStreakCmd = commands.setStreak;

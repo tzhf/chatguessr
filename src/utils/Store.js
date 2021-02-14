@@ -3,7 +3,6 @@ require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
 const ElectronStore = require("electron-store");
 const store = new ElectronStore();
-// store.clear();
 
 const User = require("../Classes/User");
 const Settings = require("../Classes/Settings");
@@ -23,7 +22,7 @@ class Store {
 	static set = (key, value) => store.set(key, value);
 
 	/**
-	 * @param  {String} key
+	 * @param {String} key
 	 */
 	static delete = (key) => store.delete(key);
 
@@ -34,8 +33,14 @@ class Store {
 	 */
 	static getSettings = () => {
 		const storedSettings = store.get("settings");
-		if (!storedSettings) return new Settings();
-		return new Settings(...Object.values(storedSettings));
+		if (!storedSettings) {
+			const settings = new Settings();
+			store.set("settings", settings);
+			return settings;
+		} else {
+			// return storedSettings;
+			return new Settings(...Object.values(storedSettings));
+		}
 	};
 
 	/**
@@ -127,7 +132,6 @@ class Store {
 			streak: { streak: streak, user: streakUser },
 			victories: { victories: victories, user: victoriesUser },
 			perfects: { perfects: perfects, user: perfectsUser },
-			// meanScore: { meanScore: meanScore, user: meanScoreUser },
 		};
 	};
 
@@ -139,14 +143,17 @@ class Store {
 		store.delete("lastRoundPlayers");
 	};
 
-	// Delete users on the new version to avoid stats glitchs (investigate why this happens)
 	static checkVersion = () => {
 		const version = store.get("current_version");
 		const curr_ver = process.env.CURR_VER;
 
 		if (!version || version != curr_ver) {
+			const settings = store.get("settings");
+			store.clear();
+			store.set("settings.channelName", settings.channelName);
+			store.set("settings.botUsername", settings.botUsername);
+			store.set("settings.token", settings.token);
 			store.set("current_version", curr_ver);
-			Store.clearStats();
 		}
 	};
 }

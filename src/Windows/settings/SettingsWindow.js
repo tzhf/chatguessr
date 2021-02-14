@@ -5,12 +5,12 @@ const defaultProps = {
 	show: false,
 	frame: false,
 	width: 600,
-	height: 450,
+	height: 520,
 	resizable: false,
 	maximizable: false,
 	transparent: true,
 	webPreferences: {
-		// devTools: false,
+		devTools: false,
 		nodeIntegration: true,
 	},
 };

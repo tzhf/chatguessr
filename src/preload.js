@@ -78,6 +78,16 @@ const init = () => {
 	const hideTopBar = document.createElement("style");
 	hideTopBar.innerHTML = `.layout{--layout-header-height:0rem;}.header__right{display:none;}.game-layout__panorama-canvas{height:100%;}.header__logo-image{margin-top: 10px;opacity: 0.9;}`;
 
+	const layout__main = document.getElementsByClassName("layout__main")[0];
+	const settingsIcon = document.createElement("div");
+	settingsIcon.setAttribute("title", "Settings (ctrl+p)");
+	settingsIcon.className = "settingsIcon";
+	settingsIcon.innerHTML = "<span>⚙️</span>";
+	settingsIcon.addEventListener("click", () => {
+		ipcRenderer.send("openSettings");
+	});
+	layout__main.appendChild(settingsIcon);
+
 	const scoreboard = new Scoreboard();
 
 	ipcRenderer.on("game-started", (e, isMultiGuess) => {

@@ -6,7 +6,8 @@ const elements = {
 	token,
 	twitchStatus,
 	cgLink,
-	// guessCmd,
+	cgCmd,
+	cgMsg,
 	userGetStatsCmd,
 	userClearStatsCmd,
 	setStreakCmd,
@@ -24,7 +25,8 @@ ipcRenderer.on("render-settings", (e, settings) => {
 	channelName.value = settings.channelName;
 	botUsername.value = settings.botUsername;
 	token.value = settings.token;
-	// // guessCmd.value = settings.guessCmd;
+	cgCmd.value = settings.cgCmd;
+	cgMsg.value = settings.cgMsg;
 	userGetStatsCmd.value = settings.userGetStatsCmd;
 	userClearStatsCmd.value = settings.userClearStatsCmd;
 	setStreakCmd.value = settings.setStreakCmd;
@@ -35,7 +37,7 @@ ipcRenderer.on("render-settings", (e, settings) => {
 });
 
 ipcRenderer.on("twitch-connected", (e, botUsername) => {
-	const linkStr = `https://chatguessr.com/map/?bot=${botUsername}`;
+	const linkStr = `https://chatguessr.com/map/${botUsername}`;
 	const link = document.createElement("a");
 	link.href = linkStr;
 	link.innerText = linkStr;
@@ -66,7 +68,8 @@ const gameSettingsForm = () => {
 
 const twitchCommandsForm = () => {
 	ipcRenderer.send("twitch-commands-form", {
-		// guess: guessCmd.value,
+		cgCmdd: cgCmd.value,
+		cgMsgg: cgMsg.value,
 		userGetStats: userGetStatsCmd.value,
 		userClearStats: userClearStatsCmd.value,
 		setStreak: setStreakCmd.value,

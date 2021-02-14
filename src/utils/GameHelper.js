@@ -77,10 +77,9 @@ class GameHelper {
 			});
 			Promise.all(promises).then((values) => {
 				let unique = new Set(values);
-				if(unique.size === 1){
+				if (unique.size === 1) {
 					console.log(unique.values().next().value);
-				}
-				else{
+				} else {
 					this.getCountryBDC(location).then((data) => resolve(data));
 				}
 			});
@@ -111,14 +110,13 @@ class GameHelper {
 	static getCountryCG = (location) => {
 		return new Promise((resolve, reject) => {
 			CG.getCode(location.lat, location.lng, (error, code) => {
-				if(error){
+				if (error) {
 					reject(new Error(error));
-				}
-				else{
+				} else {
 					resolve(countryCodes[code.toUpperCase()]);
 				}
 			});
-		})
+		});
 	};
 
 	/**
@@ -132,22 +130,22 @@ class GameHelper {
 	static getSurroundings = (location) => {
 		const meters = 100;
 		const R_EARTH = 6378.137;
-		const M = (1 / ((2 * Math.PI / 360) * R_EARTH)) / 1000;
+		const M = 1 / (((2 * Math.PI) / 360) * R_EARTH) / 1000;
 
-		function moveFrom(coords, angle, distance){
-			let radianAngle = angle * Math.PI / 180;
-			let x = 0 + (distance * Math.cos(radianAngle));
-			let y = 0 + (distance * Math.sin(radianAngle));
-			let newLat = coords.lat + (y * M);
+		function moveFrom(coords, angle, distance) {
+			let radianAngle = (angle * Math.PI) / 180;
+			let x = 0 + distance * Math.cos(radianAngle);
+			let y = 0 + distance * Math.sin(radianAngle);
+			let newLat = coords.lat + y * M;
 			let newLng = coords.lng + (x * M) / Math.cos(coords.lat * (Math.PI / 180));
 			return { lat: newLat, lng: newLng };
 		}
 		let coordinates = [location];
-		for (let angle = 0; angle < 360; angle+=45) {
-			coordinates.push(moveFrom({lat: location.lat, lng: location.lng}, angle, meters));
+		for (let angle = 0; angle < 360; angle += 45) {
+			coordinates.push(moveFrom({ lat: location.lat, lng: location.lng }, angle, meters));
 		}
 		return coordinates;
-	}
+	};
 
 	/**
 	 * Check if the param is coordinates
@@ -212,12 +210,17 @@ class GameHelper {
 	 * @param {String} value
 	 */
 	static toEmojiFlag = (value) => {
-		if(value.length == 2){
-			return value.toUpperCase().replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397))
-		}
-		else{
-			let flag = value.toUpperCase().substring(0,2).replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
-			let region = value.toUpperCase().substring(2).replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397) + " ");
+		if (value.length == 2) {
+			return value.toUpperCase().replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+		} else {
+			const flag = value
+				.toUpperCase()
+				.substring(0, 2)
+				.replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+			const region = value
+				.toUpperCase()
+				.substring(2)
+				.replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397) + " ");
 			return `${flag} ${region}`.trim();
 		}
 	};

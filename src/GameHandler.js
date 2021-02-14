@@ -133,6 +133,10 @@ class GameHandler {
 			this.settingsWindow.hide();
 		});
 
+		ipcMain.on("openSettings", () => {
+			this.openSettingsWindow();
+		});
+
 		ipcMain.on("clearStats", () => {
 			Store.clearStats();
 			TMI.action("All stats cleared 🗑️");
@@ -180,18 +184,21 @@ class GameHandler {
 
 				const { user, guess } = res;
 
-				if (game.isMultiGuess) {
-					this.win.webContents.send("render-multiguess", game.guesses, game.nbGuesses);
-					if (guess.modified) return TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guess changed`);
-					// if (settings.showHasGuessed) return TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
-				} else {
+				if (!game.isMultiGuess) {
 					this.win.webContents.send("render-guess", guess, game.nbGuesses);
+					if (settings.showHasGuessed) return TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
+				} else {
+					this.win.webContents.send("render-multiguess", game.guesses, game.nbGuesses);
+					if (!guess.modified) {
+						if (settings.showHasGuessed) return TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
+					} else {
+						return TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guess changed`);
+					}
 				}
-				if (settings.showHasGuessed) return TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
 			});
 		});
 
-		TMI.client.on("chat", (channel, userstate, message, self) => {
+		TMI.client.on("message", (channel, userstate, message, self) => {
 			if (self || !message.startsWith("!")) return;
 			message = message.toLowerCase();
 
@@ -202,11 +209,18 @@ class GameHandler {
 				TMI.say(`
 					${GameHelper.toEmojiFlag(userInfo.flag)} ${userInfo.username} : Current streak: ${userInfo.streak}.
 					Best streak: ${userInfo.bestStreak}.
-					Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses} (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).
+					Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses}${
+					userInfo.nbGuesses > 0 ? ` (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).` : "."
+				}
 					Avg. score: ${Math.round(userInfo.meanScore)}.
 					Victories: ${userInfo.victories}.
 					Perfects: ${userInfo.perfects}.
 				`);
+			}
+
+			if (message === settings.cgCmd) {
+				if (settings.cgCmd === "") return;
+				return TMI.say(settings.cgMsg);
 			}
 
 			if (message === "!best") {

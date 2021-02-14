@@ -13,7 +13,7 @@
 		"electron-store": "^6.0.1",
 		"express": "^4.17.1",
 		"jquery": "^3.5.1",
-		"tmi.js": "^1.5.0"
+		"tmi.js": "^1.7.1"
 	},
 	"devDependencies": {
 		"@types/jest": "^26.0.20",

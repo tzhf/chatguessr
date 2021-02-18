@@ -38,7 +38,6 @@ class Store {
 			store.set("settings", settings);
 			return settings;
 		} else {
-			// return storedSettings;
 			return new Settings(...Object.values(storedSettings));
 		}
 	};
@@ -57,6 +56,7 @@ class Store {
 	 * @return {User} User
 	 */
 	static getOrCreateUser = (user, username) => {
+		user = user.toLowerCase();
 		const storedUser = Store.getUser(user);
 		if (!storedUser) {
 			return new User(user, username);
@@ -83,7 +83,7 @@ class Store {
 	 * @param {String} user
 	 * @param {User} newUser
 	 */
-	static saveUser = (user, newUser) => store.set(`users.${user}`, newUser);
+	static saveUser = (user, newUser) => store.set(`users.${user.toLowerCase()}`, newUser);
 
 	/**
 	 * Delete one user

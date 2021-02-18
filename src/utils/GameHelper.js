@@ -257,18 +257,17 @@ class GameHelper {
 	 * @param  {Object[]} scores
 	 * @return {Promise} link
 	 */
-	static makeLink = (streamer, mapName, locations, scores) => {
-		let resume = "";
-		scores.forEach((score, index) => {
-			resume += `${(index + 1 + ".").padEnd(5, " ")}${score.username.padEnd(40, " ")}${score.score.toString().padStart(5, " ")} [${score.guessedRounds}]\n`;
+	static makeLink = (streamer, mapName, locations, totalScores) => {
+		const players = totalScores.map((guess) => {
+			return { username: guess.username, flag: guess.flag, score: guess.score, guessedRounds: guess.guessedRounds };
 		});
 
 		return axios
 			.post(`${process.env.API_URL}/game`, {
 				streamer: streamer,
 				map: mapName,
-				locations: JSON.stringify(locations),
-				resume: resume,
+				locations: locations,
+				players: players,
 			})
 			.then((res) => {
 				return `${process.env.BASE_URL}/game/${res.data.code}`;

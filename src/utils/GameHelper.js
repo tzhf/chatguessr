@@ -259,7 +259,7 @@ class GameHelper {
 	 */
 	static makeLink = (streamer, mapName, locations, totalScores) => {
 		const players = totalScores.map((guess) => {
-			return { username: guess.username, flag: guess.flag, score: guess.score, guessedRounds: guess.guessedRounds };
+			return { username: guess.username, flag: guess.flag, score: guess.score, rounds: guess.rounds };
 		});
 
 		return axios

@@ -249,7 +249,7 @@ class Scoreboard {
 				}</span>`,
 				Streak: score.streak,
 				Distance: score.distance,
-				Score: `${score.score}${isTotal ? " [" + score.guessedRounds + "]" : ""}`,
+				Score: `${score.score}${isTotal ? " [" + score.rounds + "]" : ""}`,
 			};
 		});
 

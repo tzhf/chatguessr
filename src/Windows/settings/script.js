@@ -37,9 +37,9 @@ ipcRenderer.on("render-settings", (e, settings) => {
 });
 
 ipcRenderer.on("twitch-connected", (e, botUsername) => {
-	const linkStr = `https://chatguessr.com/map/${botUsername}`;
+	const linkStr = `chatguessr.com/map/${botUsername}`;
 	const link = document.createElement("a");
-	link.href = linkStr;
+	link.href = "https://" + linkStr;
 	link.innerText = linkStr;
 	link.setAttribute("target", "_blank");
 

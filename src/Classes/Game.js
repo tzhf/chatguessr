@@ -180,8 +180,8 @@ class Game {
 			return {
 				lat: round.lat,
 				lng: round.lng,
-				heading: round.heading,
-				pitch: round.pitch,
+				heading: Math.round(round.heading),
+				pitch: Math.round(round.pitch),
 			};
 		});
 	};
@@ -226,9 +226,9 @@ class Game {
 			this.total[index].streak = guess.streak;
 			this.total[index].color = guess.color;
 			this.total[index].flag = guess.flag;
-			this.total[index].guessedRounds++;
+			this.total[index].rounds++;
 		} else {
-			this.total.push({ ...guess, guessedRounds: 1 });
+			this.total.push({ ...guess, rounds: 1 });
 		}
 	};
 

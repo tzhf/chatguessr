@@ -273,7 +273,7 @@ class GameHandler {
 				const msgArr = message.split(" ");
 				if (msgArr.length != 3) return TMI.action(`Valid command: ${settings.setStreakCmd} user 42`);
 
-				const newStreak = parseFloat(msgArr[2]);
+				const newStreak = parseInt(msgArr[2]);
 				if (!Number.isInteger(newStreak)) return TMI.action(`Invalid number.`);
 				if (msgArr[1].charAt(0) === "@") msgArr[1] = msgArr[1].substring(1);
 

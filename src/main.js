@@ -19,7 +19,7 @@ const startServer = () => {
 	server.get("/", (req, res) => res.send("🌵"));
 	server
 		.listen(port, () => {
-			console.log(`Server running at http://localhost:${port}`);
+			// console.log(`Server running at http://localhost:${port}`);
 			initWindow();
 		})
 		.on("error", console.log);

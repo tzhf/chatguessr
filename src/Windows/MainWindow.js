@@ -15,7 +15,7 @@ class MainWindow extends BrowserWindow {
 		super({ ...defaultProps });
 
 		this.setMenuBarVisibility(false);
-		this.loadURL("https://www.geoguessr.com");
+		this.loadURL("https://www.geoguessr.com/classic");
 		this.maximize();
 		this.once("ready-to-show", () => this.show());
 

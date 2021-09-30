@@ -18,7 +18,7 @@ class Scoreboard {
 	}
 
 	init() {
-		this.position = getCookie("scoreboard_position", { top: 55, left: 5, width: 380, height: 180 });
+		this.position = getCookie("scoreboard_position", { top: 20, left: 5, width: 380, height: 180 });
 		this.container = $("#scoreboardContainer");
 		this.title = $("#scoreboardTitle");
 		this.switchContainer = $("#switchContainer");

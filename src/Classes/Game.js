@@ -221,6 +221,7 @@ class Game {
 	pushToTotal = (guess) => {
 		const index = this.total.findIndex((e) => e.user === guess.user);
 		if (index != -1) {
+			this.total[index].scores.push({ round: this.seed.round - 1, score: guess.score });
 			this.total[index].score += guess.score;
 			this.total[index].distance += guess.distance;
 			this.total[index].streak = guess.streak;
@@ -228,7 +229,7 @@ class Game {
 			this.total[index].flag = guess.flag;
 			this.total[index].rounds++;
 		} else {
-			this.total.push({ ...guess, rounds: 1 });
+			this.total.push({ scores: [{ round: this.seed.round, score: guess.score }], ...guess, rounds: 1 });
 		}
 	};
 

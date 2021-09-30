@@ -73,12 +73,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 const init = () => {
 	const markerRemover = document.createElement("style");
-	markerRemover.innerHTML = ".map-pin { display: none; }";
+	markerRemover.innerHTML = ".map-pin{display:none}";
 
-	const hideTopBar = document.createElement("style");
-	hideTopBar.innerHTML = `.layout{--layout-header-height:0rem;}.header__right{display:none;}.game-layout__panorama-canvas{height:100%;}.header__logo-image{margin-top: 10px;opacity: 0.9;}`;
-
-	const layout__main = document.getElementsByClassName("layout__main")[0];
 	const settingsIcon = document.createElement("div");
 	settingsIcon.setAttribute("title", "Settings (ctrl+p)");
 	settingsIcon.className = "settingsIcon";
@@ -86,7 +82,7 @@ const init = () => {
 	settingsIcon.addEventListener("click", () => {
 		ipcRenderer.send("openSettings");
 	});
-	layout__main.appendChild(settingsIcon);
+	document.body.appendChild(settingsIcon);
 
 	const scoreboard = new Scoreboard();
 
@@ -97,12 +93,10 @@ const init = () => {
 
 	ipcRenderer.on("refreshed-in-game", (e, noCompass) => {
 		scoreboard.show();
-		document.body.appendChild(hideTopBar);
 		drParseNoCompass(noCompass);
 	});
 
 	ipcRenderer.on("game-quitted", () => {
-		hideTopBar.remove();
 		markerRemover.remove();
 		scoreboard.hide();
 		clearMarkers();
@@ -298,7 +292,7 @@ function hijackMap() {
 
 			const oldMap = google.maps.Map;
 			google.maps.Map = Object.assign(
-				function (...args) {
+				function(...args) {
 					const res = oldMap.apply(this, args);
 					this.addListener("idle", () => {
 						if (MAP != null) return;
@@ -397,7 +391,7 @@ function drParseNoCar() {
 
 	function installGetContext(el) {
 		const g = el.getContext;
-		el.getContext = function () {
+		el.getContext = function() {
 			if (arguments[0] === "webgl" || arguments[0] === "webgl2") {
 				const ctx = g.apply(this, arguments);
 				if (ctx && ctx.shaderSource && ctx.shaderSource.bestcity !== "bintulu") {
@@ -410,7 +404,7 @@ function drParseNoCar() {
 	}
 
 	const f = document.createElement;
-	document.createElement = function () {
+	document.createElement = function() {
 		if (arguments[0] === "canvas" || arguments[0] === "CANVAS") {
 			const el = f.apply(this, arguments);
 			installGetContext(el);

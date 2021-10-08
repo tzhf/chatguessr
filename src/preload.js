@@ -13,6 +13,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.ipcRenderer = require("electron").ipcRenderer;
 	window.$ = window.jQuery = require("jquery");
 	window.MAP = null;
+
 	hijackMap();
 
 	const head = document.getElementsByTagName("head")[0];

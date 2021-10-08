@@ -1,6 +1,6 @@
 {
 	"name": "chatguessr",
-	"version": "1.0.7b",
+	"version": "1.0.8",
 	"description": "Chatbot for Geoguessr",
 	"author": "MrAmericanMike & T.ZHF",
 	"license": "ISC",
@@ -11,6 +11,7 @@
 		"cors": "^2.8.5",
 		"dotenv": "^8.2.0",
 		"electron-store": "^8.0.1",
+		"electron-updater": "^4.3.9",
 		"express": "^4.17.1",
 		"jquery": "^3.5.1",
 		"tmi.js": "^1.8.5"
@@ -23,10 +24,12 @@
 		"start": "electron .",
 		"pack": "electron-builder --dir",
 		"dist": "electron-builder",
-		"postinstall": "electron-builder install-app-deps"
+		"postinstall": "electron-builder install-app-deps",
+		"build": "electron-builder build --win --publish never",
+		"deploy": "electron-builder build --win --publish always"
 	},
 	"build": {
-		"appId": "chatguessr",
+		"appId": "com.tzhf.chatguessr",
 		"productName": "Chatguessr",
 		"win": {
 			"target": "nsis",

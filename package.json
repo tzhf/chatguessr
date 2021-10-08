@@ -10,14 +10,14 @@
 		"codegrid-js": "git+https://github.com/Tzhf/codegrid-js.git",
 		"cors": "^2.8.5",
 		"dotenv": "^8.2.0",
-		"electron-store": "^6.0.1",
+		"electron-store": "^8.0.1",
 		"express": "^4.17.1",
 		"https": "^1.0.0",
 		"jquery": "^3.5.1",
 		"tmi.js": "^1.7.1"
 	},
 	"devDependencies": {
-		"electron": "^9.1.0",
+		"electron": "^15.1.1",
 		"electron-builder": "^22.8.1"
 	},
 	"scripts": {

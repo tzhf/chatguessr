@@ -2,16 +2,17 @@ const path = require("path");
 const { BrowserWindow, shell } = require("electron");
 
 const defaultProps = {
-	show: false,
-	frame: false,
 	width: 600,
 	height: 520,
+	show: false,
+	frame: false,
 	resizable: false,
 	maximizable: false,
 	transparent: true,
 	webPreferences: {
 		devTools: false,
 		nodeIntegration: true,
+		contextIsolation: false,
 	},
 };
 

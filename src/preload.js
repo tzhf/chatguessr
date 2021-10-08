@@ -69,80 +69,95 @@ window.addEventListener("DOMContentLoaded", () => {
 		datatables.addEventListener("load", () => init());
 		document.body.appendChild(datatables);
 	};
-});
 
-const init = () => {
-	const markerRemover = document.createElement("style");
-	markerRemover.innerHTML = ".map-pin{display:none}";
+	const init = () => {
+		const markerRemover = document.createElement("style");
+		markerRemover.innerHTML = ".map-pin{display:none}";
 
-	const settingsIcon = document.createElement("div");
-	settingsIcon.setAttribute("title", "Settings (ctrl+p)");
-	settingsIcon.className = "settingsIcon";
-	settingsIcon.innerHTML = "<span>⚙️</span>";
-	settingsIcon.addEventListener("click", () => {
-		ipcRenderer.send("openSettings");
-	});
-	document.body.appendChild(settingsIcon);
+		const settingsIcon = document.createElement("div");
+		settingsIcon.setAttribute("title", "Settings (ctrl+p)");
+		settingsIcon.className = "settingsIcon";
+		settingsIcon.innerHTML = "<span>⚙️</span>";
+		settingsIcon.addEventListener("click", () => {
+			ipcRenderer.send("openSettings");
+		});
+		document.body.appendChild(settingsIcon);
 
-	const scoreboard = new Scoreboard();
+		const scoreboard = new Scoreboard();
 
-	ipcRenderer.on("game-started", (e, isMultiGuess) => {
-		scoreboard.show();
-		scoreboard.reset(isMultiGuess);
-	});
+		const showScoreboard = document.createElement("div");
+		showScoreboard.setAttribute("title", "Show scoreboard");
+		showScoreboard.className = "showScoreboard";
+		showScoreboard.innerHTML = "<span>👁️‍🗨️</span>";
+		showScoreboard.addEventListener("click", () => {
+			scoreboard.setVisibility();
+		});
 
-	ipcRenderer.on("refreshed-in-game", (e, noCompass) => {
-		scoreboard.show();
-		drParseNoCompass(noCompass);
-	});
+		ipcRenderer.on("game-started", (e, isMultiGuess) => {
+			document.body.appendChild(showScoreboard);
+			scoreboard.checkVisibility();
+			scoreboard.reset(isMultiGuess);
+		});
 
-	ipcRenderer.on("game-quitted", () => {
-		markerRemover.remove();
-		scoreboard.hide();
-		clearMarkers();
-	});
+		ipcRenderer.on("refreshed-in-game", (e, noCompass) => {
+			document.body.appendChild(showScoreboard);
+			scoreboard.checkVisibility();
+			drParseNoCompass(noCompass);
+			console.log("refreshed in game");
+		});
 
-	ipcRenderer.on("render-guess", (e, guess, nbGuesses) => {
-		scoreboard.setTitle(`GUESSES (${nbGuesses})`);
-		scoreboard.renderGuess(guess);
-	});
-
-	ipcRenderer.on("render-multiguess", (e, guesses, nbGuesses) => {
-		scoreboard.setTitle(`GUESSES (${nbGuesses})`);
-		scoreboard.renderMultiGuess(guesses);
-	});
-
-	ipcRenderer.on("pre-round-results", () => document.body.appendChild(markerRemover));
-
-	ipcRenderer.on("show-round-results", (e, round, location, scores) => {
-		scoreboard.setTitle(`ROUND ${round} RESULTS`);
-		scoreboard.displayScores(scores);
-		scoreboard.showSwitch(false);
-		populateMap(location, scores);
-	});
-
-	ipcRenderer.on("show-final-results", (e, totalScores) => {
-		document.body.appendChild(markerRemover);
-		scoreboard.setTitle("HIGHSCORES");
-		scoreboard.showSwitch(false);
-		scoreboard.displayScores(totalScores, true);
-		clearMarkers();
-	});
-
-	ipcRenderer.on("next-round", (e, isMultiGuess) => {
-		scoreboard.reset(isMultiGuess);
-		scoreboard.showSwitch(true);
-		setTimeout(() => {
+		ipcRenderer.on("game-quitted", () => {
+			scoreboard.hide();
+			document.body.removeChild(showScoreboard);
 			markerRemover.remove();
 			clearMarkers();
-		}, 1000);
-	});
+		});
 
-	ipcRenderer.on("switch-on", () => scoreboard.switchOn(true));
-	ipcRenderer.on("switch-off", () => scoreboard.switchOn(false));
+		ipcRenderer.on("render-guess", (e, guess, nbGuesses) => {
+			scoreboard.setTitle(`GUESSES (${nbGuesses})`);
+			scoreboard.renderGuess(guess);
+		});
 
-	ipcRenderer.on("game-settings-change", (e, noCompass) => drParseNoCompass(noCompass));
-};
+		ipcRenderer.on("render-multiguess", (e, guesses, nbGuesses) => {
+			scoreboard.setTitle(`GUESSES (${nbGuesses})`);
+			scoreboard.renderMultiGuess(guesses);
+		});
+
+		ipcRenderer.on("pre-round-results", () => document.body.appendChild(markerRemover));
+
+		ipcRenderer.on("show-round-results", (e, round, location, scores) => {
+			scoreboard.show();
+			scoreboard.setTitle(`ROUND ${round} RESULTS`);
+			scoreboard.displayScores(scores);
+			scoreboard.showSwitch(false);
+			populateMap(location, scores);
+		});
+
+		ipcRenderer.on("show-final-results", (e, totalScores) => {
+			document.body.appendChild(markerRemover);
+			scoreboard.show();
+			scoreboard.setTitle("HIGHSCORES");
+			scoreboard.showSwitch(false);
+			scoreboard.displayScores(totalScores, true);
+			clearMarkers();
+		});
+
+		ipcRenderer.on("next-round", (e, isMultiGuess) => {
+			scoreboard.checkVisibility();
+			scoreboard.reset(isMultiGuess);
+			scoreboard.showSwitch(true);
+			setTimeout(() => {
+				markerRemover.remove();
+				clearMarkers();
+			}, 1000);
+		});
+
+		ipcRenderer.on("switch-on", () => scoreboard.switchOn(true));
+		ipcRenderer.on("switch-off", () => scoreboard.switchOn(false));
+
+		ipcRenderer.on("game-settings-change", (e, noCompass) => drParseNoCompass(noCompass));
+	};
+});
 
 let markers = [];
 let polylines = [];
@@ -292,7 +307,7 @@ function hijackMap() {
 
 			const oldMap = google.maps.Map;
 			google.maps.Map = Object.assign(
-				function(...args) {
+				function (...args) {
 					const res = oldMap.apply(this, args);
 					this.addListener("idle", () => {
 						if (MAP != null) return;
@@ -391,7 +406,7 @@ function drParseNoCar() {
 
 	function installGetContext(el) {
 		const g = el.getContext;
-		el.getContext = function() {
+		el.getContext = function () {
 			if (arguments[0] === "webgl" || arguments[0] === "webgl2") {
 				const ctx = g.apply(this, arguments);
 				if (ctx && ctx.shaderSource && ctx.shaderSource.bestcity !== "bintulu") {
@@ -404,7 +419,7 @@ function drParseNoCar() {
 	}
 
 	const f = document.createElement;
-	document.createElement = function() {
+	document.createElement = function () {
 		if (arguments[0] === "canvas" || arguments[0] === "CANVAS") {
 			const el = f.apply(this, arguments);
 			installGetContext(el);

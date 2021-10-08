@@ -137,6 +137,10 @@ class GameHandler {
 			this.openSettingsWindow();
 		});
 
+		ipcMain.on("showScoreboard", () => {
+			this.showScoreboard();
+		});
+
 		ipcMain.on("clearStats", () => {
 			Store.clearStats();
 			TMI.action("All stats cleared 🗑️");

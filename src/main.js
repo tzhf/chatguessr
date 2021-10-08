@@ -1,27 +1,26 @@
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
-const express = require("express");
-const server = express();
 const port = process.env.SERVER_PORT;
+
+const express = require("express");
 const cors = require("cors");
+const server = express();
+server.use(cors());
 
 const { app, BrowserWindow, globalShortcut } = require("electron");
 
 const MainWindow = require("./Windows/MainWindow");
-const SettingsWindow = require("./Windows/Settings/SettingsWindow");
+const SettingsWindow = require("./Windows/settings/SettingsWindow");
 const GameHandler = require("./GameHandler");
 
 const startServer = () => {
-	server.use(cors());
-
 	server.use("/", express.static(__dirname + "/public"));
-	server.get("/", (req, res) => res.send("🌵"));
 	server
 		.listen(port, () => {
 			initWindow();
 		})
-		.on("error", console.log);
+		.on("error", console.log("Cannot connect to server"));
 };
 
 const initWindow = () => {

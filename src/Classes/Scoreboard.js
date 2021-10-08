@@ -2,6 +2,7 @@
 
 class Scoreboard {
 	constructor() {
+		this.visibility;
 		this.position;
 		this.container;
 		this.scoreboard;
@@ -18,7 +19,8 @@ class Scoreboard {
 	}
 
 	init() {
-		this.position = getCookie("scoreboard_position", { top: 20, left: 5, width: 380, height: 180 });
+		this.visibility = this.getCookie("visibility", true);
+		this.position = this.getCookie("scoreboard_position", { top: 20, left: 5, width: 380, height: 180 });
 		this.container = $("#scoreboardContainer");
 		this.title = $("#scoreboardTitle");
 		this.switchContainer = $("#switchContainer");
@@ -41,7 +43,7 @@ class Scoreboard {
 				const currentPosition = this.getPosition();
 				if (JSON.stringify(this.position) !== JSON.stringify(currentPosition)) {
 					this.setPosition(currentPosition);
-					setCookie("scoreboard_position", JSON.stringify(currentPosition));
+					this.setCookie("scoreboard_position", JSON.stringify(currentPosition));
 				}
 			});
 
@@ -95,7 +97,7 @@ class Scoreboard {
 		});
 
 		// Column Visisbility
-		this.columnState = getCookie("CG_ColVis", [
+		this.columnState = this.getCookie("CG_ColVis", [
 			{ column: 0, state: true },
 			{ column: 2, state: true },
 			{ column: 3, state: true },
@@ -113,32 +115,8 @@ class Scoreboard {
 				this.columnState.push({ column, state });
 			}
 
-			setCookie("CG_ColVis", JSON.stringify(this.columnState));
+			this.setCookie("CG_ColVis", JSON.stringify(this.columnState));
 		});
-
-		// ColVis Cookies
-		function setCookie(name, value, exdays = 60) {
-			const d = new Date();
-			d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-			const expires = "expires=" + d.toUTCString();
-			document.cookie = name + "=" + value + ";" + expires + ";path=/";
-		}
-
-		function getCookie(name, defaultValue = {}) {
-			const cname = name + "=";
-			var decodedCookie = decodeURIComponent(document.cookie);
-			var ca = decodedCookie.split(";");
-			for (var i = 0; i < ca.length; i++) {
-				var c = ca[i];
-				while (c.charAt(0) == " ") {
-					c = c.substring(1);
-				}
-				if (c.indexOf(cname) == 0) {
-					return JSON.parse(c.substring(cname.length, c.length));
-				}
-			}
-			return defaultValue;
-		}
 
 		// SCROLLER
 		const sliderElem = `<input type="range" min="5" max="50" value="20" id="scrollSpeedSlider">`;
@@ -183,6 +161,20 @@ class Scoreboard {
 		this.setTitle("GUESSES (0)");
 		this.showSwitch(true);
 		this.table.clear().draw();
+	};
+
+	setVisibility = () => {
+		this.visibility = !this.visibility;
+		this.setCookie("visibility", this.visibility);
+		this.checkVisibility();
+	};
+
+	checkVisibility = () => {
+		if (this.visibility) {
+			this.show();
+		} else {
+			this.hide();
+		}
 	};
 
 	show = () => {
@@ -333,6 +325,30 @@ class Scoreboard {
 	switchOn = (state) => this.switchBtn.prop("checked", state);
 
 	toMeter = (distance) => (distance >= 1 ? parseFloat(distance.toFixed(1)) + "km" : parseInt(distance * 1000) + "m");
+
+	// ColVis Cookies
+	setCookie = (name, value, exdays = 60) => {
+		const d = new Date();
+		d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+		const expires = "expires=" + d.toUTCString();
+		document.cookie = name + "=" + value + ";" + expires + ";path=/";
+	};
+
+	getCookie = (name, defaultValue = {}) => {
+		const cname = name + "=";
+		var decodedCookie = decodeURIComponent(document.cookie);
+		var ca = decodedCookie.split(";");
+		for (var i = 0; i < ca.length; i++) {
+			var c = ca[i];
+			while (c.charAt(0) == " ") {
+				c = c.substring(1);
+			}
+			if (c.indexOf(cname) == 0) {
+				return JSON.parse(c.substring(cname.length, c.length));
+			}
+		}
+		return defaultValue;
+	};
 }
 
 module.exports = Scoreboard;

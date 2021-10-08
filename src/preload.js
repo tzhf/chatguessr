@@ -103,7 +103,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			document.body.appendChild(showScoreboard);
 			scoreboard.checkVisibility();
 			drParseNoCompass(noCompass);
-			console.log("refreshed in game");
 		});
 
 		ipcRenderer.on("game-quitted", () => {

@@ -16,13 +16,7 @@ const GameHandler = require("./GameHandler");
 
 const startServer = () => {
 	server.use("/", express.static(__dirname + "/public"));
-	server
-		.listen(port, () => {
-			initWindow();
-		})
-		.on("error", function (e) {
-			console.log(e);
-		});
+	server.listen(port, () => initWindow()).on("error", (e) => console.log(e));
 };
 
 const initWindow = () => {

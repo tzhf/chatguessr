@@ -20,7 +20,9 @@ const startServer = () => {
 		.listen(port, () => {
 			initWindow();
 		})
-		.on("error", console.log("Cannot connect to server"));
+		.on("error", function (e) {
+			console.log(e);
+		});
 };
 
 const initWindow = () => {

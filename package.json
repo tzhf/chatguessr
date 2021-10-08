@@ -6,7 +6,7 @@
 	"license": "ISC",
 	"main": "./src/main.js",
 	"dependencies": {
-		"axios": "^0.21.4",
+		"axios": "^0.22.0",
 		"codegrid-js": "git+https://github.com/Tzhf/codegrid-js.git",
 		"cors": "^2.8.5",
 		"dotenv": "^8.2.0",
@@ -14,11 +14,11 @@
 		"express": "^4.17.1",
 		"https": "^1.0.0",
 		"jquery": "^3.5.1",
-		"tmi.js": "^1.7.1"
+		"tmi.js": "^1.8.5"
 	},
 	"devDependencies": {
 		"electron": "^15.1.1",
-		"electron-builder": "^22.8.1"
+		"electron-builder": "^22.11.7"
 	},
 	"scripts": {
 		"start": "electron .",

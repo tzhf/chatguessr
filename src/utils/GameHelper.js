@@ -4,11 +4,11 @@ require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 const axios = require("axios");
 
 // Small fix to avoid recent SSL expiration issue, remove when fixed
-const https = require("https");
-const agent = new https.Agent({
-	rejectUnauthorized: false,
-});
-axios.defaults.httpsAgent = agent;
+// const https = require("https");
+// const agent = new https.Agent({
+// 	rejectUnauthorized: false,
+// });
+// axios.defaults.httpsAgent = agent;
 
 const CG = require("codegrid-js").CodeGrid();
 const countryCodes = require("./countryCodes");

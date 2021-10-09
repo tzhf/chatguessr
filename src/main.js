@@ -90,9 +90,9 @@ const createWindows = () => {
 	updateWindow = new BrowserWindow({
 		width: 600,
 		height: 520,
-		show: false,
+		// show: false,
 		webPreferences: {
-			devTools: false,
+			// devTools: false,
 			nodeIntegration: true,
 			contextIsolation: false,
 		},
@@ -100,6 +100,14 @@ const createWindows = () => {
 	updateWindow.setParentWindow(mainWindow);
 	updateWindow.setMenuBarVisibility(false);
 	updateWindow.loadURL(path.join(__dirname, "./Windows/update/update.html"));
+
+	autoUpdater.on("update-available", () => {
+		updateWindow.show();
+		updateWindow.webContents.send("update_available");
+	});
+	autoUpdater.on("update-downloaded", () => {
+		updateWindow.webContents.send("update_downloaded");
+	});
 
 	const gameHandler = new GameHandler(mainWindow, settingsWindow);
 
@@ -121,14 +129,6 @@ app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
 		app.quit();
 	}
-});
-
-autoUpdater.on("update-available", () => {
-	updateWindow.show();
-	updateWindow.webContents.send("update_available");
-});
-autoUpdater.on("update-downloaded", () => {
-	updateWindow.webContents.send("update_downloaded");
 });
 
 ipcMain.on("restart_app", () => {

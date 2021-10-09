@@ -59,18 +59,6 @@ const createWindows = () => {
 		mainWindow = null;
 	});
 
-	const updateWindow = new BrowserWindow({
-		width: 600,
-		height: 520,
-		webPreferences: {
-			nodeIntegration: true,
-			contextIsolation: false,
-		},
-	});
-	updateWindow.setParentWindow(mainWindow);
-	updateWindow.setMenuBarVisibility(false);
-	updateWindow.loadURL(path.join(__dirname, "./Windows/update/update.html"));
-
 	mainWindow.webContents.openDevTools();
 
 	// Settings window
@@ -130,10 +118,10 @@ autoUpdater.on("update-available", () => {
 			contextIsolation: false,
 		},
 	});
-
 	updateWindow.setParentWindow(mainWindow);
 	updateWindow.setMenuBarVisibility(false);
 	updateWindow.loadURL(path.join(__dirname, "./Windows/update/update.html"));
+
 	updateWindow.webContents.send("update_available");
 });
 autoUpdater.on("update-downloaded", () => {

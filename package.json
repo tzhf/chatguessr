@@ -1,9 +1,13 @@
 {
 	"name": "chatguessr",
-	"version": "1.0.86",
+	"version": "1.0.11",
 	"description": "Chatbot for Geoguessr",
 	"author": "MrAmericanMike & T.ZHF",
 	"license": "ISC",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/tzhf/chatguessr.git"
+	},
 	"main": "./src/main.js",
 	"dependencies": {
 		"axios": "^0.22.0",

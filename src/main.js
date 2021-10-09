@@ -90,7 +90,7 @@ const createWindows = () => {
 	updateWindow = new BrowserWindow({
 		width: 600,
 		height: 520,
-		// show: false,
+		show: false,
 		webPreferences: {
 			// devTools: false,
 			nodeIntegration: true,

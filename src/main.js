@@ -86,6 +86,21 @@ const createWindows = () => {
 		shell.openExternal(link);
 	});
 
+	//Update Window
+	updateWindow = new BrowserWindow({
+		width: 600,
+		height: 520,
+		show: false,
+		webPreferences: {
+			devTools: false,
+			nodeIntegration: true,
+			contextIsolation: false,
+		},
+	});
+	updateWindow.setParentWindow(mainWindow);
+	updateWindow.setMenuBarVisibility(false);
+	updateWindow.loadURL(path.join(__dirname, "./Windows/update/update.html"));
+
 	const gameHandler = new GameHandler(mainWindow, settingsWindow);
 
 	globalShortcut.register("CommandOrControl+R", () => false);
@@ -109,19 +124,7 @@ app.on("window-all-closed", () => {
 });
 
 autoUpdater.on("update-available", () => {
-	updateWindow = new BrowserWindow({
-		width: 600,
-		height: 520,
-		webPreferences: {
-			devTools: false,
-			nodeIntegration: true,
-			contextIsolation: false,
-		},
-	});
-	updateWindow.setParentWindow(mainWindow);
-	updateWindow.setMenuBarVisibility(false);
-	updateWindow.loadURL(path.join(__dirname, "./Windows/update/update.html"));
-
+	updateWindow.show();
 	updateWindow.webContents.send("update_available");
 });
 autoUpdater.on("update-downloaded", () => {

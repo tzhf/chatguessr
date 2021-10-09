@@ -102,8 +102,8 @@ const createWindows = () => {
 	updateWindow.loadURL(path.join(__dirname, "./Windows/update/update.html"));
 
 	autoUpdater.on("update-available", () => {
-		updateWindow.show();
 		updateWindow.webContents.send("update_available");
+		updateWindow.show();
 	});
 	autoUpdater.on("update-downloaded", () => {
 		updateWindow.webContents.send("update_downloaded");
@@ -133,4 +133,8 @@ app.on("window-all-closed", () => {
 
 ipcMain.on("restart_app", () => {
 	autoUpdater.quitAndInstall();
+});
+
+ipcMain.on("close_update_window", () => {
+	updateWindow.close();
 });

@@ -1,13 +1,9 @@
 {
 	"name": "chatguessr",
-	"version": "1.0.12",
+	"version": "1.0.88",
 	"description": "Chatbot for Geoguessr",
 	"author": "MrAmericanMike & T.ZHF",
 	"license": "ISC",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/tzhf/chatguessr.git"
-	},
 	"main": "./src/main.js",
 	"dependencies": {
 		"axios": "^0.22.0",
@@ -41,6 +37,13 @@
 		},
 		"nsis": {
 			"deleteAppDataOnUninstall": true
-		}
+		},
+		"publish": [
+			{
+				"provider": "github",
+				"owner": "tzhf",
+				"repo": "chatguessr"
+			}
+		]
 	}
 }

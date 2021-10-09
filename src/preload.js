@@ -77,7 +77,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		const settingsIcon = document.createElement("div");
 		settingsIcon.setAttribute("title", "Settings (ctrl+p)");
-		settingsIcon.className = "settingsIcon";
+		settingsIcon.id = "settingsIcon";
 		settingsIcon.innerHTML = "<span>⚙️</span>";
 		settingsIcon.addEventListener("click", () => {
 			ipcRenderer.send("openSettings");
@@ -88,7 +88,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		const showScoreboard = document.createElement("div");
 		showScoreboard.setAttribute("title", "Show scoreboard");
-		showScoreboard.className = "showScoreboard";
+		showScoreboard.id = "showScoreboard";
 		showScoreboard.innerHTML = "<span>👁️‍🗨️</span>";
 		showScoreboard.addEventListener("click", () => {
 			scoreboard.setVisibility();
@@ -108,7 +108,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		ipcRenderer.on("game-quitted", () => {
 			scoreboard.hide();
-			document.body.removeChild(showScoreboard);
+			if ($("#showScoreboard")) $("#showScoreboard").remove();
 			markerRemover.remove();
 			clearMarkers();
 		});

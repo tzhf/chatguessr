@@ -1,4 +1,4 @@
-const { app, BrowserWindow, globalShortcut, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, globalShortcut, shell } = require("electron");
 const { autoUpdater } = require("electron-updater");
 
 const GameHandler = require("./GameHandler");
@@ -13,16 +13,9 @@ const cors = require("cors");
 const server = express();
 server.use(cors());
 
-// const MainWindow = require("./Windows/MainWindow");
-// const SettingsWindow = require("./Windows/settings/SettingsWindow");
-
 const startServer = () => {
 	server.use("/", express.static(__dirname + "/public"));
-	server
-		.listen(port, () => {
-			createWindows();
-		})
-		.on("error", (e) => console.log(e));
+	server.listen(port, () => createWindows()).on("error", (e) => console.log(e));
 };
 
 let mainWindow;
@@ -40,7 +33,6 @@ const createWindows = () => {
 			// devTools: false,
 		},
 	});
-
 	mainWindow.setMenuBarVisibility(false);
 	mainWindow.loadURL("https://www.geoguessr.com/classic");
 	mainWindow.maximize();
@@ -52,6 +44,15 @@ const createWindows = () => {
 
 	mainWindow.once("ready-to-show", () => {
 		mainWindow.show();
+
+		const data = {
+			provider: "github",
+			owner: "tzhf",
+			repo: "chatguessr",
+			token: process.env.GITHUB_TOKEN,
+			private: true,
+		};
+		autoUpdater.setFeedURL(data);
 		autoUpdater.checkForUpdatesAndNotify();
 	});
 
@@ -59,24 +60,21 @@ const createWindows = () => {
 		mainWindow = null;
 	});
 
-	mainWindow.webContents.openDevTools();
-
 	// Settings window
 	settingsWindow = new BrowserWindow({
 		width: 600,
-		height: 520,
+		minWidth: 600,
+		height: 500,
+		minHeight: 500,
 		show: false,
 		frame: false,
-		resizable: false,
-		maximizable: false,
 		transparent: true,
 		webPreferences: {
-			devTools: false,
 			nodeIntegration: true,
 			contextIsolation: false,
+			devTools: false,
 		},
 	});
-
 	settingsWindow.setParentWindow(mainWindow);
 	settingsWindow.setMenuBarVisibility(false);
 	settingsWindow.loadURL(path.join(__dirname, "./Windows/settings/settings.html"));
@@ -84,29 +82,6 @@ const createWindows = () => {
 	settingsWindow.webContents.on("new-window", (e, link) => {
 		e.preventDefault();
 		shell.openExternal(link);
-	});
-
-	//Update Window
-	updateWindow = new BrowserWindow({
-		width: 600,
-		height: 520,
-		show: false,
-		webPreferences: {
-			// devTools: false,
-			nodeIntegration: true,
-			contextIsolation: false,
-		},
-	});
-	updateWindow.setParentWindow(mainWindow);
-	updateWindow.setMenuBarVisibility(false);
-	updateWindow.loadURL(path.join(__dirname, "./Windows/update/update.html"));
-
-	autoUpdater.on("update-available", () => {
-		updateWindow.webContents.send("update_available");
-		updateWindow.show();
-	});
-	autoUpdater.on("update-downloaded", () => {
-		updateWindow.webContents.send("update_downloaded");
 	});
 
 	const gameHandler = new GameHandler(mainWindow, settingsWindow);
@@ -131,10 +106,49 @@ app.on("window-all-closed", () => {
 	}
 });
 
+// Auto Updater
+autoUpdater.on("update-available", () => {
+	updateWindow = new BrowserWindow({
+		width: 400,
+		minWidth: 400,
+		height: 240,
+		minHeight: 240,
+		show: false,
+		frame: false,
+		transparent: true,
+		webPreferences: {
+			nodeIntegration: true,
+			contextIsolation: false,
+			devTools: false,
+		},
+	});
+	updateWindow.setParentWindow(mainWindow);
+	updateWindow.setMenuBarVisibility(false);
+	updateWindow.loadURL(path.join(__dirname, "./Windows/update/update.html"));
+
+	updateWindow.once("ready-to-show", () => {
+		updateWindow.webContents.send("update_available");
+		updateWindow.show();
+		updateWindow.focus();
+	});
+});
+
+autoUpdater.on("download-progress", () => {
+	updateWindow.webContents.send("download_progress");
+});
+
+autoUpdater.on("update-downloaded", () => {
+	updateWindow.webContents.send("update_downloaded");
+});
+
+autoUpdater.on("error", (e, err) => {
+	updateWindow.webContents.send("update_error", err);
+});
+
 ipcMain.on("restart_app", () => {
 	autoUpdater.quitAndInstall();
 });
 
 ipcMain.on("close_update_window", () => {
-	updateWindow.close();
+	updateWindow.hide();
 });

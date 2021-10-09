@@ -1,5 +1,4 @@
 node_modules
 package-lock.json
-electron-builder.yml
 dist
 .env

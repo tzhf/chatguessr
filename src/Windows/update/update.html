@@ -7,11 +7,15 @@
 		<link rel="stylesheet" href="./update.css" />
 	</head>
 	<body>
-		Update available
-		<div id="notification">
-			<p id="message"></p>
-			<button id="close-button" onClick="closeWindow()">Close</button>
-			<button id="restart-button" onClick="restartApp()" class="hidden">Restart</button>
+		<div class="container">
+			<div>
+				<h3>Update available</h3>
+				<p id="message"></p>
+			</div>
+			<div>
+				<button class="btn save hidden" id="restart-button" onClick="restartApp()">Restart</button>
+				<button class="btn danger" id="close-button" onClick="closeWindow()">Close</button>
+			</div>
 		</div>
 		<script src="./update.js"></script>
 	</body>

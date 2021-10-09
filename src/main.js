@@ -27,6 +27,7 @@ const startServer = () => {
 
 let mainWindow;
 let settingsWindow;
+let updateWindow;
 
 const createWindows = () => {
 	// Main Window
@@ -57,6 +58,18 @@ const createWindows = () => {
 	mainWindow.on("closed", () => {
 		mainWindow = null;
 	});
+
+	const updateWindow = new BrowserWindow({
+		width: 600,
+		height: 520,
+		webPreferences: {
+			nodeIntegration: true,
+			contextIsolation: false,
+		},
+	});
+	updateWindow.setParentWindow(mainWindow);
+	updateWindow.setMenuBarVisibility(false);
+	updateWindow.loadURL(path.join(__dirname, "./Windows/update/update.html"));
 
 	mainWindow.webContents.openDevTools();
 
@@ -108,17 +121,23 @@ app.on("window-all-closed", () => {
 });
 
 autoUpdater.on("update-available", () => {
-	const updateWindow = new BrowserWindow({ width: 600, height: 520 });
-	updateWindow.setParentWindow(mainWindow);
+	updateWindow = new BrowserWindow({
+		width: 600,
+		height: 520,
+		webPreferences: {
+			devTools: false,
+			nodeIntegration: true,
+			contextIsolation: false,
+		},
+	});
 
-	// mainWindow.webContents.send("update_available");
+	updateWindow.setParentWindow(mainWindow);
+	updateWindow.setMenuBarVisibility(false);
+	updateWindow.loadURL(path.join(__dirname, "./Windows/update/update.html"));
+	updateWindow.webContents.send("update_available");
 });
 autoUpdater.on("update-downloaded", () => {
-	mainWindow.webContents.send("update_downloaded");
-});
-
-ipcMain.on("app_version", (event) => {
-	event.sender.send("app_version", { version: app.getVersion() });
+	updateWindow.webContents.send("update_downloaded");
 });
 
 ipcMain.on("restart_app", () => {

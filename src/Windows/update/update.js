@@ -1,3 +1,5 @@
+const ipcRenderer = require("electron").ipcRenderer;
+
 const notification = document.getElementById("notification");
 const message = document.getElementById("message");
 const restartButton = document.getElementById("restart-button");

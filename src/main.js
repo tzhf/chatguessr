@@ -30,7 +30,7 @@ const createWindows = () => {
 			preload: path.join(__dirname, "./preload.js"),
 			enableRemoteModule: true,
 			contextIsolation: false,
-			// devTools: false,
+			devTools: false,
 		},
 	});
 	mainWindow.setMenuBarVisibility(false);

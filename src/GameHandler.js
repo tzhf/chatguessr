@@ -20,7 +20,7 @@ class GameHandler {
 	}
 
 	init = () => {
-		Store.checkVersion();
+		// Store.checkVersion();
 		game.init(this.win, settings);
 
 		// Browser Listening

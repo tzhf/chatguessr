@@ -1,13 +1,7 @@
-const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
 const { autoUpdater } = require("electron-updater");
-const GameHandler = require("./GameHandler");
 
-// const express = require("express");
-// const cors = require("cors");
-// const server = express();
-// server.use(cors());
+const GameHandler = require("./GameHandler");
 
 app.whenReady().then(() => init());
 
@@ -22,24 +16,11 @@ app.on("window-all-closed", () => {
 	}
 });
 
-// function startServer() {
-// 	server.use("/", express.static(__dirname + "/public"));
-// 	server.listen(process.env.SERVER_PORT, () => init()).on("error", (e) => console.log(e));
-// }
-
 let mainWindow;
 function init() {
 	mainWindow = require("./Windows/MainWindow");
 	mainWindow.once("ready-to-show", () => {
 		mainWindow.maximize();
-		const data = {
-			provider: "github",
-			owner: "tzhf",
-			repo: "chatguessr",
-			token: process.env.GH_TOKEN,
-			private: true,
-		};
-		autoUpdater.setFeedURL(data);
 		autoUpdater.checkForUpdatesAndNotify();
 	});
 

@@ -1,5 +1,5 @@
-const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../../.env") });
+// const path = require("path");
+// require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
 const ElectronStore = require("electron-store");
 const store = new ElectronStore();
@@ -143,19 +143,19 @@ class Store {
 		store.delete("lastRoundPlayers");
 	};
 
-	static checkVersion = () => {
-		const version = store.get("current_version");
-		const curr_ver = process.env.CURR_VER;
+	// static checkVersion = () => {
+	// 	const version = store.get("current_version");
+	// 	const curr_ver = process.env.CURR_VER;
 
-		if (!version || version != curr_ver) {
-			const settings = store.get("settings");
-			store.clear();
-			store.set("settings.channelName", settings.channelName);
-			store.set("settings.botUsername", settings.botUsername);
-			store.set("settings.token", settings.token);
-			store.set("current_version", curr_ver);
-		}
-	};
+	// 	if (!version || version != curr_ver) {
+	// 		const settings = store.get("settings");
+	// 		store.clear();
+	// 		store.set("settings.channelName", settings.channelName);
+	// 		store.set("settings.botUsername", settings.botUsername);
+	// 		store.set("settings.token", settings.token);
+	// 		store.set("current_version", curr_ver);
+	// 	}
+	// };
 }
 
 module.exports = Store;

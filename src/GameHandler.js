@@ -80,8 +80,9 @@ class GameHandler {
 		const processTotalScores = async () => {
 			const totalScores = game.getTotalScores();
 			const locations = game.getLocations();
-			const link = await GameHelper.makeLink(settings.channelName, game.mapName, game.mode, locations, totalScores);
 			this.win.webContents.send("show-final-results", totalScores);
+
+			const link = await GameHelper.makeLink(settings.channelName, game.mapName, game.mode, locations, totalScores);
 			TMI.action(
 				`🌎 Game finished. Congrats ${GameHelper.toEmojiFlag(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${
 					link != undefined ? `Game summary: ${link}` : ""
@@ -232,7 +233,7 @@ class GameHandler {
 				if (!best) return TMI.say("No stats available.");
 
 				return TMI.say(`
-					Channel's best: 
+					Channel best: 
 					Streak: ${best.streak.streak}${best.streak.streak > 0 ? " (" + best.streak.user + ")" : ""}.
 					Victories: ${best.victories.victories}${best.victories.victories > 0 ? " (" + best.victories.user + ")" : ""}.
 					Perfects: ${Math.round(best.perfects.perfects)}${best.perfects.perfects > 0 ? " (" + best.perfects.user + ")" : ""}.

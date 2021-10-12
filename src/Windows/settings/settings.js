@@ -38,13 +38,7 @@ ipcRenderer.on("render-settings", (e, settings) => {
 
 ipcRenderer.on("twitch-connected", (e, botUsername) => {
 	const linkStr = `chatguessr.com/map/${botUsername}`;
-	const link = document.createElement("a");
-	link.href = "https://" + linkStr;
-	link.innerText = linkStr;
-	link.setAttribute("target", "_blank");
-
-	cgLink.textContent = "Your cg link: ";
-	cgLink.appendChild(link);
+	cgLink.innerHTML = `Your cg link: <a href="https://${linkStr}" target="_blank">${linkStr}</a>`;
 	cgLink.style.display = "block";
 
 	twitchStatus.textContent = "Connected";

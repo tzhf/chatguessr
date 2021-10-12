@@ -1,10 +1,6 @@
-const Scoreboard = require("./Classes/Scoreboard");
-
 const path = require("path");
 const { ipcRenderer } = require("electron");
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
-const port = process.env.SERVER_PORT;
-
+const Scoreboard = require("./Classes/Scoreboard");
 const Store = require("./utils/Store");
 const noCar = Store.getSettings().noCar;
 drParseNoCar();
@@ -21,7 +17,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	const styles = document.createElement("link");
 	styles.rel = "stylesheet";
 	styles.type = "text/css";
-	styles.href = `http://localhost:${port}/styles.css`;
+	styles.href = `${path.join(__dirname, "./public/styles.css")}`;
 	head.appendChild(styles);
 
 	const scoreboardContainer = document.createElement("div");
@@ -54,19 +50,19 @@ window.addEventListener("DOMContentLoaded", () => {
 	const flagIcon = document.createElement("link");
 	flagIcon.rel = "stylesheet";
 	flagIcon.type = "text/css";
-	flagIcon.href = `http://localhost:${port}/flag-icon.min.css`;
+	flagIcon.href = `${path.join(__dirname, "./public/flag-icon.min.css")}`;
 	head.appendChild(flagIcon);
 
 	const jqueryUI = document.createElement("script");
 	jqueryUI.type = "text/javascript";
-	jqueryUI.src = `http://localhost:${port}/jquery-ui.min.js`;
+	jqueryUI.src = `${path.join(__dirname, "./public/jquery-ui.min.js")}`;
 	jqueryUI.addEventListener("load", () => loadDatatables());
 	document.body.appendChild(jqueryUI);
 
 	const loadDatatables = () => {
 		const datatables = document.createElement("script");
 		datatables.type = "text/javascript";
-		datatables.src = `http://localhost:${port}/datatables.bundle.min.js`;
+		datatables.src = `${path.join(__dirname, "./public/datatables.bundle.min.js")}`;
 		datatables.addEventListener("load", () => init());
 		document.body.appendChild(datatables);
 	};
@@ -307,7 +303,7 @@ function hijackMap() {
 
 			const oldMap = google.maps.Map;
 			google.maps.Map = Object.assign(
-				function (...args) {
+				function(...args) {
 					const res = oldMap.apply(this, args);
 					this.addListener("idle", () => {
 						if (MAP != null) return;
@@ -406,7 +402,7 @@ function drParseNoCar() {
 
 	function installGetContext(el) {
 		const g = el.getContext;
-		el.getContext = function () {
+		el.getContext = function() {
 			if (arguments[0] === "webgl" || arguments[0] === "webgl2") {
 				const ctx = g.apply(this, arguments);
 				if (ctx && ctx.shaderSource && ctx.shaderSource.bestcity !== "bintulu") {
@@ -419,7 +415,7 @@ function drParseNoCar() {
 	}
 
 	const f = document.createElement;
-	document.createElement = function () {
+	document.createElement = function() {
 		if (arguments[0] === "canvas" || arguments[0] === "CANVAS") {
 			const el = f.apply(this, arguments);
 			installGetContext(el);

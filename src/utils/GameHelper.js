@@ -253,11 +253,12 @@ class GameHelper {
 	/** Make game summary link
 	 * @param  {string} streamer
 	 * @param  {string} mapName
+	 * @param  {Object} mode
 	 * @param  {Object[]} locations
 	 * @param  {Object[]} scores
 	 * @return {Promise} link
 	 */
-	static makeLink = (streamer, mapName, locations, totalScores) => {
+	static makeLink = (streamer, mapName, mode, locations, totalScores) => {
 		const players = totalScores.map((guess) => {
 			return { username: guess.username, flag: guess.flag, score: guess.score, rounds: guess.rounds };
 		});
@@ -266,6 +267,7 @@ class GameHelper {
 			.post(`${process.env.API_URL}/game`, {
 				streamer: streamer,
 				map: mapName,
+				mode: mode,
 				locations: locations,
 				players: players,
 			})

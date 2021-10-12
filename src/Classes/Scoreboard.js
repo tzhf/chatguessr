@@ -178,11 +178,11 @@ class Scoreboard {
 	};
 
 	show = () => {
-		this.container.css("display", "block");
+		this.container.show();
 	};
 
 	hide = () => {
-		this.container.css("display", "none");
+		this.container.hide();
 	};
 
 	renderGuess = (guess) => {
@@ -280,7 +280,7 @@ class Scoreboard {
 					div.stop().animate({ scrollTop: 0 }, 1000, "swing", () => {
 						setTimeout(() => {
 							loop();
-						}, 2000);
+						}, 3000);
 					});
 				}, 1000);
 			});
@@ -292,7 +292,7 @@ class Scoreboard {
 		this.stop(elem);
 		setTimeout(() => {
 			this.scroller(elem);
-		}, 2000);
+		}, 3000);
 	};
 
 	stop(elem) {

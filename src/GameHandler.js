@@ -80,7 +80,7 @@ class GameHandler {
 		const processTotalScores = async () => {
 			const totalScores = game.getTotalScores();
 			const locations = game.getLocations();
-			const link = await GameHelper.makeLink(settings.channelName, game.mapName, locations, totalScores);
+			const link = await GameHelper.makeLink(settings.channelName, game.mapName, game.mode, locations, totalScores);
 			this.win.webContents.send("show-final-results", totalScores);
 			TMI.action(
 				`🌎 Game finished. Congrats ${GameHelper.toEmojiFlag(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${

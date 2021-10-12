@@ -159,6 +159,8 @@ class Game {
 		}
 
 		user.setLastLocation({ lat: this.location.lat, lng: this.location.lng });
+		user.setPreviousGuess(location);
+
 		Store.saveUser(userstate.username, user);
 
 		return { user: user, guess: guess };
@@ -250,6 +252,10 @@ class Game {
 
 	get mapName() {
 		return this.seed.mapName;
+	}
+
+	get mode() {
+		return { noMove: this.seed.forbidMoving, noPan: this.seed.forbidRotating, noZoom: this.seed.forbidZooming };
 	}
 
 	get round() {

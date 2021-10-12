@@ -10,7 +10,7 @@ class User {
 	 * @param {Number} perfects=0
 	 * @param {Number} victories=0
 	 * @param {Number} meanScore=null
-	 * @param {Object} previousGuess=null
+	 * @param {Object} previousGuess={}
 	 * @param {Object} lastLocation=null
 	 */
 	constructor(
@@ -24,7 +24,7 @@ class User {
 		perfects = 0,
 		victories = 0,
 		meanScore = null,
-		previousGuess = null,
+		previousGuess = {},
 		lastLocation = null
 	) {
 		this.user = user;

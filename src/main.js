@@ -36,7 +36,6 @@ function init() {
 }
 
 // Auto Updater
-
 let updateWindow;
 autoUpdater.on("update-available", () => {
 	updateWindow = require("./Windows/update/UpdateWindow");

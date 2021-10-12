@@ -7,7 +7,6 @@ function updateWindow() {
 		minWidth: 400,
 		height: 240,
 		minHeight: 240,
-		// show: false,
 		frame: false,
 		transparent: true,
 		webPreferences: {
@@ -18,10 +17,6 @@ function updateWindow() {
 	});
 	win.setMenuBarVisibility(false);
 	win.loadURL(path.join(__dirname, "./update.html"));
-
-	// win.once("ready-to-show", () => {
-	// 	win.show();
-	// });
 
 	return win;
 }

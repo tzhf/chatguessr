@@ -5,7 +5,7 @@ TODOS:
 	☐ Check for streamer using `badges.broadcaster`
 	☐ Make `command-prefix` a settings thing? Example ! # $ &
 	☐ Abstract response builders to it's own module
-	☐ Make GameHelper not a class
+	[x] Make GameHelper not a class
 	☐ Make Store not a class
 	☐ Make the game also work on challenges?
 	☐ Make it possible to open challenges links from the game itself

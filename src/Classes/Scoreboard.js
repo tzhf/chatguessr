@@ -154,38 +154,38 @@ class Scoreboard {
 	/**
 	 * @param {boolean} isMultiGuess
 	 */
-	reset = (isMultiGuess) => {
+	reset(isMultiGuess) {
 		this.isMultiGuess = isMultiGuess;
 		this.setColVis();
 		this.isResults = false;
 		this.setTitle("GUESSES (0)");
 		this.showSwitch(true);
 		this.table.clear().draw();
-	};
+	}
 
-	setVisibility = () => {
+	setVisibility() {
 		this.visibility = !this.visibility;
 		this.setCookie("visibility", this.visibility);
 		this.checkVisibility();
-	};
+	}
 
-	checkVisibility = () => {
+	checkVisibility() {
 		if (this.visibility) {
 			this.show();
 		} else {
 			this.hide();
 		}
-	};
+	}
 
-	show = () => {
+	show() {
 		this.container.show();
-	};
+	}
 
-	hide = () => {
+	hide() {
 		this.container.hide();
-	};
+	}
 
-	renderGuess = (guess) => {
+	renderGuess(guess) {
 		const row = {
 			Position: "",
 			Player: `${guess.flag ? `<span class="flag-icon flag-icon-${guess.flag}"></span>` : ""}<span class='username' style='color:${guess.color}'>${
@@ -209,9 +209,9 @@ class Scoreboard {
 			.each((cell, i) => {
 				cell.innerHTML = i + 1;
 			});
-	};
+	}
 
-	renderMultiGuess = (guesses) => {
+	renderMultiGuess(guesses) {
 		const rows = guesses.map((guess) => {
 			return {
 				Position: "",
@@ -226,9 +226,9 @@ class Scoreboard {
 
 		this.table.clear().draw();
 		this.table.rows.add(rows).draw();
-	};
+	}
 
-	displayScores = (scores, isTotal = false) => {
+	displayScores(scores, isTotal = false) {
 		this.isResults = true;
 		if (scores[0]) scores[0].color = "#E3BB39";
 		if (scores[1]) scores[1].color = "#C9C9C9";
@@ -268,9 +268,9 @@ class Scoreboard {
 		// Restore columns visibility
 		this.table.columns().visible(true);
 		this.toTop(".dataTables_scrollBody");
-	};
+	}
 
-	scroller = (elem) => {
+	scroller(elem) {
 		const div = $(elem);
 
 		const loop = () => {
@@ -286,20 +286,25 @@ class Scoreboard {
 			});
 		};
 		loop();
-	};
+	}
 
-	toTop = (elem) => {
+	toTop(elem) {
 		this.stop(elem);
 		setTimeout(() => {
 			this.scroller(elem);
+<<<<<<< HEAD
 		}, 3000);
 	};
+=======
+		}, 2000);
+	}
+>>>>>>> 8800bf8 (some formatting)
 
 	stop(elem) {
 		$(elem).stop();
 	}
 
-	setColVis = () => {
+	setColVis() {
 		if (this.isMultiGuess) {
 			this.table.columns([0, 2, 3, 4]).visible(false);
 		} else {
@@ -307,23 +312,34 @@ class Scoreboard {
 				this.table.column(column.column).visible(column.state);
 			});
 		}
-	};
+	}
 
-	getPosition = () => ({
-		top: this.scoreboard.position().top,
-		left: this.scoreboard.position().left,
-		width: this.scoreboard.width(),
-		height: this.scoreboard.height(),
-	});
+	getPosition() {
+		return {
+			top: this.scoreboard.position().top,
+			left: this.scoreboard.position().left,
+			width: this.scoreboard.width(),
+			height: this.scoreboard.height(),
+		};
+	}
 
-	setPosition = (position) => (this.position = position);
+	setPosition(position) {
+		return this.position = position;
+	}
 
-	setTitle = (title) => this.title.text(title);
+	setTitle(title) {
+		return this.title.text(title);
+	}
 
-	showSwitch = (state) => this.switchContainer.css("display", state ? "block" : "none");
+	showSwitch(state) {
+		return this.switchContainer.css("display", state ? "block" : "none");
+	}
 
-	switchOn = (state) => this.switchBtn.prop("checked", state);
+	switchOn(state) {
+		return this.switchBtn.prop("checked", state);
+	}
 
+<<<<<<< HEAD
 	toMeter = (distance) => (distance >= 1 ? parseFloat(distance.toFixed(1)) + "km" : parseInt(distance * 1000) + "m");
 
 	// ColVis Cookies
@@ -349,6 +365,11 @@ class Scoreboard {
 		}
 		return defaultValue;
 	};
+=======
+	toMeter(distance) {
+		return (distance >= 1 ? parseFloat(distance.toFixed(1)) + "km" : parseInt(distance * 1000) + "m");
+	}
+>>>>>>> 8800bf8 (some formatting)
 }
 
 module.exports = Scoreboard;

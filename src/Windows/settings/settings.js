@@ -1,4 +1,4 @@
-const ipcRenderer = require("electron").ipcRenderer;
+const { ipcRenderer } = require("electron");
 
 ipcRenderer.on("render-settings", (e, settings, twitchStatus) => {
 	channelName.value = settings.channelName;
@@ -57,11 +57,11 @@ const twitchDisconnected = () => {
 	twitchStatus.style.color = "#ed2453";
 };
 
-const gameSettingsForm = () => {
+function gameSettingsForm() {
 	ipcRenderer.send("game-form", isMultiGuess.checked, noCar.checked, noCompass.checked);
-};
+}
 
-const twitchCommandsForm = () => {
+function twitchCommandsForm() {
 	ipcRenderer.send("twitch-commands-form", {
 		cgCmdd: cgCmd.value,
 		cgMsgg: cgMsg.value,
@@ -70,38 +70,36 @@ const twitchCommandsForm = () => {
 		setStreak: setStreakCmd.value,
 		showHasGuessed: showHasGuessed.checked,
 	});
-};
+}
 
-const twitchSettingsForm = (e) => {
+function twitchSettingsForm(e) {
 	e.preventDefault();
 	ipcRenderer.send("twitch-settings-form", channelName.value, botUsername.value, twitchToken.value);
-};
+}
 
-const clearStats = () => {
+function clearStats() {
 	clearStatsBtn.value = "Are you sure ?";
 	clearStatsBtn.setAttribute("onclick", "clearStatsConfirm()");
-};
+}
 
-const clearStatsConfirm = () => {
+function clearStatsConfirm() {
 	clearStatsBtn.value = "Clear all stats";
 	clearStatsBtn.setAttribute("onclick", "clearStats()");
 	ipcRenderer.send("clearStats");
-};
+}
 
-const closeWindow = () => {
+function closeWindow() {
 	ipcRenderer.send("closeSettings");
-};
+}
 
-const openTab = (e, tab) => {
-	const tabcontent = document.getElementsByClassName("tabcontent");
-	for (let i = 0; i < tabcontent.length; i++) {
-		tabcontent[i].style.display = "none";
+window.openTab = function openTab(e, tab) {
+	for (const el of document.querySelectorAll(".tabcontent")) {
+		el.style.display = "none";
 	}
-	const tablinks = document.getElementsByClassName("tablinks");
-	for (let i = 0; i < tablinks.length; i++) {
-		tablinks[i].className = tablinks[i].className.replace(" active", "");
+	for (const el of document.querySelectorAll(".tablinks")) {
+		el.classList.remove('active');
 	}
 	document.getElementById(tab).style.display = "block";
-	e.currentTarget.className += " active";
-};
-document.getElementById("defaultOpen").click();
+	e.currentTarget.classList.add('active');
+}
+document.querySelector("#defaultOpen").click();

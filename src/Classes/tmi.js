@@ -9,7 +9,7 @@ class tmi {
 		this.init();
 	}
 
-	init = () => {
+	init() {
 		const options = {
 			options: { debug: true, messagesLogLevel: "info" },
 			connection: {
@@ -24,21 +24,21 @@ class tmi {
 		};
 
 		this.client = new TMI.Client(options);
-	};
+	}
 
 	/**
 	 * @param {String} message
 	 */
-	say = (message) => {
+	say(message) {
 		this.client.say(this.channelName, message);
-	};
+	}
 
 	/**
 	 * @param {String} message
 	 */
-	action = (message) => {
+	action(message) {
 		this.client.action(this.channelName, message);
-	};
+	}
 }
 
 module.exports = tmi;

@@ -19,13 +19,13 @@ class Game {
 		this.lastLocation = {};
 	}
 
-	init = (win, settings) => {
+	init(win, settings) {
 		this.win = win;
 		this.settings = settings;
 		this.lastLocation = Store.get("lastLocation", {});
-	};
+	}
 
-	start = async (url, isMultiGuess) => {
+	async start(url, isMultiGuess) {
 		this.isInGame = true;
 		this.isMultiGuess = isMultiGuess;
 		if (this.url === url) {
@@ -37,18 +37,22 @@ class Game {
 			this.getCountry();
 			this.clearGuesses();
 		}
-	};
+	}
 
-	outGame = () => {
+	outGame() {
 		this.isInGame = false;
 		this.closeGuesses();
-	};
+	}
 
-	streamerHasguessed = (newSeed) => newSeed.player.guesses.length != this.seed.player.guesses.length;
+	streamerHasguessed(newSeed) {
+		return newSeed.player.guesses.length != this.seed.player.guesses.length;
+	}
 
-	locHasChanged = (newSeed) => JSON.stringify(newSeed.rounds[newSeed.rounds.length - 1]) != JSON.stringify(this.getLocation());
+	locHasChanged(newSeed) {
+		return JSON.stringify(newSeed.rounds[newSeed.rounds.length - 1]) != JSON.stringify(this.getLocation());
+	}
 
-	refreshSeed = async () => {
+	async refreshSeed() {
 		const newSeed = await this.getSeed();
 		// If a guess has been comitted, process streamer guess then return scores
 		if (this.streamerHasguessed(newSeed)) {
@@ -65,16 +69,18 @@ class Game {
 			this.getCountry();
 			return false;
 		}
-	};
+	}
 
-	getSeed = async () => await GameHelper.fetchSeed(this.url);
+	async getSeed() {
+		return await GameHelper.fetchSeed(this.url);
+	}
 
-	getCountry = async () => {
+	async getCountry() {
 		this.location = this.getLocation();
 		this.country = await GameHelper.getCountryCode(this.location);
-	};
+	}
 
-	makeGuess = async () => {
+	async makeGuess() {
 		this.seed = await this.getSeed();
 
 		if (this.isMultiGuess) await this.processMultiGuesses();
@@ -89,9 +95,9 @@ class Game {
 		if (this.seed.state != "finished") {
 			this.getCountry();
 		}
-	};
+	}
 
-	processMultiGuesses = () => {
+	processMultiGuesses() {
 		let promises = [];
 		this.guesses.forEach(async (guess, index) => {
 			promises.push(
@@ -105,9 +111,9 @@ class Game {
 			);
 		});
 		return Promise.all(promises);
-	};
+	}
 
-	processStreamerGuess = async () => {
+	async processStreamerGuess() {
 		const index = this.seed.state === "finished" ? 1 : 2;
 		const streamerGuess = this.seed.player.guesses[this.seed.round - index];
 		const location = { lat: streamerGuess.lat, lng: streamerGuess.lng };
@@ -125,9 +131,9 @@ class Game {
 		Store.saveUser(this.settings.channelName, streamer);
 
 		return new Guess(streamer.username, streamer.username, "#FFF", streamer.flag, location, streamer.streak, distance, score);
-	};
+	}
 
-	handleUserGuess = async (userstate, location) => {
+	async handleUserGuess(userstate, location) {
 		const index = this.hasGuessedThisRound(userstate.username);
 
 		if (!this.isMultiGuess && index != -1) return "alreadyGuessed";
@@ -164,20 +170,22 @@ class Game {
 		Store.saveUser(userstate.username, user);
 
 		return { user: user, guess: guess };
-	};
+	}
 
-	nextRound = () => {
+	nextRound() {
 		this.guesses = [];
 		if (this.seed.state != "finished") {
 			this.win.webContents.send("next-round", this.isMultiGuess);
 		} else {
 			this.win.webContents.send("final-results");
 		}
-	};
+	}
 
-	getLocation = () => this.seed.rounds[this.seed.round - 1];
+	getLocation() {
+		return this.seed.rounds[this.seed.round - 1];
+	}
 
-	getLocations = () => {
+	getLocations() {
 		return this.seed.rounds.map((round) => {
 			return {
 				lat: round.lat,
@@ -186,41 +194,43 @@ class Game {
 				pitch: Math.round(round.pitch),
 			};
 		});
-	};
+	}
 
-	openGuesses = () => {
+	openGuesses() {
 		this.guessesOpen = true;
-	};
+	}
 
-	closeGuesses = () => {
+	closeGuesses() {
 		this.guessesOpen = false;
-	};
+	}
 
-	clearGuesses = () => {
+	clearGuesses() {
 		this.guesses = [];
 		this.total = [];
-	};
+	}
 
 	/**
 	 * @param {string} user
 	 * @return {Number} index
 	 */
-	hasGuessedThisRound = (user) => this.guesses.findIndex((e) => e.user === user);
+	hasGuessedThisRound(user) {
+		return this.guesses.findIndex((e) => e.user === user);
+	}
 
 	/**
 	 * @param  {Object} previousGuess
 	 * @param  {Object} location {lat, lng}
 	 * @return {boolean}
 	 */
-	hasPastedPreviousGuess = (previousGuess, location) => {
+	hasPastedPreviousGuess(previousGuess, location) {
 		if (previousGuess === null) return false;
 		return previousGuess.lat === location.lat && previousGuess.lng === location.lng;
-	};
+	}
 
 	/**
 	 * @param  {Object} guess
 	 */
-	pushToTotal = (guess) => {
+	pushToTotal(guess) {
 		const index = this.total.findIndex((e) => e.user === guess.user);
 		if (index != -1) {
 			this.total[index].scores.push({ round: this.seed.round - 1, score: guess.score });
@@ -233,12 +243,14 @@ class Game {
 		} else {
 			this.total.push({ scores: [{ round: this.seed.round, score: guess.score }], ...guess, rounds: 1 });
 		}
-	};
+	}
 
 	/**
 	 * @return {Guess[]} sorted guesses by Distance
 	 */
-	getRoundScores = () => GameHelper.sortByDistance(this.guesses);
+	getRoundScores() {
+		return GameHelper.sortByDistance(this.guesses);
+	}
 
 	/**
 	 * @return {Guess[]} sorted guesses by Score

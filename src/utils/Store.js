@@ -10,25 +10,31 @@ class Store {
 	 * @param {*} defaults
 	 * @return {*} returns defaults if not found
 	 */
-	static get = (key, defaults) => store.get(key, defaults);
+	static get(key, defaults) {
+		return store.get(key, defaults);
+	}
 
 	/**
 	 * @param {String} key
 	 * @param {*} value
 	 */
-	static set = (key, value) => store.set(key, value);
+	static set(key, value) {
+		return store.set(key, value);
+	}
 
 	/**
 	 * @param {String} key
 	 */
-	static delete = (key) => store.delete(key);
+	static delete(key) {
+		return store.delete(key);
+	}
 
 	//* Settings
 	/**
 	 * Returns stored settings or a new Settings instance
 	 * @return {Settings} Settings
 	 */
-	static getSettings = () => {
+	static getSettings() {
 		const storedSettings = store.get("settings");
 		if (!storedSettings) {
 			const settings = new Settings();
@@ -37,13 +43,15 @@ class Store {
 		} else {
 			return new Settings(...Object.values(storedSettings));
 		}
-	};
+	}
 
 	/**
 	 * Set settings
 	 * @param {Object} settings
 	 */
-	static setSettings = (settings) => store.set("settings", settings);
+	static setSettings(settings) {
+		return store.set("settings", settings);
+	}
 
 	//* Users
 	/**
@@ -52,7 +60,7 @@ class Store {
 	 * @param {String} username
 	 * @return {User} User
 	 */
-	static getOrCreateUser = (user, username) => {
+	static getOrCreateUser(user, username) {
 		user = user.toLowerCase();
 		const storedUser = Store.getUser(user);
 		if (!storedUser) {
@@ -60,56 +68,66 @@ class Store {
 		} else {
 			return new User(...Object.values(storedUser));
 		}
-	};
+	}
 
 	/**
 	 * Returns a user
 	 * @param {String} user
 	 * @return {User} User
 	 */
-	static getUser = (user) => store.get(`users.${user}`);
+	static getUser(user) {
+		return store.get(`users.${user}`);
+	}
 
 	/**
 	 * Get all users
 	 * @return {User[]} Users
 	 */
-	static getUsers = () => store.get("users");
+	static getUsers() {
+		return store.get("users");
+	}
 
 	/**
 	 * Save a user
 	 * @param {String} user
 	 * @param {User} newUser
 	 */
-	static saveUser = (user, newUser) => store.set(`users.${user.toLowerCase()}`, newUser);
+	static saveUser(user, newUser) {
+		return store.set(`users.${user.toLowerCase()}`, newUser);
+	}
 
 	/**
 	 * Delete one user
 	 * @param {String} user
 	 */
-	static deleteUser = (user) => store.delete(`users.${user}`);
+	static deleteUser(user) {
+		return store.delete(`users.${user}`);
+	}
 
 	/**
 	 * Set one user streak
 	 * @param {String} user
 	 * @param {number} streak
 	 */
-	static setUserStreak = (user, streak) => store.set(`users.${user}.streak`, streak);
+	static setUserStreak(user, streak) {
+		return store.set(`users.${user}.streak`, streak);
+	}
 
 	/**
 	 * Add user Victory
 	 * @param {String} user
 	 */
-	static userAddVictory = (user) => {
+	static userAddVictory(user) {
 		let victories = store.get(`users.${user}.victories`, 0);
 		victories++;
 		store.set(`users.${user}.victories`, victories);
-	};
+	}
 
 	/**
 	 * Returns best stats
 	 * @return {Object} collection
 	 */
-	static getBest = () => {
+	static getBest() {
 		const storedUsers = Store.getUsers();
 		if (!storedUsers) return null;
 
@@ -127,15 +145,15 @@ class Store {
 			victories: { victories: victories, user: victoriesUser },
 			perfects: { perfects: perfects, user: perfectsUser },
 		};
-	};
+	}
 
 	/**
 	 * Clear all stats
 	 */
-	static clearStats = () => {
+	static clearStats() {
 		store.delete("users");
 		store.delete("lastRoundPlayers");
-	};
+	}
 }
 
 module.exports = Store;

@@ -1,30 +1,9 @@
 const ipcRenderer = require("electron").ipcRenderer;
 
-const elements = {
-	channelName,
-	botUsername,
-	token,
-	twitchStatus,
-	cgLink,
-	cgCmd,
-	cgMsg,
-	userGetStatsCmd,
-	userClearStatsCmd,
-	setStreakCmd,
-	showHasGuessed,
-	isMultiGuess,
-	noCar,
-	noCompass,
-	clearStatsBtn,
-};
-for (element in elements) {
-	element = document.getElementById(element);
-}
-
-ipcRenderer.on("render-settings", (e, settings) => {
+ipcRenderer.on("render-settings", (e, settings, twitchStatus) => {
 	channelName.value = settings.channelName;
 	botUsername.value = settings.botUsername;
-	token.value = settings.token;
+	twitchToken.value = settings.token;
 	cgCmd.value = settings.cgCmd;
 	cgMsg.value = settings.cgMsg;
 	userGetStatsCmd.value = settings.userGetStatsCmd;
@@ -34,27 +13,49 @@ ipcRenderer.on("render-settings", (e, settings) => {
 	isMultiGuess.checked = settings.isMultiGuess;
 	noCar.checked = settings.noCar;
 	noCompass.checked = settings.noCompass;
+
+	if (twitchStatus == "OPEN") {
+		twitchConnected(settings.botUsername);
+	} else {
+		twitchDisconnected();
+	}
 });
 
 ipcRenderer.on("twitch-connected", (e, botUsername) => {
-	const linkStr = `chatguessr.com/map/${botUsername}`;
-	cgLink.innerHTML = `Your cg link: <a href="https://${linkStr}" target="_blank">${linkStr}</a>`;
-	cgLink.style.display = "block";
-
-	twitchStatus.textContent = "Connected";
-	twitchStatus.style.color = "#3fe077";
+	twitchConnected(botUsername);
 });
 
 ipcRenderer.on("twitch-disconnected", () => {
-	cgLink.style.display = "none";
-	twitchStatus.textContent = "Disconnected";
-	twitchStatus.style.color = "#ed2453";
+	twitchDisconnected();
 });
 
 ipcRenderer.on("twitch-error", (e, error) => {
 	twitchStatus.textContent = error;
 	twitchStatus.style.color = "#ed2453";
 });
+
+const twitchConnected = (botUsername) => {
+	const linkStr = `chatguessr.com/map/${botUsername}`;
+	cgLink.value = linkStr;
+
+	copyLinkBtn.addEventListener("click", () => {
+		navigator.clipboard.writeText(linkStr);
+		copyLinkBtn.textContent = "Copied";
+		setTimeout(() => {
+			copyLinkBtn.textContent = "Copy";
+		}, 1000);
+	});
+
+	cgLinkContainer.style.display = "block";
+	twitchStatus.textContent = "Connected";
+	twitchStatus.style.color = "#3fe077";
+};
+
+const twitchDisconnected = () => {
+	cgLinkContainer.style.display = "none";
+	twitchStatus.textContent = "Disconnected";
+	twitchStatus.style.color = "#ed2453";
+};
 
 const gameSettingsForm = () => {
 	ipcRenderer.send("game-form", isMultiGuess.checked, noCar.checked, noCompass.checked);
@@ -73,7 +74,7 @@ const twitchCommandsForm = () => {
 
 const twitchSettingsForm = (e) => {
 	e.preventDefault();
-	ipcRenderer.send("twitch-settings-form", channelName.value, botUsername.value, token.value);
+	ipcRenderer.send("twitch-settings-form", channelName.value, botUsername.value, twitchToken.value);
 };
 
 const clearStats = () => {

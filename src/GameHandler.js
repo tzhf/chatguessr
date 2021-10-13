@@ -293,7 +293,7 @@ class GameHandler {
 	};
 
 	openSettingsWindow = () => {
-		this.settingsWindow.webContents.send("render-settings", settings);
+		this.settingsWindow.webContents.send("render-settings", settings, TMI ? TMI.client.readyState() : "");
 		this.settingsWindow.show();
 	};
 }

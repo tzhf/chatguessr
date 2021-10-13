@@ -21,7 +21,9 @@ function init() {
 	mainWindow = require("./Windows/MainWindow");
 	mainWindow.once("ready-to-show", () => {
 		mainWindow.maximize();
-		autoUpdater.checkForUpdatesAndNotify();
+		setTimeout(() => {
+			autoUpdater.checkForUpdatesAndNotify();
+		}, 2000);
 	});
 
 	const settingsWindow = require("./Windows/settings/SettingsWindow");
@@ -40,7 +42,7 @@ let updateWindow;
 autoUpdater.on("update-available", () => {
 	updateWindow = require("./Windows/update/UpdateWindow");
 	updateWindow.setParentWindow(mainWindow);
-	updateWindow.webContents.send("update_available");
+	// updateWindow.webContents.send("update_available");
 });
 
 autoUpdater.on("download-progress", () => {

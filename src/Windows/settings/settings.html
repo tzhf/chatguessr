@@ -17,9 +17,9 @@
 
 			<div id="gameSettings" class="tabcontent">
 				<h2>Game Settings</h2>
-				<div data-tip="Allow users to change their guess. Streaks, scores & distances won't be displayed on the leaderboard.">
+				<div data-tip="Players can change their guess. Streaks, scores & distances won't be displayed on the leaderboard.">
 					<label class="checkbox-container">
-						Multiguess mode
+						Allow guess changing
 						<input type="checkbox" id="isMultiGuess" />
 						<span class="checkmark"></span>
 					</label>
@@ -93,7 +93,14 @@
 
 			<div id="twitchConnect" class="tabcontent">
 				<h2>Status : <span id="twitchStatus"></span></h2>
-				<span id="cgLink"></span>
+
+				<div class="form__group" id="cgLinkContainer">
+					<label class="form__label">You cg link :</label>
+					<div class="cglink_form__field">
+						<input class="form__field" type="text" id="cgLink" disabled />
+						<button class="btn save" id="copyLinkBtn">Copy</button>
+					</div>
+				</div>
 				<form name="twitch-form" onsubmit="twitchSettingsForm(event)">
 					<div class="form__group">
 						<label class="form__label">Channel Name :</label>
@@ -110,7 +117,7 @@
 					<div class="form__group">
 						<label class="form__label">OAuth Token :</label>
 						<div data-tip="If you use a bot account you need to be authenticated as the bot when you generate the token.">
-							<input class="form__field" type="password" id="token" spellcheck="false" required />
+							<input class="form__field" type="password" id="twitchToken" required />
 						</div>
 						<a href="https://twitchapps.com/tmi/" class="oauth-link" target="_blank">get oAuth Token</a>
 					</div>

@@ -15,6 +15,11 @@
 		"tmi.js": "^1.8.5"
 	},
 	"devDependencies": {
+		"@electron-forge/cli": "^6.0.0-beta.61",
+		"@electron-forge/maker-deb": "^6.0.0-beta.61",
+		"@electron-forge/maker-rpm": "^6.0.0-beta.61",
+		"@electron-forge/maker-squirrel": "^6.0.0-beta.61",
+		"@electron-forge/maker-zip": "^6.0.0-beta.61",
 		"@types/google.maps": "^3.45.6",
 		"@types/node": "^12.20.29",
 		"electron": "^15.1.2",
@@ -22,10 +27,40 @@
 	},
 	"scripts": {
 		"start": "electron .",
+		"start2": "electron-forge start",
+		"package": "electron-forge package",
+		"make": "electron-forge make",
 		"pack": "electron-builder --dir",
 		"postinstall": "electron-builder install-app-deps",
 		"build": "electron-builder build --win --publish never",
 		"deploy": "electron-builder build --win --publish always"
+	},
+	"config": {
+		"forge": {
+			"packagerConfig": {},
+			"makers": [
+				{
+					"name": "@electron-forge/maker-squirrel",
+					"config": {
+						"name": "chatguessr"
+					}
+				},
+				{
+					"name": "@electron-forge/maker-zip",
+					"platforms": [
+						"darwin"
+					]
+				},
+				{
+					"name": "@electron-forge/maker-deb",
+					"config": {}
+				},
+				{
+					"name": "@electron-forge/maker-rpm",
+					"config": {}
+				}
+			]
+		}
 	},
 	"build": {
 		"appId": "com.tzhf.chatguessr",

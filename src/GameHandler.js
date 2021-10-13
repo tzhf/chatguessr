@@ -1,12 +1,10 @@
 const { ipcMain } = require("electron");
-
 const Game = require("./Classes/Game");
 const GameHelper = require("./utils/GameHelper");
-
 const Store = require("./utils/Store");
-const settings = Store.getSettings();
-
 const tmi = require("./Classes/tmi");
+
+const settings = Store.getSettings();
 
 /** @typedef {import('./Windows/MainWindow')} MainWindow */
 /** @typedef {import('./Windows/Settings/SettingsWindow')} SettingsWindow */
@@ -26,8 +24,7 @@ class GameHandler {
 		this.init();
 	}
 
-	init = () => {
-		// Store.checkVersion();
+	init() {
 		game.init(this.win, settings);
 
 		// Browser Listening
@@ -153,9 +150,9 @@ class GameHandler {
 			Store.clearStats();
 			TMI.action("All stats cleared 🗑️");
 		});
-	};
+	}
 
-	initTmi = () => {
+	initTmi() {
 		if (TMI && TMI.client.readyState() === "OPEN") TMI.client.disconnect();
 		if (!settings.channelName) return;
 
@@ -170,9 +167,9 @@ class GameHandler {
 				this.settingsWindow.webContents.send("twitch-error", error);
 				console.error(error);
 			});
-	};
+	}
 
-	tmiListening = () => {
+	tmiListening() {
 		TMI.client.on("connected", () => {
 			this.settingsWindow.webContents.send("twitch-connected", settings.botUsername);
 			TMI.action("is now connected");
@@ -297,12 +294,12 @@ class GameHandler {
 				return TMI.action(`${user} streak set to ${newStreak}`);
 			}
 		});
-	};
+	}
 
-	openSettingsWindow = () => {
+	openSettingsWindow() {
 		this.settingsWindow.webContents.send("render-settings", settings, TMI ? TMI.client.readyState() : "");
 		this.settingsWindow.show();
-	};
+	}
 }
 
 module.exports = GameHandler;

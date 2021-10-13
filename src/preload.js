@@ -6,6 +6,7 @@ const noCar = Store.getSettings().noCar;
 drParseNoCar(noCar);
 
 window.addEventListener("DOMContentLoaded", () => {
+	window.ipcRenderer = ipcRenderer; // needed to detect next round click
 	window.MAP = null;
 	window.jQuery = require('jquery');
 	window.$ = jQuery;

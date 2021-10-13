@@ -8,10 +8,17 @@ const settings = Store.getSettings();
 
 const tmi = require("./Classes/tmi");
 
+/** @typedef {import('./Windows/MainWindow')} MainWindow */
+/** @typedef {import('./Windows/Settings/SettingsWindow')} SettingsWindow */
+
 const game = new Game();
 let TMI;
 
 class GameHandler {
+	/**
+	 * @param {MainWindow} win 
+	 * @param {SettingsWindow} settingsWindow 
+	 */
 	constructor(win, settingsWindow) {
 		this.win = win;
 		this.settingsWindow = settingsWindow;

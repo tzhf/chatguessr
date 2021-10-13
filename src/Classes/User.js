@@ -9,9 +9,9 @@ class User {
 	 * @param {Number} nbGuesses=0
 	 * @param {Number} perfects=0
 	 * @param {Number} victories=0
-	 * @param {Number} meanScore=null
-	 * @param {Object} previousGuess={}
-	 * @param {Object} lastLocation=null
+	 * @param {number|null} meanScore=null
+	 * @param {{ lat: number, lng: number }|null} previousGuess=null
+	 * @param {{ lat: number, lng: number }|null} lastLocation=null
 	 */
 	constructor(
 		user,
@@ -24,7 +24,7 @@ class User {
 		perfects = 0,
 		victories = 0,
 		meanScore = null,
-		previousGuess = {},
+		previousGuess = null,
 		lastLocation = null
 	) {
 		this.user = user;
@@ -57,21 +57,21 @@ class User {
 	}
 
 	/** Set last location
-	 * @param {Object} location
+	 * @param {{ lat: number, lng: number }} location
 	 */
 	setLastLocation(location) {
 		this.lastLocation = location;
 	}
 
 	/** Set previous guess
-	 * @param {Object} location
+	 * @param {{ lat: number, lng: number }} location
 	 */
 	setPreviousGuess(location) {
 		this.previousGuess = location;
 	}
 
 	/** Set a country flag
-	 * @param {String} flag country code
+	 * @param {string} flag country code
 	 */
 	setFlag(flag) {
 		this.flag = flag;

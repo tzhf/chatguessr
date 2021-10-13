@@ -1,6 +1,11 @@
 const TMI = require("tmi.js");
 
 class tmi {
+	/**
+	 * @param {string} channelName 
+	 * @param {string} botUsername 
+	 * @param {string} token 
+	 */
 	constructor(channelName, botUsername, token) {
 		this.channelName = channelName;
 		this.botUsername = botUsername;
@@ -27,14 +32,14 @@ class tmi {
 	}
 
 	/**
-	 * @param {String} message
+	 * @param {string} message
 	 */
 	say(message) {
 		this.client.say(this.channelName, message);
 	}
 
 	/**
-	 * @param {String} message
+	 * @param {string} message
 	 */
 	action(message) {
 		this.client.action(this.channelName, message);

@@ -1,15 +1,23 @@
 const GameHelper = require("../utils/GameHelper");
 const Store = require("../utils/Store");
 const Guess = require("./Guess");
+const Settings = require("./Settings");
 
 class Game {
 	constructor() {
+		/** @type {unknown} */
 		this.win;
+		/** @type {Settings} */
 		this.settings;
+		/** @type {string} */
 		this.url;
+		/** @type {GameHelper.Seed} */
 		this.seed;
+		/** @type {number} */
 		this.mapScale;
+		/** @type {unknown} */
 		this.location;
+		/** @type {unknown} */
 		this.country;
 		this.isInGame = false;
 		this.guessesOpen = false;
@@ -25,6 +33,11 @@ class Game {
 		this.lastLocation = Store.get("lastLocation", {});
 	}
 
+	/**
+	 * 
+	 * @param {string} url 
+	 * @param {boolean} isMultiGuess 
+	 */
 	async start(url, isMultiGuess) {
 		this.isInGame = true;
 		this.isMultiGuess = isMultiGuess;

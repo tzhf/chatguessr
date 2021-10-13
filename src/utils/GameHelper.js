@@ -7,6 +7,8 @@ const CG = require("codegrid-js").CodeGrid();
 const countryCodes = require("./countryCodes");
 const countryCodesNames = require("./countryCodesNames");
 
+/** @typedef {import('../Classes/Guess')} Guess */
+
 /**
  * Checks if '/game/' is in the URL
  * @param {string} url Game URL
@@ -20,7 +22,7 @@ function isGameURL(url) {
  * Gets the Game ID from a game URL
  * Checks if ID is 16 characters in length
  * @param {string} url Game URL
- * @return {string|boolean} id or false
+ * @return {string|false} id or false
  */
 function getGameId(url) {
   const id = url.substring(url.lastIndexOf("/") + 1);
@@ -32,9 +34,41 @@ function getGameId(url) {
 }
 
 /**
+ * @typedef {{
+ *   token: string,
+ *   type: 'standard',
+ *   mode: 'standard',
+ *   state: string,
+ *   roundCount: number,
+ *   timeLimit: number,
+ *   forbidMoving: boolean,
+ *   forbidZooming: boolean,
+ *   forbidRotating: boolean,
+ *   streakType: "countrystreak",
+ *   map: string,
+ *   mapName: string,
+ *   panoramaProvider: number,
+ *   bounds: {
+ *     min: { lat: number, lng: number},
+ *     max: { lat: number, lng: number},
+ *   },
+ *   round: number,
+ *   rounds: {
+ *     lat: number,
+ *     lng: number,
+ *     panoId: string,
+ *     heading: number,
+ *     pitch: number,
+ *     zoom: number,
+ *     streakLocationCode: string|null,
+ *   }[]
+ * }} Seed
+ */
+
+/**
  * Fetch a game seed
  * @param {string} url
- * @return {Promise} Seed Promise
+ * @return {Promise<Seed>} Seed Promise
  */
 async function fetchSeed(url) {
   return axios
@@ -49,72 +83,65 @@ async function fetchSeed(url) {
 
 /**
  * Returns a country code
- * @param {Object} location {lat, lng}
- * @return {Promise} Country code Promise
+ * @param {{ lat: number, lng: number }} location {lat, lng}
+ * @return {Promise<string>} Country code Promise
  */
 async function getCountryCode(location) {
-  return axios
-    .get(
+  try {
+    const res = await axios.get(
       `https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`
     )
-    .then((res) => countryCodes[res.data.countryCode])
-    .catch((error) => {
-      // if BDC returns an error use CodeGrid
-      return new Promise((resolve, reject) => {
-        CG.getCode(location.lat, location.lng, (error, code) => {
+    return countryCodes[res.data.countryCode];
+  } catch {
+    const code = await new Promise((resolve, reject) => {
+      CG.getCode(location.lat, location.lng, (error, code) => {
+        if (error) {
+          reject(new Error(error))
+        } else {
           resolve(code);
-          reject(new Error(error));
-        });
-      }).then((code) => countryCodes[code.toUpperCase()]);
+        }
+      });
     });
+    return countryCodes[code.toUpperCase()];
+  }
 }
 
 /**
  * Returns a country code
  * It uses CodeGrid first and then BDC if needed
- * @param {Object} location {lat, lng}
- * @return {Promise} Country code Promise
+ * @param {{ lat: number, lng: number }} location
+ * @return {Promise<string>} Country code Promise
  */
-const getCountryCodeLocally = async (location) => {
-  return new Promise((resolve, reject) => {
-    let coordinates = this.getSurroundings(location);
-    let promises = [];
-    coordinates.forEach((coord) => {
-      promises.push(this.getCountryCG(coord));
-    });
-    Promise.all(promises).then((values) => {
-      let unique = new Set(values);
-      if (unique.size === 1) {
-        console.log(unique.values().next().value);
-      } else {
-        this.getCountryBDC(location).then((data) => resolve(data));
-      }
-    });
-  });
-};
+async function getCountryCodeLocally(location) {
+  let coordinates = getSurroundings(location);
+  const values = await Promise.all(coordinates.map(getCountryCG));
+  let unique = new Set(values);
+  if (unique.size === 1) {
+    return values[0];
+  }
+  return getCountryBDC(location);
+}
 
 /**
  * Returns a country code (Only using BDC)
  * Do not use externally - Used by getCountryCodeLocally
  * Ultimately we will call our own API here and remove/
  * replace getCountryCode
- * @param {Object} location {lat, lng}
- * @return {Promise} Country code Promise
+ * @param {{ lat: number, lng: number }} location {lat, lng}
+ * @return {Promise<string>} Country code Promise
  */
 async function getCountryBDC(location) {
-  return axios
-    .get(
-      `https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`
-    )
-    .then((res) => countryCodes[res.data.countryCode])
-    .catch((error) => error);
+  const res = await axios.get(
+    `https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`
+  );
+  return countryCodes[res.data.countryCode];
 }
 
 /**
  * Returns a country code (Only using CodeGrid)
  * Do not use externally - Used by getCountryCodeLocally
- * @param {Object} location {lat, lng}
- * @return {Promise} Country code Promise
+ * @param {{ lat: number, lng: number }} location {lat, lng}
+ * @return {Promise<string>} Country code Promise
  */
 function getCountryCG(location) {
   return new Promise((resolve, reject) => {
@@ -133,8 +160,8 @@ function getCountryCG(location) {
  * Each coordinate is 100 meters aways from the given
  * coordinate y angles from 0 to 315
  * The first coordinate is the original passed
- * @param {Object} location {lat, lng}
- * @return {Array} Coordinates [{lat, lng}, {lat, lng}] x 8
+ * @param {{ lat: number, lng: number }} location {lat, lng}
+ * @returns Coordinates [{lat, lng}, {lat, lng}] x 8
  */
 function getSurroundings(location) {
   const meters = 100;
@@ -171,7 +198,7 @@ function isCoordinates(coordinates) {
 
 /**
  * Returns map scale
- * @param {Object} bounds map bounds
+ * @param {{ min: { lat: number, lng: number }, max: { lat: number, lng: number } }} bounds map bounds
  * @return {number} map scale
  */
 function calculateScale(bounds) {
@@ -185,8 +212,8 @@ function calculateScale(bounds) {
 
 /**
  * Returns distance in km between two coordinates
- * @param {Object} mk1 {lat, lng}
- * @param {Object} mk2 {lat, lng}
+ * @param {{ lat: number, lng: number }} mk1 {lat, lng}
+ * @param {{ lat: number, lng: number }} mk2 {lat, lng}
  * @return {number} km
  */
 function haversineDistance(mk1, mk2) {
@@ -222,8 +249,8 @@ function calculateScore(distance, scale) {
 
 /**
  * Returns guesses sorted by distance ASC
- * @param {array} guesses
- * @return {array} guesses
+ * @param {Guess[]} guesses
+ * @return {Guess[]} guesses
  */
 function sortByDistance(guesses) {
   return guesses.sort((a, b) => a.distance - b.distance);
@@ -306,11 +333,11 @@ function getRandomFlag() {
  * @param  {string} streamer
  * @param  {string} mapName
  * @param {Object} mode
- * @param  {Object[]} locations
- * @param  {Object[]} scores
+ * @param  {{ lat: number, lng: number }[]} locations
+ * @param  {Guess[]} totalScores
  * @return {Promise} link
  */
-function makeLink(streamer, mapName, mode, locations, totalScores) {
+async function makeLink(streamer, mapName, mode, locations, totalScores) {
   const players = totalScores.map((guess) => {
     return {
       username: guess.username,
@@ -320,20 +347,15 @@ function makeLink(streamer, mapName, mode, locations, totalScores) {
     };
   });
 
-  return axios
-    .post(`${process.env.API_URL}/game`, {
-      streamer: streamer,
-      map: mapName,
+  const res = await axios.post(`${process.env.API_URL}/game`, {
+    streamer: streamer,
+    map: mapName,
 		mode: mode,
-      locations: locations,
-      players: players,
-    })
-    .then((res) => {
-      return `${process.env.BASE_URL}/game/${res.data.code}`;
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+    locations: locations,
+    players: players,
+  });
+
+  return `${process.env.BASE_URL}/game/${res.data.code}`;
 }
 
 exports.isGameURL = isGameURL;

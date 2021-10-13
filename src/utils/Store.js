@@ -47,7 +47,7 @@ class Store {
 
 	/**
 	 * Set settings
-	 * @param {Object} settings
+	 * @param {Settings} settings
 	 */
 	static setSettings(settings) {
 		return store.set("settings", settings);

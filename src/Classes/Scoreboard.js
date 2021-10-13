@@ -1,4 +1,5 @@
-// const Store = require("../../utils/Store");
+const $ = require('jquery');
+const { ipcRenderer } = require('electron');
 
 class Scoreboard {
 	constructor() {

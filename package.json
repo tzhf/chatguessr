@@ -11,7 +11,7 @@
 		"dotenv": "^8.2.0",
 		"electron-store": "^8.0.1",
 		"electron-updater": "^4.3.9",
-		"jquery": "^3.5.1",
+		"jquery": "^3.6.0",
 		"tmi.js": "^1.8.5"
 	},
 	"devDependencies": {

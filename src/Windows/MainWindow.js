@@ -6,10 +6,11 @@ function mainWindow() {
 		show: false,
 		webPreferences: {
 			preload: path.join(__dirname, "../preload.js"),
+			// TODO make it work without this. currently required for the MAP hooking.
 			enableRemoteModule: true,
 			contextIsolation: false,
 			webSecurity: false,
-			devTools: false,
+			// devTools: false,
 		},
 	});
 	win.setMenuBarVisibility(false);

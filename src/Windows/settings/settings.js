@@ -1,5 +1,40 @@
 const { ipcRenderer } = require("electron");
 
+/** @type {HTMLInputElement} */
+const channelName = document.querySelector('#channelName')
+/** @type {HTMLInputElement} */
+const botUsername = document.querySelector('#botUsername')
+/** @type {HTMLInputElement} */
+const twitchToken = document.querySelector('#twitchToken')
+/** @type {HTMLInputElement} */
+const cgCmd = document.querySelector('#cgCmd')
+/** @type {HTMLInputElement} */
+const cgMsg = document.querySelector('#cgMsg')
+/** @type {HTMLInputElement} */
+const userGetStatsCmd = document.querySelector('#userGetStatsCmd')
+/** @type {HTMLInputElement} */
+const userClearStatsCmd = document.querySelector('#userClearStatsCmd')
+/** @type {HTMLInputElement} */
+const setStreakCmd = document.querySelector('#setStreakCmd')
+/** @type {HTMLInputElement} */
+const showHasGuessed = document.querySelector('#showHasGuessed')
+/** @type {HTMLInputElement} */
+const isMultiGuess = document.querySelector('#isMultiGuess')
+/** @type {HTMLInputElement} */
+const noCar = document.querySelector('#noCar')
+/** @type {HTMLInputElement} */
+const noCompass = document.querySelector('#noCompass')
+/** @type {HTMLInputElement} */
+const cgLink = document.querySelector('#cgLink')
+/** @type {HTMLElement} */
+const cgLinkContainer = document.querySelector('#cgLinkContainer')
+/** @type {HTMLButtonElement} */
+const copyLinkBtn = document.querySelector('#copyLinkBtn')
+/** @type {HTMLElement} */
+const twitchStatusElement = document.querySelector('#twitchStatus')
+/** @type {HTMLButtonElement} */
+const clearStatsBtn = document.querySelector('#clearStatsBtn')
+
 ipcRenderer.on("render-settings", (e, settings, twitchStatus) => {
 	channelName.value = settings.channelName;
 	botUsername.value = settings.botUsername;
@@ -30,8 +65,8 @@ ipcRenderer.on("twitch-disconnected", () => {
 });
 
 ipcRenderer.on("twitch-error", (e, error) => {
-	twitchStatus.textContent = error;
-	twitchStatus.style.color = "#ed2453";
+	twitchStatusElement.textContent = error;
+	twitchStatusElement.style.color = "#ed2453";
 });
 
 const twitchConnected = (botUsername) => {
@@ -47,14 +82,14 @@ const twitchConnected = (botUsername) => {
 	});
 
 	cgLinkContainer.style.display = "block";
-	twitchStatus.textContent = "Connected";
-	twitchStatus.style.color = "#3fe077";
+	twitchStatusElement.textContent = "Connected";
+	twitchStatusElement.style.color = "#3fe077";
 };
 
 const twitchDisconnected = () => {
 	cgLinkContainer.style.display = "none";
-	twitchStatus.textContent = "Disconnected";
-	twitchStatus.style.color = "#ed2453";
+	twitchStatusElement.textContent = "Disconnected";
+	twitchStatusElement.style.color = "#ed2453";
 };
 
 function gameSettingsForm() {

@@ -3,12 +3,14 @@ const { ipcRenderer } = require("electron");
 const Scoreboard = require("./Classes/Scoreboard");
 const Store = require("./utils/Store");
 const noCar = Store.getSettings().noCar;
-drParseNoCar();
+drParseNoCar(noCar);
 
 window.addEventListener("DOMContentLoaded", () => {
-	window.ipcRenderer = require("electron").ipcRenderer;
-	window.$ = window.jQuery = require("jquery");
 	window.MAP = null;
+	window.jQuery = require('jquery');
+	window.$ = jQuery;
+	require('./public/jquery-ui.min.js');
+	require('./public/datatables.bundle.min.js');
 
 	hijackMap();
 
@@ -53,23 +55,12 @@ window.addEventListener("DOMContentLoaded", () => {
 	flagIcon.href = `${path.join(__dirname, "./public/flag-icon.min.css")}`;
 	head.appendChild(flagIcon);
 
-	const jqueryUI = document.createElement("script");
-	jqueryUI.type = "text/javascript";
-	jqueryUI.src = `${path.join(__dirname, "./public/jquery-ui.min.js")}`;
-	jqueryUI.addEventListener("load", () => loadDatatables());
-	document.body.appendChild(jqueryUI);
+	init();
+});
 
-	const loadDatatables = () => {
-		const datatables = document.createElement("script");
-		datatables.type = "text/javascript";
-		datatables.src = `${path.join(__dirname, "./public/datatables.bundle.min.js")}`;
-		datatables.addEventListener("load", () => init());
-		document.body.appendChild(datatables);
-	};
-
-	const init = () => {
+function init() {
 		const markerRemover = document.createElement("style");
-		markerRemover.innerHTML = ".map-pin{display:none}";
+		markerRemover.innerHTML = ".map-pin { display: none; }";
 
 		const settingsIcon = document.createElement("div");
 		settingsIcon.setAttribute("title", "Settings (ctrl+p)");
@@ -152,8 +143,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		ipcRenderer.on("switch-off", () => scoreboard.switchOn(false));
 
 		ipcRenderer.on("game-settings-change", (e, noCompass) => drParseNoCompass(noCompass));
-	};
-});
+}
 
 let markers = [];
 let polylines = [];
@@ -330,7 +320,7 @@ function drParseNoCompass(noCompass) {
 	}
 }
 
-function drParseNoCar() {
+function drParseNoCar(noCar) {
 	if (!noCar) return;
 
 	const OPTIONS = { colorR: 0.5, colorG: 0.5, colorB: 0.5 };

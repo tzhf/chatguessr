@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
 const { autoUpdater } = require("electron-updater");
+require('electron-store').initRenderer();
 
 const GameHandler = require("./GameHandler");
 

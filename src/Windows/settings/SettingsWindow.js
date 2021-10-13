@@ -9,6 +9,7 @@ function settingsWindow() {
 		minHeight: 500,
 		show: false,
 		frame: false,
+		maximizable: false,
 		transparent: true,
 		webPreferences: {
 			nodeIntegration: true,

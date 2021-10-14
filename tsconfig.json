@@ -5,6 +5,7 @@
 		"target": "es2021",
 		"outDir": "dist",
 		"moduleResolution": "node",
+		"noEmit": true,
 		"allowSyntheticDefaultImports": true
 	},
 	"include": [

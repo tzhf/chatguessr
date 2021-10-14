@@ -1,11 +1,12 @@
 const path = require("path");
 const fs = require('fs/promises');
-const { app, BrowserWindow, ipcMain, globalShortcut, protocol } = require("electron");
+const { app, ipcMain, globalShortcut, protocol } = require("electron");
 const { initRenderer } = require('electron-store');
 const { autoUpdater } = require("electron-updater");
 const GameHandler = require("./GameHandler");
 
-app.whenReady().then(() => init());
+/** @type {import('electron').BrowserWindow} */
+let mainWindow;
 
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
@@ -13,10 +14,19 @@ app.on("window-all-closed", () => {
 	}
 });
 
-let mainWindow;
-function init() {
-	initRenderer();
+function serveAssets() {
+	protocol.interceptFileProtocol('asset', (request, callback) => {
+		const assetDir = path.join(__dirname, '../../assets');
+		const assetFile = path.join(assetDir, new URL(request.url).pathname);
+		if (!assetFile.startsWith(assetDir)) {
+			callback({ statusCode: 404, data: 'Not Found' });
+		} else {
+			callback({ path: assetFile });
+		}
+	});
+}
 
+function serveFlags() {
 	const appDataDir = app.getPath("appData");
 	const customFlagsDir = path.join(appDataDir, "flags");
 	protocol.interceptFileProtocol('flag', async (request, callback) => {
@@ -28,7 +38,9 @@ function init() {
 			callback({ path: path.join(__dirname, `../../assets/flags/${name.toUpperCase()}.svg`) });
 		}
 	});
+}
 
+function initWindow() {
 	mainWindow = require("./Windows/MainWindow");
 	mainWindow.once("ready-to-show", () => {
 		mainWindow.maximize();
@@ -50,6 +62,16 @@ function init() {
 	globalShortcut.register("Escape", () => {
 		settingsWindow.hide();
 	});
+}
+
+async function init() {
+	initRenderer();
+	await app.whenReady();
+
+	serveFlags();
+	serveAssets();
+
+	initWindow();
 }
 
 // Auto Updater
@@ -79,3 +101,5 @@ ipcMain.on("restart_app", () => {
 ipcMain.on("close_update_window", () => {
 	updateWindow.hide();
 });
+
+init();

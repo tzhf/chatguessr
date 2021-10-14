@@ -127,7 +127,7 @@ function closeWindow() {
 	ipcRenderer.send("closeSettings");
 }
 
-window.openTab = function openTab(e, tab) {
+function openTab(e, tab) {
 	for (const el of document.querySelectorAll(".tabcontent")) {
 		el.style.display = "none";
 	}

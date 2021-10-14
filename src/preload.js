@@ -14,8 +14,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.MAP = null;
 	window.jQuery = require('jquery');
 	window.$ = window.jQuery;
-	// @ts-ignore
-	require('./public/jquery-ui.min.js');
+	require('jquery-ui-dist/jquery-ui');
 	require('./public/datatables.bundle.min.js');
 
 	hijackMap();

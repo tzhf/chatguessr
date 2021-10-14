@@ -12,6 +12,7 @@
 		"electron-store": "^8.0.1",
 		"electron-updater": "^4.3.9",
 		"jquery": "^3.6.0",
+		"jquery-ui-dist": "^1.12.1",
 		"tmi.js": "^1.8.5"
 	},
 	"devDependencies": {

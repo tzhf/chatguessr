@@ -12,8 +12,11 @@
 		"src/main.js",
 		"src/preload.js",
 		"src/GameHandler.js",
-		"src/Windows/*.js",
-		"src/utils/*.js",
+		"src/Windows/**/*.js",
+		"src/utils/countryCodes.js",
+		"src/utils/countryCodesNames.js",
+		"src/utils/GameHelper.js",
+		"src/utils/Store.js",
 		"src/Classes/*.js"
 	]
 }

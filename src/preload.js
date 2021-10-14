@@ -233,7 +233,10 @@ function hijackMap() {
 	const GOOGLE_MAPS_PROMISE = new Promise((resolve, reject) => {
 		let scriptObserver = new MutationObserver((mutations) => {
 			for (const mutation of mutations) {
-				for (const node of mutation.addedNodes) {
+				for (const tmp of mutation.addedNodes) {
+					/** @type {HTMLScriptElement} */
+					// @ts-ignore
+					const node = tmp;
 					if (node.tagName === "SCRIPT" && node.src.startsWith(MAPS_API_URL)) {
 						node.onload = () => {
 							scriptObserver.disconnect();

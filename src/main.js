@@ -34,8 +34,12 @@ function init() {
 
 	globalShortcut.register("CommandOrControl+R", () => false);
 	globalShortcut.register("CommandOrControl+Shift+R", () => false);
-	globalShortcut.register("CommandOrControl+P", () => gameHandler.openSettingsWindow());
-	globalShortcut.register("Escape", () => settingsWindow.hide());
+	globalShortcut.register("CommandOrControl+P", () => {
+		gameHandler.openSettingsWindow();
+	});
+	globalShortcut.register("Escape", () => {
+		settingsWindow.hide();
+	});
 }
 
 // Auto Updater

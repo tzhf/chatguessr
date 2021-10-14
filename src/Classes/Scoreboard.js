@@ -1,6 +1,8 @@
 const $ = require('jquery');
 const { ipcRenderer } = require('electron');
 
+/** @typedef {import('../types').Guess} Guess */
+
 class Scoreboard {
 	constructor() {
 		this.visibility;
@@ -183,6 +185,9 @@ class Scoreboard {
 		this.container.hide();
 	}
 
+	/**
+	 * @param {Guess} guess 
+	 */
 	renderGuess(guess) {
 		const row = {
 			Position: "",
@@ -209,6 +214,9 @@ class Scoreboard {
 			});
 	}
 
+	/**
+	 * @param {Guess[]} guesses
+	 */
 	renderMultiGuess(guesses) {
 		const rows = guesses.map((guess) => {
 			return {
@@ -226,6 +234,9 @@ class Scoreboard {
 		this.table.rows.add(rows).draw();
 	}
 
+	/**
+	 * @param {(Guess & { rounds: number })[]} scores
+	 */
 	displayScores(scores, isTotal = false) {
 		this.isResults = true;
 		if (scores[0]) scores[0].color = "#E3BB39";
@@ -339,7 +350,7 @@ class Scoreboard {
 	 * @param {number} distance
 	 */
 	toMeter(distance) {
-		return (distance >= 1 ? parseFloat(distance.toFixed(1)) + "km" : Math.floor(distance * 1000) + "m");
+		return distance >= 1 ? distance.toFixed(1) + "km" : Math.floor(distance * 1000) + "m";
 	}
 
 	// ColVis Cookies

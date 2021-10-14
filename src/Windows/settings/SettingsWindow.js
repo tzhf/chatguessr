@@ -18,7 +18,7 @@ function settingsWindow() {
 		},
 	});
 	win.setMenuBarVisibility(false);
-	win.loadURL(path.join(__dirname, "./settings.html"));
+	win.loadURL(path.join(__dirname, "../../dist/settings/settings.html"));
 
 	win.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);

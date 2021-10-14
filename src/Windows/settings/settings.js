@@ -1,4 +1,9 @@
-const { ipcRenderer } = require("electron");
+// Parcel prevents us from `require`ing things in a "standard" script
+// and ONLY wants to output ES modules in a module. We must use `require`
+// for electron reasons. This hack prevents Parcel from seeing what we're
+// doing.
+const secretRequire = (0, eval('require'));
+const { ipcRenderer } = secretRequire("electron");
 
 /** @type {HTMLInputElement} */
 const channelName = document.querySelector('#channelName')
@@ -137,4 +142,5 @@ function openTab(e, tab) {
 	document.getElementById(tab).style.display = "block";
 	e.currentTarget.classList.add('active');
 }
+
 document.querySelector("#defaultOpen").click();

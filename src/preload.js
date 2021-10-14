@@ -24,12 +24,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	hijackMap();
 
-	const head = document.getElementsByTagName("head")[0];
-
-	const styles = document.createElement("style");
-	styles.textContent = fs.readFileSync(path.join(__dirname, '../assets/styles.css'), 'utf8');
-	head.appendChild(styles);
-
 	const scoreboardContainer = document.createElement("div");
 	scoreboardContainer.setAttribute("id", "scoreboardContainer");
 	scoreboardContainer.innerHTML = `

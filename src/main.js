@@ -1,7 +1,8 @@
+const path = require("path");
+const fs = require('fs/promises');
 const { app, BrowserWindow, ipcMain, globalShortcut, protocol } = require("electron");
+const { initRenderer } = require('electron-store');
 const { autoUpdater } = require("electron-updater");
-require('electron-store').initRenderer();
-
 const GameHandler = require("./GameHandler");
 
 app.whenReady().then(() => init());
@@ -14,9 +15,18 @@ app.on("window-all-closed", () => {
 
 let mainWindow;
 function init() {
-	protocol.interceptFileProtocol('flag', (request, callback) => {
+	initRenderer();
+
+	const appDataDir = app.getPath("appData");
+	const customFlagsDir = path.join(appDataDir, "flags");
+	protocol.interceptFileProtocol('flag', async (request, callback) => {
 		const name = request.url.replace(/^flag:/, '');
-		callback({ path: path.join(__dirname, `../assets/flags/${name.toUpperCase()}.svg`) });
+		try {
+			const buffer = await fs.readFile(path.join(customFlagsDir, name.toLowerCase() + '.png'));
+			callback({ data: buffer });
+		} catch {
+			callback({ path: path.join(__dirname, `../../assets/flags/${name.toUpperCase()}.svg`) });
+		}
 	});
 
 	mainWindow = require("./Windows/MainWindow");

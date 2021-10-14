@@ -5,6 +5,9 @@ const Store = require("./utils/Store");
 const noCar = Store.getSettings().noCar;
 drParseNoCar(noCar);
 
+/** @typedef {import('./types').LatLng} LatLng */
+/** @typedef {import('./types').Guess} Guess */
+
 window.addEventListener("DOMContentLoaded", () => {
 	window.ipcRenderer = ipcRenderer; // needed to detect next round click
 	window.MAP = null;
@@ -149,7 +152,13 @@ function init() {
 
 let markers = [];
 let polylines = [];
+/**
+ * 
+ * @param {LatLng} location 
+ * @param {Guess[]} scores 
+ */
 function populateMap(location, scores) {
+	const map = window.MAP;
 	const infowindow = new google.maps.InfoWindow();
 	const icon = {
 		path: `M13.04,41.77c-0.11-1.29-0.35-3.2-0.99-5.42c-0.91-3.17-4.74-9.54-5.49-10.79c-3.64-6.1-5.46-9.21-5.45-12.07
@@ -167,8 +176,8 @@ function populateMap(location, scores) {
 
 	const locationMarker = new google.maps.Marker({
 		position: location,
-		icon: icon,
-		map: window.MAP,
+		icon,
+		map,
 	});
 	google.maps.event.addListener(locationMarker, "click", () => {
 		window.open(`http://maps.google.com/maps?q=&layer=c&cbll=${location.lat},${location.lng}`, "_blank");
@@ -182,10 +191,11 @@ function populateMap(location, scores) {
 
 		const guessMarker = new google.maps.Marker({
 			position: score.position,
-			icon: icon,
-			map: window.MAP,
+			icon,
+			map,
 			label: { color: "#000", fontWeight: "bold", fontSize: "16px", text: `${index + 1}` },
 			clickable: false,
+			optimized: true,
 		});
 		google.maps.event.addListener(guessMarker, "mouseover", () => {
 			infowindow.setContent(`
@@ -208,7 +218,7 @@ function populateMap(location, scores) {
 				strokeWeight: 4,
 				strokeOpacity: 0.6,
 				geodesic: true,
-				map: window.MAP,
+				map,
 				path: [score.position, location],
 			})
 		);
@@ -216,12 +226,14 @@ function populateMap(location, scores) {
 }
 
 function clearMarkers() {
-	while (markers[0]) {
-		markers.pop().setMap(null);
+	for (const marker of markers) {
+		marker.setMap(null);
 	}
-	while (polylines[0]) {
-		polylines.pop().setMap(null);
+	for (const line of polylines) {
+		line.setMap(null);
 	}
+	markers = [];
+	polylines = [];
 }
 
 function hijackMap() {

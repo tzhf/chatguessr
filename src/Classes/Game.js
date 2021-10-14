@@ -30,7 +30,8 @@ class Game {
 		this.guesses = [];
 		/** @type {(Guess & { rounds: number })[]} */
 		this.total = [];
-		this.lastLocation = {};
+		/** @type {LatLng | undefined} */
+		this.lastLocation = undefined;
 	}
 
 	/**
@@ -40,7 +41,7 @@ class Game {
 	init(win, settings) {
 		this.win = win;
 		this.settings = settings;
-		this.lastLocation = Store.get("lastLocation", {});
+		this.lastLocation = Store.get("lastLocation", undefined);
 	}
 
 	/**
@@ -86,7 +87,8 @@ class Game {
 			this.seed = newSeed;
 
 			const location = this.location;
-			const scores = await this.makeGuess().then(() => this.getRoundScores());
+			await this.makeGuess();
+			const scores = await this.getRoundScores();
 			return { location, scores };
 			// Else, if only the loc has changed, the location was skipped, replace current loc
 		} else if (this.locHasChanged(newSeed)) {
@@ -114,7 +116,9 @@ class Game {
 		const streamerGuess = await this.processStreamerGuess();
 
 		this.guesses.push(streamerGuess);
-		this.guesses.forEach((guess) => this.pushToTotal(guess));
+		for (const guess of this.guesses) {
+			this.pushToTotal(guess);
+		}
 
 		this.lastLocation = { lat: this.location.lat, lng: this.location.lng };
 		Store.set("lastLocation", this.lastLocation);
@@ -182,12 +186,12 @@ class Game {
 		const index = this.hasGuessedThisRound(userstate.username);
 
 		if (!this.isMultiGuess && index != -1) {
-			return "alreadyGuessed";
+			throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' });
 		}
 
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
 		if (this.hasPastedPreviousGuess(user.previousGuess, location)) {
-			return "pastedPreviousGuess";
+			throw Object.assign(new Error('Same guess'), { code: 'pastedPreviousGuess' });
 		}
 
 		if (JSON.stringify(user.lastLocation) != JSON.stringify(this.lastLocation)) {

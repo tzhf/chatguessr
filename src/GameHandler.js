@@ -185,28 +185,42 @@ class GameHandler {
 	 * @param {boolean} self 
 	 */
 	async handleWhisper(from, userstate, message, self) {
-		if (self || !message.startsWith("!g") || !game.guessesOpen) return;
+		if (self || !message.startsWith("!g") || !game.guessesOpen) {
+			return;
+		}
 
-		const msg = message.split("!g")[1].trim();
-		if (!GameHelper.isCoordinates(msg)) return;
+		const msg = message.replace(/^!g\s+/, '');
+		if (!GameHelper.isCoordinates(msg)) {
+			return;
+		}
 
 		const location = { lat: parseFloat(msg.split(",")[0]), lng: parseFloat(msg.split(",")[1]) };
 
-		const res = await game.handleUserGuess(userstate, location);
-		if (res === "alreadyGuessed") return TMI.say(`${userstate["display-name"]} you already guessed`);
-		if (res === "pastedPreviousGuess") return TMI.say(`${userstate["display-name"]} you pasted your previous guess :)`);
+		try {
+			const { user, guess } = await game.handleUserGuess(userstate, location);
 
-		const { user, guess } = res;
-
-		if (!game.isMultiGuess) {
-			this.win.webContents.send("render-guess", guess, game.nbGuesses);
-			if (settings.showHasGuessed) return TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
-		} else {
-			this.win.webContents.send("render-multiguess", game.guesses, game.nbGuesses);
-			if (!guess.modified) {
-				if (settings.showHasGuessed) return TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
+			if (!game.isMultiGuess) {
+				this.win.webContents.send("render-guess", guess, game.nbGuesses);
+				if (settings.showHasGuessed) {
+					await TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
+				}
 			} else {
-				return TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guess changed`);
+				this.win.webContents.send("render-multiguess", game.guesses, game.nbGuesses);
+				if (!guess.modified) {
+					if (settings.showHasGuessed) {
+						await TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
+					}
+				} else {
+					await TMI.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guess changed`);
+				}
+			}
+		} catch (err) {
+			if (err.code === "alreadyGuessed") {
+				await TMI.say(`${userstate["display-name"]} you already guessed`);
+			} else if (err.code === "pastedPreviousGuess") {
+				await TMI.say(`${userstate["display-name"]} you pasted your previous guess :)`);
+			} else {
+				console.error(err);
 			}
 		}
 	}
@@ -323,6 +337,16 @@ class GameHandler {
 			Store.setUserStreak(user, newStreak);
 
 			await TMI.action(`${user} streak set to ${newStreak}`);
+		} else if (message === '!spamguess') {
+			for (let i = 0; i < 500; i += 1) {
+				const lat = (Math.random() * 180) - 90;
+				const lng = (Math.random() * 360) - 180;
+				await this.handleWhisper(`fake_${i}`, {
+					username: `fake_${i}`,
+					'display-name': `fake_${i}`,
+					color: `#${Math.random().toString(16).slice(2, 8).padStart(6, '0')}`
+				}, `!g ${lat},${lng}`, false);
+			}
 		}
 	}
 

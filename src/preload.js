@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require('fs');
 const { ipcRenderer } = require("electron");
 const Scoreboard = require("./Classes/Scoreboard");
 const Store = require("./utils/Store");
@@ -21,10 +22,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	const head = document.getElementsByTagName("head")[0];
 
-	const styles = document.createElement("link");
-	styles.rel = "stylesheet";
-	styles.type = "text/css";
-	styles.href = `${path.join(__dirname, "./public/styles.css")}`;
+	const styles = document.createElement("style");
+	styles.textContent = fs.readFileSync(path.join(__dirname, '../assets/styles.css'), 'utf8');
 	head.appendChild(styles);
 
 	const scoreboardContainer = document.createElement("div");
@@ -53,12 +52,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			</table>
 		</div>`;
 	document.body.appendChild(scoreboardContainer);
-
-	const flagIcon = document.createElement("link");
-	flagIcon.rel = "stylesheet";
-	flagIcon.type = "text/css";
-	flagIcon.href = `${path.join(__dirname, "./public/flag-icon.min.css")}`;
-	head.appendChild(flagIcon);
 
 	init();
 });

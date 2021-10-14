@@ -48,6 +48,7 @@ button:focus {
 .gmnoprint {
 	display: none;
 }
+
 @font-face {
 	font-family: Montserrat;
 	src: url(fonts/montserrat-regular-webfont.woff2) format("woff2"),
@@ -130,6 +131,29 @@ button:focus {
 #scoreboardTitle {
 	margin-top: -8px;
 }
+
+.flag-icon-background {
+  background-size: contain;
+  background-position: 50%;
+  background-repeat: no-repeat;
+}
+.flag-icon {
+  background-size: contain;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  position: relative;
+  display: inline-block;
+  width: 1.33333333em;
+  line-height: 1em;
+  margin-right: 5px;
+}
+.flag-icon:before {
+  content: "\00a0";
+}
+.flag-icon.flag-icon-squared {
+  width: 1em;
+}
+
 .dataTables_scrollBody::-webkit-scrollbar {
 	display: none;
 }

@@ -190,7 +190,7 @@ class Scoreboard {
 	renderGuess(guess) {
 		const row = {
 			Position: "",
-			Player: `${guess.flag ? `<span class="flag-icon flag-icon-${guess.flag}"></span>` : ""}<span class='username' style='color:${guess.color}'>${
+			Player: `${guess.flag ? `<span class="flag-icon" style="background-image: url(flag:${guess.flag})"></span>` : ""}<span class='username' style='color:${guess.color}'>${
 				guess.username
 			}</span>`,
 			Streak: guess.streak,
@@ -217,7 +217,7 @@ class Scoreboard {
 		const rows = guesses.map((guess) => {
 			return {
 				Position: "",
-				Player: `${guess.flag ? `<span class="flag-icon flag-icon-${guess.flag}"></span>` : ""}<span class='username' style='color:${guess.color}'>${
+				Player: `${guess.flag ? `<span class="flag-icon" style="background-image: url(flag:${guess.flag})"></span>` : ""}<span class='username' style='color:${guess.color}'>${
 					guess.username
 				}</span>`,
 				Streak: "",
@@ -238,7 +238,7 @@ class Scoreboard {
 		const rows = scores.map((score) => {
 			return {
 				Position: "",
-				Player: `${score.flag ? `<span class="flag-icon flag-icon-${score.flag}"></span>` : ""}<span class='username' style='color:${score.color}'>${
+				Player: `${score.flag ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>` : ""}<span class='username' style='color:${score.color}'>${
 					score.username
 				}</span>`,
 				Streak: score.streak,

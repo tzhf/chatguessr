@@ -6,11 +6,6 @@ const GameHandler = require("./GameHandler");
 
 app.whenReady().then(() => init());
 
-app.on("activate", () => {
-	if (BrowserWindow.getAllWindows().length === 0) {
-		startServer();
-	}
-});
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
 		app.quit();
@@ -20,9 +15,8 @@ app.on("window-all-closed", () => {
 let mainWindow;
 function init() {
 	protocol.interceptFileProtocol('flag', (request, callback) => {
-		const url = new URL(request.url);
-		console.log(request);
-		callback({ path: path.join(__dirname, `../assets/flags/${url.pathname}.svg`) });
+		const name = request.url.replace(/^flag:/, '');
+		callback({ path: path.join(__dirname, `../assets/flags/${name.toUpperCase()}.svg`) });
 	});
 
 	mainWindow = require("./Windows/MainWindow");

@@ -120,35 +120,31 @@ class Scoreboard {
 		});
 
 		// SCROLLER
-		const sliderElem = `<input type="range" min="5" max="50" value="20" id="scrollSpeedSlider">`;
-		$(".dt-buttons").append(sliderElem);
+		const slider = $(`<input type="range" min="5" max="50" value="20" id="scrollSpeedSlider" />`)
+			.on('input', (e) => {
+				// @ts-ignore
+				this.speed = e.currentTarget.value;
+				this.scroller(".dataTables_scrollBody");
+			});
+		$(".dt-buttons").append(slider);
 
-		const slider = document.getElementById("scrollSpeedSlider");
-
-		slider.oninput = (e) => {
-			// @ts-ignore
-			this.speed = e.currentTarget.value;
-			this.scroller(".dataTables_scrollBody");
-		};
-
-		const scrollBtn = `
+		$(".dt-buttons").prepend(`
 			<div class="dt-button scrollBtn">
-			<label>
-				<input type="checkbox" id="scrollBtn"><span>⮃</span>
-			</label>
+				<label>
+					<input type="checkbox" id="scrollBtn"><span>⮃</span>
+				</label>
 			</div>
-		`;
-		$(".dt-buttons").prepend(scrollBtn);
+		`);
 
-		$("#scrollBtn").on("change", (e) => {
+		$('#scrollBtn').on("change", (e) => {
 			if (e.currentTarget.checked != true) {
 				this.isScrolling = $(e.currentTarget).is(":checked");
 				this.stop(".dataTables_scrollBody");
-				slider.style.display = "none";
+				slider.css('display', "none");
 			} else {
 				this.isScrolling = $(e.currentTarget).is(":checked");
 				this.scroller(".dataTables_scrollBody");
-				slider.style.display = "inline";
+				slider.css('display', "inline");
 			}
 		});
 	}

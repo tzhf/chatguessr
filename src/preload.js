@@ -15,7 +15,12 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.jQuery = require('jquery');
 	window.$ = window.jQuery;
 	require('jquery-ui-dist/jquery-ui');
-	require('./public/datatables.bundle.min.js');
+	require('datatables.net/js/jquery.dataTables')(window, jQuery);
+	require('datatables.net-plugins/sorting/natural');
+	require('datatables.net-plugins/features/scrollResize/dataTables.scrollResize')(window, jQuery);
+	require('datatables.net-buttons/js/dataTables.buttons')(window, jQuery);
+	require('datatables.net-buttons/js/buttons.colVis')(window, jQuery);
+	require('datatables.net-scroller/js/dataTables.scroller')(window, jQuery);
 
 	hijackMap();
 

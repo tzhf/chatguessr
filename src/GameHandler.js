@@ -3,6 +3,7 @@ const Game = require("./Classes/Game");
 const GameHelper = require("./utils/GameHelper");
 const Store = require("./utils/Store");
 const TwitchClient = require("./Classes/tmi");
+const flags = require('./utils/flags');
 
 const settings = Store.getSettings();
 
@@ -54,7 +55,7 @@ class GameHandler {
 		const link = await GameHelper.makeLink(settings.channelName, game.mapName, game.mode, locations, totalScores);
 		this.win.webContents.send("show-final-results", totalScores);
 		await this.twitch.action(
-			`🌎 Game finished. Congrats ${GameHelper.toEmojiFlag(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${
+			`🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${
 				link != undefined ? `Game summary: ${link}` : ""
 			}`
 		);
@@ -67,7 +68,7 @@ class GameHandler {
 	showResults (location, scores) {
 		const round = game.seed.state === "finished" ? game.round : game.round - 1;
 		this.win.webContents.send("show-round-results", round, location, scores);
-		this.twitch.action(`🌎 Round ${round} has finished. Congrats ${GameHelper.toEmojiFlag(scores[0].flag)} ${scores[0].username} !`);
+		this.twitch.action(`🌎 Round ${round} has finished. Congrats ${flags.getEmoji(scores[0].flag)} ${scores[0].username} !`);
 	}
 
 	init() {
@@ -205,16 +206,16 @@ class GameHandler {
 			if (!game.isMultiGuess) {
 				this.win.webContents.send("render-guess", guess, game.nbGuesses);
 				if (settings.showHasGuessed) {
-					await this.twitch.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
+					await this.twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guessed`);
 				}
 			} else {
 				this.win.webContents.send("render-multiguess", game.guesses, game.nbGuesses);
 				if (!guess.modified) {
 					if (settings.showHasGuessed) {
-						await this.twitch.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guessed`);
+						await this.twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guessed`);
 					}
 				} else {
-					await this.twitch.say(`${GameHelper.toEmojiFlag(user.flag)} ${userstate["display-name"]} guess changed`);
+					await this.twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guess changed`);
 				}
 			}
 		} catch (err) {
@@ -245,7 +246,7 @@ class GameHandler {
 				await this.twitch.say(`${userstate["display-name"]} you've never guessed yet.`);
 			} else {
 				await this.twitch.say(`
-					${GameHelper.toEmojiFlag(userInfo.flag)} ${userInfo.username} : Current streak: ${userInfo.streak}.
+					${flags.getEmoji(userInfo.flag)} ${userInfo.username} : Current streak: ${userInfo.streak}.
 					Best streak: ${userInfo.bestStreak}.
 					Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses}${
 					userInfo.nbGuesses > 0 ? ` (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).` : "."
@@ -287,16 +288,16 @@ class GameHandler {
 				Store.saveUser(userstate.username, user);
 				await this.twitch.say(`${userstate["display-name"]} flag removed`);
 			} else if (countryReq === "random") {
-				user.setFlag(GameHelper.getRandomFlag());
+				user.setFlag(flags.randomCountryFlag());
 				Store.saveUser(userstate.username, user);
-				await this.twitch.say(`${userstate["display-name"]} got ${GameHelper.toEmojiFlag(user.flag)}`);
+				await this.twitch.say(`${userstate["display-name"]} got ${flags.getEmoji(user.flag)}`);
 			} else {
-				const country = GameHelper.findCountry(countryReq);
-				if (country) {
-					user.setFlag(country.code);
+				const flag = flags.selectFlag(countryReq);
+				if (flag) {
+					user.setFlag(flag);
 					Store.saveUser(userstate.username, user);
 				} else {
-					await this.twitch.say(`${userstate["display-name"]} no country found`);
+					await this.twitch.say(`${userstate["display-name"]} no flag found`);
 				}
 			}
 			return;
@@ -307,7 +308,7 @@ class GameHandler {
 			if (userInfo) {
 				Store.deleteUser(userstate.username);
 	
-				await this.twitch.say(`${GameHelper.toEmojiFlag(userInfo.flag)} ${userstate["display-name"]} 🗑️ stats cleared !`);
+				await this.twitch.say(`${flags.getEmoji(userInfo.flag)} ${userstate["display-name"]} 🗑️ stats cleared !`);
 			} else {
 				await this.twitch.say(`${userstate["display-name"]} you've never guessed yet.`);
 			}

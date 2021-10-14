@@ -4,6 +4,7 @@ const { app, ipcMain, globalShortcut, protocol } = require("electron");
 const { initRenderer } = require('electron-store');
 const { autoUpdater } = require("electron-updater");
 const GameHandler = require("./GameHandler");
+const flags = require('./utils/flags');
 
 /** @type {import('electron').BrowserWindow} */
 let mainWindow;
@@ -26,16 +27,15 @@ function serveAssets() {
 	});
 }
 
-function serveFlags() {
-	const appDataDir = app.getPath("appData");
-	const customFlagsDir = path.join(appDataDir, "flags");
+async function serveFlags() {
+	await flags.load();
+
 	protocol.interceptFileProtocol('flag', async (request, callback) => {
 		const name = request.url.replace(/^flag:/, '');
 		try {
-			const buffer = await fs.readFile(path.join(customFlagsDir, name.toLowerCase() + '.png'));
-			callback({ data: buffer });
-		} catch {
-			callback({ path: path.join(__dirname, `../../assets/flags/${name.toUpperCase()}.svg`) });
+			callback(await flags.findFlagFile(name));
+		} catch (err) {
+			callback({ statusCode: 500, data: err.message });
 		}
 	});
 }
@@ -68,8 +68,8 @@ async function init() {
 	initRenderer();
 	await app.whenReady();
 
-	serveFlags();
 	serveAssets();
+	await serveFlags();
 
 	initWindow();
 }

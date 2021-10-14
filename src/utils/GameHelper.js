@@ -247,70 +247,6 @@ function sortByScore(guesses) {
   return guesses.sort((a, b) => b.score - a.score);
 }
 
-/** Converts a country code into an emoji flag
- * @param {String} value
- */
-function toEmojiFlag(value) {
-  if (value.length == 2) {
-    return value
-      .toUpperCase()
-      .replace(/./g, (char) =>
-        String.fromCodePoint(char.charCodeAt(0) + 127397)
-      );
-  } else {
-    const flag = value
-      .toUpperCase()
-      .substring(0, 2)
-      .replace(/./g, (char) =>
-        String.fromCodePoint(char.charCodeAt(0) + 127397)
-      );
-    const region = value
-      .toUpperCase()
-      .substring(2)
-      .replace(
-        /./g,
-        (char) => String.fromCodePoint(char.charCodeAt(0) + 127397) + " "
-      );
-    return `${flag} ${region}`.trim();
-  }
-}
-
-/** Replace special chars
- * @param {String} val
- */
-function normalize(val) {
-  return val.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-/** Matches words above 3 letters
- * @param {String} input
- * @param {String} key
- */
-function isMatch(input, key) {
-  return input.length >= 3 && key.includes(input) && input.length <= key.length;
-}
-
-/** Find country by code or name
- * @param {String} input
- * @return {{ code: string, names: string }} countryCodesNames
- */
-function findCountry(input) {
-  const normalized = normalize(input);
-  return countryCodesNames.find(
-    (country) =>
-      country.code === normalized ||
-      isMatch(normalized, country.names.toLowerCase())
-  );
-}
-
-/** Return a random country code
- * @return {String}
- */
-function getRandomFlag() {
-  return countryCodesNames[Math.floor(Math.random() * countryCodesNames.length)]
-    .code;
-}
-
 /**
  * Make game summary link
  * 
@@ -357,9 +293,4 @@ exports.haversineDistance = haversineDistance;
 exports.calculateScore = calculateScore;
 exports.sortByDistance = sortByDistance;
 exports.sortByScore = sortByScore;
-exports.toEmojiFlag = toEmojiFlag;
-exports.findCountry = findCountry;
-exports.normalize = normalize;
 exports.makeLink = makeLink;
-exports.isMatch = isMatch;
-exports.getRandomFlag = getRandomFlag;

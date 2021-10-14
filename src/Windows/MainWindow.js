@@ -18,7 +18,7 @@ function mainWindow() {
 
 	win.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);
-		return { action: 'allow' };
+		return { action: 'deny' };
 	});
 
 	win.on("closed", () => {

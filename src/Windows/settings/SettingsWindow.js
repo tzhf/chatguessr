@@ -22,7 +22,7 @@ function settingsWindow() {
 
 	win.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);
-		return { action: 'allow' };
+		return { action: 'deny' };
 	});
 
 	return win;

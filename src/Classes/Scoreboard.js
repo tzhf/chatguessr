@@ -126,6 +126,7 @@ class Scoreboard {
 		const slider = document.getElementById("scrollSpeedSlider");
 
 		slider.oninput = (e) => {
+			// @ts-ignore
 			this.speed = e.currentTarget.value;
 			this.scroller(".dataTables_scrollBody");
 		};
@@ -293,13 +294,8 @@ class Scoreboard {
 		this.stop(elem);
 		setTimeout(() => {
 			this.scroller(elem);
-<<<<<<< HEAD
 		}, 3000);
-	};
-=======
-		}, 2000);
 	}
->>>>>>> 8800bf8 (some formatting)
 
 	stop(elem) {
 		$(elem).stop();
@@ -336,12 +332,19 @@ class Scoreboard {
 		return this.switchContainer.css("display", state ? "block" : "none");
 	}
 
+	/**
+	 * @param {boolean} state 
+	 */
 	switchOn(state) {
 		return this.switchBtn.prop("checked", state);
 	}
 
-<<<<<<< HEAD
-	toMeter = (distance) => (distance >= 1 ? parseFloat(distance.toFixed(1)) + "km" : parseInt(distance * 1000) + "m");
+	/**
+	 * @param {number} distance
+	 */
+	toMeter(distance) {
+		return (distance >= 1 ? parseFloat(distance.toFixed(1)) + "km" : Math.floor(distance * 1000) + "m");
+	}
 
 	// ColVis Cookies
 	setCookie = (name, value, exdays = 60) => {
@@ -366,11 +369,6 @@ class Scoreboard {
 		}
 		return defaultValue;
 	};
-=======
-	toMeter(distance) {
-		return (distance >= 1 ? parseFloat(distance.toFixed(1)) + "km" : parseInt(distance * 1000) + "m");
-	}
->>>>>>> 8800bf8 (some formatting)
 }
 
 module.exports = Scoreboard;

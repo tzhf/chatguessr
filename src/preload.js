@@ -9,7 +9,8 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.ipcRenderer = ipcRenderer; // needed to detect next round click
 	window.MAP = null;
 	window.jQuery = require('jquery');
-	window.$ = jQuery;
+	window.$ = window.jQuery;
+	// @ts-ignore
 	require('./public/jquery-ui.min.js');
 	require('./public/datatables.bundle.min.js');
 
@@ -166,12 +167,11 @@ function populateMap(location, scores) {
 
 	const locationMarker = new google.maps.Marker({
 		position: location,
-		url: `http://maps.google.com/maps?q=&layer=c&cbll=${location.lat},${location.lng}`,
 		icon: icon,
-		map: MAP,
+		map: window.MAP,
 	});
 	google.maps.event.addListener(locationMarker, "click", () => {
-		window.open(locationMarker.url, "_blank");
+		window.open(`http://maps.google.com/maps?q=&layer=c&cbll=${location.lat},${location.lng}`, "_blank");
 	});
 	markers.push(locationMarker);
 
@@ -183,18 +183,19 @@ function populateMap(location, scores) {
 		const guessMarker = new google.maps.Marker({
 			position: score.position,
 			icon: icon,
-			map: MAP,
+			map: window.MAP,
 			label: { color: "#000", fontWeight: "bold", fontSize: "16px", text: `${index + 1}` },
+			clickable: false,
 		});
 		google.maps.event.addListener(guessMarker, "mouseover", () => {
 			infowindow.setContent(`
 				<p class="gm-iw__content">
 					<span style="font-size:14px;">${score.flag ? `<span class="flag-icon flag-icon-${score.flag}"></span>` : ""}${score.username}</span><br>
-					${score.distance >= 1 ? parseFloat(score.distance.toFixed(1)) + "km" : parseInt(score.distance * 1000) + "m"}<br>
+					${score.distance >= 1 ? score.distance.toFixed(1) + "km" : Math.floor(score.distance * 1000) + "m"}<br>
 					${score.score}
 				</p>
 			`);
-			infowindow.open(MAP, guessMarker);
+			infowindow.open(window.MAP, guessMarker);
 		});
 		google.maps.event.addListener(guessMarker, "mouseout", () => {
 			infowindow.close();
@@ -207,7 +208,7 @@ function populateMap(location, scores) {
 				strokeWeight: 4,
 				strokeOpacity: 0.6,
 				geodesic: true,
-				map: MAP,
+				map: window.MAP,
 				path: [score.position, location],
 			})
 		);
@@ -280,29 +281,25 @@ function hijackMap() {
 		runAsClient(() => {
 			const google = window.google;
 			const isGamePage = () => location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
-			const onMapUpdate = (map) => {
+			function onMapUpdate(map) {
 				try {
-					if (!isGamePage()) return;
-					MAP = map;
+					if (!isGamePage())
+						return;
+					window.MAP = map;
 				} catch (error) {
 					console.error("GeoguessrHijackMap Error:", error);
 				}
-			};
+			}
 
-			const oldMap = google.maps.Map;
-			google.maps.Map = Object.assign(
-				function (...args) {
-					const res = oldMap.apply(this, args);
+			google.maps.Map = class extends google.maps.Map {
+				constructor(mapDiv, opts) {
+					super(mapDiv, opts)
 					this.addListener("idle", () => {
-						if (MAP != null) return;
+						if (window.MAP != null) return;
 						onMapUpdate(this);
 					});
-					return res;
-				},
-				{
-					prototype: Object.create(oldMap.prototype),
 				}
-			);
+			};
 		});
 	});
 }

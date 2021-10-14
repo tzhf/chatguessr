@@ -1,32 +1,44 @@
 const ElectronStore = require("electron-store");
-const store = new ElectronStore();
-
 const User = require("../Classes/User");
 const Settings = require("../Classes/Settings");
 
+/**
+ * @typedef {{
+ *   settings: Settings,
+ *   users: Record<string, User>,
+ *   lastRoundPlayers: void,
+ *   current_version: string,
+ * }} Schema
+ */
+
+/** @type {ElectronStore<Schema>} */
+const store = new ElectronStore();
+
 class Store {
 	/**
-	 * @param {String} key
-	 * @param {*} defaults
-	 * @return {*} returns defaults if not found
+	 * @template {keyof Schema} T
+	 * @param {T} key
+	 * @param {Schema[T]} defaults
+	 * @return {Schema[T]} returns defaults if not found
 	 */
 	static get(key, defaults) {
 		return store.get(key, defaults);
 	}
 
 	/**
-	 * @param {String} key
-	 * @param {*} value
+	 * @template {keyof Schema} T
+	 * @param {T} key
+	 * @param {Schema[T]} value
 	 */
 	static set(key, value) {
-		return store.set(key, value);
+		store.set(key, value);
 	}
 
 	/**
-	 * @param {String} key
+	 * @param {keyof Schema} key
 	 */
 	static delete(key) {
-		return store.delete(key);
+		store.delete(key);
 	}
 
 	//* Settings
@@ -66,7 +78,20 @@ class Store {
 		if (!storedUser) {
 			return new User(user, username);
 		} else {
-			return new User(...Object.values(storedUser));
+			return new User(
+				storedUser.user,
+				storedUser.username,
+				storedUser.flag,
+				storedUser.streak,
+				storedUser.bestStreak,
+				storedUser.correctGuesses,
+				storedUser.nbGuesses,
+				storedUser.perfects,
+				storedUser.victories,
+				storedUser.meanScore,
+				storedUser.previousGuess,
+				storedUser.lastLocation,
+			);
 		}
 	}
 
@@ -81,7 +106,6 @@ class Store {
 
 	/**
 	 * Get all users
-	 * @return {User[]} Users
 	 */
 	static getUsers() {
 		return store.get("users");
@@ -101,6 +125,7 @@ class Store {
 	 * @param {String} user
 	 */
 	static deleteUser(user) {
+		// @ts-ignore https://github.com/sindresorhus/electron-store/issues/196
 		return store.delete(`users.${user}`);
 	}
 

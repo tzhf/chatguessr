@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"target": "es2021",
+		"outDir": "dist",
+		"moduleResolution": "node",
+		"allowSyntheticDefaultImports": true
+	},
+	"include": [
+		"src/types.d.ts",
+		"src/main.js",
+		"src/preload.js",
+		"src/GameHandler.js",
+		"src/Windows/*.js",
+		"src/utils/*.js",
+		"src/Classes/*.js"
+	]
+}

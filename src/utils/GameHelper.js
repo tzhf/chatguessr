@@ -1,13 +1,15 @@
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
-const axios = require("axios");
+const axios = require("axios").default;
 
 const CG = require("codegrid-js").CodeGrid();
 const countryCodes = require("./countryCodes");
 const countryCodesNames = require("./countryCodesNames");
 
-/** @typedef {import('../Classes/Guess')} Guess */
+/** @typedef {import('../types').LatLng} LatLng */
+/** @typedef {import('../types').Guess} Guess */
+/** @typedef {import('../types').Seed} Seed */
 
 /**
  * Checks if '/game/' is in the URL
@@ -34,63 +36,34 @@ function getGameId(url) {
 }
 
 /**
- * @typedef {{
- *   token: string,
- *   type: 'standard',
- *   mode: 'standard',
- *   state: string,
- *   roundCount: number,
- *   timeLimit: number,
- *   forbidMoving: boolean,
- *   forbidZooming: boolean,
- *   forbidRotating: boolean,
- *   streakType: "countrystreak",
- *   map: string,
- *   mapName: string,
- *   panoramaProvider: number,
- *   bounds: {
- *     min: { lat: number, lng: number},
- *     max: { lat: number, lng: number},
- *   },
- *   round: number,
- *   rounds: {
- *     lat: number,
- *     lng: number,
- *     panoId: string,
- *     heading: number,
- *     pitch: number,
- *     zoom: number,
- *     streakLocationCode: string|null,
- *   }[]
- * }} Seed
- */
-
-/**
  * Fetch a game seed
  * @param {string} url
  * @return {Promise<Seed>} Seed Promise
  */
 async function fetchSeed(url) {
-  return axios
-    .get(
-      `https://www.geoguessr.com/api/v3/games/${url.substring(
-        url.lastIndexOf("/") + 1
-      )}`
-    )
-    .then((res) => res.data)
-    .catch((error) => console.log(error));
+  /** @type {import("axios").AxiosResponse<Seed>} */
+  const { data } = await axios.get(
+    `https://www.geoguessr.com/api/v3/games/${url.substring(
+      url.lastIndexOf("/") + 1
+    )}`
+  );
+  return data;
 }
 
 /**
  * Returns a country code
- * @param {{ lat: number, lng: number }} location {lat, lng}
+ * @param {LatLng} location
  * @return {Promise<string>} Country code Promise
  */
 async function getCountryCode(location) {
+  const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode');
+  url.searchParams.append('latitude', `${location.lat}`);
+  url.searchParams.append('longitude', `${location.lng}`);
+  url.searchParams.append('key', process.env.BDC_KEY);
+
   try {
-    const res = await axios.get(
-      `https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`
-    )
+    /** @type {import("axios").AxiosResponse<{ countryCode: string }>} */
+    const res = await axios.get(url.toString());
     return countryCodes[res.data.countryCode];
   } catch {
     const code = await new Promise((resolve, reject) => {
@@ -109,7 +82,7 @@ async function getCountryCode(location) {
 /**
  * Returns a country code
  * It uses CodeGrid first and then BDC if needed
- * @param {{ lat: number, lng: number }} location
+ * @param {LatLng} location
  * @return {Promise<string>} Country code Promise
  */
 async function getCountryCodeLocally(location) {
@@ -127,20 +100,24 @@ async function getCountryCodeLocally(location) {
  * Do not use externally - Used by getCountryCodeLocally
  * Ultimately we will call our own API here and remove/
  * replace getCountryCode
- * @param {{ lat: number, lng: number }} location {lat, lng}
+ * @param {LatLng} location
  * @return {Promise<string>} Country code Promise
  */
 async function getCountryBDC(location) {
-  const res = await axios.get(
-    `https://api.bigdatacloud.net/data/reverse-geocode?latitude=${location.lat}&longitude=${location.lng}&key=${process.env.BDC_KEY}`
-  );
+  const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode');
+  url.searchParams.append('latitude', `${location.lat}`);
+  url.searchParams.append('longitude', `${location.lng}`);
+  url.searchParams.append('key', process.env.BDC_KEY);
+
+  /** @type {import("axios").AxiosResponse<{ countryCode: string }>} */
+  const res = await axios.get(url.toString());
   return countryCodes[res.data.countryCode];
 }
 
 /**
  * Returns a country code (Only using CodeGrid)
  * Do not use externally - Used by getCountryCodeLocally
- * @param {{ lat: number, lng: number }} location {lat, lng}
+ * @param {LatLng} location
  * @return {Promise<string>} Country code Promise
  */
 function getCountryCG(location) {
@@ -160,7 +137,7 @@ function getCountryCG(location) {
  * Each coordinate is 100 meters aways from the given
  * coordinate y angles from 0 to 315
  * The first coordinate is the original passed
- * @param {{ lat: number, lng: number }} location {lat, lng}
+ * @param {LatLng} location
  * @returns Coordinates [{lat, lng}, {lat, lng}] x 8
  */
 function getSurroundings(location) {
@@ -198,7 +175,7 @@ function isCoordinates(coordinates) {
 
 /**
  * Returns map scale
- * @param {{ min: { lat: number, lng: number }, max: { lat: number, lng: number } }} bounds map bounds
+ * @param {import("../types").Bounds} bounds map bounds
  * @return {number} map scale
  */
 function calculateScale(bounds) {
@@ -212,8 +189,8 @@ function calculateScale(bounds) {
 
 /**
  * Returns distance in km between two coordinates
- * @param {{ lat: number, lng: number }} mk1 {lat, lng}
- * @param {{ lat: number, lng: number }} mk2 {lat, lng}
+ * @param {LatLng} mk1
+ * @param {LatLng} mk2
  * @return {number} km
  */
 function haversineDistance(mk1, mk2) {
@@ -239,6 +216,7 @@ function haversineDistance(mk1, mk2) {
 
 /**
  * Returns score based on distance and scale
+ * FIXME this modifies the input
  * @param {number} distance
  * @param {number} scale
  * @return {number} score
@@ -249,8 +227,10 @@ function calculateScore(distance, scale) {
 
 /**
  * Returns guesses sorted by distance ASC
- * @param {Guess[]} guesses
- * @return {Guess[]} guesses
+ * FIXME this modifies the input
+ * @template {{ distance: number }} T
+ * @param {T[]} guesses
+ * @return {T[]} guesses
  */
 function sortByDistance(guesses) {
   return guesses.sort((a, b) => a.distance - b.distance);
@@ -258,8 +238,10 @@ function sortByDistance(guesses) {
 
 /**
  * Returns guesses sorted by score DESC
- * @param {array} guesses
- * @return {array} guesses
+ * FIXME this modifies the input
+ * @template {{ score: number }} T
+ * @param {T[]} guesses
+ * @return {T[]} guesses
  */
 function sortByScore(guesses) {
   return guesses.sort((a, b) => b.score - a.score);
@@ -310,7 +292,7 @@ function isMatch(input, key) {
 
 /** Find country by code or name
  * @param {String} input
- * @return {Object} countryCodesNames
+ * @return {{ code: string, names: string }} countryCodesNames
  */
 function findCountry(input) {
   const normalized = normalize(input);
@@ -329,13 +311,15 @@ function getRandomFlag() {
     .code;
 }
 
-/** Make game summary link
+/**
+ * Make game summary link
+ * 
  * @param  {string} streamer
  * @param  {string} mapName
  * @param {Object} mode
- * @param  {{ lat: number, lng: number }[]} locations
- * @param  {Guess[]} totalScores
- * @return {Promise} link
+ * @param  {LatLng[]} locations
+ * @param  {(Guess & { rounds: number })[]} totalScores
+ * @return {Promise<string>} link
  */
 async function makeLink(streamer, mapName, mode, locations, totalScores) {
   const players = totalScores.map((guess) => {
@@ -347,6 +331,7 @@ async function makeLink(streamer, mapName, mode, locations, totalScores) {
     };
   });
 
+  /** @type {import("axios").AxiosResponse<{ code: string }>} */
   const res = await axios.post(`${process.env.API_URL}/game`, {
     streamer: streamer,
     map: mapName,

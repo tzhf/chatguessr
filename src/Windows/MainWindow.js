@@ -7,7 +7,6 @@ function mainWindow() {
 		webPreferences: {
 			preload: path.join(__dirname, "../preload.js"),
 			// TODO make it work without this. currently required for the MAP hooking.
-			enableRemoteModule: true,
 			contextIsolation: false,
 			webSecurity: false,
 			// devTools: false,
@@ -16,9 +15,9 @@ function mainWindow() {
 	win.setMenuBarVisibility(false);
 	win.loadURL("https://www.geoguessr.com/classic");
 
-	win.webContents.on("new-window", (e, link) => {
-		e.preventDefault();
-		shell.openExternal(link);
+	win.webContents.setWindowOpenHandler(({ url }) => {
+		shell.openExternal(url);
+		return { action: 'allow' };
 	});
 
 	win.on("closed", () => {

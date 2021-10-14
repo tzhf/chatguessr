@@ -10,6 +10,7 @@ class tmi {
 		this.channelName = channelName;
 		this.botUsername = botUsername;
 		this.token = token;
+		/** @type {TMI.Client} */
 		this.client;
 		this.init();
 	}
@@ -35,14 +36,14 @@ class tmi {
 	 * @param {string} message
 	 */
 	say(message) {
-		this.client.say(this.channelName, message);
+		return this.client.say(this.channelName, message);
 	}
 
 	/**
 	 * @param {string} message
 	 */
 	action(message) {
-		this.client.action(this.channelName, message);
+		return this.client.action(this.channelName, message);
 	}
 }
 

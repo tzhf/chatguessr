@@ -24,39 +24,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	hijackMap();
 
-	const scoreboardContainer = document.createElement("div");
-	scoreboardContainer.setAttribute("id", "scoreboardContainer");
-	scoreboardContainer.innerHTML = `
-		<div id='scoreboard'>
-			<div id='scoreboardHeader'>
-				<span></span>
-				<span id='scoreboardTitle'>GUESSES (0)</span>
-				<label id='switchContainer'>
-					<input id='switchBtn' type='checkbox' />
-					<div class='slider'></div>
-				</label>
-			</div>
-			<table id='datatable' width='100%'>
-				<thead>
-					<tr>
-						<th>#</th>
-						<th>Player</th>
-						<th>Streak</th>
-						<th>Distance</th>
-						<th>Score</th>
-					</tr>
-				</thead>
-				<tbody id='guessList'></tbody>
-			</table>
-		</div>`;
-	document.body.appendChild(scoreboardContainer);
-
 	init();
 });
 
 function init() {
 		const markerRemover = document.createElement("style");
-		markerRemover.innerHTML = ".map-pin { display: none; }";
+		markerRemover.textContent = ".map-pin { display: none; }";
 
 		const settingsIcon = document.createElement("div");
 		settingsIcon.setAttribute("title", "Settings (ctrl+p)");
@@ -65,9 +38,13 @@ function init() {
 		settingsIcon.addEventListener("click", () => {
 			ipcRenderer.send("openSettings");
 		});
-		document.body.appendChild(settingsIcon);
+		document.body.append(settingsIcon);
 
-		const scoreboard = new Scoreboard();
+		const scoreboardContainer = document.createElement("div");
+		scoreboardContainer.setAttribute("id", "scoreboardContainer");
+		document.body.append(scoreboardContainer);
+
+		const scoreboard = new Scoreboard(scoreboardContainer);
 
 		const showScoreboard = document.createElement("div");
 		showScoreboard.setAttribute("title", "Show scoreboard");

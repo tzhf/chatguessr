@@ -88,7 +88,7 @@ class Game {
 
 			const location = this.location;
 			await this.makeGuess();
-			const scores = await this.getRoundScores();
+			const scores = this.getRoundScores();
 			return { location, scores };
 			// Else, if only the loc has changed, the location was skipped, replace current loc
 		} else if (this.locHasChanged(newSeed)) {

@@ -95,7 +95,9 @@ class GameHandler {
 			// update the current location if it was skipped
 			// if the streamer has guessed returns scores
 			game.refreshSeed().then((scores) => {
-				if (scores) this.showResults(scores.location, scores.scores);
+				if (scores) {
+					this.showResults(scores.location, scores.scores);
+				}
 			});
 
 			this.win.webContents.executeJavaScript(`
@@ -338,7 +340,7 @@ class GameHandler {
 
 			await TMI.action(`${user} streak set to ${newStreak}`);
 		} else if (message === '!spamguess') {
-			for (let i = 0; i < 500; i += 1) {
+			for (let i = 0; i < 50; i += 1) {
 				const lat = (Math.random() * 180) - 90;
 				const lng = (Math.random() * 360) - 180;
 				await this.handleWhisper(`fake_${i}`, {

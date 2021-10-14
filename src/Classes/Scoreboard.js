@@ -3,53 +3,95 @@ const { ipcRenderer } = require('electron');
 
 /** @typedef {import('../types').Guess} Guess */
 
+// ColVis Cookies
+function setCookie(name, value, exdays = 60) {
+	const d = new Date();
+	d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+	const expires = "expires=" + d.toUTCString();
+	document.cookie = name + "=" + value + ";" + expires + ";path=/";
+}
+
+function getCookie(name, defaultValue = {}) {
+	const cname = name + "=";
+	var decodedCookie = decodeURIComponent(document.cookie);
+	var ca = decodedCookie.split(";");
+	for (var i = 0; i < ca.length; i++) {
+		var c = ca[i];
+		while (c.charAt(0) == " ") {
+			c = c.substring(1);
+		}
+		if (c.indexOf(cname) == 0) {
+			return JSON.parse(c.substring(cname.length, c.length));
+		}
+	}
+	return defaultValue;
+}
+
+
 class Scoreboard {
-	constructor() {
-		this.visibility;
-		this.position;
-		this.container;
-		this.scoreboard;
-		this.title;
-		this.switchContainer;
-		this.switchBtn;
-		this.table;
-		this.columnState;
+	/**
+	 * @param {HTMLElement} container 
+	 */
+	constructor(container) {
 		this.isMultiGuess = false;
 		this.isResults = false;
 		this.isScrolling = false;
 		this.speed = 50;
-		this.init();
-	}
 
-	init() {
-		this.visibility = this.getCookie("visibility", true);
-		this.position = this.getCookie("scoreboard_position", { top: 20, left: 5, width: 380, height: 180 });
-		this.container = $("#scoreboardContainer");
-		this.title = $("#scoreboardTitle");
-		this.switchContainer = $("#switchContainer");
-		this.switchBtn = $("#switchBtn");
-
-		this.scoreboard = $("#scoreboard");
-		this.scoreboard.css("top", this.position.top);
-		this.scoreboard.css("left", this.position.left);
-		this.scoreboard.css("width", this.position.width);
-		this.scoreboard.css("height", this.position.height);
+		this.visibility = getCookie("visibility", true);
+		this.position = getCookie("scoreboard_position", { top: 20, left: 5, width: 380, height: 180 });
+		this.container = $(container);
+		this.scoreboard = $(`
+			<div id='scoreboard'>
+				<div id='scoreboardHeader'>
+					<span></span>
+					<span id='scoreboardTitle'>GUESSES (0)</span>
+					<label id='switchContainer'>
+						<input id='switchBtn' type='checkbox' />
+						<div class='slider'></div>
+					</label>
+				</div>
+				<table id='datatable' width='100%'>
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Player</th>
+							<th>Streak</th>
+							<th>Distance</th>
+							<th>Score</th>
+						</tr>
+					</thead>
+					<tbody id='guessList'></tbody>
+				</table>
+			</div>
+		`);
+		this.container.append(this.scoreboard);
+		this.title = this.scoreboard.find('#scoreboardTitle');
+		this.switchContainer = this.scoreboard.find("#switchContainer");
+		this.switchBtn = this.scoreboard.find("#switchBtn");
+		
 		this.scoreboard
+			.css({
+				top: this.position.top,
+				left: this.position.left,
+				width: this.position.width,
+				height: this.position.height,
+			})
 			.resizable({
 				handles: "n, e, s, w, ne, se, sw, nw",
-				containment: "#scoreboardContainer",
+				containment: this.container,
 			})
 			.draggable({
-				containment: "#scoreboardContainer",
+				containment: this.container,
 			})
-			.mouseup(() => {
+			.on('mouseup', () => {
 				const currentPosition = this.getPosition();
 				if (JSON.stringify(this.position) !== JSON.stringify(currentPosition)) {
 					this.setPosition(currentPosition);
 					this.setCookie("scoreboard_position", JSON.stringify(currentPosition));
 				}
 			});
-
+			
 		this.switchBtn.on("change", () => {
 			if (this.switchBtn.is(":checked")) {
 				ipcRenderer.send("open-guesses");
@@ -57,8 +99,16 @@ class Scoreboard {
 				ipcRenderer.send("close-guesses");
 			}
 		});
-
-		this.table = $("#datatable").DataTable({
+		
+		// Column Visisbility
+		this.columnState = getCookie("CG_ColVis", [
+			{ column: 0, state: true },
+			{ column: 2, state: true },
+			{ column: 3, state: true },
+			{ column: 4, state: true },
+		]);
+		
+		this.table = this.scoreboard.find("#datatable").DataTable({
 			info: false,
 			searching: false,
 			paging: false,
@@ -99,14 +149,6 @@ class Scoreboard {
 			],
 		});
 
-		// Column Visisbility
-		this.columnState = this.getCookie("CG_ColVis", [
-			{ column: 0, state: true },
-			{ column: 2, state: true },
-			{ column: 3, state: true },
-			{ column: 4, state: true },
-		]);
-
 		// Handle ColVis change
 		this.table.on("column-visibility.dt", (e, settings, column, state) => {
 			if (this.isResults || this.isMultiGuess) return;
@@ -118,7 +160,7 @@ class Scoreboard {
 				this.columnState.push({ column, state });
 			}
 
-			this.setCookie("CG_ColVis", JSON.stringify(this.columnState));
+			setCookie("CG_ColVis", JSON.stringify(this.columnState));
 		});
 
 		// SCROLLER
@@ -128,17 +170,18 @@ class Scoreboard {
 				this.speed = e.currentTarget.value;
 				this.scroller(".dataTables_scrollBody");
 			});
-		$(".dt-buttons").append(slider);
+		
+		this.table.buttons().container()
+			.append(slider)
+			.prepend(`
+				<div class="dt-button scrollBtn">
+					<label>
+						<input type="checkbox" id="scrollBtn"><span>⮃</span>
+					</label>
+				</div>
+			`);
 
-		$(".dt-buttons").prepend(`
-			<div class="dt-button scrollBtn">
-				<label>
-					<input type="checkbox" id="scrollBtn"><span>⮃</span>
-				</label>
-			</div>
-		`);
-
-		$('#scrollBtn').on("change", (e) => {
+		this.scoreboard.find('#scrollBtn').on("change", (e) => {
 			if (e.currentTarget.checked != true) {
 				this.isScrolling = $(e.currentTarget).is(":checked");
 				this.stop(".dataTables_scrollBody");

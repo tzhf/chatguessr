@@ -7,6 +7,7 @@ const Settings = require("../Classes/Settings");
  *   settings: Settings,
  *   users: Record<string, User>,
  *   lastRoundPlayers: void,
+ *   lastLocation: import('../types').LatLng,
  *   current_version: string,
  * }} Schema
  */

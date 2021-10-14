@@ -1,6 +1,6 @@
-const TMI = require("tmi.js");
+const { Client } = require("tmi.js");
 
-class tmi {
+class TMI {
 	/**
 	 * @param {string} channelName 
 	 * @param {string} botUsername 
@@ -10,13 +10,8 @@ class tmi {
 		this.channelName = channelName;
 		this.botUsername = botUsername;
 		this.token = token;
-		/** @type {TMI.Client} */
-		this.client;
-		this.init();
-	}
 
-	init() {
-		const options = {
+		this.client = new Client({
 			options: { debug: true, messagesLogLevel: "info" },
 			connection: {
 				secure: true,
@@ -27,9 +22,7 @@ class tmi {
 				password: this.token,
 			},
 			channels: [this.channelName],
-		};
-
-		this.client = new TMI.Client(options);
+		});
 	}
 
 	/**
@@ -47,4 +40,4 @@ class tmi {
 	}
 }
 
-module.exports = tmi;
+module.exports = TMI;

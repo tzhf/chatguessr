@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
+const { app, BrowserWindow, ipcMain, globalShortcut, protocol } = require("electron");
 const { autoUpdater } = require("electron-updater");
 require('electron-store').initRenderer();
 
@@ -19,6 +19,12 @@ app.on("window-all-closed", () => {
 
 let mainWindow;
 function init() {
+	protocol.interceptFileProtocol('flag', (request, callback) => {
+		const url = new URL(request.url);
+		console.log(request);
+		callback({ path: path.join(__dirname, `../assets/flags/${url.pathname}.svg`) });
+	});
+
 	mainWindow = require("./Windows/MainWindow");
 	mainWindow.once("ready-to-show", () => {
 		mainWindow.maximize();

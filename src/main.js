@@ -5,7 +5,7 @@ const { initRenderer } = require('electron-store');
 const { autoUpdater } = require("electron-updater");
 const GameHandler = require("./GameHandler");
 const flags = require('./utils/flags');
-const Database = require('./utils/Database')
+const Database = require('./utils/Database');
 
 /** @type {import('electron').BrowserWindow} */
 let mainWindow;

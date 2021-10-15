@@ -18,6 +18,7 @@
 		"electron-updater": "^4.3.9",
 		"jquery": "^3.6.0",
 		"jquery-ui-dist": "^1.12.1",
+		"p-map": "^4.0.0",
 		"tmi.js": "^1.8.5"
 	},
 	"devDependencies": {
@@ -82,8 +83,7 @@
 	"targets": {
 		"cg-main": {
 			"context": "electron-main",
-			"source": "./src/main.js",
-			"includeNodeModules": ["p-map"]
+			"source": "./src/main.js"
 		},
 		"cg-preload": {
 			"context": "electron-renderer",

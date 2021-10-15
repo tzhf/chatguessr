@@ -23,7 +23,7 @@ class GameHandler {
 		this.win = win;
 		this.settingsWindow = settingsWindow;
 		this.twitch = new TwitchClient(settings.channelName, settings.botUsername, settings.token);
-		this.game = new Game(db);
+		this.game = new Game(db, win, settings);
 		this.initTmi();
 		this.init();
 	}
@@ -73,14 +73,21 @@ class GameHandler {
 	}
 
 	init() {
-		this.game.init(this.win, settings);
-
 		// Browser Listening
 		this.win.webContents.on("did-navigate-in-page", (e, url) => {
 			if (GameHelper.isGameURL(url)) {
 				this.game.start(url, settings.isMultiGuess).then(() => {
-					this.win.webContents.send("game-started", this.game.isMultiGuess);
-					this.twitch.action(`${this.game.round == 1 ? "🌎 A new seed of " + this.game.mapName : "🌎 Round " + this.game.round} has started`);
+					const guesses = this.game.isMultiGuess ? this.game.getMultiGuesses() : this.game.getRoundScores();
+					this.win.webContents.send("game-started", this.game.isMultiGuess, guesses);
+
+					if (guesses.length > 0) {
+						this.twitch.action(`🌎 Round ${this.game.round} has resumed`)
+					} else if (this.game.round === 1) {
+						this.twitch.action(`🌎 A new seed of ${this.game.mapName} has started`);
+					} else {
+						this.twitch.action(`🌎 Round ${this.game.round} has started`);
+					}
+
 					this.openGuesses();
 				}).catch((error) => {
 					console.error(error);

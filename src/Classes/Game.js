@@ -18,13 +18,15 @@ function latLngEqual(a, b) {
 }
 
 class Game {
-	/** @param {import('../utils/Database')} db */
-	constructor(db) {
+	/**
+	 * @param {import('../utils/Database')} db
+	 * @param {MainWindow} win
+	 * @param {Settings} settings
+	 */
+	constructor(db, win, settings) {
 		this.db = db;
-		/** @type {MainWindow} */
-		this.win;
-		/** @type {Settings} */
-		this.settings;
+		this.win = win;
+		this.settings = settings;
 		/** @type {string} */
 		this.url;
 		/** @type {Seed} */
@@ -43,16 +45,6 @@ class Game {
 		/** @type {Guess[]} */
 		this.guesses = [];
 		/** @type {LatLng | undefined} */
-		this.lastLocation = undefined;
-	}
-
-	/**
-	 * @param {MainWindow} win 
-	 * @param {Settings} settings 
-	 */
-	init(win, settings) {
-		this.win = win;
-		this.settings = settings;
 		this.lastLocation = store.get("lastLocation", undefined);
 	}
 
@@ -153,7 +145,7 @@ class Game {
 		}
 		await this.processStreamerGuess();
 
-		this.lastLocation = { lat: this.location.lat, lng: this.location.lng };
+		this.lastLocation = { ...this.location };
 		store.set("lastLocation", this.lastLocation);
 	}
 

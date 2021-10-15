@@ -54,10 +54,21 @@ function init() {
 			scoreboard.setVisibility();
 		});
 
-		ipcRenderer.on("game-started", (e, isMultiGuess) => {
+		ipcRenderer.on("game-started", (e, isMultiGuess, restoredGuesses) => {
 			document.body.appendChild(showScoreboard);
 			scoreboard.checkVisibility();
 			scoreboard.reset(isMultiGuess);
+
+			if (restoredGuesses.length > 0) {
+				if (isMultiGuess) {
+					scoreboard.renderMultiGuess(restoredGuesses);
+				} else {
+					// Not very fast KEKW
+					for (const guess of restoredGuesses) {
+						scoreboard.renderGuess(guess);
+					}
+				}
+			}
 		});
 
 		ipcRenderer.on("refreshed-in-game", (e, noCompass) => {

@@ -324,7 +324,7 @@ class GameHandler {
 		}
 
 		// streamer commands
-		if (userstate.badges.broadcaster !== '1') {
+		if (userstate.badges?.broadcaster !== '1') {
 			return;
 		}
 

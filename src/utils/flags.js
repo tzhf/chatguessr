@@ -27,7 +27,9 @@ async function load() {
  */
 async function findFlagFile(id) {
   try {
-    return { path: path.join(customFlagsDir, `${id}.png`) };
+    const customFlagPath = path.join(customFlagsDir, `${id}.png`);
+    await fs.access(customFlagPath);
+    return { path: customFlagPath };
   } catch (error) {
     // we naively fall back to the builtin SVGs. electron can 404 it if the file
     // doesn't exist.

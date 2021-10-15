@@ -260,7 +260,7 @@ class Database {
     updateGuess(guessId, guess) {
         const updateGuess = this.db.prepare(`
             UPDATE guesses
-            SET color = :color, flag = :flag, location = :location, country = :country, streak = :streak, distance = :distance, score = :score)
+            SET color = :color, flag = :flag, location = :location, country = :country, streak = :streak, distance = :distance, score = :score
             WHERE id = :id
         `);
 

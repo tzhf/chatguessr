@@ -1,69 +1,32 @@
-const ElectronStore = require("electron-store");
 const User = require("../Classes/User");
-const Settings = require("../Classes/Settings");
-
-/**
- * @typedef {{
- *   settings: Settings,
- *   users: Record<string, User>,
- *   lastRoundPlayers: void,
- *   lastLocation: import('../types').LatLng,
- *   current_version: string,
- * }} Schema
- */
-
-/** @type {ElectronStore<Schema>} */
-const store = new ElectronStore();
+const Settings = require("./Settings");
+const store = require('./sharedStore');
 
 class Store {
 	/**
-	 * @template {keyof Schema} T
+	 * @template {keyof store.Schema} T
 	 * @param {T} key
-	 * @param {Schema[T]} defaults
-	 * @return {Schema[T]} returns defaults if not found
+	 * @param {store.Schema[T]} defaults
+	 * @return {store.Schema[T]} returns defaults if not found
 	 */
 	static get(key, defaults) {
 		return store.get(key, defaults);
 	}
 
 	/**
-	 * @template {keyof Schema} T
+	 * @template {keyof store.Schema} T
 	 * @param {T} key
-	 * @param {Schema[T]} value
+	 * @param {store.Schema[T]} value
 	 */
 	static set(key, value) {
 		store.set(key, value);
 	}
 
 	/**
-	 * @param {keyof Schema} key
+	 * @param {keyof store.Schema} key
 	 */
 	static delete(key) {
 		store.delete(key);
-	}
-
-	//* Settings
-	/**
-	 * Returns stored settings or a new Settings instance
-	 * @return {Settings} Settings
-	 */
-	static getSettings() {
-		const storedSettings = store.get("settings");
-		if (!storedSettings) {
-			const settings = new Settings();
-			store.set("settings", settings);
-			return settings;
-		} else {
-			return new Settings(...Object.values(storedSettings));
-		}
-	}
-
-	/**
-	 * Set settings
-	 * @param {Settings} settings
-	 */
-	static setSettings(settings) {
-		return store.set("settings", settings);
 	}
 
 	//* Users
@@ -151,7 +114,6 @@ class Store {
 
 	/**
 	 * Returns best stats
-	 * @return {Object} collection
 	 */
 	static getBest() {
 		const storedUsers = Store.getUsers();

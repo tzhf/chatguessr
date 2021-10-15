@@ -18,6 +18,7 @@
 		"src/utils/countryCodes.json",
 		"src/utils/countryCodesNames.json",
 		"src/utils/GameHelper.js",
+		"src/utils/Settings.js",
 		"src/utils/Store.js",
 		"src/Classes/*.js"
 	]

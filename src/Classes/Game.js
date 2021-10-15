@@ -1,11 +1,12 @@
 const GameHelper = require("../utils/GameHelper");
+const store = require("../utils/sharedStore");
 const Store = require("../utils/Store");
-const Settings = require("./Settings");
 
 /** @typedef {import('../types').LatLng} LatLng */
 /** @typedef {import('../types').Seed} Seed */
 /** @typedef {import('../types').Guess} Guess */
 /** @typedef {import("../Windows/MainWindow")} MainWindow */
+/** @typedef {import('../utils/Settings')} Settings */
 
 class Game {
 	constructor() {
@@ -41,7 +42,7 @@ class Game {
 	init(win, settings) {
 		this.win = win;
 		this.settings = settings;
-		this.lastLocation = Store.get("lastLocation", undefined);
+		this.lastLocation = store.get("lastLocation", undefined);
 	}
 
 	/**
@@ -121,7 +122,7 @@ class Game {
 		}
 
 		this.lastLocation = { lat: this.location.lat, lng: this.location.lng };
-		Store.set("lastLocation", this.lastLocation);
+		store.set("lastLocation", this.lastLocation);
 
 		if (this.seed.state != "finished") {
 			this.getCountry();

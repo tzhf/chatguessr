@@ -1,19 +1,24 @@
+const store = require('./sharedStore');
+
+/**
+ * @typedef {object} SettingsProps
+ * @prop {string} channelName
+ * @prop {string} botUsername
+ * @prop {string} token
+ * @prop {string} cgCmd
+ * @prop {string} cgMsg
+ * @prop {string} userGetStatsCmd
+ * @prop {string} userClearStatsCmd
+ * @prop {string} setStreakCmd
+ * @prop {boolean} showHasGuessed
+ * @prop {boolean} isMultiGuess
+ * @prop {boolean} noCar
+ * @prop {boolean} noCompass
+ */
+
 class Settings {
-	/**
-	 * @param {String} channelName=""
-	 * @param {String} botUsername=""
-	 * @param {String} token=""
-	 * @param {String} cgCmd="!cg"
-	 * @param {String} cgMsg="To play along, go to this link, pick a location, and paste the whole command into chat: <your cg link>"
-	 * @param {String} userGetStatsCmd="!me"
-	 * @param {String} userClearStatsCmd="!clear"
-	 * @param {String} setStreakCmd="!setstreak"
-	 * @param {Boolean} showHasGuessed=true
-	 * @param {Boolean} isMultiGuess=false
-	 * @param {Boolean} noCar=false
-	 * @param {Boolean} noCompass=false
-	 */
-	constructor(
+    /** @param {Partial<SettingsProps>} settings */
+	constructor({
 		channelName = "",
 		botUsername = "",
 		token = "",
@@ -26,7 +31,7 @@ class Settings {
 		isMultiGuess = false,
 		noCar = false,
 		noCompass = false
-	) {
+    } = {}) {
 		this.channelName = channelName;
 		this.botUsername = botUsername;
 		this.token = token;
@@ -42,6 +47,7 @@ class Settings {
 	}
 
 	/**
+	 * @param {boolean} isMultiGuess
 	 * @param {boolean} noCar
 	 * @param {boolean} noCompass
 	 */
@@ -49,6 +55,7 @@ class Settings {
 		this.isMultiGuess = isMultiGuess;
 		this.noCar = noCar;
 		this.noCompass = noCompass;
+        this.save();
 	}
 
 	/**
@@ -61,6 +68,7 @@ class Settings {
 		this.userClearStatsCmd = commands.userClearStats;
 		this.setStreakCmd = commands.setStreak;
 		this.showHasGuessed = commands.showHasGuessed;
+        this.save();
 	}
 
 	/**
@@ -72,7 +80,34 @@ class Settings {
 		this.channelName = channelName;
 		this.botUsername = botUsername;
 		this.token = token;
+        this.save();
 	}
+
+    toJSON() {
+        return {
+            channelName: this.channelName,
+            botUsername: this.botUsername,
+            token: this.token,
+            cgCmd: this.cgCmd,
+            cgMsg: this.cgMsg,
+            userGetStatsCmd: this.userGetStatsCmd,
+            userClearStatsCmd: this.userClearStatsCmd,
+            setStreakCmd: this.setStreakCmd,
+            showHasGuessed: this.showHasGuessed,
+            isMultiGuess: this.isMultiGuess,
+            noCar: this.noCar,
+            noCompass: this.noCompass,
+        }
+    }
+
+    static read() {
+        return new Settings(store.get('settings'));
+    }
+
+    /** @private */
+    save() {
+        store.set('settings', this.toJSON());
+    }
 }
 
 module.exports = Settings;

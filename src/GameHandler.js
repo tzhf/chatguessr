@@ -2,10 +2,11 @@ const { ipcMain } = require("electron");
 const Game = require("./Classes/Game");
 const GameHelper = require("./utils/GameHelper");
 const Store = require("./utils/Store");
+const Settings = require("./utils/Settings");
 const TwitchClient = require("./Classes/tmi");
 const flags = require('./utils/flags');
 
-const settings = Store.getSettings();
+const settings = Settings.read();
 
 /** @typedef {import('./types').Guess} Guess */
 /** @typedef {import('./Windows/MainWindow')} MainWindow */
@@ -130,18 +131,15 @@ class GameHandler {
 			if (settings.noCar != noCar) this.win.reload();
 
 			settings.setGameSettings(isMultiGuess, noCar, noCompass);
-			Store.setSettings(settings);
 		});
 
 		ipcMain.on("twitch-commands-form", (e, commands) => {
 			this.settingsWindow.hide();
 			settings.setTwitchCommands(commands);
-			Store.setSettings(settings);
 		});
 
 		ipcMain.on("twitch-settings-form", (e, channelName, botUsername, token) => {
 			settings.setTwitchSettings(channelName, botUsername, token);
-			Store.setSettings(settings);
 			this.initTmi();
 		});
 

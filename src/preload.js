@@ -2,8 +2,8 @@ const path = require("path");
 const fs = require('fs');
 const { ipcRenderer } = require("electron");
 const Scoreboard = require("./Classes/Scoreboard");
-const Store = require("./utils/Store");
-const noCar = Store.getSettings().noCar;
+const Settings = require("./utils/Settings");
+const { noCar } = Settings.read();
 drParseNoCar(noCar);
 
 /** @typedef {import('./types').LatLng} LatLng */

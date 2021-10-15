@@ -3,6 +3,9 @@ const { BrowserWindow, shell } = require("electron");
 /** @type {string} */
 // @ts-ignore
 const styles = require('bundle-text:../../assets/styles.css');
+/** @type {string} */
+// @ts-ignore
+const js = require('bundle-text:../renderer.js');
 
 function mainWindow() {
 	let win = new BrowserWindow({
@@ -11,7 +14,7 @@ function mainWindow() {
 			preload: path.join(__dirname, "../cg-preload/preload.js"),
 			// TODO make it work without this. currently required for the MAP hooking.
 			// nodeIntegration and contextIsolation should both be off for remote URLs like geoguessr.com.
-			contextIsolation: false,
+			contextIsolation: true,
 			webSecurity: false,
 			// devTools: false,
 		},
@@ -21,6 +24,7 @@ function mainWindow() {
 
 	win.webContents.on('dom-ready', async () => {
 		await this.webContents.insertCSS(styles);
+		await this.webContents.executeJavaScript(js);
 	});
 	win.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);

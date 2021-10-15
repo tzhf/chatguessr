@@ -395,7 +395,7 @@ class Database {
      * @returns {{ id: string, username: string, flag: string, previousGuess: LatLng, lastLocation: LatLng, resetAt: number } | undefined}
      */
     getUser(id) {
-        const user = this.db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+        const user = this.db.prepare('SELECT id, username, flag, previous_guess, last_location, reset_at FROM users WHERE id = ?').get(id);
 
         if (!user) {
             return;

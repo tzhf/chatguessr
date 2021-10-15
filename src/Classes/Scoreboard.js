@@ -1,5 +1,12 @@
 const $ = require('jquery');
-const { ipcRenderer } = require('electron');
+window.$ = window.jQuery = $;
+require('jquery-ui-dist/jquery-ui');
+require('datatables.net/js/jquery.dataTables')(window, $);
+require('datatables.net-plugins/sorting/natural');
+require('datatables.net-plugins/features/scrollResize/dataTables.scrollResize')(window, $);
+require('datatables.net-buttons/js/dataTables.buttons')(window, $);
+require('datatables.net-buttons/js/buttons.colVis')(window, $);
+require('datatables.net-scroller/js/dataTables.scroller')(window, $);
 
 /** @typedef {import('../types').Guess} Guess */
 
@@ -27,16 +34,22 @@ function getCookie(name, defaultValue = {}) {
 	return defaultValue;
 }
 
+/**
+ * @typedef {object} Options
+ * @prop {(open: boolean) => void} onToggleGuesses
+ */
 
 class Scoreboard {
 	/**
 	 * @param {HTMLElement} container 
+	 * @param {Options} props
 	 */
-	constructor(container) {
+	constructor(container, props) {
 		this.isMultiGuess = false;
 		this.isResults = false;
 		this.isScrolling = false;
 		this.speed = 50;
+		this.onToggleGuesses = props.onToggleGuesses;
 
 		this.visibility = getCookie("visibility", true);
 		this.position = getCookie("scoreboard_position", { top: 20, left: 5, width: 380, height: 180 });
@@ -93,11 +106,7 @@ class Scoreboard {
 			});
 			
 		this.switchBtn.on("change", () => {
-			if (this.switchBtn.is(":checked")) {
-				ipcRenderer.send("open-guesses");
-			} else {
-				ipcRenderer.send("close-guesses");
-			}
+			this.onToggleGuesses(this.switchBtn.is(":checked"));
 		});
 		
 		// Column Visisbility

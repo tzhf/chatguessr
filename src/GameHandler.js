@@ -112,10 +112,10 @@ class GameHandler {
 
 			this.win.webContents.executeJavaScript(`
 				window.nextRoundBtn = document.querySelector('[data-qa="close-round-result"]');
-				if(window.nextRoundBtn) {
+				if (window.nextRoundBtn) {
 					nextRoundBtn.addEventListener("click", () => {
 						nextRoundBtn.setAttribute('disabled', 'disabled');
-						ipcRenderer.send('next-round-click');
+						chatguessrApi.startNextRound();
 					});
 				}
 			`);

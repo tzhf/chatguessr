@@ -13,6 +13,7 @@
 		"src/types.d.ts",
 		"src/main.js",
 		"src/preload.js",
+		"src/renderer.js",
 		"src/GameHandler.js",
 		"src/Windows/**/*.js",
 		"src/utils/countryCodes.json",

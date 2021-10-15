@@ -84,12 +84,23 @@ export type Seed = GameSettings & {
     type: GameType,
 };
 
+export interface RendererApi {
+    populateMap(location: LatLng, scores: { username: string, flag: string, color: string, position: LatLng, distance: number, score: number }[]);
+    clearMarkers();
+    drParseNoCar(enable: boolean);
+    drParseNoCompass(enable: boolean);
+}
+
+export interface ChatguessrApi {
+    init(api: RendererApi);
+    startNextRound();
+}
+
 declare global {
     interface Window {
-        ipcRenderer: IpcRenderer;
-        MAP: google.maps.Map | null;
         jQuery: typeof import('jquery');
         $: typeof import('jquery');
+        chatguessrApi: ChatguessrApi;
     }
 
     namespace DataTables {

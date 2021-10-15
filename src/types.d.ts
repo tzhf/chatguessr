@@ -91,4 +91,11 @@ declare global {
         jQuery: typeof import('jquery');
         $: typeof import('jquery');
     }
+
+    namespace DataTables {
+        interface Settings {
+            // From datatables.net-plugins
+            scrollResize?: boolean;
+        }
+    }
 }

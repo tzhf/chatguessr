@@ -1,6 +1,8 @@
 const path = require("path");
 const fs = require("fs/promises");
 const { app } = require("electron");
+/** @type {{ code: string, names: string }[]} */
+// @ts-ignore
 const countryCodesNames = require("./countryCodesNames");
 
 const countryFlagCodes = new Set(countryCodesNames.map((country) => country.code));

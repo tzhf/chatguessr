@@ -1,5 +1,7 @@
 const path = require("path");
 const { BrowserWindow, shell } = require("electron");
+/** @type {string} */
+// @ts-ignore
 const styles = require('bundle-text:../../assets/styles.css');
 
 function mainWindow() {

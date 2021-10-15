@@ -26,6 +26,7 @@
 		"@electron-forge/maker-squirrel": "^6.0.0-beta.61",
 		"@electron-forge/maker-zip": "^6.0.0-beta.61",
 		"@parcel/transformer-inline-string": "^2.0.0",
+		"@tsconfig/node16": "^1.0.2",
 		"@types/datatables.net-buttons": "^1.4.7",
 		"@types/datatables.net-scroller": "^1.4.1",
 		"@types/google.maps": "^3.45.6",

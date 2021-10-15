@@ -1,11 +1,12 @@
 {
+	"extends": "@tsconfig/node16",
 	"compilerOptions": {
+		"lib": ["es2021", "dom", "dom.iterable"],
+		"noEmit": true,
+		"strict": false,
 		"allowJs": true,
 		"checkJs": true,
-		"target": "es2021",
-		"outDir": "dist",
 		"moduleResolution": "node",
-		"noEmit": true,
 		"allowSyntheticDefaultImports": true
 	},
 	"include": [
@@ -14,8 +15,8 @@
 		"src/preload.js",
 		"src/GameHandler.js",
 		"src/Windows/**/*.js",
-		"src/utils/countryCodes.js",
-		"src/utils/countryCodesNames.js",
+		"src/utils/countryCodes.json",
+		"src/utils/countryCodesNames.json",
 		"src/utils/GameHelper.js",
 		"src/utils/Store.js",
 		"src/Classes/*.js"

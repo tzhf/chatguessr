@@ -4,8 +4,9 @@ require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 const axios = require("axios").default;
 
 const CG = require("codegrid-js").CodeGrid();
+/** @type {Record<string, string>} */
+// @ts-ignore
 const countryCodes = require("./countryCodes");
-const countryCodesNames = require("./countryCodesNames");
 
 /** @typedef {import('../types').LatLng} LatLng */
 /** @typedef {import('../types').Guess} Guess */
@@ -41,12 +42,11 @@ function getGameId(url) {
  * @return {Promise<Seed>} Seed Promise
  */
 async function fetchSeed(url) {
+  const gameId = getGameId(url);
+  if (!gameId) return;
+
   /** @type {import("axios").AxiosResponse<Seed>} */
-  const { data } = await axios.get(
-    `https://www.geoguessr.com/api/v3/games/${url.substring(
-      url.lastIndexOf("/") + 1
-    )}`
-  );
+  const { data } = await axios.get(`https://www.geoguessr.com/api/v3/games/${gameId}`);
   return data;
 }
 

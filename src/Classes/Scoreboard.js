@@ -112,7 +112,7 @@ class Scoreboard {
 			info: false,
 			searching: false,
 			paging: false,
-			scrollY: 100,
+			scrollY: '100px',
 			scrollResize: true,
 			scrollCollapse: true,
 			language: { zeroRecords: " " },
@@ -181,7 +181,7 @@ class Scoreboard {
 				</div>
 			`);
 
-		this.scoreboard.find('#scrollBtn').on("change", (e) => {
+		this.scoreboard.find('#scrollBtn').on("change", /** @param {JQuery.ChangeEvent<HTMLInputElement>} e */ (e) => {
 			if (e.currentTarget.checked != true) {
 				this.isScrolling = $(e.currentTarget).is(":checked");
 				this.stop(".dataTables_scrollBody");

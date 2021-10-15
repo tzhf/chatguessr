@@ -2,6 +2,8 @@
 // and ONLY wants to output ES modules in a module. We must use `require`
 // for electron reasons. This hack prevents Parcel from seeing what we're
 // doing.
+/** @type {typeof require} */
+// @ts-ignore
 const secretRequire = (0, eval('require'));
 const { ipcRenderer } = secretRequire("electron");
 

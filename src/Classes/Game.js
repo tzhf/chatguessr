@@ -33,8 +33,6 @@ class Game {
 		this.isMultiGuess = false;
 		/** @type {Guess[]} */
 		this.guesses = [];
-		/** @type {(Guess & { rounds: number })[]} */
-		this.total = [];
 		/** @type {LatLng | undefined} */
 		this.lastLocation = undefined;
 	}
@@ -139,9 +137,6 @@ class Game {
 		const streamerGuess = await this.processStreamerGuess();
 
 		this.guesses.push(streamerGuess);
-		for (const guess of this.guesses) {
-			this.pushToTotal(guess);
-		}
 
 		this.lastLocation = { lat: this.location.lat, lng: this.location.lng };
 		store.set("lastLocation", this.lastLocation);
@@ -332,7 +327,6 @@ class Game {
 
 	clearGuesses() {
 		this.guesses = [];
-		this.total = [];
 	}
 
 	/**
@@ -353,36 +347,17 @@ class Game {
 	}
 
 	/**
-	 * @param  {Guess} guess
-	 */
-	pushToTotal(guess) {
-		const index = this.total.findIndex((e) => e.user === guess.user);
-		if (index != -1) {
-			this.total[index].scores.push({ round: this.seed.round - 1, score: guess.score });
-			this.total[index].score += guess.score;
-			this.total[index].distance += guess.distance;
-			this.total[index].streak = guess.streak;
-			this.total[index].color = guess.color;
-			this.total[index].flag = guess.flag;
-			this.total[index].rounds++;
-		} else {
-			this.total.push({ scores: [{ round: this.seed.round, score: guess.score }], ...guess, rounds: 1 });
-		}
-	}
-
-	/**
 	 * @return {Guess[]} sorted guesses by Distance
 	 */
 	getRoundScores() {
 		return this.db.getRoundScores(this.roundId);
-		// return GameHelper.sortByDistance(this.guesses);
 	}
 
 	/**
 	 * @return {(Omit<Guess, 'position' | 'modified'> & { rounds: number })[]} sorted guesses by Score
 	 */
 	getTotalScores() {
-		const scores = this.db.getGameScores(this.seed.token) // GameHelper.sortByScore(this.total);
+		const scores = this.db.getGameScores(this.seed.token);
 		// TODO: Remember to check equality
 		Store.userAddVictory(scores[0].user);
 		return scores;

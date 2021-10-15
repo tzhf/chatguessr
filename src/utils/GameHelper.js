@@ -226,28 +226,6 @@ function calculateScore(distance, scale) {
 }
 
 /**
- * Returns guesses sorted by distance ASC
- * FIXME this modifies the input
- * @template {{ distance: number }} T
- * @param {T[]} guesses
- * @return {T[]} guesses
- */
-function sortByDistance(guesses) {
-  return guesses.sort((a, b) => a.distance - b.distance);
-}
-
-/**
- * Returns guesses sorted by score DESC
- * FIXME this modifies the input
- * @template {{ score: number }} T
- * @param {T[]} guesses
- * @return {T[]} guesses
- */
-function sortByScore(guesses) {
-  return guesses.sort((a, b) => b.score - a.score);
-}
-
-/**
  * Make game summary link
  * 
  * @param  {string} streamer
@@ -291,6 +269,4 @@ exports.isCoordinates = isCoordinates;
 exports.calculateScale = calculateScale;
 exports.haversineDistance = haversineDistance;
 exports.calculateScore = calculateScore;
-exports.sortByDistance = sortByDistance;
-exports.sortByScore = sortByScore;
 exports.makeLink = makeLink;

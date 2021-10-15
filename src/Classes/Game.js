@@ -223,7 +223,7 @@ class Game {
 		}
 
 		// Reset streak if the player skipped a round
-		if (!latLngEqual(dbUser.lastLocation, this.lastLocation)) {
+		if (!dbUser.lastLocation || !latLngEqual(dbUser.lastLocation, this.lastLocation)) {
 			user.setStreak(0);
 		}
 

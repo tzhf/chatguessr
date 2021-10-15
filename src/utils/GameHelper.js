@@ -254,7 +254,7 @@ function sortByScore(guesses) {
  * @param  {string} mapName
  * @param {Object} mode
  * @param  {LatLng[]} locations
- * @param  {(Guess & { rounds: number })[]} totalScores
+ * @param  {({ username: string, flag: string, score: number, rounds: number })[]} totalScores
  * @return {Promise<string>} link
  */
 async function makeLink(streamer, mapName, mode, locations, totalScores) {

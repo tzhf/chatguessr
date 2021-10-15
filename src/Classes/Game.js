@@ -9,7 +9,9 @@ const Store = require("../utils/Store");
 /** @typedef {import('../utils/Settings')} Settings */
 
 class Game {
-	constructor() {
+	/** @param {import('../utils/Database')} db */
+	constructor(db) {
+		this.db = db;
 		/** @type {MainWindow} */
 		this.win;
 		/** @type {Settings} */
@@ -18,6 +20,8 @@ class Game {
 		this.url;
 		/** @type {Seed} */
 		this.seed;
+		/** @type {string|undefined} */
+		this.roundId;
 		/** @type {number} */
 		this.mapScale;
 		/** @type {LatLng} */
@@ -54,10 +58,14 @@ class Game {
 		this.isInGame = true;
 		this.isMultiGuess = isMultiGuess;
 		if (this.url === url) {
-			this.refreshSeed();
+			await this.refreshSeed();
 		} else {
 			this.url = url;
 			this.seed = await this.getSeed();
+
+			this.db.createGame(this.seed);
+			this.roundId = this.db.createRound(this.seed.token, this.seed.rounds[0]);
+
 			this.mapScale = GameHelper.calculateScale(this.seed.bounds);
 			this.getCountry();
 			this.clearGuesses();
@@ -76,7 +84,7 @@ class Game {
 
 	/** @param {Seed} newSeed */
 	locHasChanged(newSeed) {
-		return JSON.stringify(newSeed.rounds[newSeed.rounds.length - 1]) != JSON.stringify(this.getLocation());
+		return JSON.stringify(newSeed.rounds.at(-1)) != JSON.stringify(this.getLocation());
 	}
 
 	async refreshSeed() {
@@ -85,16 +93,28 @@ class Game {
 		if (this.streamerHasguessed(newSeed)) {
 			this.win.webContents.send("pre-round-results");
 			this.closeGuesses();
-			this.seed = newSeed;
 
+			this.seed = newSeed;
 			const location = this.location;
 			await this.makeGuess();
+
 			const scores = this.getRoundScores();
+
+			if (this.seed.state !== "finished") {
+				this.roundId = this.db.createRound(this.seed.token, this.seed.rounds.at(-1));
+				this.getCountry();
+			} else {
+				this.roundId = undefined;
+			}
+
 			return { location, scores };
 			// Else, if only the loc has changed, the location was skipped, replace current loc
 		} else if (this.locHasChanged(newSeed)) {
 			this.seed = newSeed;
+			this.roundId = this.db.createRound(this.seed.token, this.seed.rounds.at(-1));
+
 			this.getCountry();
+
 			return false;
 		}
 	}
@@ -106,6 +126,8 @@ class Game {
 	async getCountry() {
 		this.location = this.getLocation();
 		this.country = await GameHelper.getCountryCode(this.location);
+
+		this.db.setRoundCountry(this.roundId, this.country);
 	}
 
 	async makeGuess() {
@@ -123,10 +145,6 @@ class Game {
 
 		this.lastLocation = { lat: this.location.lat, lng: this.location.lng };
 		store.set("lastLocation", this.lastLocation);
-
-		if (this.seed.state != "finished") {
-			this.getCountry();
-		}
 	}
 
 	processMultiGuesses() {
@@ -152,7 +170,13 @@ class Game {
 		const streamerGuess = this.seed.player.guesses[this.seed.round - index];
 		const location = { lat: streamerGuess.lat, lng: streamerGuess.lng };
 
+		let dbUser = this.db.getUser('BROADCASTER');
 		const streamer = Store.getOrCreateUser(this.settings.channelName, this.settings.channelName);
+
+		if (!dbUser) {
+			dbUser = this.db.migrateUser('BROADCASTER', this.settings.channelName, streamer);
+		}
+
 		const guessedCountry = await GameHelper.getCountryCode(location);
 		guessedCountry === this.country ? streamer.addStreak() : streamer.setStreak(0);
 
@@ -163,6 +187,16 @@ class Game {
 
 		streamer.nbGuesses++;
 		Store.saveUser(this.settings.channelName, streamer);
+		
+		this.db.createGuess(this.roundId, dbUser.id, {
+			color: '#fff',
+			flag: streamer.flag,
+			location,
+			country: guessedCountry,
+			streak: streamer.streak,
+			distance,
+			score,
+		});
 
 		return {
 			user: streamer.username,
@@ -190,18 +224,29 @@ class Game {
 			throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' });
 		}
 
+		let dbUser = this.db.getUser(userstate['user-id']);
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
-		if (this.hasPastedPreviousGuess(user.previousGuess, location)) {
+
+		if (!dbUser) {
+			dbUser = this.db.migrateUser(userstate['user-id'], userstate['display-name'], user);
+		}
+		
+		if (this.hasPastedPreviousGuess(dbUser.previousGuess, location)) {
 			throw Object.assign(new Error('Same guess'), { code: 'pastedPreviousGuess' });
 		}
 
-		if (JSON.stringify(user.lastLocation) != JSON.stringify(this.lastLocation)) {
+		// Reset streak if the player skipped a round
+		if (dbUser.lastLocation.lat !== this.lastLocation.lat || dbUser.lastLocation.lng !== this.lastLocation.lng) {
 			user.setStreak(0);
 		}
 
+		const guessedCountry = await GameHelper.getCountryCode(location);
 		if (!this.isMultiGuess) {
-			const guessedCountry = await GameHelper.getCountryCode(location);
-			guessedCountry === this.country ? user.addStreak() : user.setStreak(0);
+			if (guessedCountry === this.country) {
+				user.addStreak()
+			} else {
+				user.setStreak(0);
+			}
 		}
 
 		const distance = GameHelper.haversineDistance(location, this.location);
@@ -223,6 +268,19 @@ class Game {
 			modified: false,
 		};
 
+		// TODO upsert multiguesses
+		if (!this.isMultiGuess) {
+			this.db.createGuess(this.roundId, dbUser.id, {
+				color: userstate.color,
+				flag: user.flag,
+				location,
+				country: guessedCountry,
+				streak: user.streak,
+				distance,
+				score,
+			});
+		}
+
 		// Modify guess or push it
 		if (this.isMultiGuess && index != -1) {
 			this.guesses[index] = { ...guess, modified: true };
@@ -235,6 +293,7 @@ class Game {
 		user.setPreviousGuess(location);
 
 		Store.saveUser(userstate.username, user);
+		this.db.setUserLastLocation(dbUser.id, this.location);
 
 		return { user, guess };
 	}
@@ -315,14 +374,15 @@ class Game {
 	 * @return {Guess[]} sorted guesses by Distance
 	 */
 	getRoundScores() {
-		return GameHelper.sortByDistance(this.guesses);
+		return this.db.getRoundScores(this.roundId);
+		// return GameHelper.sortByDistance(this.guesses);
 	}
 
 	/**
-	 * @return {(Guess & { rounds: number })[]} sorted guesses by Score
+	 * @return {(Omit<Guess, 'position' | 'modified'> & { rounds: number })[]} sorted guesses by Score
 	 */
 	getTotalScores() {
-		const scores = GameHelper.sortByScore(this.total);
+		const scores = this.db.getGameScores(this.seed.token) // GameHelper.sortByScore(this.total);
 		// TODO: Remember to check equality
 		Store.userAddVictory(scores[0].user);
 		return scores;

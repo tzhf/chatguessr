@@ -5,6 +5,7 @@ const { initRenderer } = require('electron-store');
 const { autoUpdater } = require("electron-updater");
 const GameHandler = require("./GameHandler");
 const flags = require('./utils/flags');
+const Database = require('./utils/Database')
 
 /** @type {import('electron').BrowserWindow} */
 let mainWindow;
@@ -14,6 +15,8 @@ app.on("window-all-closed", () => {
 		app.quit();
 	}
 });
+
+const db = new Database(path.join(app.getPath('userData'), 'scores.db'));
 
 function serveAssets() {
 	protocol.interceptFileProtocol('asset', (request, callback) => {
@@ -52,7 +55,7 @@ function initWindow() {
 	const settingsWindow = require("./Windows/settings/SettingsWindow");
 	settingsWindow.setParentWindow(mainWindow);
 
-	const gameHandler = new GameHandler(mainWindow, settingsWindow);
+	const gameHandler = new GameHandler(db, mainWindow, settingsWindow);
 
 	globalShortcut.register("CommandOrControl+R", () => false);
 	globalShortcut.register("CommandOrControl+Shift+R", () => false);

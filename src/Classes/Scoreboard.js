@@ -278,7 +278,7 @@ class Scoreboard {
 	}
 
 	/**
-	 * @param {(Guess & { rounds: number })[]} scores
+	 * @param {{ username: string, color: string, flag: string, streak: number, distance: number, score: number, rounds: number }[]} scores
 	 */
 	displayScores(scores, isTotal = false) {
 		this.isResults = true;

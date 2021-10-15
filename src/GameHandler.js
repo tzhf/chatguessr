@@ -9,51 +9,52 @@ const flags = require('./utils/flags');
 const settings = Settings.read();
 
 /** @typedef {import('./types').Guess} Guess */
+/** @typedef {import('./utils/Database')} Database */
 /** @typedef {import('./Windows/MainWindow')} MainWindow */
 /** @typedef {import('./Windows/Settings/SettingsWindow')} SettingsWindow */
 
-const game = new Game();
-
 class GameHandler {
 	/**
+	 * @param {Database} db
 	 * @param {MainWindow} win 
 	 * @param {SettingsWindow} settingsWindow 
 	 */
-	constructor(win, settingsWindow) {
+	constructor(db, win, settingsWindow) {
 		this.win = win;
 		this.settingsWindow = settingsWindow;
 		this.twitch = new TwitchClient(settings.channelName, settings.botUsername, settings.token);
+		this.game = new Game(db);
 		this.initTmi();
 		this.init();
 	}
 
 	openGuesses() {
-		game.openGuesses();
+		this.game.openGuesses();
 		this.win.webContents.send("switch-on");
 		this.twitch.action("Guesses are open...");
 	}
 	
 	closeGuesses() {
-		game.closeGuesses();
+		this.game.closeGuesses();
 		this.win.webContents.send("switch-off");
 		this.twitch.action("Guesses are closed.");
 	}
 
 	nextRound() {
-		game.nextRound();
-		if (game.seed.state === "finished") {
+		this.game.nextRound();
+		if (this.game.seed.state === "finished") {
 			this.processTotalScores();
 		} else {
-			this.win.webContents.send("next-round", game.isMultiGuess);
-			this.twitch.action(`🌎 Round ${game.round} has started`);
+			this.win.webContents.send("next-round", this.game.isMultiGuess);
+			this.twitch.action(`🌎 Round ${this.game.round} has started`);
 			this.openGuesses();
 		}
 	}
 
 	async processTotalScores () {
-		const totalScores = game.getTotalScores();
-		const locations = game.getLocations();
-		const link = await GameHelper.makeLink(settings.channelName, game.mapName, game.mode, locations, totalScores);
+		const totalScores = this.game.getTotalScores();
+		const locations = this.game.getLocations();
+		const link = await GameHelper.makeLink(settings.channelName, this.game.mapName, this.game.mode, locations, totalScores);
 		this.win.webContents.send("show-final-results", totalScores);
 		await this.twitch.action(
 			`🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${
@@ -67,35 +68,37 @@ class GameHandler {
 	 * @param {Guess[]} scores 
 	 */
 	showResults (location, scores) {
-		const round = game.seed.state === "finished" ? game.round : game.round - 1;
+		const round = this.game.seed.state === "finished" ? this.game.round : this.game.round - 1;
 		this.win.webContents.send("show-round-results", round, location, scores);
 		this.twitch.action(`🌎 Round ${round} has finished. Congrats ${flags.getEmoji(scores[0].flag)} ${scores[0].username} !`);
 	}
 
 	init() {
-		game.init(this.win, settings);
+		this.game.init(this.win, settings);
 
 		// Browser Listening
 		this.win.webContents.on("did-navigate-in-page", (e, url) => {
 			if (GameHelper.isGameURL(url)) {
-				game.start(url, settings.isMultiGuess).then(() => {
-					this.win.webContents.send("game-started", game.isMultiGuess);
-					this.twitch.action(`${game.round == 1 ? "🌎 A new seed of " + game.mapName : "🌎 Round " + game.round} has started`);
+				this.game.start(url, settings.isMultiGuess).then(() => {
+					this.win.webContents.send("game-started", this.game.isMultiGuess);
+					this.twitch.action(`${this.game.round == 1 ? "🌎 A new seed of " + this.game.mapName : "🌎 Round " + this.game.round} has started`);
 					this.openGuesses();
+				}).catch((error) => {
+					console.error(error);
 				});
 			} else {
-				game.outGame();
+				this.game.outGame();
 				this.win.webContents.send("game-quitted");
 			}
 		});
 
 		this.win.webContents.on("did-frame-finish-load", () => {
-			if (!game.isInGame) return;
+			if (!this.game.isInGame) return;
 			this.win.webContents.send("refreshed-in-game", settings.noCompass);
-			// Checks and update seed when the game has refreshed
+			// Checks and update seed when the this.game has refreshed
 			// update the current location if it was skipped
 			// if the streamer has guessed returns scores
-			game.refreshSeed().then((scores) => {
+			this.game.refreshSeed().then((scores) => {
 				if (scores) {
 					this.showResults(scores.location, scores.scores);
 				}
@@ -124,7 +127,7 @@ class GameHandler {
 			this.closeGuesses();
 		});
 
-		ipcMain.on("game-form", (e, isMultiGuess, noCar, noCompass) => {
+		ipcMain.on("this.game-form", (e, isMultiGuess, noCar, noCompass) => {
 			this.win.webContents.send("game-settings-change", noCompass);
 			this.settingsWindow.hide();
 
@@ -187,7 +190,7 @@ class GameHandler {
 	 * @param {boolean} self 
 	 */
 	async handleWhisper(from, userstate, message, self) {
-		if (self || !message.startsWith("!g") || !game.guessesOpen) {
+		if (self || !message.startsWith("!g") || !this.game.guessesOpen) {
 			return;
 		}
 
@@ -199,15 +202,15 @@ class GameHandler {
 		const location = { lat: parseFloat(msg.split(",")[0]), lng: parseFloat(msg.split(",")[1]) };
 
 		try {
-			const { user, guess } = await game.handleUserGuess(userstate, location);
+			const { user, guess } = await this.game.handleUserGuess(userstate, location);
 
-			if (!game.isMultiGuess) {
-				this.win.webContents.send("render-guess", guess, game.nbGuesses);
+			if (!this.game.isMultiGuess) {
+				this.win.webContents.send("render-guess", guess, this.game.nbGuesses);
 				if (settings.showHasGuessed) {
 					await this.twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guessed`);
 				}
 			} else {
-				this.win.webContents.send("render-multiguess", game.guesses, game.nbGuesses);
+				this.win.webContents.send("render-multiguess", this.game.guesses, this.game.nbGuesses);
 				if (!guess.modified) {
 					if (settings.showHasGuessed) {
 						await this.twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guessed`);
@@ -346,6 +349,7 @@ class GameHandler {
 				const lat = (Math.random() * 180) - 90;
 				const lng = (Math.random() * 360) - 180;
 				await this.handleWhisper(`fake_${i}`, {
+					'user-id': `123450${i}`,
 					username: `fake_${i}`,
 					'display-name': `fake_${i}`,
 					color: `#${Math.random().toString(16).slice(2, 8).padStart(6, '0')}`

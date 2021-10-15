@@ -10,8 +10,8 @@ class User {
 	 * @param {Number} perfects=0
 	 * @param {Number} victories=0
 	 * @param {number|null} meanScore=null
-	 * @param {{ lat: number, lng: number }|null} previousGuess=null
-	 * @param {{ lat: number, lng: number }|null} lastLocation=null
+	 * @param {import("../types").LatLng|null} previousGuess=null
+	 * @param {import("../types").LatLng|null} lastLocation=null
 	 */
 	constructor(
 		user,
@@ -57,14 +57,14 @@ class User {
 	}
 
 	/** Set last location
-	 * @param {{ lat: number, lng: number }} location
+	 * @param {import("../types").LatLng} location
 	 */
 	setLastLocation(location) {
 		this.lastLocation = location;
 	}
 
 	/** Set previous guess
-	 * @param {{ lat: number, lng: number }} location
+	 * @param {import("../types").LatLng} location
 	 */
 	setPreviousGuess(location) {
 		this.previousGuess = location;

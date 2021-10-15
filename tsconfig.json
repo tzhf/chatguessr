@@ -17,6 +17,7 @@
 		"src/Windows/**/*.js",
 		"src/utils/countryCodes.json",
 		"src/utils/countryCodesNames.json",
+		"src/utils/Database.js",
 		"src/utils/GameHelper.js",
 		"src/utils/Settings.js",
 		"src/utils/Store.js",

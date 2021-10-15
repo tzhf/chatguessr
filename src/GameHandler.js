@@ -133,7 +133,7 @@ class GameHandler {
 			this.closeGuesses();
 		});
 
-		ipcMain.on("this.game-form", (e, isMultiGuess, noCar, noCompass) => {
+		ipcMain.on("game-form", (e, isMultiGuess, noCar, noCompass) => {
 			this.win.webContents.send("game-settings-change", noCompass);
 			this.settingsWindow.hide();
 

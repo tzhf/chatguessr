@@ -351,8 +351,9 @@ class GameHandler {
 			Store.setUserStreak(user, newStreak);
 
 			await this.twitch.action(`${user} streak set to ${newStreak}`);
-		} else if (message === '!spamguess') {
-			for (let i = 0; i < 50; i += 1) {
+		} else if (message.startsWith('!spamguess')) {
+			const max = parseInt(message.split(' ')[1] ?? '50', 10)
+			for (let i = 0; i < max; i += 1) {
 				const lat = (Math.random() * 180) - 90;
 				const lng = (Math.random() * 360) - 180;
 				await this.handleWhisper(`fake_${i}`, {

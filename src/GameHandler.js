@@ -316,7 +316,9 @@ class GameHandler {
 		}
 
 		// streamer commands
-		if (userstate.username != settings.channelName) return;
+		if (userstate.badges.broadcaster !== '1') {
+			return;
+		}
 
 		if (message.startsWith(settings.setStreakCmd)) {
 			const msgArr = message.split(" ");

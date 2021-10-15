@@ -1,3 +1,4 @@
+const pMap = require("p-map");
 const GameHelper = require("../utils/GameHelper");
 const store = require("../utils/sharedStore");
 const Store = require("../utils/Store");
@@ -7,6 +8,14 @@ const Store = require("../utils/Store");
 /** @typedef {import('../types').Guess} Guess */
 /** @typedef {import("../Windows/MainWindow")} MainWindow */
 /** @typedef {import('../utils/Settings')} Settings */
+
+/**
+ * @param {LatLng} a
+ * @param {LatLng} b
+ */
+function latLngEqual(a, b) {
+	return a.lat === b.lat && a.lng === b.lng;
+}
 
 class Game {
 	/** @param {import('../utils/Database')} db */
@@ -61,12 +70,20 @@ class Game {
 			this.url = url;
 			this.seed = await this.getSeed();
 
-			this.db.createGame(this.seed);
-			this.roundId = this.db.createRound(this.seed.token, this.seed.rounds[0]);
+			try {
+				this.db.createGame(this.seed);
+				this.roundId = this.db.createRound(this.seed.token, this.seed.rounds[0]);
+			} catch (err) {
+				// In this case we are restoring an existing game.
+				if (err.message.includes('UNIQUE constraint failed: games.id')) {
+					this.roundId = this.db.getCurrentRound(this.seed.token);
+				} else {
+					throw err;
+				}
+			}
 
 			this.mapScale = GameHelper.calculateScale(this.seed.bounds);
 			this.getCountry();
-			this.clearGuesses();
 		}
 	}
 
@@ -76,19 +93,19 @@ class Game {
 	}
 
 	/** @param {Seed} newSeed */
-	streamerHasguessed(newSeed) {
+	streamerHasGuessed(newSeed) {
 		return newSeed.player.guesses.length != this.seed.player.guesses.length;
 	}
 
 	/** @param {Seed} newSeed */
 	locHasChanged(newSeed) {
-		return JSON.stringify(newSeed.rounds.at(-1)) != JSON.stringify(this.getLocation());
+		return !latLngEqual(newSeed.rounds.at(-1), this.getLocation());
 	}
 
 	async refreshSeed() {
 		const newSeed = await this.getSeed();
 		// If a guess has been comitted, process streamer guess then return scores
-		if (this.streamerHasguessed(newSeed)) {
+		if (this.streamerHasGuessed(newSeed)) {
 			this.win.webContents.send("pre-round-results");
 			this.closeGuesses();
 
@@ -134,31 +151,27 @@ class Game {
 		if (this.isMultiGuess) {
 			await this.processMultiGuesses();
 		}
-		const streamerGuess = await this.processStreamerGuess();
-
-		this.guesses.push(streamerGuess);
+		await this.processStreamerGuess();
 
 		this.lastLocation = { lat: this.location.lat, lng: this.location.lng };
 		store.set("lastLocation", this.lastLocation);
 	}
 
-	processMultiGuesses() {
-		const promises = this.guesses.map(async (guess, index) => {
+	/**
+	 * Update streaks for multi-guesses.
+	 */
+	async processMultiGuesses() {
+		// TODO only retrieve location and streak values
+		const guesses = this.db.getRoundScores(this.roundId);
+		await pMap(guesses, async (guess) => {
 			const guessedCountry = await GameHelper.getCountryCode(guess.position);
-			if (guessedCountry === this.country) {
-				guess.streak++
-			} else {
-				guess.streak = 0;
-			}
-			this.guesses[index].streak = guess.streak;
+			const streak = guessedCountry === this.country ? guess.streak + 1 : 0;
+			this.db.setGuessCountry(guess.id, guessedCountry, streak);
 			Store.setUserStreak(guess.user, guess.streak);
-		});
-		return Promise.all(promises);
+		}, { concurrency: 10 });
 	}
 
 	/**
-	 * 
-	 * @returns {Promise<Guess>}
 	 */
 	async processStreamerGuess() {
 		const index = this.seed.state === "finished" ? 1 : 2;
@@ -192,46 +205,33 @@ class Game {
 			distance,
 			score,
 		});
-
-		return {
-			user: streamer.username,
-			username: streamer.username,
-			color: "#FFF",
-			flag: streamer.flag,
-			position: location,
-			streak: streamer.streak,
-			distance,
-			score,
-			modified: false,
-		};
 	}
 
 	/**
 	 * 
 	 * @param {import("tmi.js").ChatUserstate} userstate 
-	 * @param {LatLng} location 
-	 * @returns 
+	 * @param {LatLng} location
 	 */
 	async handleUserGuess(userstate, location) {
-		const index = this.hasGuessedThisRound(userstate.username);
-
-		if (!this.isMultiGuess && index != -1) {
-			throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' });
-		}
-
 		let dbUser = this.db.getUser(userstate['user-id']);
 		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
 
 		if (!dbUser) {
 			dbUser = this.db.migrateUser(userstate['user-id'], userstate['display-name'], user);
 		}
+
+		const existingGuess = this.db.getUserGuess(this.roundId, dbUser.id);
+		if (!this.isMultiGuess && existingGuess) {
+			throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' });
+		}
+
 		
-		if (this.hasPastedPreviousGuess(dbUser.previousGuess, location)) {
+		if (dbUser.previousGuess && latLngEqual(dbUser.previousGuess, location)) {
 			throw Object.assign(new Error('Same guess'), { code: 'pastedPreviousGuess' });
 		}
 
 		// Reset streak if the player skipped a round
-		if (dbUser.lastLocation.lat !== this.lastLocation.lat || dbUser.lastLocation.lng !== this.lastLocation.lng) {
+		if (!latLngEqual(dbUser.lastLocation, this.lastLocation)) {
 			user.setStreak(0);
 		}
 
@@ -246,11 +246,43 @@ class Game {
 
 		const distance = GameHelper.haversineDistance(location, this.location);
 		const score = GameHelper.calculateScore(distance, this.mapScale);
+
+		// Modify guess or push it
+		if (this.isMultiGuess && existingGuess) {
+			this.db.updateGuess(existingGuess.id, {
+				color: userstate.color,
+				flag: user.flag,
+				location,
+				country: guessedCountry,
+				streak: user.streak,
+				distance,
+				score,
+			});
+		} else {
+			user.nbGuesses++;
+			this.db.createGuess(this.roundId, dbUser.id, {
+				color: userstate.color,
+				flag: user.flag,
+				location,
+				country: guessedCountry,
+				streak: user.streak,
+				distance,
+				score,
+			});
+		}
+		
+		this.db.setUserLastLocation(dbUser.id, this.location);
+
 		if (score == 5000) {
 			user.perfects++;
 		}
 		user.calcMeanScore(score);
+		user.setLastLocation({ lat: this.location.lat, lng: this.location.lng });
+		user.setPreviousGuess(location);
 
+		Store.saveUser(userstate.username, user);
+
+		// Old shape, for the scoreboard UI
 		const guess = {
 			user: userstate.username,
 			username: userstate["display-name"],
@@ -262,59 +294,20 @@ class Game {
 			score,
 			modified: false,
 		};
-
-		// TODO upsert multiguesses
-		if (!this.isMultiGuess) {
-			this.db.createGuess(this.roundId, dbUser.id, {
-				color: userstate.color,
-				flag: user.flag,
-				location,
-				country: guessedCountry,
-				streak: user.streak,
-				distance,
-				score,
-			});
-		}
-
-		// Modify guess or push it
-		if (this.isMultiGuess && index != -1) {
-			this.guesses[index] = { ...guess, modified: true };
-		} else {
-			user.nbGuesses++;
-			this.guesses.push(guess);
-		}
-
-		user.setLastLocation({ lat: this.location.lat, lng: this.location.lng });
-		user.setPreviousGuess(location);
-
-		Store.saveUser(userstate.username, user);
-		this.db.setUserLastLocation(dbUser.id, this.location);
-
 		return { user, guess };
 	}
 
-	nextRound() {
-		this.guesses = [];
-		if (this.seed.state != "finished") {
-			this.win.webContents.send("next-round", this.isMultiGuess);
-		} else {
-			this.win.webContents.send("final-results");
-		}
-	}
-
 	getLocation() {
-		return this.seed.rounds[this.seed.round - 1];
+		return this.seed.rounds.at(-1);
 	}
 
 	getLocations() {
-		return this.seed.rounds.map((round) => {
-			return {
-				lat: round.lat,
-				lng: round.lng,
-				heading: Math.round(round.heading),
-				pitch: Math.round(round.pitch),
-			};
-		});
+		return this.seed.rounds.map((round) => ({
+			lat: round.lat,
+			lng: round.lng,
+			heading: Math.round(round.heading),
+			pitch: Math.round(round.pitch),
+		}));
 	}
 
 	openGuesses() {
@@ -325,25 +318,11 @@ class Game {
 		this.guessesOpen = false;
 	}
 
-	clearGuesses() {
-		this.guesses = [];
-	}
-
 	/**
-	 * @param {string} user
-	 * @return {number} index
+	 * 
 	 */
-	hasGuessedThisRound(user) {
-		return this.guesses.findIndex((guess) => guess.user === user);
-	}
-
-	/**
-	 * @param  {LatLng} previousGuess
-	 * @param  {LatLng} location
-	 * @return {boolean}
-	 */
-	hasPastedPreviousGuess(previousGuess, location) {
-		return previousGuess && previousGuess.lat === location.lat && previousGuess.lng === location.lng;
+	getMultiGuesses() {
+		return this.db.getRoundParticipants(this.roundId);
 	}
 
 	/**
@@ -375,8 +354,9 @@ class Game {
 		return this.seed.round;
 	}
 
+	/** @deprecated Use getRoundScores().length instead */
 	get nbGuesses() {
-		return this.guesses.length;
+		return this.db.getRoundParticipants(this.roundId).length;
 	}
 }
 

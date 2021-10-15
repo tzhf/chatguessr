@@ -41,7 +41,6 @@ class GameHandler {
 	}
 
 	nextRound() {
-		this.game.nextRound();
 		if (this.game.seed.state === "finished") {
 			this.processTotalScores();
 		} else {
@@ -210,7 +209,8 @@ class GameHandler {
 					await this.twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guessed`);
 				}
 			} else {
-				this.win.webContents.send("render-multiguess", this.game.guesses, this.game.nbGuesses);
+				const guesses = this.game.getMultiGuesses();
+				this.win.webContents.send("render-multiguess", guesses);
 				if (!guess.modified) {
 					if (settings.showHasGuessed) {
 						await this.twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guessed`);

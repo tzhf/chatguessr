@@ -258,7 +258,7 @@ class Scoreboard {
 	}
 
 	/**
-	 * @param {Guess[]} guesses
+	 * @param {{ username: string, flag: string, color: string }[]} guesses
 	 */
 	renderMultiGuess(guesses) {
 		const rows = guesses.map((guess) => {

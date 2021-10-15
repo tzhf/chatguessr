@@ -134,7 +134,7 @@ class Database {
             VALUES (:id, :map, :mapName, :bounds, :forbidMoving, :forbidPanning, :forbidZooming, :timeLimit, :createdAt)
         `);
 
-        const game = insertGame.run({
+        insertGame.run({
             id: seed.token,
             map: seed.map,
             mapName: seed.mapName,
@@ -145,6 +145,23 @@ class Database {
             timeLimit: seed.timeLimit,
             createdAt: timestamp(),
         });
+    }
+
+    /**
+     * 
+     * @param {string} gameId 
+     * @returns {string}
+     */
+    getCurrentRound(gameId) {
+        const findRoundId = this.db.prepare(`
+            SELECT id
+            FROM rounds
+            WHERE game_id = ?
+            ORDER BY created_at DESC
+            LIMIT 1
+        `).pluck(true);
+
+        return findRoundId.get(gameId);
     }
 
     /**
@@ -218,6 +235,93 @@ class Database {
     }
 
     /**
+     * @param {string} roundId
+     * @param {string} userId 
+     */
+    getUserGuess(roundId, userId) {
+        const stmt = this.db.prepare('SELECT id, color, flag, location, country, streak, distance, score FROM guesses WHERE round_id = ? AND user_id = ?');
+        /** @type {{ id: string, color: string, flag: string, location: string, country: string | null, streak: number, distance: number, score: number } | undefined} */
+        const row = stmt.get(roundId, userId);
+        if (!row) {
+            return;
+        }
+    
+        return {
+            ...row,
+            /** @type {LatLng} */
+            location: JSON.parse(row.location),
+        };
+    }
+
+    /**
+     * @param {string} guessId
+     * @param {{ color: string, flag: string, location: LatLng, country: string | null, streak: number, distance: number, score: number }} guess 
+     */
+    updateGuess(guessId, guess) {
+        const updateGuess = this.db.prepare(`
+            UPDATE guesses
+            SET color = :color, flag = :flag, location = :location, country = :country, streak = :streak, distance = :distance, score = :score)
+            WHERE id = :id
+        `);
+
+        updateGuess.run({
+            id: guessId,
+            color: guess.color,
+            flag: guess.flag,
+            location: JSON.stringify(guess.location),
+            country: guess.country,
+            streak: guess.streak,
+            distance: guess.distance,
+            score: guess.score,
+            // probably not useful but maybe?
+            // updatedAt: timestamp(),
+        });
+    }
+
+    /**
+     * 
+     * @param {string} guessId 
+     * @param {string} country 
+     * @param {number} streak
+     */
+    setGuessCountry(guessId, country, streak) {
+        const updateGuess = this.db.prepare(`
+            UPDATE guesses
+            SET country = :country, streak = :streak
+            WHERE id = :id
+        `)
+
+        updateGuess.run({
+            id: guessId,
+            country,
+            streak,
+        });
+    }
+
+    /**
+     * Get all the participants for a round, sorted by time. No scores included.
+     * 
+     * @param {string} roundId 
+     */
+    getRoundParticipants(roundId) {
+        const stmt  = this.db.prepare(`
+            SELECT
+                guesses.id,
+                users.username,
+                guesses.color,
+                guesses.flag
+            FROM guesses, users
+            WHERE round_id = ? AND users.id = guesses.user_id
+            ORDER BY created_at ASC
+        `)
+
+        /** @type {{ id: string, username: string, color: string, flag: string }[]} */
+        const records = stmt.all(roundId);
+        
+        return records;
+    }
+
+    /**
      * Get all the guesses for a round, sorted from closest distance to farthest away.
      * 
      * @param {string} roundId 
@@ -225,6 +329,7 @@ class Database {
     getRoundScores(roundId) {
         const stmt = this.db.prepare(`
             SELECT
+              guesses.id,
               users.username,
               guesses.color,
               guesses.flag,
@@ -237,7 +342,7 @@ class Database {
             ORDER BY distance ASC
         `)
 
-        /** @type {{ username: string, color: string, flag: string, location: string, streak: number, distance: number, score: number }[]} */
+        /** @type {{ id: string, username: string, color: string, flag: string, location: string, streak: number, distance: number, score: number }[]} */
         const records = stmt.all(roundId);
 
         return records.map((record) => ({

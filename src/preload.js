@@ -78,8 +78,8 @@ function init() {
 			scoreboard.renderGuess(guess);
 		});
 
-		ipcRenderer.on("render-multiguess", (e, guesses, nbGuesses) => {
-			scoreboard.setTitle(`GUESSES (${nbGuesses})`);
+		ipcRenderer.on("render-multiguess", (e, guesses) => {
+			scoreboard.setTitle(`GUESSES (${guesses.length})`);
 			scoreboard.renderMultiGuess(guesses);
 		});
 

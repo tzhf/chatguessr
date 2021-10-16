@@ -4,6 +4,7 @@ const { app } = require("electron");
 /** @type {{ code: string, names: string }[]} */
 // @ts-ignore
 const countryCodesNames = require("./countryCodesNames");
+const { matchSorter } = require("match-sorter");
 
 const countryFlagCodes = new Set(countryCodesNames.map((country) => country.code));
 
@@ -38,28 +39,22 @@ async function findFlagFile(id) {
 }
 
 /**
- * Matches words above 3 letters
- * @param {string} input
- * @param {string} key
- */
-function contained(input, key) {
-  return input.length >= 3 && key.includes(input) && input.length <= key.length;
-}
-
-// TODO use match-sorter?
-// matchSorter(customFlags.concat(countryCodesNames), input, { keys: ['code', 'names'] })
-/**
  * Find a flag code based on user input.
  * 
  * @param {string} input
  * @returns {string|undefined}
  */
 function selectFlag(input) {
-  const normalized = input.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const availableFlags = [...customFlags, ...countryCodesNames];
 
-  return [...customFlags, ...countryCodesNames].find((flag) =>
-    flag.code.toLowerCase() === normalized || contained(normalized, flag.names.toLowerCase())
-  )?.code;
+  const matches = matchSorter(availableFlags, input, {
+    keys: [
+      { threshold: matchSorter.rankings.EQUAL, key: 'code' },
+      'names',
+    ],
+  });
+
+  return matches[0]?.code;
 }
 
 /**

@@ -18,6 +18,7 @@
 		"electron-updater": "^4.3.9",
 		"jquery": "^3.6.0",
 		"jquery-ui-dist": "^1.12.1",
+		"match-sorter": "^6.3.1",
 		"p-map": "^4.0.0",
 		"tmi.js": "^1.8.5"
 	},
@@ -84,20 +85,26 @@
 		"cg-main": {
 			"context": "electron-main",
 			"source": "./src/main.js",
-			"sourceMap": { "inline": true }
+			"sourceMap": {
+				"inline": true
+			}
 		},
 		"cg-preload": {
 			"context": "electron-renderer",
 			"source": "./src/preload.js",
 			"scopeHoist": false,
-			"sourceMap": { "inline": true }
+			"sourceMap": {
+				"inline": true
+			}
 		},
 		"settings": {
 			"context": "electron-renderer",
 			"outputFormat": "commonjs",
 			"source": "./src/Windows/Settings/settings.html",
 			"publicUrl": ".",
-			"sourceMap": { "inline": true }
+			"sourceMap": {
+				"inline": true
+			}
 		}
 	},
 	"build": {

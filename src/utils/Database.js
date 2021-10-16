@@ -99,22 +99,24 @@ const migrations = [
 ];
 
 class Database {
+    /** @type {SQLite.Database} */
+    #db;
+
     /**
      * @param {string} file
      */
     constructor(file) {
-        /** @private */
-        this.db = new SQLite(file);
+        this.#db = new SQLite(file);
 
         this.migrate();
     }
 
     /** @private */
-    migrateUp() {
-        const version = this.db.pragma('user_version', { simple: true });
+    #migrateUp() {
+        const version = this.#db.pragma('user_version', { simple: true });
         if (version < migrations.length) {
-            migrations[version](this.db);
-            this.db.pragma(`user_version=${version + 1}`);
+            migrations[version](this.#db);
+            this.#db.pragma(`user_version=${version + 1}`);
 
             return true;
         }
@@ -125,7 +127,7 @@ class Database {
     migrate() {
         let moreMigrations = true;
         while (moreMigrations) {
-            moreMigrations = this.migrateUp();
+            moreMigrations = this.#migrateUp();
         }
     }
 
@@ -134,7 +136,7 @@ class Database {
      * @param {import('../types').Seed} seed 
      */
     createGame(seed) {
-        const insertGame = this.db.prepare(`
+        const insertGame = this.#db.prepare(`
             INSERT INTO games(id, map, map_name, map_bounds, forbid_moving, forbid_panning, forbid_zooming, time_limit, created_at)
             VALUES (:id, :map, :mapName, :bounds, :forbidMoving, :forbidPanning, :forbidZooming, :timeLimit, :createdAt)
         `);
@@ -158,7 +160,7 @@ class Database {
      * @returns {string}
      */
     getCurrentRound(gameId) {
-        const findRoundId = this.db.prepare(`
+        const findRoundId = this.#db.prepare(`
             SELECT id
             FROM rounds
             WHERE game_id = ?
@@ -175,7 +177,7 @@ class Database {
      * @param {import('../types').GameRound} round 
      */
     createRound(gameId, round) {
-        const insertRound = this.db.prepare(`
+        const insertRound = this.#db.prepare(`
             INSERT INTO rounds(id, game_id, location, created_at)
             VALUES (:id, :gameId, :location, :createdAt)
         `);
@@ -203,7 +205,7 @@ class Database {
      * @param {string} country 
      */
     setRoundCountry(roundId, country) {
-        const stmt = this.db.prepare(`UPDATE rounds SET country = :country WHERE id = :id`);
+        const stmt = this.#db.prepare(`UPDATE rounds SET country = :country WHERE id = :id`);
         stmt.run({
             id: roundId,
             country,
@@ -218,7 +220,7 @@ class Database {
      */
     createGuess(roundId, userId, guess) {
         const id = randomUUID();
-        const insertGuess = this.db.prepare(`
+        const insertGuess = this.#db.prepare(`
             INSERT INTO guesses(id, round_id, user_id, color, flag, location, country, streak, distance, score, created_at)
             VALUES (:id, :roundId, :userId, :color, :flag, :location, :country, :streak, :distance, :score, :createdAt)
         `);
@@ -245,7 +247,7 @@ class Database {
      * @param {string} userId 
      */
     getUserGuess(roundId, userId) {
-        const stmt = this.db.prepare('SELECT id, color, flag, location, country, streak, distance, score FROM guesses WHERE round_id = ? AND user_id = ?');
+        const stmt = this.#db.prepare('SELECT id, color, flag, location, country, streak, distance, score FROM guesses WHERE round_id = ? AND user_id = ?');
         /** @type {{ id: string, color: string, flag: string, location: string, country: string | null, streak: number, distance: number, score: number } | undefined} */
         const row = stmt.get(roundId, userId);
         if (!row) {
@@ -264,7 +266,7 @@ class Database {
      * @param {{ color: string, flag: string, location: LatLng, country: string | null, streak: number, distance: number, score: number }} guess 
      */
     updateGuess(guessId, guess) {
-        const updateGuess = this.db.prepare(`
+        const updateGuess = this.#db.prepare(`
             UPDATE guesses
             SET color = :color, flag = :flag, location = :location, country = :country, streak = :streak, distance = :distance, score = :score
             WHERE id = :id
@@ -291,7 +293,7 @@ class Database {
      * @param {number} streak
      */
     setGuessCountry(guessId, country, streak) {
-        const updateGuess = this.db.prepare(`
+        const updateGuess = this.#db.prepare(`
             UPDATE guesses
             SET country = :country, streak = :streak
             WHERE id = :id
@@ -310,7 +312,7 @@ class Database {
      * @param {string} roundId 
      */
     getRoundParticipants(roundId) {
-        const stmt  = this.db.prepare(`
+        const stmt  = this.#db.prepare(`
             SELECT
                 guesses.id,
                 users.username,
@@ -333,7 +335,7 @@ class Database {
      * @param {string} roundId 
      */
     getRoundScores(roundId) {
-        const stmt = this.db.prepare(`
+        const stmt = this.#db.prepare(`
             SELECT
               guesses.id,
               users.username,
@@ -369,7 +371,7 @@ class Database {
         // `streak` value will be used for each player.
         // Ideally we'd do some fancy windowing stuff to calculate the streaks on the fly,
         // but I can't figure that out, so have to settle for this.
-        const stmt = this.db.prepare(`
+        const stmt = this.#db.prepare(`
             SELECT users.username,
                    guesses.color,
                    users.flag,
@@ -401,7 +403,7 @@ class Database {
      * @returns {{ id: string, username: string, flag: string, previousGuess: LatLng, lastLocation: LatLng, resetAt: number } | undefined}
      */
     getUser(id) {
-        const user = this.db.prepare('SELECT id, username, flag, previous_guess, last_location, reset_at FROM users WHERE id = ?').get(id);
+        const user = this.#db.prepare('SELECT id, username, flag, previous_guess, last_location, reset_at FROM users WHERE id = ?').get(id);
 
         if (!user) {
             return;
@@ -424,7 +426,7 @@ class Database {
      * @param {import('../Classes/User')} storeUser 
      */
     migrateUser(userId, username, storeUser) {
-        const migrate = this.db.prepare(`
+        const migrate = this.#db.prepare(`
             INSERT INTO users(id, username, flag, previous_guess, last_location)
             VALUES (:id, :username, :flag, :previousGuess, :lastLocation)
         `);
@@ -446,7 +448,7 @@ class Database {
      * @param {LatLng} lastLocation 
      */
     setUserLastLocation(userId, lastLocation) {
-        this.db.prepare(`UPDATE users SET last_location = :lastLocation WHERE id = :id`).run({
+        this.#db.prepare(`UPDATE users SET last_location = :lastLocation WHERE id = :id`).run({
             id: userId,
             lastLocation: JSON.stringify(lastLocation),
         })

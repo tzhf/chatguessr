@@ -83,18 +83,21 @@
 	"targets": {
 		"cg-main": {
 			"context": "electron-main",
-			"source": "./src/main.js"
+			"source": "./src/main.js",
+			"sourceMap": { "inline": true }
 		},
 		"cg-preload": {
 			"context": "electron-renderer",
 			"source": "./src/preload.js",
-			"scopeHoist": false
+			"scopeHoist": false,
+			"sourceMap": { "inline": true }
 		},
 		"settings": {
 			"context": "electron-renderer",
 			"outputFormat": "commonjs",
 			"source": "./src/Windows/Settings/settings.html",
-			"publicUrl": "."
+			"publicUrl": ".",
+			"sourceMap": { "inline": true }
 		}
 	},
 	"build": {

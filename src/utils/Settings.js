@@ -55,7 +55,7 @@ class Settings {
 		this.isMultiGuess = isMultiGuess;
 		this.noCar = noCar;
 		this.noCompass = noCompass;
-        this.save();
+        this.#save();
 	}
 
 	/**
@@ -68,7 +68,7 @@ class Settings {
 		this.userClearStatsCmd = commands.userClearStats;
 		this.setStreakCmd = commands.setStreak;
 		this.showHasGuessed = commands.showHasGuessed;
-        this.save();
+        this.#save();
 	}
 
 	/**
@@ -80,7 +80,7 @@ class Settings {
 		this.channelName = channelName;
 		this.botUsername = botUsername;
 		this.token = token;
-        this.save();
+        this.#save();
 	}
 
     toJSON() {
@@ -104,8 +104,7 @@ class Settings {
         return new Settings(store.get('settings'));
     }
 
-    /** @private */
-    save() {
+    #save() {
         store.set('settings', this.toJSON());
     }
 }

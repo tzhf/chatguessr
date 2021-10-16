@@ -1,12 +1,16 @@
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
-
 const axios = require("axios").default;
-
-const CG = require("codegrid-js").CodeGrid();
-/** @type {Record<string, string>} */
+const countryIso = require("country-iso");
+const iso3to2 = require('country-iso-3-to-2');
+/**
+ * Country code mapping for 2-character ISO codes that should be considered
+ * part of another country for GeoGuessr streak purposes.
+ * 
+ * @type {Record<string, string>}
+ */
 // @ts-ignore
-const countryCodes = require("./countryCodes");
+const countryCodes = require('./countryCodes.json')
 
 /** @typedef {import('../types').LatLng} LatLng */
 /** @typedef {import('../types').Guess} Guess */
@@ -56,54 +60,12 @@ async function fetchSeed(url) {
  * @return {Promise<string>} Country code Promise
  */
 async function getCountryCode(location) {
-  const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode');
-  url.searchParams.append('latitude', `${location.lat}`);
-  url.searchParams.append('longitude', `${location.lng}`);
-  url.searchParams.append('key', process.env.BDC_KEY);
-
-  try {
-    /** @type {import("axios").AxiosResponse<{ countryCode: string }>} */
-    const res = await axios.get(url.toString());
-    return countryCodes[res.data.countryCode];
-  } catch {
-    const code = await new Promise((resolve, reject) => {
-      CG.getCode(location.lat, location.lng, (error, code) => {
-        if (error) {
-          reject(new Error(error))
-        } else {
-          resolve(code);
-        }
-      });
-    });
-    return countryCodes[code.toUpperCase()];
+  const isos = countryIso.get(location.lat, location.lng);
+  if (isos.length > 0) {
+    return countryCodes[iso3to2(isos[0])];
   }
-}
 
-/**
- * Returns a country code
- * It uses CodeGrid first and then BDC if needed
- * @param {LatLng} location
- * @return {Promise<string>} Country code Promise
- */
-async function getCountryCodeLocally(location) {
-  let coordinates = getSurroundings(location);
-  const values = await Promise.all(coordinates.map(getCountryCG));
-  let unique = new Set(values);
-  if (unique.size === 1) {
-    return values[0];
-  }
-  return getCountryBDC(location);
-}
-
-/**
- * Returns a country code (Only using BDC)
- * Do not use externally - Used by getCountryCodeLocally
- * Ultimately we will call our own API here and remove/
- * replace getCountryCode
- * @param {LatLng} location
- * @return {Promise<string>} Country code Promise
- */
-async function getCountryBDC(location) {
+  // do we even need this fallback?
   const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode');
   url.searchParams.append('latitude', `${location.lat}`);
   url.searchParams.append('longitude', `${location.lng}`);
@@ -112,54 +74,6 @@ async function getCountryBDC(location) {
   /** @type {import("axios").AxiosResponse<{ countryCode: string }>} */
   const res = await axios.get(url.toString());
   return countryCodes[res.data.countryCode];
-}
-
-/**
- * Returns a country code (Only using CodeGrid)
- * Do not use externally - Used by getCountryCodeLocally
- * @param {LatLng} location
- * @return {Promise<string>} Country code Promise
- */
-function getCountryCG(location) {
-  return new Promise((resolve, reject) => {
-    CG.getCode(location.lat, location.lng, (error, code) => {
-      if (error) {
-        reject(new Error(error));
-      } else {
-        resolve(countryCodes[code.toUpperCase()]);
-      }
-    });
-  });
-}
-
-/**
- * Returns an array of 9 coodinates as objects.
- * Each coordinate is 100 meters aways from the given
- * coordinate y angles from 0 to 315
- * The first coordinate is the original passed
- * @param {LatLng} location
- * @returns Coordinates [{lat, lng}, {lat, lng}] x 8
- */
-function getSurroundings(location) {
-  const meters = 100;
-  const R_EARTH = 6378.137;
-  const M = 1 / (((2 * Math.PI) / 360) * R_EARTH) / 1000;
-
-  function moveFrom(coords, angle, distance) {
-    let radianAngle = (angle * Math.PI) / 180;
-    let x = 0 + distance * Math.cos(radianAngle);
-    let y = 0 + distance * Math.sin(radianAngle);
-    let newLat = coords.lat + y * M;
-    let newLng = coords.lng + (x * M) / Math.cos(coords.lat * (Math.PI / 180));
-    return { lat: newLat, lng: newLng };
-  }
-  let coordinates = [location];
-  for (let angle = 0; angle < 360; angle += 45) {
-    coordinates.push(
-      moveFrom({ lat: location.lat, lng: location.lng }, angle, meters)
-    );
-  }
-  return coordinates;
 }
 
 /**
@@ -261,10 +175,6 @@ exports.isGameURL = isGameURL;
 exports.getGameId = getGameId;
 exports.fetchSeed = fetchSeed;
 exports.getCountryCode = getCountryCode;
-exports.getCountryBDC = getCountryBDC;
-exports.getCountryCG = getCountryCG;
-exports.getCountryCodeLocally = getCountryCodeLocally;
-exports.getSurroundings = getSurroundings;
 exports.isCoordinates = isCoordinates;
 exports.calculateScale = calculateScale;
 exports.haversineDistance = haversineDistance;

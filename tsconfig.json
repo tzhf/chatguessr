@@ -10,6 +10,7 @@
 		"allowSyntheticDefaultImports": true
 	},
 	"include": [
+		"src/modules.d.ts",
 		"src/types.d.ts",
 		"src/main.js",
 		"src/preload.js",

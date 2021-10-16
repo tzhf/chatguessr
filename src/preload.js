@@ -1,5 +1,3 @@
-const path = require("path");
-const fs = require('fs');
 const { contextBridge, ipcRenderer } = require("electron");
 
 /** @typedef {import('./types').LatLng} LatLng */

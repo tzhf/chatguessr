@@ -12,11 +12,10 @@ function mainWindow() {
 		show: false,
 		webPreferences: {
 			preload: path.join(__dirname, "../cg-preload/preload.js"),
-			// TODO make it work without this. currently required for the MAP hooking.
-			// nodeIntegration and contextIsolation should both be off for remote URLs like geoguessr.com.
 			contextIsolation: true,
+			nodeIntegration: false,
 			webSecurity: false,
-			// devTools: false,
+			devTools: process.env.NODE_ENV === 'development',
 		},
 	});
 	win.setMenuBarVisibility(false);

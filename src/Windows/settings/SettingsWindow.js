@@ -14,7 +14,7 @@ function settingsWindow() {
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
-			devTools: false,
+			devTools: process.env.NODE_ENV === 'development',
 		},
 	});
 	win.setMenuBarVisibility(false);

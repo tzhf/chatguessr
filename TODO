@@ -1,6 +1,6 @@
 TODOS:
 
-	☐ Store users by Twitch ID in case they change their names
+	[x] Store users by Twitch ID in case they change their names
 	☐ Move all commands to a CommandHandler?
 	[x] Check for streamer using `badges.broadcaster`
 	☐ Make `command-prefix` a settings thing? Example ! # $ &

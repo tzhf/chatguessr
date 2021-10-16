@@ -91,6 +91,11 @@ const migrations = [
         ALTER TABLE users ADD COLUMN victories INT DEFAULT 0;
         */
     },
+    function createSearchIndices(db) {
+        db.prepare(`CREATE INDEX guess_user_id ON guesses(user_id)`).run();
+        db.prepare(`CREATE INDEX guess_round_id ON guesses(round_id)`).run();
+        db.prepare(`CREATE INDEX round_game_id ON rounds(game_id)`).run();
+    },
 ];
 
 class Database {
@@ -198,7 +203,8 @@ class Database {
      * @param {string} country 
      */
     setRoundCountry(roundId, country) {
-        this.db.prepare(`UPDATE rounds SET country = :country WHERE id = :id`).run({
+        const stmt = this.db.prepare(`UPDATE rounds SET country = :country WHERE id = :id`);
+        stmt.run({
             id: roundId,
             country,
         });

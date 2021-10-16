@@ -251,11 +251,7 @@ class Scoreboard {
 			Score: guess.score,
 		};
 
-		const rowNode = this.table.row.add(row).node();
-		rowNode.classList.add("expand");
-		setTimeout(() => {
-			rowNode.classList.remove("expand");
-		}, 200);
+		this.table.row.add(row);
 
 		this.table.order([3, "asc"]).draw(false);
 		this.table
@@ -264,6 +260,8 @@ class Scoreboard {
 			.each((cell, i) => {
 				cell.innerHTML = i + 1;
 			});
+			
+		this.setTitle(`GUESSES (${this.table.rows().data().length})`);
 	}
 
 	/**
@@ -284,6 +282,8 @@ class Scoreboard {
 
 		this.table.clear().draw();
 		this.table.rows.add(rows).draw();
+
+		this.setTitle(`GUESSES (${this.table.rows().data().length})`);
 	}
 
 	/**

@@ -94,13 +94,11 @@ function init(rendererApi) {
 		clearMarkers();
 	});
 
-	ipcRenderer.on("render-guess", (e, guess, nbGuesses) => {
-		scoreboard.setTitle(`GUESSES (${nbGuesses})`);
+	ipcRenderer.on("render-guess", (e, guess) => {
 		scoreboard.renderGuess(guess);
 	});
 
 	ipcRenderer.on("render-multiguess", (e, guesses) => {
-		scoreboard.setTitle(`GUESSES (${guesses.length})`);
 		scoreboard.renderMultiGuess(guesses);
 	});
 

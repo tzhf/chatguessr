@@ -231,7 +231,7 @@ class GameHandler {
 			const { user, guess } = await this.#game.handleUserGuess(userstate, location);
 
 			if (!this.#game.isMultiGuess) {
-				this.#win.webContents.send("render-guess", guess, this.#game.nbGuesses);
+				this.#win.webContents.send("render-guess", guess);
 				if (settings.showHasGuessed) {
 					await this.#twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guessed`);
 				}

@@ -364,11 +364,6 @@ class Game {
 	get round() {
 		return this.seed.round;
 	}
-
-	/** @deprecated Use getRoundScores().length instead */
-	get nbGuesses() {
-		return this.#db.getRoundParticipants(this.#roundId).length;
-	}
 }
 
 module.exports = Game;

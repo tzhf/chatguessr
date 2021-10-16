@@ -2,6 +2,7 @@ const pMap = require("p-map");
 const GameHelper = require("../utils/GameHelper");
 const store = require("../utils/sharedStore");
 const Store = require("../utils/Store");
+const legacyStoreFacade = require('../utils/legacyStoreFacade');
 
 /** @typedef {import('../types').LatLng} LatLng */
 /** @typedef {import('../types').Seed} Seed */
@@ -189,30 +190,29 @@ class Game {
 		const streamerGuess = this.seed.player.guesses[this.seed.round - index];
 		const location = { lat: streamerGuess.lat, lng: streamerGuess.lng };
 
-		let dbUser = this.#db.getUser('BROADCASTER');
-		const streamer = Store.getOrCreateUser(this.#settings.channelName, this.#settings.channelName);
-
-		if (!dbUser) {
-			dbUser = this.#db.migrateUser('BROADCASTER', this.#settings.channelName, streamer);
-		}
+		const { user, dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, 'BROADCASTER', this.#settings.channelName, this.#settings.channelName);
 
 		const guessedCountry = await GameHelper.getCountryCode(location);
-		guessedCountry === this.#country ? streamer.addStreak() : streamer.setStreak(0);
+		if (guessedCountry === this.#country) {
+			user.addStreak();
+		} else {
+			user.setStreak(0);
+		}
 
 		const distance = GameHelper.haversineDistance(location, this.location);
 		const score = streamerGuess.timedOut ? 0 : GameHelper.calculateScore(distance, this.mapScale);
-		if (score == 5000) streamer.perfects++;
-		streamer.calcMeanScore(score);
+		if (score == 5000) user.perfects++;
+		user.calcMeanScore(score);
 
-		streamer.nbGuesses++;
-		Store.saveUser(this.#settings.channelName, streamer);
+		user.nbGuesses++;
+		Store.saveUser(this.#settings.channelName, user);
 		
 		this.#db.createGuess(this.#roundId, dbUser.id, {
 			color: '#fff',
-			flag: streamer.flag,
+			flag: user.flag,
 			location,
 			country: guessedCountry,
-			streak: streamer.streak,
+			streak: user.streak,
 			distance,
 			score,
 		});
@@ -224,12 +224,7 @@ class Game {
 	 * @param {LatLng} location
 	 */
 	async handleUserGuess(userstate, location) {
-		let dbUser = this.#db.getUser(userstate['user-id']);
-		const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
-
-		if (!dbUser) {
-			dbUser = this.#db.migrateUser(userstate['user-id'], userstate['display-name'], user);
-		}
+		const { user, dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userstate['user-id'], userstate.username, userstate['display-name']);
 
 		const existingGuess = this.#db.getUserGuess(this.#roundId, dbUser.id);
 		if (!this.isMultiGuess && existingGuess) {

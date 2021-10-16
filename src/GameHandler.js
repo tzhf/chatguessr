@@ -5,6 +5,7 @@ const Store = require("./utils/Store");
 const Settings = require("./utils/Settings");
 const TwitchClient = require("./Classes/tmi");
 const flags = require('./utils/flags');
+const legacyStoreFacade = require('./utils/legacyStoreFacade');
 
 const settings = Settings.read();
 
@@ -14,6 +15,9 @@ const settings = Settings.read();
 /** @typedef {import('./Windows/Settings/SettingsWindow')} SettingsWindow */
 
 class GameHandler {
+	/** @type {Database} */
+	#db;
+
 	/**
 	 * @type {MainWindow}
 	 */
@@ -40,6 +44,7 @@ class GameHandler {
 	 * @param {SettingsWindow} settingsWindow 
 	 */
 	constructor(db, win, settingsWindow) {
+		this.#db = db;
 		this.#win = win;
 		this.#settingsWindow = settingsWindow;
 		this.#twitch = new TwitchClient(settings.channelName, settings.botUsername, settings.token);
@@ -309,24 +314,27 @@ class GameHandler {
 
 		if (message.startsWith("!flag")) {
 			const countryReq = message.substr(message.indexOf(" ") + 1);
-			const user = Store.getOrCreateUser(userstate.username, userstate["display-name"]);
+			const { user, dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userstate['user-id'], userstate.username, userstate['display-name']);
 
-			if (countryReq === "none") {
-				user.setFlag("");
-				Store.saveUser(userstate.username, user);
-				await this.#twitch.say(`${userstate["display-name"]} flag removed`);
-			} else if (countryReq === "random") {
-				user.setFlag(flags.randomCountryFlag());
-				Store.saveUser(userstate.username, user);
-				await this.#twitch.say(`${userstate["display-name"]} got ${flags.getEmoji(user.flag)}`);
+			let newFlag;
+			if (countryReq === 'none') {
+				newFlag = null;
+			} else if (countryReq === 'random') {
+				newFlag = flags.randomCountryFlag();
 			} else {
-				const flag = flags.selectFlag(countryReq);
-				if (flag) {
-					user.setFlag(flag);
-					Store.saveUser(userstate.username, user);
-				} else {
+				newFlag = flags.selectFlag(countryReq);
+				if (!newFlag) {
 					await this.#twitch.say(`${userstate["display-name"]} no flag found`);
+					return;
 				}
+			}
+
+			legacyStoreFacade.setUserFlag(this.#db, dbUser, user, newFlag);
+
+			if (countryReq === 'none') {
+				await this.#twitch.say(`${userstate["display-name"]} flag removed`);
+			} else if (countryReq === 'random') {
+				await this.#twitch.say(`${userstate["display-name"]} got ${flags.getEmoji(newFlag)}`);
 			}
 			return;
 		}

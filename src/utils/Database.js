@@ -445,6 +445,18 @@ class Database {
     /**
      * 
      * @param {string} userId 
+     * @param {string} flag 
+     */
+    setUserFlag(userId, flag) {
+        this.#db.prepare(`UPDATE users SET flag = :flag WHERE id = :id`).run({
+            id: userId,
+            flag,
+        })
+    }
+
+    /**
+     * 
+     * @param {string} userId 
      * @param {LatLng} lastLocation 
      */
     setUserLastLocation(userId, lastLocation) {

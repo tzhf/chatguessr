@@ -304,7 +304,10 @@ class Game {
 	}
 
 	getLocation() {
-		return this.seed.rounds.at(-1);
+		const round = this.seed.rounds.at(-1);
+		if (round) {
+			return { lat: round.lat, lng: round.lng };
+		}
 	}
 
 	getLocations() {

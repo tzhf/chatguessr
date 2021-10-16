@@ -60,20 +60,20 @@ async function fetchSeed(url) {
  * @return {Promise<string>} Country code Promise
  */
 async function getCountryCode(location) {
-  const isos = countryIso.get(location.lat, location.lng);
-  if (isos.length > 0) {
-    return countryCodes[iso3to2(isos[0])];
-  }
+  const localResults = countryIso.get(location.lat, location.lng);
+  const localIso = localResults.length > 0 ? iso3to2(localResults[0]) : undefined;
 
   // do we even need this fallback?
-  const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode');
-  url.searchParams.append('latitude', `${location.lat}`);
-  url.searchParams.append('longitude', `${location.lng}`);
-  url.searchParams.append('key', process.env.BDC_KEY);
+  // const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode');
+  // url.searchParams.append('latitude', `${location.lat}`);
+  // url.searchParams.append('longitude', `${location.lng}`);
+  // url.searchParams.append('key', process.env.BDC_KEY);
 
-  /** @type {import("axios").AxiosResponse<{ countryCode: string }>} */
-  const res = await axios.get(url.toString());
-  return countryCodes[res.data.countryCode];
+  // /** @type {import("axios").AxiosResponse<{ countryCode: string }>} */
+  // const res = await axios.get(url.toString());
+  // const remoteIso = res.data.countryCode === '__' ? undefined : res.data.countryCode;
+  
+  return countryCodes[localIso];
 }
 
 /**

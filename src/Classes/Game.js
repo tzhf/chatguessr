@@ -194,9 +194,9 @@ class Game {
 
 		const guessedCountry = await GameHelper.getCountryCode(location);
 		if (guessedCountry === this.#country) {
-			user.addStreak();
+			legacyStoreFacade.addUserStreak(this.#db, dbUser, user, this.#roundId);
 		} else {
-			user.setStreak(0);
+			legacyStoreFacade.resetUserStreak(this.#db, dbUser, user);
 		}
 
 		const distance = GameHelper.haversineDistance(location, this.location);
@@ -206,16 +206,19 @@ class Game {
 
 		user.nbGuesses++;
 		Store.saveUser(this.#settings.channelName, user);
+
+		const streak = this.#db.getUserStreak(dbUser.id);
 		
 		this.#db.createGuess(this.#roundId, dbUser.id, {
 			color: '#fff',
-			flag: user.flag,
+			flag: dbUser.flag,
 			location,
 			country: guessedCountry,
-			streak: user.streak,
+			streak: streak?.count ?? 0,
 			distance,
 			score,
 		});
+
 	}
 
 	/**
@@ -230,7 +233,6 @@ class Game {
 		if (!this.isMultiGuess && existingGuess) {
 			throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' });
 		}
-
 		
 		if (dbUser.previousGuess && latLngEqual(dbUser.previousGuess, location)) {
 			throw Object.assign(new Error('Same guess'), { code: 'pastedPreviousGuess' });
@@ -238,18 +240,21 @@ class Game {
 
 		// Reset streak if the player skipped a round
 		if (!dbUser.lastLocation || !latLngEqual(dbUser.lastLocation, this.lastLocation)) {
-			user.setStreak(0);
+			legacyStoreFacade.resetUserStreak(this.#db, dbUser, user);
 		}
 
-		const guessedCountry = await GameHelper.getCountryCode(location);
+		/** @type {string | null} */
+		let guessedCountry = null;
 		if (!this.isMultiGuess) {
+			guessedCountry = await GameHelper.getCountryCode(location);
 			if (guessedCountry === this.#country) {
-				user.addStreak()
+				legacyStoreFacade.addUserStreak(this.#db, dbUser, user, this.#roundId);
 			} else {
-				user.setStreak(0);
+				legacyStoreFacade.resetUserStreak(this.#db, dbUser, user);
 			}
 		}
 
+		const streak =  this.#db.getUserStreak(dbUser.id);
 		const distance = GameHelper.haversineDistance(location, this.location);
 		const score = GameHelper.calculateScore(distance, this.mapScale);
 
@@ -257,10 +262,10 @@ class Game {
 		if (this.isMultiGuess && existingGuess) {
 			this.#db.updateGuess(existingGuess.id, {
 				color: userstate.color,
-				flag: user.flag,
+				flag: dbUser.flag,
 				location,
 				country: guessedCountry,
-				streak: user.streak,
+				streak: streak?.count ?? 0,
 				distance,
 				score,
 			});
@@ -268,15 +273,17 @@ class Game {
 			user.nbGuesses++;
 			this.#db.createGuess(this.#roundId, dbUser.id, {
 				color: userstate.color,
-				flag: user.flag,
+				flag: dbUser.flag,
 				location,
 				country: guessedCountry,
-				streak: user.streak,
+				streak: streak?.count ?? 0,
 				distance,
 				score,
 			});
 		}
 		
+		// TODO I think this is only used for streaks,
+		// DB streaks track their own last round id so then this would be unnecessary
 		this.#db.setUserLastLocation(dbUser.id, this.location);
 
 		if (score == 5000) {
@@ -289,18 +296,17 @@ class Game {
 		Store.saveUser(userstate.username, user);
 
 		// Old shape, for the scoreboard UI
-		const guess = {
+		return {
 			user: userstate.username,
 			username: userstate["display-name"],
 			color: userstate.color,
-			flag: user.flag,
+			flag: dbUser.flag,
 			position: location,
-			streak: user.streak,
+			streak: streak?.count ?? 0,
 			distance,
 			score,
 			modified: false,
 		};
-		return { user, guess };
 	}
 
 	getLocation() {
@@ -328,21 +334,21 @@ class Game {
 	}
 
 	/**
-	 * 
+	 * Get the participants for the current round, sorted by who guessed first.
 	 */
 	getMultiGuesses() {
 		return this.#db.getRoundParticipants(this.#roundId);
 	}
 
 	/**
-	 * @return {Guess[]} sorted guesses by Distance
+	 * Get the scores for the current round, sorted by distance from closest to farthest away.
 	 */
 	getRoundScores() {
 		return this.#db.getRoundScores(this.#roundId);
 	}
 
 	/**
-	 * @return {(Omit<Guess, 'position' | 'modified'> & { rounds: number })[]} sorted guesses by Score
+	 * Get the combined scores for the current game, sorted from highest to lowest score.
 	 */
 	getTotalScores() {
 		const scores = this.#db.getGameScores(this.seed.token);

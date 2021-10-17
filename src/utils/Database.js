@@ -96,6 +96,21 @@ const migrations = [
         db.prepare(`CREATE INDEX guess_round_id ON guesses(round_id)`).run();
         db.prepare(`CREATE INDEX round_game_id ON rounds(game_id)`).run();
     },
+    function createStreaks(db) {
+        db.prepare(`CREATE TABLE streaks (
+            id TEXT PRIMARY KEY NOT NULL,
+            user_id TEXT NOT NULL,
+            last_round_id TEXT NOT NULL,
+            count INT NOT NULL DEFAULT 1,
+            created_at INT NOT NULL,
+            updated_at INT NOT NULL,
+
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(last_round_id) REFERENCES rounds(id)
+        )`).run();
+
+        db.prepare(`ALTER TABLE users ADD COLUMN current_streak_id TEXT DEFAULT NULL`).run();
+    },
 ];
 
 class Database {
@@ -111,7 +126,6 @@ class Database {
         this.migrate();
     }
 
-    /** @private */
     #migrateUp() {
         const version = this.#db.pragma('user_version', { simple: true });
         if (version < migrations.length) {
@@ -307,12 +321,81 @@ class Database {
     }
 
     /**
+     * 
+     * @param {string} userId 
+     * @returns {{ id: string, count: number, lastLocation: LatLng } | undefined}
+     */
+    getUserStreak(userId) {
+        const stmt = this.#db.prepare(`
+            SELECT streaks.id, streaks.count, rounds.location
+            FROM users, streaks, rounds
+            WHERE users.id = ?
+              AND streaks.id = users.current_streak_id
+              AND rounds.id = streaks.last_round_id
+        `);
+
+        /** @type {{ id: string, count: number, location: string } | undefined} */
+        const row = stmt.get(userId);
+        return row ? {
+            id: row.id,
+            count: row.count,
+            lastLocation: JSON.parse(row.location),
+        } : undefined;
+    }
+
+    /**
+     * 
+     * @param {string} userId 
+     * @param {string} roundId
+     */
+    addUserStreak(userId, roundId) {
+        const streak = this.getUserStreak(userId);
+
+        if (!streak) {
+            const id = randomUUID();
+            this.#db.prepare(`
+                INSERT INTO streaks(id, user_id, last_round_id, created_at, updated_at)
+                VALUES (:id, :userId, :roundId, :createdAt, :createdAt)
+            `).run({
+                id,
+                userId,
+                roundId,
+                createdAt: timestamp(),
+            });
+            this.#db.prepare(`UPDATE users SET current_streak_id = :streakId WHERE id = :userId`).run({
+                userId,
+                streakId: id,
+            })
+        } else {
+            this.#db.prepare(`
+                UPDATE streaks
+                SET count = count + 1,
+                    last_round_id = :roundId,
+                    updated_at = :updatedAt
+                WHERE id = :id
+            `).run({
+                id: streak.id,
+                roundId,
+                updatedAt: timestamp(),
+            })
+        }
+    }
+
+    /**
+     * 
+     * @param {string} userId 
+     */
+    resetUserStreak(userId) {
+        this.#db.prepare('UPDATE users SET current_streak_id = NULL WHERE id = ?').run(userId);
+    }
+
+    /**
      * Get all the participants for a round, sorted by time. No scores included.
      * 
      * @param {string} roundId 
      */
     getRoundParticipants(roundId) {
-        const stmt  = this.#db.prepare(`
+        const stmt = this.#db.prepare(`
             SELECT
                 guesses.id,
                 users.username,
@@ -367,21 +450,27 @@ class Database {
      * @param {string} gameId 
      */
     getGameScores(gameId) {
-        // This sorts the guesses by `created_at` first so that the most recent guess's
-        // `streak` value will be used for each player.
-        // Ideally we'd do some fancy windowing stuff to calculate the streaks on the fly,
-        // but I can't figure that out, so have to settle for this.
+        // We need to pick the last guess's streak value OR calculate them on the fly. Our streak tracking table is not suitable for
+        // checking the current streak at a previous point. The only option atm is to use this subquery I think, hopefully the
+        // performance is not too bad.
         const stmt = this.#db.prepare(`
-            SELECT users.username,
-                   guesses.color,
-                   users.flag,
-                   guesses.streak,
-                   COUNT(guesses.id) AS rounds,
-                   SUM(guesses.distance) AS distance,
-                   SUM(guesses.score) AS score
-            FROM rounds, (
-                SELECT * FROM guesses ORDER BY created_at DESC
-            ) guesses, users
+            SELECT
+                users.username,
+                guesses.color,
+                users.flag,
+                (
+                    SELECT streak
+                    FROM guesses ig, rounds ir
+                    WHERE ir.game_id = rounds.game_id
+                      AND ig.round_id = ir.id
+                      AND ig.user_id = users.id
+                    ORDER BY ig.created_at DESC
+                    LIMIT 1
+                ) AS streak,
+                COUNT(guesses.id) AS rounds,
+                SUM(guesses.distance) AS distance,
+                SUM(guesses.score) AS score
+            FROM rounds, guesses, users
             WHERE rounds.game_id = ?
               AND guesses.round_id = rounds.id
               AND users.id = guesses.user_id
@@ -437,7 +526,7 @@ class Database {
             flag: storeUser.flag,
             previousGuess: storeUser.previousGuess ? JSON.stringify(storeUser.previousGuess) : null,
             lastLocation: storeUser.lastLocation ? JSON.stringify(storeUser.lastLocation) : null,
-        })
+        });
 
         return this.getUser(userId);
     }
@@ -464,6 +553,24 @@ class Database {
             id: userId,
             lastLocation: JSON.stringify(lastLocation),
         })
+    }
+
+    /**
+     * 
+     * @param {string} userId 
+     */
+    getUserStats(userId) {
+        this.#db.prepare(`
+            SELECT
+                COALESCE(streaks.count, 0) AS current_streak,
+                (SELECT MAX(count) FROM streaks WHERE user_id = users.id) AS best_streak,
+                (SELECT COUNT(*) FROM guesses WHERE user_id = users.id) AS guesses,
+                (SELECT COUNT(*) FROM guesses WHERE user_id = users.id AND streak > 0) AS correct_guesses,
+                (SELECT COUNT(*) FROM guesses WHERE user_id = users.id AND score = 5000) AS perfects
+            FROM users
+            LEFT JOIN streaks ON streaks.id = users.current_streak_id
+            WHERE users.id = ?
+        `).run(userId);
     }
 }
 

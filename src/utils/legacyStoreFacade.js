@@ -37,4 +37,25 @@ function setUserFlag (db, dbUser, user, flag) {
     }
 }
 
-module.exports = { getOrMigrateUser, setUserFlag };
+/**
+ * @param {Database} db
+ * @param {{ id: string }} dbUser
+ * @param {import('../Classes/User')} user
+ * @param {string} roundId
+ */
+function addUserStreak(db, dbUser, user, roundId) {
+    user.addStreak();
+    db.addUserStreak(dbUser.id, roundId);
+}
+
+/**
+ * @param {Database} db
+ * @param {{ id: string }} dbUser
+ * @param {import('../Classes/User')} user
+ */
+function resetUserStreak(db, dbUser, user) {
+    user.setStreak(0);
+    db.resetUserStreak(dbUser.id);
+}
+
+module.exports = { getOrMigrateUser, setUserFlag, addUserStreak, resetUserStreak };

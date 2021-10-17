@@ -233,22 +233,22 @@ class GameHandler {
 		const location = { lat: parseFloat(msg.split(",")[0]), lng: parseFloat(msg.split(",")[1]) };
 
 		try {
-			const { user, guess } = await this.#game.handleUserGuess(userstate, location);
+			const guess = await this.#game.handleUserGuess(userstate, location);
 
 			if (!this.#game.isMultiGuess) {
 				this.#win.webContents.send("render-guess", guess);
 				if (settings.showHasGuessed) {
-					await this.#twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guessed`);
+					await this.#twitch.say(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} guessed`);
 				}
 			} else {
 				const guesses = this.#game.getMultiGuesses();
 				this.#win.webContents.send("render-multiguess", guesses);
 				if (!guess.modified) {
 					if (settings.showHasGuessed) {
-						await this.#twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guessed`);
+						await this.#twitch.say(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} guessed`);
 					}
 				} else {
-					await this.#twitch.say(`${flags.getEmoji(user.flag)} ${userstate["display-name"]} guess changed`);
+					await this.#twitch.say(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} guess changed`);
 				}
 			}
 		} catch (err) {

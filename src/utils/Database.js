@@ -494,18 +494,14 @@ class Database {
     getUser(id) {
         const user = this.#db.prepare('SELECT id, username, flag, previous_guess, last_location, reset_at FROM users WHERE id = ?').get(id);
 
-        if (!user) {
-            return;
-        }
-
-        return {
+        return user ? {
             id,
             username: user.username,
             flag: user.flag,
             previousGuess: user.previous_guess ? JSON.parse(user.previous_guess) : null,
             lastLocation: user.last_location ? JSON.parse(user.last_location) : null,
             resetAt: user.reset_at * 1000,
-        }
+        } : undefined;
     }
 
     /**
@@ -560,17 +556,36 @@ class Database {
      * @param {string} userId 
      */
     getUserStats(userId) {
-        this.#db.prepare(`
+        // TODO implement victories
+        const stmt = this.#db.prepare(`
             SELECT
-                COALESCE(streaks.count, 0) AS current_streak,
+                username,
+                flag,
+                COALESCE(current_streak.count, 0) AS current_streak,
                 (SELECT MAX(count) FROM streaks WHERE user_id = users.id) AS best_streak,
-                (SELECT COUNT(*) FROM guesses WHERE user_id = users.id) AS guesses,
+                (SELECT COUNT(*) FROM guesses WHERE user_id = users.id) AS total_guesses,
                 (SELECT COUNT(*) FROM guesses WHERE user_id = users.id AND streak > 0) AS correct_guesses,
-                (SELECT COUNT(*) FROM guesses WHERE user_id = users.id AND score = 5000) AS perfects
+                (SELECT COUNT(*) FROM guesses WHERE user_id = users.id AND score = 5000) AS perfects,
+                (SELECT AVG(score) FROM guesses WHERE user_id = users.id) AS average,
+                0 AS victories
             FROM users
-            LEFT JOIN streaks ON streaks.id = users.current_streak_id
+            LEFT JOIN streaks current_streak ON current_streak.id = users.current_streak_id
             WHERE users.id = ?
-        `).run(userId);
+        `);
+
+        /** @type {{ username: string, flag: string, current_streak: number, best_streak: number, total_guesses: number, correct_guesses: number, perfects: number, average: number, victories: number } | undefined} */
+        const record = stmt.get(userId);
+        return record ? {
+            username: record.username,
+            flag: record.flag,
+            streak: record.current_streak,
+            bestStreak: record.best_streak,
+            nbGuesses: record.total_guesses,
+            correctGuesses: record.correct_guesses,
+            meanScore: record.average,
+            perfects: record.perfects,
+            victories: record.victories,
+        } : undefined;
     }
 }
 

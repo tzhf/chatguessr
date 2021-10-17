@@ -273,8 +273,10 @@ class GameHandler {
 		if (self || !message.startsWith("!")) return;
 		message = message.toLowerCase();
 
+		const userId = userstate.badges?.broadcaster ? 'BROADCASTER' : userstate['user-id'];
+
 		if (message === settings.userGetStatsCmd) {
-			const userInfo = Store.getUser(userstate.username);
+			const userInfo = this.#db.getUserStats(userId);
 			if (!userInfo) {
 				await this.#twitch.say(`${userstate["display-name"]} you've never guessed yet.`);
 			} else {
@@ -314,7 +316,7 @@ class GameHandler {
 
 		if (message.startsWith("!flag")) {
 			const countryReq = message.substr(message.indexOf(" ") + 1);
-			const { user, dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userstate['user-id'], userstate.username, userstate['display-name']);
+			const { user, dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userId, userstate.username, userstate['display-name']);
 
 			let newFlag;
 			if (countryReq === 'none') {

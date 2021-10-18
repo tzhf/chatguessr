@@ -273,7 +273,7 @@ class GameHandler {
 		if (self || !message.startsWith("!")) return;
 		message = message.toLowerCase();
 
-		const userId = userstate.badges?.broadcaster ? 'BROADCASTER' : userstate['user-id'];
+		const userId = userstate.badges?.broadcaster === '1' ? 'BROADCASTER' : userstate['user-id'];
 
 		if (message === settings.userGetStatsCmd) {
 			const userInfo = this.#db.getUserStats(userId);
@@ -350,12 +350,16 @@ class GameHandler {
 			const userInfo = Store.getUser(userstate.username);
 			if (userInfo) {
 				Store.deleteUser(userstate.username);
-				this.#db.resetUserStats(userId);
-	
-				await this.#twitch.say(`${flags.getEmoji(userInfo.flag)} ${userstate["display-name"]} 🗑️ stats cleared !`);
+			}
+		
+			const dbUser = this.#db.getUser(userId);
+			if (dbUser) {
+				this.#db.resetUserStats(dbUser.id);
+				await this.#twitch.say(`${flags.getEmoji(dbUser.flag)} ${userstate["display-name"]} 🗑️ stats cleared !`);
 			} else {
 				await this.#twitch.say(`${userstate["display-name"]} you've never guessed yet.`);
 			}
+
 			return;
 		}
 

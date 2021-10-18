@@ -98,6 +98,13 @@
 				"inline": true
 			}
 		},
+		"cg-renderer": {
+			"context": "browser",
+			"source": "./src/renderer.js",
+			"sourceMap": {
+				"inline": true
+			}
+		},
 		"settings": {
 			"context": "electron-renderer",
 			"outputFormat": "commonjs",

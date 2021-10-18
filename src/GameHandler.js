@@ -1,11 +1,11 @@
 const { ipcMain } = require("electron");
 const Game = require("./Classes/Game");
 const GameHelper = require("./utils/GameHelper");
-const Store = require("./utils/Store");
 const Settings = require("./utils/Settings");
 const TwitchClient = require("./Classes/tmi");
 const flags = require('./utils/flags');
 const legacyStoreFacade = require('./utils/legacyStoreFacade');
+const store = require("./utils/sharedStore");
 
 const settings = Settings.read();
 
@@ -190,7 +190,8 @@ class GameHandler {
 		});
 
 		ipcMain.on("clearStats", () => {
-			Store.clearStats();
+			store.delete("users"); // from pre-sqlite chatguessr versions
+			store.delete("lastRoundPlayers"); // from even older versions
 			this.#twitch.action("All stats cleared 🗑️");
 		});
 	}
@@ -321,7 +322,7 @@ class GameHandler {
 
 		if (message.startsWith("!flag")) {
 			const countryReq = message.substr(message.indexOf(" ") + 1);
-			const { user, dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userId, userstate.username, userstate['display-name']);
+			const { dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userId, userstate.username, userstate['display-name']);
 
 			let newFlag;
 			if (countryReq === 'none') {
@@ -336,7 +337,7 @@ class GameHandler {
 				}
 			}
 
-			legacyStoreFacade.setUserFlag(this.#db, dbUser, user, newFlag);
+			this.#db.setUserFlag(dbUser.id, newFlag);
 
 			if (countryReq === 'none') {
 				await this.#twitch.say(`${userstate["display-name"]} flag removed`);
@@ -347,10 +348,8 @@ class GameHandler {
 		}
 
 		if (message === settings.userClearStatsCmd) {
-			const userInfo = Store.getUser(userstate.username);
-			if (userInfo) {
-				Store.deleteUser(userstate.username);
-			}
+			// @ts-ignore
+			store.delete(`users.${userstate.username}`);
 		
 			const dbUser = this.#db.getUser(userId);
 			if (dbUser) {
@@ -382,15 +381,8 @@ class GameHandler {
 			}
 			if (msgArr[1].charAt(0) === "@") msgArr[1] = msgArr[1].substring(1);
 
-			const user = msgArr[1];
-			const storedUser = Store.getUser(user);
-			if (!storedUser) {
-				await this.#twitch.action(`cannot find ${user}`);
-				return;
-			}
-			Store.setUserStreak(user, newStreak);
-
-			await this.#twitch.action(`${user} streak set to ${newStreak}`);
+			const username = msgArr[1];
+			await this.#twitch.action(`cannot set streak for ${username}: functionality currently not supported`);
 		} else if (message.startsWith('!spamguess')) {
 			const max = parseInt(message.split(' ')[1] ?? '50', 10)
 			for (let i = 0; i < max; i += 1) {

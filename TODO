@@ -6,7 +6,7 @@ TODOS:
 	☐ Make `command-prefix` a settings thing? Example ! # $ &
 	☐ Abstract response builders to it's own module
 	[x] Make GameHelper not a class
-	☐ Make Store not a class
+	[x] Make Store not a class
 	☐ Make the game also work on challenges?
 	☐ Make it possible to open challenges links from the game itself
 		This 2 changes above should make it possible so people that

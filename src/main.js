@@ -6,6 +6,8 @@ const { autoUpdater } = require("electron-updater");
 const GameHandler = require("./GameHandler");
 const flags = require('./utils/flags');
 const Database = require('./utils/Database');
+const store = require('./utils/sharedStore');
+const Settings = require('./utils/Settings');
 
 /** @type {import('electron').BrowserWindow} */
 let mainWindow;
@@ -19,8 +21,8 @@ app.on("window-all-closed", () => {
 const db = new Database(path.join(app.getPath('userData'), 'scores.db'));
 
 function serveAssets() {
+	const assetDir = path.join(__dirname, '../../assets');
 	protocol.interceptFileProtocol('asset', (request, callback) => {
-		const assetDir = path.join(__dirname, '../../assets');
 		const assetFile = path.join(assetDir, new URL(request.url).pathname);
 		if (!assetFile.startsWith(assetDir)) {
 			callback({ statusCode: 404, data: 'Not Found' });

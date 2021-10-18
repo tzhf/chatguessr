@@ -1,7 +1,6 @@
 const pMap = require("p-map");
 const GameHelper = require("../utils/GameHelper");
 const store = require("../utils/sharedStore");
-const Store = require("../utils/Store");
 const legacyStoreFacade = require('../utils/legacyStoreFacade');
 
 /** @typedef {import('../types').LatLng} LatLng */
@@ -179,7 +178,6 @@ class Game {
 			const guessedCountry = await GameHelper.getCountryCode(guess.position);
 			const streak = guessedCountry === this.#country ? guess.streak + 1 : 0;
 			this.#db.setGuessCountry(guess.id, guessedCountry, streak);
-			Store.setUserStreak(guess.user, guess.streak);
 		}, { concurrency: 10 });
 	}
 
@@ -194,18 +192,13 @@ class Game {
 
 		const guessedCountry = await GameHelper.getCountryCode(location);
 		if (guessedCountry === this.#country) {
-			legacyStoreFacade.addUserStreak(this.#db, dbUser, user, this.#roundId);
+			this.#db.addUserStreak(dbUser.id, this.#roundId);
 		} else {
-			legacyStoreFacade.resetUserStreak(this.#db, dbUser, user);
+			this.#db.resetUserStreak(dbUser.id);
 		}
 
 		const distance = GameHelper.haversineDistance(location, this.location);
 		const score = streamerGuess.timedOut ? 0 : GameHelper.calculateScore(distance, this.mapScale);
-		if (score == 5000) user.perfects++;
-		user.calcMeanScore(score);
-
-		user.nbGuesses++;
-		Store.saveUser(this.#settings.channelName, user);
 
 		const streak = this.#db.getUserStreak(dbUser.id);
 		
@@ -218,7 +211,6 @@ class Game {
 			distance,
 			score,
 		});
-
 	}
 
 	/**
@@ -240,7 +232,7 @@ class Game {
 
 		// Reset streak if the player skipped a round
 		if (!dbUser.lastLocation || !latLngEqual(dbUser.lastLocation, this.lastLocation)) {
-			legacyStoreFacade.resetUserStreak(this.#db, dbUser, user);
+			this.#db.resetUserStreak(dbUser.id);
 		}
 
 		/** @type {string | null} */
@@ -248,9 +240,9 @@ class Game {
 		if (!this.isMultiGuess) {
 			guessedCountry = await GameHelper.getCountryCode(location);
 			if (guessedCountry === this.#country) {
-				legacyStoreFacade.addUserStreak(this.#db, dbUser, user, this.#roundId);
+				this.#db.addUserStreak(dbUser.id, this.#roundId);
 			} else {
-				legacyStoreFacade.resetUserStreak(this.#db, dbUser, user);
+				this.#db.resetUserStreak(dbUser.id);
 			}
 		}
 
@@ -270,7 +262,6 @@ class Game {
 				score,
 			});
 		} else {
-			user.nbGuesses++;
 			this.#db.createGuess(this.#roundId, dbUser.id, {
 				color: userstate.color,
 				flag: dbUser.flag,
@@ -281,19 +272,11 @@ class Game {
 				score,
 			});
 		}
-		
+
 		// TODO I think this is only used for streaks,
+		// TODO save previous guess? No, fetch previous guess from the DB
 		// DB streaks track their own last round id so then this would be unnecessary
 		this.#db.setUserLastLocation(dbUser.id, this.location);
-
-		if (score == 5000) {
-			user.perfects++;
-		}
-		user.calcMeanScore(score);
-		user.setLastLocation({ lat: this.location.lat, lng: this.location.lng });
-		user.setPreviousGuess(location);
-
-		Store.saveUser(userstate.username, user);
 
 		// Old shape, for the scoreboard UI
 		return {
@@ -351,10 +334,7 @@ class Game {
 	 * Get the combined scores for the current game, sorted from highest to lowest score.
 	 */
 	getTotalScores() {
-		const scores = this.#db.getGameScores(this.seed.token);
-		// TODO: Remember to check equality
-		Store.userAddVictory(scores[0].user);
-		return scores;
+		return this.#db.getGameScores(this.seed.token);
 	}
 
 	get mapName() {

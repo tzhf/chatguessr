@@ -1,7 +1,7 @@
 // This file handles storing things in BOTH the old JSON storage
 // and in sqlite. Once everything is moved to sqlite we can get rid of this.
 
-const Store = require('./Store');
+const store = require('./sharedStore');
 
 /** @typedef {import('./Database')} Database */
 
@@ -14,48 +14,18 @@ const Store = require('./Store');
  */
 function getOrMigrateUser(db, userId, username, displayName) {
     let dbUser = db.getUser(userId);
-    const user = Store.getOrCreateUser(username, displayName);
+    /** @type {import('./sharedStore').LegacyUser} */
+    const user = store.get(`users.${username}`);
 
-    if (!dbUser) {
+    if (!dbUser && user) {
         dbUser = db.migrateUser(userId, displayName, user);
+        // @ts-ignore
+        store.delete(`users.${username}`);
+    } else {
+        dbUser = db.getOrCreateUser(userId, displayName);
     }
 
     return { user, dbUser };
 }
 
-/**
- * @param {Database} db
- * @param {{ id: string }} dbUser
- * @param {import('../Classes/User')} user
- * @param {string} flag
- */
-function setUserFlag (db, dbUser, user, flag) {
-    user.setFlag(flag ?? '');
-    Store.saveUser(user.user, user);
-    if (dbUser) {
-        db.setUserFlag(dbUser.id, flag);
-    }
-}
-
-/**
- * @param {Database} db
- * @param {{ id: string }} dbUser
- * @param {import('../Classes/User')} user
- * @param {string} roundId
- */
-function addUserStreak(db, dbUser, user, roundId) {
-    user.addStreak();
-    db.addUserStreak(dbUser.id, roundId);
-}
-
-/**
- * @param {Database} db
- * @param {{ id: string }} dbUser
- * @param {import('../Classes/User')} user
- */
-function resetUserStreak(db, dbUser, user) {
-    user.setStreak(0);
-    db.resetUserStreak(dbUser.id);
-}
-
-module.exports = { getOrMigrateUser, setUserFlag, addUserStreak, resetUserStreak };
+module.exports = { getOrMigrateUser };

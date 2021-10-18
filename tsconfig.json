@@ -22,7 +22,6 @@
 		"src/utils/Database.js",
 		"src/utils/GameHelper.js",
 		"src/utils/Settings.js",
-		"src/utils/Store.js",
 		"src/utils/flags.js",
 		"src/utils/sharedStore.js",
 		"src/utils/legacyStoreFacade.js",

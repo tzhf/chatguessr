@@ -401,7 +401,7 @@ class Database {
             this.#db.prepare(`UPDATE users SET current_streak_id = :streakId WHERE id = :userId`).run({
                 userId,
                 streakId: id,
-            })
+            });
         } else {
             this.#db.prepare(`
                 UPDATE streaks
@@ -524,27 +524,54 @@ class Database {
 
     /**
      * 
+     * @param {*} record 
+     * @returns {{ id: string, username: string, flag: string, previousGuess: LatLng, lastLocation: LatLng, resetAt: number }}
+     */
+    #parseUser(record) {
+        return {
+            id: record.id,
+            username: record.username,
+            flag: record.flag,
+            previousGuess: record.previous_guess ? JSON.parse(record.previous_guess) : null,
+            lastLocation: record.last_location ? JSON.parse(record.last_location) : null,
+            resetAt: record.reset_at * 1000,
+        }
+    }
+
+    /**
+     * 
      * @param {string} id 
-     * @returns {{ id: string, username: string, flag: string, previousGuess: LatLng, lastLocation: LatLng, resetAt: number } | undefined}
      */
     getUser(id) {
         const user = this.#db.prepare('SELECT id, username, flag, previous_guess, last_location, reset_at FROM users WHERE id = ?').get(id);
 
-        return user ? {
-            id,
-            username: user.username,
-            flag: user.flag,
-            previousGuess: user.previous_guess ? JSON.parse(user.previous_guess) : null,
-            lastLocation: user.last_location ? JSON.parse(user.last_location) : null,
-            resetAt: user.reset_at * 1000,
-        } : undefined;
+        return user ? this.#parseUser(user) : undefined;
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {string} username
+     */
+    getOrCreateUser(id, username) {
+        const stmt = this.#db.prepare(`
+            INSERT INTO users(id, username)
+            VALUES (:id, :username)
+            ON CONFLICT (id) DO
+                UPDATE SET username = :username
+            RETURNING *
+        `);
+
+        const user = stmt.get({ id, username });
+
+        return user ? this.#parseUser(user) : undefined;
     }
 
     /**
      * 
      * @param {string} userId
      * @param {string} username
-     * @param {import('../Classes/User')} storeUser 
+     * @param {import('./sharedStore').LegacyUser} storeUser 
      */
     migrateUser(userId, username, storeUser) {
         const migrate = this.#db.prepare(`

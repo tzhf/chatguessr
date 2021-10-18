@@ -157,22 +157,24 @@ class Database {
     constructor(file) {
         this.#db = new SQLite(file);
 
-        this.migrate();
+        this.#migrate();
     }
 
     #migrateUp() {
         const version = this.#db.pragma('user_version', { simple: true });
         if (version < migrations.length) {
-            migrations[version](this.#db);
-            this.#db.pragma(`user_version=${version + 1}`);
+            const up = this.#db.transaction(() => {
+                migrations[version](this.#db);
+                this.#db.pragma(`user_version=${version + 1}`);
+            });
+            up();
 
             return true;
         }
         return false;
     }
 
-    /** @private */
-    migrate() {
+    #migrate() {
         let moreMigrations = true;
         while (moreMigrations) {
             moreMigrations = this.#migrateUp();
@@ -596,11 +598,11 @@ class Database {
                 username,
                 flag,
                 COALESCE(current_streak.count, 0) AS current_streak,
-                (SELECT MAX(count) FROM streaks WHERE user_id = users.id) AS best_streak,
-                (SELECT COUNT(*) FROM guesses WHERE user_id = users.id) AS total_guesses,
-                (SELECT COUNT(*) FROM guesses WHERE user_id = users.id AND streak > 0) AS correct_guesses,
-                (SELECT COUNT(*) FROM guesses WHERE user_id = users.id AND score = 5000) AS perfects,
-                (SELECT AVG(score) FROM guesses WHERE user_id = users.id) AS average,
+                (SELECT MAX(count) FROM streaks WHERE user_id = :id AND updated_at > users.reset_at) AS best_streak,
+                (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND created_at > users.created_at) AS total_guesses,
+                (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND streak > 0 AND created_at > users.created_at) AS correct_guesses,
+                (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND score = 5000 AND created_at > users.reset_at) AS perfects,
+                (SELECT AVG(score) FROM guesses WHERE user_id = users.id AND created_at > users.reset_at) AS average,
                 (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id) AS victories
             FROM users
             LEFT JOIN streaks current_streak ON current_streak.id = users.current_streak_id

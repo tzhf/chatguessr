@@ -300,16 +300,21 @@ class GameHandler {
 		}
 
 		if (message === "!best") {
-			const best = Store.getBest();
-			if (!best) {
+			const { streak, victories, perfects } = this.#db.getGlobalStats();
+			if (!streak && !victories && !perfects) {
 				await this.#twitch.say("No stats available.");
 			} else {
-				await this.#twitch.say(`
-					Channel best: 
-					Streak: ${best.streak.streak}${best.streak.streak > 0 ? " (" + best.streak.user + ")" : ""}.
-					Victories: ${best.victories.victories}${best.victories.victories > 0 ? " (" + best.victories.user + ")" : ""}.
-					Perfects: ${Math.round(best.perfects.perfects)}${best.perfects.perfects > 0 ? " (" + best.perfects.user + ")" : ""}.
-				`);
+				let msg = '';
+				if (streak) {
+					msg += `Streak: ${streak.streak} (${streak.username}). `
+				}
+				if (victories) {
+					msg += `Victories: ${victories.victories} (${victories.username}). `
+				}
+				if (perfects) {
+					msg += `Perfects: ${perfects.perfects} (${perfects.username}). `
+				}
+				await this.#twitch.say(`Channels best: ${msg}`);
 			}
 			return;
 		}
@@ -345,6 +350,7 @@ class GameHandler {
 			const userInfo = Store.getUser(userstate.username);
 			if (userInfo) {
 				Store.deleteUser(userstate.username);
+				this.#db.resetUserStats(userId);
 	
 				await this.#twitch.say(`${flags.getEmoji(userInfo.flag)} ${userstate["display-name"]} 🗑️ stats cleared !`);
 			} else {

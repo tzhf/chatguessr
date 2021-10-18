@@ -111,6 +111,40 @@ const migrations = [
 
         db.prepare(`ALTER TABLE users ADD COLUMN current_streak_id TEXT DEFAULT NULL`).run();
     },
+    function createGameWinners(db) {
+        // TODO the final LEFT JOIN needs a way to include the guessed_at
+        // this query is based on https://stackoverflow.com/a/7745635/591962
+        // could be possible to use windowing functions on the game_scores query too, partitioning by game_id and then selecting only
+        // those where rank() = 1.
+        db.prepare(`
+            CREATE VIEW game_winners (id, user_id, score) AS
+            -- Only count completed games (with at least 5 rounds), else there is no winner yet
+            WITH completed_games AS (
+                SELECT games.id
+                FROM games, rounds
+                WHERE rounds.game_id = games.id
+                GROUP BY games.id
+                HAVING COUNT(rounds.id) >= 5
+            ),
+            -- Prepare all users' total scores in each game
+            game_scores AS (
+                SELECT guesses.user_id, completed_games.id AS game_id, SUM(guesses.score) AS score, MAX(guesses.created_at) AS guessed_at
+                FROM completed_games
+                LEFT JOIN rounds ON rounds.game_id = completed_games.id
+                LEFT JOIN guesses ON guesses.round_id = rounds.id
+                GROUP BY guesses.user_id, completed_games.id
+            )
+            SELECT completed_games.id, top_scores.user_id, top_scores.score
+            FROM completed_games
+            -- Match the highest total score for each game
+            -- This can return multiple records if the top score was a tie: it means we just end up all of them as winners, which seems fair.
+            LEFT JOIN (
+                SELECT user_id, game_id, MAX(score) AS score
+                FROM game_scores
+                GROUP BY game_id
+            ) top_scores ON completed_games.id = top_scores.game_id
+        `).run();
+    }
 ];
 
 class Database {
@@ -567,7 +601,7 @@ class Database {
                 (SELECT COUNT(*) FROM guesses WHERE user_id = users.id AND streak > 0) AS correct_guesses,
                 (SELECT COUNT(*) FROM guesses WHERE user_id = users.id AND score = 5000) AS perfects,
                 (SELECT AVG(score) FROM guesses WHERE user_id = users.id) AS average,
-                0 AS victories
+                (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id) AS victories
             FROM users
             LEFT JOIN streaks current_streak ON current_streak.id = users.current_streak_id
             WHERE users.id = ?
@@ -586,6 +620,56 @@ class Database {
             perfects: record.perfects,
             victories: record.victories,
         } : undefined;
+    }
+
+    getGlobalStats() {
+        const streakQuery = this.#db.prepare(`
+            SELECT users.id, users.username, MAX(streaks.count) AS streak
+            FROM users, streaks
+            WHERE streaks.user_id = users.id
+              AND streaks.created_at > users.reset_at
+            GROUP BY users.id
+            ORDER BY streak DESC
+        `);
+        const victoriesQuery = this.#db.prepare(`
+            SELECT users.id, users.username, COUNT(*) AS victories
+            FROM game_winners
+            LEFT JOIN users ON users.id = game_winners.user_id
+            GROUP BY users.id
+            ORDER BY victories DESC
+        `);
+        const perfectQuery = this.#db.prepare(`
+            SELECT users.id, users.username, COUNT(guesses.id) AS perfects
+            FROM users
+            LEFT JOIN guesses ON guesses.user_id = users.id AND guesses.created_at > users.reset_at
+            WHERE guesses.score = 5000
+            GROUP BY users.id
+            ORDER BY perfects DESC
+        `);
+
+        /** @type {{ id: string, username: string, streak: number } | undefined} */
+        const bestStreak = streakQuery.get();
+        /** @type {{ id: string, username: string, victories: number } | undefined} */
+        const mostVictories = victoriesQuery.get();
+        /** @type {{ id: string, username: string, perfects: number } | undefined} */
+        const mostPerfects = perfectQuery.get();
+
+        return {
+            streak: bestStreak,
+            victories: mostVictories,
+            perfects: mostPerfects,
+        }
+    }
+
+    /**
+     * 
+     * @param {string} userId 
+     */
+    resetUserStats(userId) {
+        this.#db.prepare(`UPDATE users SET current_streak_id = NULL, reset_at = :resetAt WHERE id = :id`).run({
+            id: userId,
+            resetAt: timestamp(),
+        });
     }
 }
 

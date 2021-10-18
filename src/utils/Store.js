@@ -1,5 +1,4 @@
 const User = require("../Classes/User");
-const Settings = require("./Settings");
 const store = require('./sharedStore');
 
 class Store {
@@ -110,29 +109,6 @@ class Store {
 		let victories = store.get(`users.${user}.victories`, 0);
 		victories++;
 		store.set(`users.${user}.victories`, victories);
-	}
-
-	/**
-	 * Returns best stats
-	 */
-	static getBest() {
-		const storedUsers = Store.getUsers();
-		if (!storedUsers) return null;
-
-		const streak = Math.max(...Object.values(storedUsers).map((o) => o.bestStreak));
-		const streakUser = Object.keys(storedUsers).filter((user) => storedUsers[user].bestStreak === streak);
-
-		const victories = Math.max(...Object.values(storedUsers).map((o) => o.victories));
-		const victoriesUser = Object.keys(storedUsers).filter((user) => storedUsers[user].victories === victories);
-
-		const perfects = Math.max(...Object.values(storedUsers).map((o) => o.perfects));
-		const perfectsUser = Object.keys(storedUsers).filter((user) => storedUsers[user].perfects === perfects);
-
-		return {
-			streak: { streak: streak, user: streakUser },
-			victories: { victories: victories, user: victoriesUser },
-			perfects: { perfects: perfects, user: perfectsUser },
-		};
 	}
 
 	/**

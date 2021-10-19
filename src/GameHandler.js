@@ -226,12 +226,10 @@ class GameHandler {
 			return;
 		}
 
-		const msg = message.replace(/^!g\s+/, '');
-		if (!GameHelper.isCoordinates(msg)) {
+		const location = GameHelper.parseCoordinates(message.replace(/^!g\s+/, ''));
+		if (!location) {
 			return;
 		}
-
-		const location = { lat: parseFloat(msg.split(",")[0]), lng: parseFloat(msg.split(",")[1]) };
 
 		try {
 			const guess = await this.#game.handleUserGuess(userstate, location);

@@ -79,12 +79,14 @@ async function getCountryCode(location) {
 /**
  * Check if the param is coordinates
  * @param {string} coordinates
- * @return {boolean}
+ * @return {LatLng | undefined}
  */
-function isCoordinates(coordinates) {
-  const regex =
-    /^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/g;
-  return regex.test(coordinates);
+function parseCoordinates(coordinates) {
+  const regex = /^[-+]?(?<lat>[1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(?<lng>180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/;
+  const m = regex.exec(coordinates);
+  if (m) {
+    return { lat: parseFloat(m.groups.lat), lng: parseFloat(m.groups.lng) };
+  }
 }
 
 /**
@@ -93,12 +95,7 @@ function isCoordinates(coordinates) {
  * @return {number} map scale
  */
 function calculateScale(bounds) {
-  return (
-    haversineDistance(
-      { lat: bounds.min.lat, lng: bounds.min.lng },
-      { lat: bounds.max.lat, lng: bounds.max.lng }
-    ) / 7.458421
-  );
+  return haversineDistance(bounds.min, bounds.max) / 7.458421;
 }
 
 /**
@@ -175,7 +172,7 @@ exports.isGameURL = isGameURL;
 exports.getGameId = getGameId;
 exports.fetchSeed = fetchSeed;
 exports.getCountryCode = getCountryCode;
-exports.isCoordinates = isCoordinates;
+exports.parseCoordinates = parseCoordinates;
 exports.calculateScale = calculateScale;
 exports.haversineDistance = haversineDistance;
 exports.calculateScore = calculateScore;

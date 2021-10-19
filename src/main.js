@@ -12,6 +12,10 @@ const Settings = require('./utils/Settings');
 /** @type {import('electron').BrowserWindow} */
 let mainWindow;
 
+if (require('electron-squirrel-startup')) {
+	app.quit();
+}
+
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
 		app.quit();

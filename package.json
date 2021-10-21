@@ -56,7 +56,8 @@
 	"config": {
 		"forge": {
 			"packagerConfig": {
-				"asar": true
+				"asar": true,
+				"ignore": "\\.parcel-cache"
 			},
 			"makers": [
 				{

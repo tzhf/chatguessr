@@ -275,7 +275,7 @@ class GameHandler {
 		const userId = userstate.badges?.broadcaster === '1' ? 'BROADCASTER' : userstate['user-id'];
 
 		if (message === settings.userGetStatsCmd) {
-			const userInfo = this.#db.getUserStats(userId);
+			const userInfo = legacyStoreFacade.getUserStats(this.#db, userId, userstate.username);
 			if (!userInfo) {
 				await this.#twitch.say(`${userstate["display-name"]} you've never guessed yet.`);
 			} else {
@@ -283,7 +283,7 @@ class GameHandler {
 					${flags.getEmoji(userInfo.flag)} ${userInfo.username} : Current streak: ${userInfo.streak}.
 					Best streak: ${userInfo.bestStreak}.
 					Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses}${
-					userInfo.nbGuesses > 0 ? ` (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).` : "."
+						userInfo.nbGuesses > 0 ? ` (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).` : "."
 				}
 					Avg. score: ${Math.round(userInfo.meanScore)}.
 					Victories: ${userInfo.victories}.
@@ -299,7 +299,7 @@ class GameHandler {
 		}
 
 		if (message === "!best") {
-			const { streak, victories, perfects } = this.#db.getGlobalStats();
+			const { streak, victories, perfects } = legacyStoreFacade.getGlobalStats(this.#db);
 			if (!streak && !victories && !perfects) {
 				await this.#twitch.say("No stats available.");
 			} else {

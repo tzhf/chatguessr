@@ -34,12 +34,14 @@
 		"@types/datatables.net-buttons": "^1.4.7",
 		"@types/datatables.net-scroller": "^1.4.1",
 		"@types/google.maps": "^3.45.6",
+		"@types/jest": "^27.0.2",
 		"@types/jquery": "^3.5.7",
 		"@types/jqueryui": "^1.12.16",
 		"@types/node": "^12.20.29",
 		"@types/tmi.js": "^1.8.0",
 		"electron": "^15.1.2",
 		"electron-builder": "^22.13.1",
+		"jest": "^27.3.1",
 		"parcel": "^2.0.0",
 		"typescript": "^4.4.4"
 	},
@@ -51,7 +53,8 @@
 		"pack": "electron-builder --dir",
 		"postinstall": "electron-builder install-app-deps",
 		"build": "electron-builder build --win --publish never",
-		"deploy": "electron-builder build --win --publish always"
+		"deploy": "electron-builder build --win --publish always",
+		"test": "jest"
 	},
 	"config": {
 		"forge": {

@@ -32,6 +32,13 @@ function getOrMigrateUser(db, userId, username, displayName) {
 /**
  * Get combined top scoring stats from the database and the old JSON store.
  * 
+ * TODO(reanna) we don't *properly* combine stats from the DB and from the JSON store.
+ * It just picks whichever score is higher, while for perfects and victories, the
+ * stats from the JSON store should first be *added* to the DB stats, before we can
+ * pick the highest one. This would be doable by migrating the JSON stats into a separate
+ * table in the DB that we can query. Stats can only be migrated for active users since
+ * we need to know their twitch user ID.
+ * 
  * @param {Database} db 
  */
 function getGlobalStats(db) {
@@ -58,13 +65,13 @@ function getGlobalStats(db) {
         }
     }
 
-    if (stats.streak && stats.streak.streak > streak.streak) {
+    if (!streak || stats.streak && stats.streak.streak > streak.streak) {
         streak = stats.streak;
     }
-    if (stats.perfects && stats.perfects.perfects > perfects.perfects) {
+    if (!perfects || stats.perfects && stats.perfects.perfects > perfects.perfects) {
         perfects = stats.perfects;
     }
-    if (stats.victories && stats.victories.victories > victories.victories) {
+    if (!victories || stats.victories && stats.victories.victories > victories.victories) {
         victories = stats.victories;
     }
 

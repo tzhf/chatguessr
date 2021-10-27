@@ -8,7 +8,7 @@ const { matchSorter } = require("match-sorter");
 
 const countryFlagCodes = new Set(countryCodesNames.map((country) => country.code));
 
-const appDataDir = app.getPath("userData");
+const appDataDir = app ? app.getPath("userData") : '/tmp/';
 const customFlagsDir = path.join(appDataDir, "flags");
 
 /** @type {{ code: string, names: string, emoji?: string }[]} */
@@ -72,8 +72,8 @@ function randomCountryFlag() {
  * @param {string} value
  */
 function getEmoji(value) {
-  if (!countryFlagCodes.has(value)) {
-    return customFlags.find((flag) => flag.code === value)?.emoji ?? '';
+  if (!countryFlagCodes.has(value.toLowerCase())) {
+    return customFlags.find((flag) => flag.code === value.toLowerCase())?.emoji ?? '';
   }
 
   if (value.length == 2) {

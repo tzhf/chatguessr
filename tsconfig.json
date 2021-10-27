@@ -13,19 +13,8 @@
 	"include": [
 		"src/modules.d.ts",
 		"src/types.d.ts",
-		"src/main.js",
-		"src/preload.js",
-		"src/renderer.js",
-		"src/GameHandler.js",
-		"src/Windows/**/*.js",
+		"src/**/*.js",
 		"src/utils/countryCodes.json",
-		"src/utils/countryCodesNames.json",
-		"src/utils/Database.js",
-		"src/utils/GameHelper.js",
-		"src/utils/Settings.js",
-		"src/utils/flags.js",
-		"src/utils/sharedStore.js",
-		"src/utils/legacyStoreFacade.js",
-		"src/Classes/*.js"
+		"src/utils/countryCodesNames.json"
 	]
 }

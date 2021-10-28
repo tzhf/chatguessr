@@ -1,3 +1,5 @@
+'use strict';
+
 const { getEmoji } = require('./flags');
 
 describe('getEmoji', () => {

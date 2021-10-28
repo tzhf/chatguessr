@@ -1,3 +1,5 @@
+'use strict';
+
 const { ipcMain } = require("electron");
 const Game = require("./Classes/Game");
 const GameHelper = require("./utils/GameHelper");

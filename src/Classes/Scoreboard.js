@@ -1,3 +1,5 @@
+'use strict';
+
 const $ = require('jquery');
 window.$ = window.jQuery = $;
 require('jquery-ui-dist/jquery-ui');

@@ -1,3 +1,5 @@
+'use strict';
+
 require('./errorReporting');
 
 const { contextBridge, ipcRenderer } = require("electron");

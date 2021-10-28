@@ -1,3 +1,5 @@
+'use strict';
+
 class MockStore {
     #data;
     constructor (data = {}) {

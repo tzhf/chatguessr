@@ -1,3 +1,5 @@
+'use strict';
+
 // This file handles storing things in BOTH the old JSON storage
 // and in sqlite. Once everything is moved to sqlite we can get rid of this.
 

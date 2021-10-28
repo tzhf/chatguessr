@@ -1,3 +1,5 @@
+'use strict';
+
 const path = require("path");
 const fs = require("fs/promises");
 const { app } = require("electron");

@@ -1,3 +1,5 @@
+'use strict';
+
 const store = require('./sharedStore');
 
 /**
@@ -59,7 +61,7 @@ class Settings {
 	}
 
 	/**
-	 * @param {Object} commands
+	 * @param {{ cgCmdd: string, cgMsgg: string, userGetStats: string, userClearStats: string, setStreak: string, showHasGuessed: boolean }} commands
 	 */
 	setTwitchCommands(commands) {
 		this.cgCmd = commands.cgCmdd;

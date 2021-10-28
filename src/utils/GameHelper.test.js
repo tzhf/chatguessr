@@ -1,3 +1,5 @@
+'use strict';
+
 const GameHelper = require("./GameHelper");
 
 describe('parseCoordinates', () => {

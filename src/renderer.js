@@ -1,3 +1,5 @@
+'use strict';
+
 window.chatguessrApi.init({
     populateMap,
     clearMarkers,
@@ -9,7 +11,9 @@ window.chatguessrApi.init({
 let globalMap = undefined;
 hijackMap();
 
+/** @type {google.maps.Marker[]} */
 let markers = [];
+/** @type {google.maps.Polyline[]} */
 let polylines = [];
 
 /** @type {import('./types').RendererApi['populateMap']} */
@@ -98,8 +102,8 @@ function clearMarkers() {
 
 function hijackMap() {
 	const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
-	const GOOGLE_MAPS_PROMISE = new Promise((resolve, reject) => {
-		let scriptObserver = new MutationObserver((mutations) => {
+	const GOOGLE_MAPS_PROMISE = new Promise((resolve) => {
+		let scriptObserver = new MutationObserver((mutations, observer) => {
 			for (const mutation of mutations) {
 				for (const tmp of mutation.addedNodes) {
 					/** @type {HTMLScriptElement} */
@@ -107,9 +111,8 @@ function hijackMap() {
 					const node = tmp;
 					if (node.tagName === "SCRIPT" && node.src.startsWith(MAPS_API_URL)) {
 						node.onload = () => {
-							scriptObserver.disconnect();
-							scriptObserver = undefined;
-							resolve();
+							observer.disconnect();
+							resolve(undefined);
 						};
 					}
 				}
@@ -122,17 +125,13 @@ function hijackMap() {
 		new MutationObserver((_, observer) => {
 			if (!bodyDone && document.body) {
 				if (scriptObserver) {
-					scriptObserver.observe(document.body, {
-						childList: true,
-					});
+					scriptObserver.observe(document.body, { childList: true });
 					bodyDone = true;
 				}
 			}
 			if (!headDone && document.head) {
 				if (scriptObserver) {
-					scriptObserver.observe(document.head, {
-						childList: true,
-					});
+					scriptObserver.observe(document.head, { childList: true });
 					headDone = true;
 				}
 			}
@@ -245,17 +244,18 @@ function drParseNoCar(noCar) {
 		}
 	`;
 
-    /** @param {WebGL2RenderingContext} ctx */
+    /** @param {WebGLRenderingContext | WebGL2RenderingContext} ctx */
 	function installShaderSource(ctx) {
 		const g = ctx.shaderSource;
-		function shaderSource() {
-			if (typeof arguments[1] === "string") {
-				let glsl = arguments[1];
+		/** @type {WebGLRenderingContext['shaderSource']} */
+		function shaderSource(...args) {
+			if (typeof args[1] === "string") {
+				let glsl = args[1];
 				if (glsl === vertexOld) glsl = vertexNew;
 				else if (glsl === fragOld) glsl = fragNew;
-				return g.call(this, arguments[0], glsl);
+				return g.call(this, args[0], glsl);
 			}
-			return g.apply(this, arguments);
+			return g.apply(this, args);
 		}
 		shaderSource.bestcity = "bintulu";
 		ctx.shaderSource = shaderSource;
@@ -264,25 +264,26 @@ function drParseNoCar(noCar) {
     /** @param {HTMLCanvasElement} el */
 	function installGetContext(el) {
 		const g = el.getContext;
-		el.getContext = function () {
-			if (arguments[0] === "webgl" || arguments[0] === "webgl2") {
-				const ctx = g.apply(this, arguments);
+		el.getContext = function (...args) {
+			if (args[0] === "webgl" || args[0] === "webgl2") {
+				/** @type {WebGLRenderingContext | WebGL2RenderingContext} */
+				const ctx = g.apply(this, args);
 				if (ctx && ctx.shaderSource && ctx.shaderSource.bestcity !== "bintulu") {
 					installShaderSource(ctx);
 				}
 				return ctx;
 			}
-			return g.apply(this, arguments);
+			return g.apply(this, args);
 		};
 	}
 
-	const f = document.createElement;
-	document.createElement = function () {
-		if (arguments[0] === "canvas" || arguments[0] === "CANVAS") {
-			const el = f.apply(this, arguments);
+	const createElement = document.createElement.bind(document);
+	document.createElement = function (...args) {
+		if (args[0] === "canvas" || args[0] === "CANVAS") {
+			const el = createElement('canvas');
 			installGetContext(el);
 			return el;
 		}
-		return f.apply(this, arguments);
+		return createElement(...args);
 	};
 }

@@ -1,3 +1,5 @@
+'use strict';
+
 // Parcel prevents us from `require`ing things in a "standard" script
 // and ONLY wants to output ES modules in a module. We must use `require`
 // for electron reasons. This hack prevents Parcel from seeing what we're

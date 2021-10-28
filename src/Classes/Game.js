@@ -1,3 +1,5 @@
+'use strict';
+
 const pMap = require("p-map");
 const GameHelper = require("../utils/GameHelper");
 const store = require("../utils/sharedStore");
@@ -45,6 +47,17 @@ class Game {
 	 */
 	#country;
 
+	/** @type {Seed | undefined} */
+	seed;
+	/** @type {number | undefined} */
+	mapScale;
+	/** @type {LatLng | undefined} */
+	location;
+
+	isInGame = false;
+	guessesOpen = false;
+	isMultiGuess = false;
+
 	/**
 	 * @param {import('../utils/Database')} db
 	 * @param {MainWindow} win
@@ -54,15 +67,6 @@ class Game {
 		this.#db = db;
 		this.win = win;
 		this.#settings = settings;
-		/** @type {Seed} */
-		this.seed;
-		/** @type {number} */
-		this.mapScale;
-		/** @type {LatLng} */
-		this.location;
-		this.isInGame = false;
-		this.guessesOpen = false;
-		this.isMultiGuess = false;
 		/** @type {LatLng | undefined} */
 		this.lastLocation = store.get("lastLocation", undefined);
 	}
@@ -80,6 +84,9 @@ class Game {
 		} else {
 			this.#url = url;
 			this.seed = await this.#getSeed();
+			if (!this.seed) {
+				throw new Error('Could not load seed for this game');
+			}
 
 			try {
 				this.#db.createGame(this.seed);
@@ -146,7 +153,7 @@ class Game {
 	}
 
 	async #getSeed() {
-		return await GameHelper.fetchSeed(this.#url);
+		return this.#url ? await GameHelper.fetchSeed(this.#url) : undefined;
 	}
 
 	async #getCountry() {

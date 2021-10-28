@@ -27,25 +27,25 @@ function isGameURL(url) {
  * Gets the Game ID from a game URL
  * Checks if ID is 16 characters in length
  * @param {string} url Game URL
- * @return {string|false} id or false
+ * @return {string|undefined}
  */
 function getGameId(url) {
   const id = url.substring(url.lastIndexOf("/") + 1);
   if (id.length == 16) {
     return id;
-  } else {
-    return false;
   }
 }
 
 /**
  * Fetch a game seed
  * @param {string} url
- * @return {Promise<Seed>} Seed Promise
+ * @return {Promise<Seed | undefined>} Seed Promise
  */
 async function fetchSeed(url) {
   const gameId = getGameId(url);
-  if (!gameId) return;
+  if (!gameId) {
+    return;
+  }
 
   /** @type {import("axios").AxiosResponse<Seed>} */
   const { data } = await axios.get(`https://www.geoguessr.com/api/v3/games/${gameId}`);
@@ -55,7 +55,7 @@ async function fetchSeed(url) {
 /**
  * Returns a country code
  * @param {LatLng} location
- * @return {Promise<string>} Country code Promise
+ * @return {Promise<string | undefined>} Country code Promise
  */
 async function getCountryCode(location) {
   const localResults = countryIso.get(location.lat, location.lng);
@@ -71,7 +71,7 @@ async function getCountryCode(location) {
   // const res = await axios.get(url.toString());
   // const remoteIso = res.data.countryCode === '__' ? undefined : res.data.countryCode;
   
-  return countryCodes[localIso];
+  return localIso ? countryCodes[localIso] : undefined;
 }
 
 /**
@@ -82,7 +82,7 @@ async function getCountryCode(location) {
 function parseCoordinates(coordinates) {
   const regex = /^[-+]?(?<lat>[1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(?<lng>180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/;
   const m = regex.exec(coordinates);
-  if (m) {
+  if (m?.groups) {
     return { lat: parseFloat(m.groups.lat), lng: parseFloat(m.groups.lng) };
   }
 }
@@ -167,7 +167,6 @@ async function makeLink(streamer, mapName, mode, locations, totalScores) {
 }
 
 exports.isGameURL = isGameURL;
-exports.getGameId = getGameId;
 exports.fetchSeed = fetchSeed;
 exports.getCountryCode = getCountryCode;
 exports.parseCoordinates = parseCoordinates;

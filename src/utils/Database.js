@@ -1,3 +1,5 @@
+'use strict';
+
 const SQLite = require('@paulrosania/better-sqlite3');
 const { randomUUID } = require('crypto');
 

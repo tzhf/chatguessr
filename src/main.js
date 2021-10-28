@@ -1,8 +1,6 @@
-const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
 require('./errorReporting');
 
-const fs = require('fs/promises');
+const path = require('path');
 const { app, ipcMain, globalShortcut, protocol } = require("electron");
 const { initRenderer } = require('electron-store');
 const { autoUpdater } = require("electron-updater");

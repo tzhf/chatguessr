@@ -1,5 +1,3 @@
-const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
 require('./errorReporting');
 
 const { contextBridge, ipcRenderer } = require("electron");

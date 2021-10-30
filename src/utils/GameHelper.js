@@ -80,7 +80,7 @@ async function getCountryCode(location) {
  * @return {LatLng | undefined}
  */
 function parseCoordinates(coordinates) {
-  const regex = /^[-+]?(?<lat>[1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(?<lng>180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/;
+  const regex = /^(?<lat>[-+]?(?:[1-8]?\d(?:\.\d+)?|90(?:\.0+)?)),\s*(?<lng>[-+]?(?:180(?:\.0+)?|(?:(?:1[0-7]\d)|(?:[1-9]?\d))(?:\.\d+)?))$/;
   const m = regex.exec(coordinates);
   if (m?.groups) {
     return { lat: parseFloat(m.groups.lat), lng: parseFloat(m.groups.lng) };

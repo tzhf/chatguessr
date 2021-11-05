@@ -1,6 +1,3 @@
-// const path = require("path");
-// require("dotenv").config({ path: path.join(__dirname, "../../.env") });
-
 const ElectronStore = require("electron-store");
 const store = new ElectronStore();
 
@@ -125,9 +122,6 @@ class Store {
 		const perfects = Math.max(...Object.values(storedUsers).map((o) => o.perfects));
 		const perfectsUser = Object.keys(storedUsers).filter((user) => storedUsers[user].perfects === perfects);
 
-		// const meanScore = Math.max(...Object.values(storedUsers).map((o) => o.meanScore));
-		// const meanScoreUser = Object.keys(storedUsers).filter((user) => storedUsers[user].meanScore === meanScore);
-
 		return {
 			streak: { streak: streak, user: streakUser },
 			victories: { victories: victories, user: victoriesUser },
@@ -142,20 +136,6 @@ class Store {
 		store.delete("users");
 		store.delete("lastRoundPlayers");
 	};
-
-	// static checkVersion = () => {
-	// 	const version = store.get("current_version");
-	// 	const curr_ver = process.env.CURR_VER;
-
-	// 	if (!version || version != curr_ver) {
-	// 		const settings = store.get("settings");
-	// 		store.clear();
-	// 		store.set("settings.channelName", settings.channelName);
-	// 		store.set("settings.botUsername", settings.botUsername);
-	// 		store.set("settings.token", settings.token);
-	// 		store.set("current_version", curr_ver);
-	// 	}
-	// };
 }
 
 module.exports = Store;

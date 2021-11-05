@@ -159,7 +159,6 @@ let markers = [];
 let polylines = [];
 function populateMap(location, scores) {
 	const infowindow = new google.maps.InfoWindow();
-	// const bounds = new google.maps.LatLngBounds();
 	const icon = {
 		path: `M13.04,41.77c-0.11-1.29-0.35-3.2-0.99-5.42c-0.91-3.17-4.74-9.54-5.49-10.79c-3.64-6.1-5.46-9.21-5.45-12.07
 			c0.03-4.57,2.77-7.72,3.21-8.22c0.52-0.58,4.12-4.47,9.8-4.17c4.73,0.24,7.67,3.23,8.45,4.07c0.47,0.51,3.22,3.61,3.31,8.11
@@ -210,7 +209,6 @@ function populateMap(location, scores) {
 			infowindow.close();
 		});
 		markers.push(guessMarker);
-		// bounds.extend(score.position);
 
 		polylines.push(
 			new google.maps.Polyline({
@@ -223,7 +221,6 @@ function populateMap(location, scores) {
 			})
 		);
 	});
-	// MAP.fitBounds(bounds);
 }
 
 function clearMarkers() {
@@ -303,7 +300,7 @@ function hijackMap() {
 
 			const oldMap = google.maps.Map;
 			google.maps.Map = Object.assign(
-				function(...args) {
+				function (...args) {
 					const res = oldMap.apply(this, args);
 					this.addListener("idle", () => {
 						if (MAP != null) return;
@@ -325,7 +322,7 @@ function drParseNoCompass(noCompass) {
 		if (!style) {
 			const style = document.createElement("style");
 			style.id = "noCompass";
-			style.innerHTML = ".compass { display: none }";
+			style.innerHTML = ".compass { display: none }.game-layout__compass{display: none}";
 			document.head.appendChild(style);
 		}
 	} else {
@@ -402,7 +399,7 @@ function drParseNoCar() {
 
 	function installGetContext(el) {
 		const g = el.getContext;
-		el.getContext = function() {
+		el.getContext = function () {
 			if (arguments[0] === "webgl" || arguments[0] === "webgl2") {
 				const ctx = g.apply(this, arguments);
 				if (ctx && ctx.shaderSource && ctx.shaderSource.bestcity !== "bintulu") {
@@ -415,7 +412,7 @@ function drParseNoCar() {
 	}
 
 	const f = document.createElement;
-	document.createElement = function() {
+	document.createElement = function () {
 		if (arguments[0] === "canvas" || arguments[0] === "CANVAS") {
 			const el = f.apply(this, arguments);
 			installGetContext(el);

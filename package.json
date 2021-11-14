@@ -104,7 +104,7 @@
 		"settings": {
 			"context": "electron-renderer",
 			"outputFormat": "commonjs",
-			"source": "./src/Windows/Settings/settings.html",
+			"source": "./src/Windows/settings/settings.html",
 			"publicUrl": "."
 		}
 	},

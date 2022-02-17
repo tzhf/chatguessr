@@ -9,7 +9,10 @@ window.addEventListener("DOMContentLoaded", () => {
 	window.ipcRenderer = require("electron").ipcRenderer;
 	window.$ = window.jQuery = require("jquery");
 	window.MAP = null;
-
+	window.SATELLITE_LAYER = null;
+	window.SATELLITE_MARKER = null;
+	window.isSatellite = Store.get("isSatellite", false);
+	window.currentLocation = { lat: 0, lng: 0 };
 	hijackMap();
 
 	const head = document.getElementsByTagName("head")[0];
@@ -19,6 +22,9 @@ window.addEventListener("DOMContentLoaded", () => {
 	styles.type = "text/css";
 	styles.href = `${path.join(__dirname, "./public/styles.css")}`;
 	head.appendChild(styles);
+
+	const satelliteCanvas = document.createElement("div");
+	satelliteCanvas.id = "satelliteCanvas";
 
 	const scoreboardContainer = document.createElement("div");
 	scoreboardContainer.setAttribute("id", "scoreboardContainer");
@@ -71,6 +77,10 @@ window.addEventListener("DOMContentLoaded", () => {
 		const markerRemover = document.createElement("style");
 		markerRemover.innerHTML = ".map-pin{display:none}";
 
+		const iconsColumn = document.createElement("div");
+		iconsColumn.classList.add("iconsColumn");
+		document.body.appendChild(iconsColumn);
+
 		const settingsIcon = document.createElement("div");
 		settingsIcon.setAttribute("title", "Settings (ctrl+p)");
 		settingsIcon.id = "settingsIcon";
@@ -78,7 +88,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		settingsIcon.addEventListener("click", () => {
 			ipcRenderer.send("openSettings");
 		});
-		document.body.appendChild(settingsIcon);
+		iconsColumn.appendChild(settingsIcon);
 
 		const scoreboard = new Scoreboard();
 
@@ -90,14 +100,110 @@ window.addEventListener("DOMContentLoaded", () => {
 			scoreboard.setVisibility();
 		});
 
-		ipcRenderer.on("game-started", (e, isMultiGuess) => {
-			document.body.appendChild(showScoreboard);
+		const satelliteSwitchIcon = document.createElement("div");
+		satelliteSwitchIcon.setAttribute("title", "Switch to Satellite View");
+		satelliteSwitchIcon.id = "satelliteSwitchIcon";
+		satelliteSwitchIcon.innerHTML = "<span>🏡</span>";
+		satelliteSwitchIcon.addEventListener("click", () => {
+			switchLayer();
+		});
+
+		const centerSatelliteViewBtn = document.createElement("div");
+		centerSatelliteViewBtn.setAttribute("title", "Center map to location");
+		centerSatelliteViewBtn.id = "centerSatelliteViewBtn";
+		centerSatelliteViewBtn.innerHTML = "<span>🏁</span>";
+		centerSatelliteViewBtn.addEventListener("click", () => {
+			centerSatelliteView();
+		});
+
+		ipcRenderer.on("game-started", (e, isMultiGuess, currLocation) => {
+			currentLocation = currLocation;
+
+			const gameLayout = document.getElementsByClassName("game-layout__canvas")[0];
+			gameLayout.appendChild(satelliteCanvas);
+
+			if (isSatellite) {
+				satelliteCanvas.style.display = "block";
+				centerSatelliteViewBtn.style.display = "flex";
+			}
+
+			const bounds = {
+				north: currLocation.lat + 1,
+				south: currLocation.lat - 1,
+				west: currLocation.lng - 1,
+				east: currLocation.lng + 1,
+			};
+
+			setTimeout(() => {
+				SATELLITE_LAYER = new google.maps.Map(satelliteCanvas, {
+					fullscreenControl: false,
+					mapTypeId: "satellite",
+					zoom: 25,
+					minZoom: 10,
+					center: currLocation,
+					restriction: {
+						latLngBounds: bounds,
+						strictBounds: false,
+					},
+				});
+				SATELLITE_MARKER = new google.maps.Marker({
+					position: currLocation,
+					map: SATELLITE_LAYER,
+				});
+
+				if (isSatellite) MAP.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+			}, 2000);
+
+			iconsColumn.appendChild(showScoreboard);
+			iconsColumn.appendChild(satelliteSwitchIcon);
+			iconsColumn.appendChild(centerSatelliteViewBtn);
 			scoreboard.checkVisibility();
 			scoreboard.reset(isMultiGuess);
 		});
 
+		ipcRenderer.on("next-round", (e, isMultiGuess, currLocation) => {
+			currentLocation = currLocation;
+
+			const bounds = {
+				north: currLocation.lat + 1,
+				south: currLocation.lat - 1,
+				west: currLocation.lng - 1,
+				east: currLocation.lng + 1,
+			};
+
+			SATELLITE_LAYER = new google.maps.Map(satelliteCanvas, {
+				fullscreenControl: false,
+				mapTypeId: "satellite",
+				zoom: 25,
+				minZoom: 10,
+				center: currLocation,
+				restriction: {
+					latLngBounds: bounds,
+					strictBounds: false,
+				},
+			});
+			SATELLITE_MARKER = new google.maps.Marker({
+				position: currLocation,
+				map: SATELLITE_LAYER,
+			});
+
+			scoreboard.checkVisibility();
+			scoreboard.reset(isMultiGuess);
+			scoreboard.showSwitch(true);
+
+			setTimeout(() => {
+				markerRemover.remove();
+				clearMarkers();
+			}, 1000);
+			setTimeout(() => {
+				if (isSatellite) MAP.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+			}, 2000);
+		});
+
 		ipcRenderer.on("refreshed-in-game", (e, noCompass) => {
-			document.body.appendChild(showScoreboard);
+			iconsColumn.appendChild(showScoreboard);
+			iconsColumn.appendChild(satelliteSwitchIcon);
+			iconsColumn.appendChild(centerSatelliteViewBtn);
 			scoreboard.checkVisibility();
 			drParseNoCompass(noCompass);
 		});
@@ -105,6 +211,8 @@ window.addEventListener("DOMContentLoaded", () => {
 		ipcRenderer.on("game-quitted", () => {
 			scoreboard.hide();
 			if ($("#showScoreboard")) $("#showScoreboard").remove();
+			if ($("#satelliteSwitchIcon")) $("#satelliteSwitchIcon").remove();
+			if ($("#centerSatelliteViewBtn")) $("#centerSatelliteViewBtn").remove();
 			markerRemover.remove();
 			clearMarkers();
 		});
@@ -138,25 +246,137 @@ window.addEventListener("DOMContentLoaded", () => {
 			clearMarkers();
 		});
 
-		ipcRenderer.on("next-round", (e, isMultiGuess) => {
-			scoreboard.checkVisibility();
-			scoreboard.reset(isMultiGuess);
-			scoreboard.showSwitch(true);
-			setTimeout(() => {
-				markerRemover.remove();
-				clearMarkers();
-			}, 1000);
-		});
-
 		ipcRenderer.on("switch-on", () => scoreboard.switchOn(true));
 		ipcRenderer.on("switch-off", () => scoreboard.switchOn(false));
 
 		ipcRenderer.on("game-settings-change", (e, noCompass) => drParseNoCompass(noCompass));
 	};
+
+	function switchLayer() {
+		if (!isSatellite) {
+			MAP.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+			satelliteSwitchIcon.innerHTML = "<span>🛰️</span>";
+			satelliteSwitchIcon.setAttribute("title", "Switch to StreetView");
+			satelliteCanvas.style.display = "block";
+			centerSatelliteViewBtn.style.display = "flex";
+			isSatellite = true;
+			Store.set("isSatellite", true);
+		} else {
+			MAP.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+			satelliteSwitchIcon.innerHTML = "<span>🏡</span>";
+			satelliteSwitchIcon.setAttribute("title", "Switch to Satellite View");
+			satelliteCanvas.style.display = "none";
+			centerSatelliteViewBtn.style.display = "none";
+			isSatellite = false;
+			Store.set("isSatellite", false);
+		}
+	}
+
+	function centerSatelliteView() {
+		SATELLITE_LAYER.setCenter(currentLocation);
+	}
+
+	function hijackMap() {
+		const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
+		const GOOGLE_MAPS_PROMISE = new Promise((resolve, reject) => {
+			let scriptObserver = new MutationObserver((mutations) => {
+				for (const mutation of mutations) {
+					for (const node of mutation.addedNodes) {
+						if (node.tagName === "SCRIPT" && node.src.startsWith(MAPS_API_URL)) {
+							node.onload = () => {
+								scriptObserver.disconnect();
+								scriptObserver = undefined;
+								resolve();
+							};
+						}
+					}
+				}
+			});
+
+			let bodyDone = false;
+			let headDone = false;
+
+			new MutationObserver((_, observer) => {
+				if (!bodyDone && document.body) {
+					if (scriptObserver) {
+						scriptObserver.observe(document.body, {
+							childList: true,
+						});
+						bodyDone = true;
+					}
+				}
+				if (!headDone && document.head) {
+					if (scriptObserver) {
+						scriptObserver.observe(document.head, {
+							childList: true,
+						});
+						headDone = true;
+					}
+				}
+				if (headDone && bodyDone) {
+					observer.disconnect();
+				}
+			}).observe(document.documentElement, {
+				childList: true,
+				subtree: true,
+			});
+		});
+
+		function runAsClient(f) {
+			const script = document.createElement("script");
+			script.type = "text/javascript";
+			script.text = `(${f.toString()})()`;
+			document.body.appendChild(script);
+		}
+
+		GOOGLE_MAPS_PROMISE.then(() => {
+			runAsClient(() => {
+				const google = window.google;
+				const isGamePage = () => location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
+				const onMapUpdate = (map) => {
+					try {
+						if (!isGamePage()) return;
+						MAP = map;
+						if (isSatellite) MAP.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+
+						// SATELLITE_LAYER = new google.maps.Map(satelliteCanvas, {
+						// 	fullscreenControl: false,
+						// 	mapTypeId: "satellite",
+						// 	zoom: 15,
+						// 	minZoom: 10,
+						// 	center: currentLocation,
+						// 	restriction: {
+						// 		latLngBounds: bounds,
+						// 		strictBounds: false,
+						// 	},
+						// });
+					} catch (error) {
+						console.error("GeoguessrHijackMap Error:", error);
+					}
+				};
+
+				const oldMap = google.maps.Map;
+				google.maps.Map = Object.assign(
+					function (...args) {
+						const res = oldMap.apply(this, args);
+						this.addListener("idle", () => {
+							if (MAP != null) return;
+							onMapUpdate(this);
+						});
+						return res;
+					},
+					{
+						prototype: Object.create(oldMap.prototype),
+					}
+				);
+			});
+		});
+	}
 });
 
 let markers = [];
 let polylines = [];
+
 function populateMap(location, scores) {
 	const infowindow = new google.maps.InfoWindow();
 	const icon = {
@@ -230,90 +450,6 @@ function clearMarkers() {
 	while (polylines[0]) {
 		polylines.pop().setMap(null);
 	}
-}
-
-function hijackMap() {
-	const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
-	const GOOGLE_MAPS_PROMISE = new Promise((resolve, reject) => {
-		let scriptObserver = new MutationObserver((mutations) => {
-			for (const mutation of mutations) {
-				for (const node of mutation.addedNodes) {
-					if (node.tagName === "SCRIPT" && node.src.startsWith(MAPS_API_URL)) {
-						node.onload = () => {
-							scriptObserver.disconnect();
-							scriptObserver = undefined;
-							resolve();
-						};
-					}
-				}
-			}
-		});
-
-		let bodyDone = false;
-		let headDone = false;
-
-		new MutationObserver((_, observer) => {
-			if (!bodyDone && document.body) {
-				if (scriptObserver) {
-					scriptObserver.observe(document.body, {
-						childList: true,
-					});
-					bodyDone = true;
-				}
-			}
-			if (!headDone && document.head) {
-				if (scriptObserver) {
-					scriptObserver.observe(document.head, {
-						childList: true,
-					});
-					headDone = true;
-				}
-			}
-			if (headDone && bodyDone) {
-				observer.disconnect();
-			}
-		}).observe(document.documentElement, {
-			childList: true,
-			subtree: true,
-		});
-	});
-
-	function runAsClient(f) {
-		const script = document.createElement("script");
-		script.type = "text/javascript";
-		script.text = `(${f.toString()})()`;
-		document.body.appendChild(script);
-	}
-
-	GOOGLE_MAPS_PROMISE.then(() => {
-		runAsClient(() => {
-			const google = window.google;
-			const isGamePage = () => location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
-			const onMapUpdate = (map) => {
-				try {
-					if (!isGamePage()) return;
-					MAP = map;
-				} catch (error) {
-					console.error("GeoguessrHijackMap Error:", error);
-				}
-			};
-
-			const oldMap = google.maps.Map;
-			google.maps.Map = Object.assign(
-				function (...args) {
-					const res = oldMap.apply(this, args);
-					this.addListener("idle", () => {
-						if (MAP != null) return;
-						onMapUpdate(this);
-					});
-					return res;
-				},
-				{
-					prototype: Object.create(oldMap.prototype),
-				}
-			);
-		});
-	});
 }
 
 function drParseNoCompass(noCompass) {

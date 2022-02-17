@@ -13,6 +13,7 @@ function mainWindow() {
 		},
 	});
 	win.setMenuBarVisibility(false);
+
 	win.loadURL("https://www.geoguessr.com/classic");
 
 	win.webContents.on("new-window", (e, link) => {

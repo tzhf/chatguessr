@@ -27,7 +27,7 @@ class GameHandler {
 		this.win.webContents.on("did-navigate-in-page", (e, url) => {
 			if (GameHelper.isGameURL(url)) {
 				game.start(url, settings.isMultiGuess).then(() => {
-					this.win.webContents.send("game-started", game.isMultiGuess);
+					this.win.webContents.send("game-started", game.isMultiGuess, game.getLocation());
 					TMI.action(`${game.round == 1 ? "🌎 A new seed of " + game.mapName : "🌎 Round " + game.round} has started`);
 					openGuesses();
 				});
@@ -71,7 +71,7 @@ class GameHandler {
 			if (game.seed.state === "finished") {
 				processTotalScores();
 			} else {
-				this.win.webContents.send("next-round", game.isMultiGuess);
+				this.win.webContents.send("next-round", game.isMultiGuess, game.getLocation());
 				TMI.action(`🌎 Round ${game.round} has started`);
 				openGuesses();
 			}

@@ -40,7 +40,7 @@
 				"provider": "github",
 				"owner": "tzhf",
 				"repo": "chatguessr",
-				"private": true
+				"private": false
 			}
 		]
 	}

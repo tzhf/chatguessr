@@ -28,6 +28,7 @@ export type GameState = 'started' | 'finished';
 export type GameRound = {
     lat: number,
     lng: number,
+    panoId: string | null,
     heading: number,
     pitch: number,
     streakLocationCode: string | null,

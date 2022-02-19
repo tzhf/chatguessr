@@ -242,6 +242,7 @@ class Database {
             location: JSON.stringify({
                 lat: round.lat,
                 lng: round.lng,
+                panoId: round.panoId,
                 heading: round.heading,
                 pitch: round.pitch,
             }),

@@ -21,7 +21,7 @@ let satelliteMarker = undefined;
 const satelliteCanvas = document.createElement('div');
 satelliteCanvas.id = 'satelliteCanvas';
 
-hijackMap();
+const mapReady = hijackMap();
 
 /** @type {google.maps.Marker[]} */
 let markers = [];
@@ -32,7 +32,6 @@ let polylines = [];
 function populateMap(location, scores) {
 	const map = globalMap;
 	const infowindow = new google.maps.InfoWindow();
-	// const bounds = new google.maps.LatLngBounds();
 	const icon = {
 		path: `M13.04,41.77c-0.11-1.29-0.35-3.2-0.99-5.42c-0.91-3.17-4.74-9.54-5.49-10.79c-3.64-6.1-5.46-9.21-5.45-12.07
 			c0.03-4.57,2.77-7.72,3.21-8.22c0.52-0.58,4.12-4.47,9.8-4.17c4.73,0.24,7.67,3.23,8.45,4.07c0.47,0.51,3.22,3.61,3.31,8.11
@@ -84,7 +83,6 @@ function populateMap(location, scores) {
 			infowindow.close();
 		});
 		markers.push(guessMarker);
-		// bounds.extend(score.position);
 
 		polylines.push(
 			new google.maps.Polyline({
@@ -97,7 +95,6 @@ function populateMap(location, scores) {
 			})
 		);
 	});
-	// MAP.fitBounds(bounds);
 }
 
 /** @type {import('./types').RendererApi['clearMarkers']} */
@@ -112,9 +109,9 @@ function clearMarkers() {
 	polylines = [];
 }
 
-function hijackMap() {
+async function hijackMap() {
 	const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
-	const GOOGLE_MAPS_PROMISE = new Promise((resolve) => {
+	await new Promise((resolve) => {
 		let scriptObserver = new MutationObserver((mutations, observer) => {
 			for (const mutation of mutations) {
 				for (const tmp of mutation.addedNodes) {
@@ -156,7 +153,7 @@ function hijackMap() {
 		});
 	});
 
-	GOOGLE_MAPS_PROMISE.then(() => {
+	await new Promise((resolve, reject) => {
 		const google = window.google;
 		const isGamePage = () => location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
 		/** @param {google.maps.Map} map */
@@ -165,8 +162,10 @@ function hijackMap() {
 				if (!isGamePage())
 					return;
 				globalMap = map;
+				resolve();
 			} catch (error) {
 				console.error("GeoguessrHijackMap Error:", error);
+				reject(error);
 			}
 		}
 
@@ -188,7 +187,9 @@ function hijackMap() {
 }
 
 /** @type {import('./types').RendererApi['showSatelliteMap']} */
-function showSatelliteMap(location) {
+async function showSatelliteMap(location) {
+	await mapReady;
+
 	satelliteCenter = location;
 	const bounds = {
 		north: location.lat + 1,
@@ -221,11 +222,16 @@ function showSatelliteMap(location) {
 		map: satelliteLayer,
 	});
 
-	globalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+	// If we do this immediately GeoGuessr might revert it back to roadmap, so we wait a bit.
+	setTimeout(() => {
+		globalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+	}, 2000);
 }
 
 /** @type {import('./types').RendererApi['hideSatelliteMap']} */
-function hideSatelliteMap() {
+async function hideSatelliteMap() {
+	await mapReady;
+
 	globalMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
 	satelliteCanvas.style.display = 'none';
 }

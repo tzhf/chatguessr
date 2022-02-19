@@ -56,8 +56,6 @@ function initWindow() {
 	mainWindow = require("./Windows/MainWindow");
 	mainWindow.once("ready-to-show", () => {
 		mainWindow.maximize();
-		// to investigate: loading it a second time seems to resolve map dragging lag issue
-		mainWindow.loadURL("https://www.geoguessr.com/classic");
 		setTimeout(() => {
 			autoUpdater.checkForUpdatesAndNotify();
 		}, 2000);

@@ -144,7 +144,9 @@ function init(rendererApi) {
 		scoreboard.renderMultiGuess(guesses);
 	});
 
-	ipcRenderer.on("pre-round-results", () => document.body.appendChild(markerRemover));
+	ipcRenderer.on("pre-round-results", () => {
+		document.body.append(markerRemover);
+	});
 
 	ipcRenderer.on("show-round-results", (e, round, location, scores) => {
 		scoreboard.setTitle(`ROUND ${round} RESULTS`);

@@ -21,8 +21,7 @@ function mainWindow() {
 	});
 	win.setMenuBarVisibility(false);
 
-	win.loadURL("https://www.geoguessr.com/classic");
-	win.once('ready-to-show', () => {
+	win.loadURL("https://www.geoguessr.com/classic").then(() => {
 		// to investigate: loading it a second time seems to resolve map dragging lag issue
 		win.loadURL("https://www.geoguessr.com/classic");
 
@@ -35,10 +34,6 @@ function mainWindow() {
 	win.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);
 		return { action: 'deny' };
-	});
-
-	win.on("closed", () => {
-		win = null;
 	});
 
 	return win;

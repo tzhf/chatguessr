@@ -172,8 +172,8 @@ function hijackMap() {
 
 		google.maps.Map = class extends google.maps.Map {
 			/**
-			 * @param {HTMLElement} mapDiv 
-			 * @param {google.maps.MapOptions} opts 
+			 * @param {HTMLElement} mapDiv
+			 * @param {google.maps.MapOptions} opts
 			 */
 			constructor(mapDiv, opts) {
 				super(mapDiv, opts)
@@ -197,34 +197,31 @@ function showSatelliteMap(location) {
 		east: location.lng + 1,
 	};
 
-	setTimeout(() => {
-		if (!satelliteCanvas.closest('.game-layout__canvas')) {
-			document.querySelector('.game-layout__canvas').append(satelliteCanvas);
-		}
-		satelliteCanvas.style.display = 'block';
+	if (!satelliteCanvas.closest('.game-layout__canvas')) {
+		document.querySelector('.game-layout__canvas').append(satelliteCanvas);
+	}
+	satelliteCanvas.style.display = 'block';
 
-		satelliteLayer ??= new google.maps.Map(satelliteCanvas, {
-			fullscreenControl: false,
-			mapTypeId: google.maps.MapTypeId.SATELLITE,
-			zoom: 25,
-			minZoom: 10,
-		});
-		satelliteMarker?.setMap(null);
-		satelliteMarker = new google.maps.Marker({
-			position: location,
-			map: satelliteLayer,
-		});
+	satelliteLayer ??= new google.maps.Map(satelliteCanvas, {
+		fullscreenControl: false,
+		mapTypeId: google.maps.MapTypeId.SATELLITE,
+		zoom: 25,
+		minZoom: 10,
+	});
+	satelliteLayer.setOptions({
+		center: location,
+		restriction: {
+			latLngBounds: bounds,
+			strictBounds: false,
+		},
+	});
+	satelliteMarker?.setMap(null);
+	satelliteMarker = new google.maps.Marker({
+		position: location,
+		map: satelliteLayer,
+	});
 
-		satelliteLayer.setOptions({
-			center: location,
-			restriction: {
-				latLngBounds: bounds,
-				strictBounds: false,
-			},
-		});
-
-		globalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
-	}, 2000);
+	globalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
 }
 
 /** @type {import('./types').RendererApi['hideSatelliteMap']} */

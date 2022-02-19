@@ -16,6 +16,7 @@
 		"datatables.net-plugins": "^1.10.24",
 		"datatables.net-scroller": "^2.0.5",
 		"dotenv": "^8.2.0",
+		"electron-squirrel-startup": "^1.0.0",
 		"electron-store": "^8.0.1",
 		"electron-updater": "^4.3.9",
 		"jquery": "^3.6.0",

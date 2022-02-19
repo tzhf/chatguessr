@@ -16,5 +16,8 @@
 		"src/**/*.js",
 		"src/utils/countryCodes.json",
 		"src/utils/countryCodesNames.json"
+	],
+	"exclude": [
+		"src/utils/unityscript.js"
 	]
 }

@@ -14,7 +14,7 @@ const settings = Settings.read();
 /** @typedef {import('./types').Guess} Guess */
 /** @typedef {import('./utils/Database')} Database */
 /** @typedef {import('./Windows/MainWindow')} MainWindow */
-/** @typedef {import('./Windows/Settings/SettingsWindow')} SettingsWindow */
+/** @typedef {import('./Windows/settings/SettingsWindow')} SettingsWindow */
 
 class GameHandler {
 	/** @type {Database} */
@@ -185,10 +185,6 @@ class GameHandler {
 
 		ipcMain.on("openSettings", () => {
 			this.openSettingsWindow();
-		});
-
-		ipcMain.on("showScoreboard", () => {
-			this.showScoreboard();
 		});
 
 		ipcMain.on("clearStats", () => {

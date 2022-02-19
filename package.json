@@ -41,7 +41,7 @@
 		"@types/jest": "^27.0.2",
 		"@types/jquery": "^3.5.7",
 		"@types/jqueryui": "^1.12.16",
-		"@types/node": "^12.20.29",
+		"@types/node": "^17.0.18",
 		"@types/tmi.js": "^1.8.0",
 		"electron": "^17.0.1",
 		"jest": "^27.3.1",

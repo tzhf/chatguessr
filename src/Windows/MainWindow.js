@@ -24,8 +24,8 @@ function mainWindow() {
 	win.loadURL("https://www.geoguessr.com/classic");
 
 	win.webContents.on('dom-ready', async () => {
-		await this.webContents.insertCSS(styles);
-		await this.webContents.executeJavaScript(js);
+		await win.webContents.insertCSS(styles);
+		await win.webContents.executeJavaScript(js);
 	});
 	win.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);

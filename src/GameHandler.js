@@ -60,7 +60,7 @@ class GameHandler {
 		this.#win.webContents.send("switch-on");
 		this.#twitch.action("Guesses are open...");
 	}
-	
+
 	closeGuesses() {
 		this.#game.closeGuesses();
 		this.#win.webContents.send("switch-off");
@@ -71,7 +71,7 @@ class GameHandler {
 		if (this.#game.seed.state === "finished") {
 			this.#processTotalScores();
 		} else {
-			this.#win.webContents.send("next-round", this.#game.isMultiGuess);
+			this.#win.webContents.send("next-round", this.#game.isMultiGuess, this.#game.getLocation());
 			this.#twitch.action(`🌎 Round ${this.#game.round} has started`);
 			this.openGuesses();
 		}
@@ -105,7 +105,7 @@ class GameHandler {
 			if (GameHelper.isGameURL(url)) {
 				this.#game.start(url, settings.isMultiGuess).then(() => {
 					const guesses = this.#game.isMultiGuess ? this.#game.getMultiGuesses() : this.#game.getRoundScores();
-					this.#win.webContents.send("game-started", this.#game.isMultiGuess, guesses);
+					this.#win.webContents.send("game-started", this.#game.isMultiGuess, guesses, this.#game.getLocation());
 
 					if (guesses.length > 0) {
 						this.#twitch.action(`🌎 Round ${this.#game.round} has resumed`)

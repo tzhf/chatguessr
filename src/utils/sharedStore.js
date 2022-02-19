@@ -24,6 +24,7 @@ const ElectronStore = require("electron-store");
  *   users: Record<string, LegacyUser>,
  *   lastRoundPlayers: void,
  *   lastLocation: import('../types').LatLng | undefined,
+ *   isSatellite: boolean,
  *   current_version: string,
  * }} Schema
  */

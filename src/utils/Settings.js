@@ -19,7 +19,7 @@ const store = require('./sharedStore');
  */
 
 class Settings {
-    /** @param {Partial<SettingsProps>} settings */
+	/** @param {Partial<SettingsProps>} settings */
 	constructor({
 		channelName = "",
 		botUsername = "",
@@ -33,19 +33,19 @@ class Settings {
 		isMultiGuess = false,
 		noCar = false,
 		noCompass = false
-    } = {}) {
-		this.channelName = channelName;
-		this.botUsername = botUsername;
-		this.token = token;
-		this.cgCmd = cgCmd;
-		this.cgMsg = cgMsg;
-		this.userGetStatsCmd = userGetStatsCmd;
-		this.userClearStatsCmd = userClearStatsCmd;
-		this.setStreakCmd = setStreakCmd;
-		this.showHasGuessed = showHasGuessed;
-		this.isMultiGuess = isMultiGuess;
-		this.noCar = noCar;
-		this.noCompass = noCompass;
+	} = {}) {
+			this.channelName = channelName;
+			this.botUsername = botUsername;
+			this.token = token;
+			this.cgCmd = cgCmd;
+			this.cgMsg = cgMsg;
+			this.userGetStatsCmd = userGetStatsCmd;
+			this.userClearStatsCmd = userClearStatsCmd;
+			this.setStreakCmd = setStreakCmd;
+			this.showHasGuessed = showHasGuessed;
+			this.isMultiGuess = isMultiGuess;
+			this.noCar = noCar;
+			this.noCompass = noCompass;
 	}
 
 	/**
@@ -57,7 +57,7 @@ class Settings {
 		this.isMultiGuess = isMultiGuess;
 		this.noCar = noCar;
 		this.noCompass = noCompass;
-        this.#save();
+		this.#save();
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Settings {
 		this.userClearStatsCmd = commands.userClearStats;
 		this.setStreakCmd = commands.setStreak;
 		this.showHasGuessed = commands.showHasGuessed;
-        this.#save();
+		this.#save();
 	}
 
 	/**
@@ -82,33 +82,33 @@ class Settings {
 		this.channelName = channelName;
 		this.botUsername = botUsername;
 		this.token = token;
-        this.#save();
+		this.#save();
 	}
 
-    toJSON() {
-        return {
-            channelName: this.channelName,
-            botUsername: this.botUsername,
-            token: this.token,
-            cgCmd: this.cgCmd,
-            cgMsg: this.cgMsg,
-            userGetStatsCmd: this.userGetStatsCmd,
-            userClearStatsCmd: this.userClearStatsCmd,
-            setStreakCmd: this.setStreakCmd,
-            showHasGuessed: this.showHasGuessed,
-            isMultiGuess: this.isMultiGuess,
-            noCar: this.noCar,
-            noCompass: this.noCompass,
-        }
-    }
+	toJSON() {
+		return {
+			channelName: this.channelName,
+			botUsername: this.botUsername,
+			token: this.token,
+			cgCmd: this.cgCmd,
+			cgMsg: this.cgMsg,
+			userGetStatsCmd: this.userGetStatsCmd,
+			userClearStatsCmd: this.userClearStatsCmd,
+			setStreakCmd: this.setStreakCmd,
+			showHasGuessed: this.showHasGuessed,
+			isMultiGuess: this.isMultiGuess,
+			noCar: this.noCar,
+			noCompass: this.noCompass,
+		}
+	}
 
-    static read() {
-        return new Settings(store.get('settings'));
-    }
+	static read() {
+		return new Settings(store.get('settings'));
+	}
 
-    #save() {
-        store.set('settings', this.toJSON());
-    }
+	#save() {
+		store.set('settings', this.toJSON());
+	}
 }
 
 module.exports = Settings;

@@ -23,11 +23,16 @@ contextBridge.exposeInMainWorld('chatguessrApi', chatguessrApi);
 function init(rendererApi) {
 	const Scoreboard = require("./Classes/Scoreboard");
 	const Settings = require("./utils/Settings");
+	const sharedStore = require('./utils/sharedStore');
 	const { noCar } = Settings.read();
 	rendererApi.drParseNoCar(noCar);
 
 	const markerRemover = document.createElement("style");
 	markerRemover.textContent = ".map-pin { display: none; }";
+
+	const iconsColumn = document.createElement("div");
+	iconsColumn.classList.add("iconsColumn");
+	document.body.append(iconsColumn);
 
 	const settingsIcon = document.createElement("div");
 	settingsIcon.setAttribute("title", "Settings (ctrl+p)");
@@ -36,7 +41,7 @@ function init(rendererApi) {
 	settingsIcon.addEventListener("click", () => {
 		ipcRenderer.send("openSettings");
 	});
-	document.body.append(settingsIcon);
+	iconsColumn.append(settingsIcon);
 
 	const scoreboardContainer = document.createElement("div");
 	scoreboardContainer.setAttribute("id", "scoreboardContainer");
@@ -60,8 +65,41 @@ function init(rendererApi) {
 		}
 	});
 
-	ipcRenderer.on("game-started", (e, isMultiGuess, restoredGuesses) => {
-		document.body.append(showScoreboard);
+	const satelliteSwitchIcon = document.createElement("div");
+	satelliteSwitchIcon.setAttribute("title", "Switch to Satellite View");
+	satelliteSwitchIcon.id = "satelliteSwitchIcon";
+	satelliteSwitchIcon.innerHTML = "<span>🏡</span>";
+	satelliteSwitchIcon.addEventListener("click", () => {
+		const isSatellite = !sharedStore.get('isSatellite');
+		sharedStore.set('isSatellite', isSatellite);
+		rendererApi.setSatelliteEnabled(isSatellite);
+
+		if (isSatellite) {
+			satelliteSwitchIcon.innerHTML = "<span>🛰️</span>";
+			satelliteSwitchIcon.setAttribute("title", "Switch to StreetView");
+			centerSatelliteViewBtn.style.display = "flex";
+		} else {
+			satelliteSwitchIcon.innerHTML = "<span>🏡</span>";
+			satelliteSwitchIcon.setAttribute("title", "Switch to Satellite View");
+			centerSatelliteViewBtn.style.display = "none";
+		}
+	});
+
+	const centerSatelliteViewBtn = document.createElement("div");
+	centerSatelliteViewBtn.setAttribute("title", "Center map to location");
+	centerSatelliteViewBtn.id = "centerSatelliteViewBtn";
+	centerSatelliteViewBtn.innerHTML = "<span>🏁</span>";
+	centerSatelliteViewBtn.addEventListener("click", () => {
+		rendererApi.centerSatelliteView();
+	});
+
+	ipcRenderer.on("game-started", (e, isMultiGuess, restoredGuesses, location) => {
+		if (sharedStore.get('isSatellite')) {
+			centerSatelliteViewBtn.style.display = "flex";
+			rendererApi.showSatelliteMap(location)
+		}
+
+		iconsColumn.append(showScoreboard, satelliteSwitchIcon, centerSatelliteViewBtn);
 		scoreboard.checkVisibility();
 		scoreboard.reset(isMultiGuess);
 
@@ -78,7 +116,7 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("refreshed-in-game", (e, noCompass) => {
-		document.body.append(showScoreboard);
+		iconsColumn.append(showScoreboard, satelliteSwitchIcon, centerSatelliteViewBtn);
 		scoreboard.checkVisibility();
 		rendererApi.drParseNoCompass(noCompass);
 	});
@@ -87,13 +125,11 @@ function init(rendererApi) {
 		markerRemover.remove();
 		scoreboard.hide();
 		rendererApi.clearMarkers();
-	});
 
-	ipcRenderer.on("game-quitted", () => {
-		scoreboard.hide();
-		if ($("#showScoreboard")) $("#showScoreboard").remove();
-		markerRemover.remove();
-		clearMarkers();
+		// Hide in-game-only buttons
+		document.querySelector("#showScoreboard")?.remove();
+		document.querySelector("#satelliteSwitchIcon")?.remove();
+		document.querySelector("#centerSatelliteViewBtn")?.remove();
 	});
 
 	ipcRenderer.on("render-guess", (e, guess) => {
@@ -121,7 +157,7 @@ function init(rendererApi) {
 		rendererApi.clearMarkers();
 	});
 
-	ipcRenderer.on("next-round", (e, isMultiGuess) => {
+	ipcRenderer.on("next-round", (e, isMultiGuess, location) => {
 		scoreboard.checkVisibility();
 		scoreboard.reset(isMultiGuess);
 		scoreboard.showSwitch(true);
@@ -129,6 +165,10 @@ function init(rendererApi) {
 			markerRemover.remove();
 			rendererApi.clearMarkers();
 		}, 1000);
+
+		if (sharedStore.get('isSatellite')) {
+			rendererApi.showSatelliteMap(location);
+		}
 	});
 
 	ipcRenderer.on("switch-on", () => {

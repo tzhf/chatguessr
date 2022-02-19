@@ -1,14 +1,26 @@
 'use strict';
 
 window.chatguessrApi.init({
-    populateMap,
-    clearMarkers,
-    drParseNoCar,
-    drParseNoCompass,
+	populateMap,
+	clearMarkers,
+	drParseNoCar,
+	drParseNoCompass,
+	setSatelliteEnabled,
+	showSatelliteMap,
+	centerSatelliteView,
 })
 
 /** @type {google.maps.Map | undefined} */
 let globalMap = undefined;
+/** @type {google.maps.LatLngLiteral | undefined} */
+let satelliteCenter = undefined;
+/** @type {google.maps.Map | undefined} */
+let satelliteLayer = undefined;
+/** @type {google.maps.Marker | undefined} */
+let satelliteMarker = undefined;
+const satelliteCanvas = document.createElement('div');
+satelliteCanvas.id = 'satelliteCanvas';
+
 hijackMap();
 
 /** @type {google.maps.Marker[]} */
@@ -173,6 +185,59 @@ function hijackMap() {
 			}
 		};
 	});
+}
+
+/** @type {import('./types').RendererApi['setSatelliteEnabled']} */
+function setSatelliteEnabled(isSatellite) {
+  if (!isSatellite) {
+    globalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+  } else {
+    globalMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+  }
+}
+
+/** @type {import('./types').RendererApi['showSatelliteMap']} */
+function showSatelliteMap(location) {
+	satelliteCenter = location;
+	const bounds = {
+		north: location.lat + 1,
+		south: location.lat - 1,
+		west: location.lng - 1,
+		east: location.lng + 1,
+	};
+
+	setTimeout(() => {
+		if (!satelliteCanvas.closest('.game-layout__canvas')) {
+			document.querySelector('.game-layout__canvas').append(satelliteCanvas);
+		}
+
+		satelliteLayer ??= new google.maps.Map(satelliteCanvas, {
+			fullscreenControl: false,
+			mapTypeId: google.maps.MapTypeId.SATELLITE,
+			zoom: 25,
+			minZoom: 10,
+		});
+		satelliteMarker?.setMap(null);
+		satelliteMarker = new google.maps.Marker({
+			position: location,
+			map: satelliteLayer,
+		});
+
+		satelliteLayer.setOptions({
+			center: location,
+			restriction: {
+				latLngBounds: bounds,
+				strictBounds: false,
+			},
+		});
+
+		globalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+	}, 2000);
+}
+
+/** @type {import('./types').RendererApi['centerSatelliteView']} */
+function centerSatelliteView() {
+	satelliteLayer.setCenter(satelliteCenter);
 }
 
 /** @type {import('./types').RendererApi['drParseNoCompass']} */

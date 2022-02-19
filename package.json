@@ -1,5 +1,6 @@
 {
 	"name": "chatguessr",
+	"productName": "Chatguessr",
 	"version": "1.0.9",
 	"description": "Chatbot for Geoguessr",
 	"author": "MrAmericanMike & T.ZHF",
@@ -25,11 +26,11 @@
 		"tmi.js": "^1.8.5"
 	},
 	"devDependencies": {
-		"@electron-forge/cli": "^6.0.0-beta.61",
-		"@electron-forge/maker-deb": "^6.0.0-beta.61",
-		"@electron-forge/maker-rpm": "^6.0.0-beta.61",
-		"@electron-forge/maker-squirrel": "^6.0.0-beta.61",
-		"@electron-forge/maker-zip": "^6.0.0-beta.61",
+		"@electron-forge/cli": "^6.0.0-beta.63",
+		"@electron-forge/maker-deb": "^6.0.0-beta.63",
+		"@electron-forge/maker-squirrel": "^6.0.0-beta.63",
+		"@electron-forge/maker-zip": "^6.0.0-beta.63",
+		"@electron-forge/publisher-github": "^6.0.0-beta.63",
 		"@parcel/transformer-inline-string": "^2.0.0",
 		"@tsconfig/node16": "^1.0.2",
 		"@types/datatables.net-buttons": "^1.4.7",
@@ -41,20 +42,14 @@
 		"@types/node": "^12.20.29",
 		"@types/tmi.js": "^1.8.0",
 		"electron": "^17.0.1",
-		"electron-builder": "^22.13.1",
 		"jest": "^27.3.1",
 		"parcel": "^2.0.0",
 		"typescript": "^4.4.4"
 	},
 	"scripts": {
-		"start": "electron .",
-		"start2": "parcel build --no-optimize && electron-forge start",
+		"start": "parcel build --no-optimize && electron-forge start",
 		"package": "parcel build && electron-forge package",
 		"make": "electron-forge make",
-		"pack": "electron-builder --dir",
-		"postinstall": "electron-builder install-app-deps",
-		"build": "electron-builder build --win --publish never",
-		"deploy": "electron-builder build --win --publish always",
 		"test": "jest"
 	},
 	"config": {
@@ -67,7 +62,8 @@
 				{
 					"name": "@electron-forge/maker-squirrel",
 					"config": {
-						"name": "chatguessr"
+						"name": "chatguessr",
+						"iconUrl": "build/icon.ico"
 					}
 				},
 				{
@@ -79,10 +75,17 @@
 				{
 					"name": "@electron-forge/maker-deb",
 					"config": {}
-				},
+				}
+			],
+			"publishers": [
 				{
-					"name": "@electron-forge/maker-rpm",
-					"config": {}
+					"name": "@electron-forge/publisher-github",
+					"config": {
+						"repository": {
+							"owner": "tzhf",
+							"name": "chatguessr"
+						}
+					}
 				}
 			]
 		}
@@ -107,24 +110,5 @@
 			"source": "./src/Windows/settings/settings.html",
 			"publicUrl": "."
 		}
-	},
-	"build": {
-		"appId": "com.tzhf.chatguessr",
-		"productName": "Chatguessr",
-		"win": {
-			"target": "nsis",
-			"icon": "build/icon.ico"
-		},
-		"nsis": {
-			"deleteAppDataOnUninstall": true
-		},
-		"publish": [
-			{
-				"provider": "github",
-				"owner": "tzhf",
-				"repo": "chatguessr",
-				"private": false
-			}
-		]
 	}
 }

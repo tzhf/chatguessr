@@ -172,7 +172,7 @@ function hijackMap() {
 
 		google.maps.Map = class extends google.maps.Map {
 			/**
-			 * @param {Element} mapDiv 
+			 * @param {HTMLElement} mapDiv 
 			 * @param {google.maps.MapOptions} opts 
 			 */
 			constructor(mapDiv, opts) {
@@ -201,6 +201,7 @@ function showSatelliteMap(location) {
 		if (!satelliteCanvas.closest('.game-layout__canvas')) {
 			document.querySelector('.game-layout__canvas').append(satelliteCanvas);
 		}
+		satelliteCanvas.style.display = 'block';
 
 		satelliteLayer ??= new google.maps.Map(satelliteCanvas, {
 			fullscreenControl: false,
@@ -229,6 +230,7 @@ function showSatelliteMap(location) {
 /** @type {import('./types').RendererApi['hideSatelliteMap']} */
 function hideSatelliteMap() {
 	globalMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+	satelliteCanvas.style.display = 'none';
 }
 
 /** @type {import('./types').RendererApi['centerSatelliteView']} */

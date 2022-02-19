@@ -5,8 +5,8 @@ window.chatguessrApi.init({
 	clearMarkers,
 	drParseNoCar,
 	drParseNoCompass,
-	setSatelliteEnabled,
 	showSatelliteMap,
+	hideSatelliteMap,
 	centerSatelliteView,
 })
 
@@ -187,15 +187,6 @@ function hijackMap() {
 	});
 }
 
-/** @type {import('./types').RendererApi['setSatelliteEnabled']} */
-function setSatelliteEnabled(isSatellite) {
-  if (!isSatellite) {
-    globalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
-  } else {
-    globalMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
-  }
-}
-
 /** @type {import('./types').RendererApi['showSatelliteMap']} */
 function showSatelliteMap(location) {
 	satelliteCenter = location;
@@ -233,6 +224,11 @@ function showSatelliteMap(location) {
 
 		globalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
 	}, 2000);
+}
+
+/** @type {import('./types').RendererApi['hideSatelliteMap']} */
+function hideSatelliteMap() {
+	globalMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
 }
 
 /** @type {import('./types').RendererApi['centerSatelliteView']} */

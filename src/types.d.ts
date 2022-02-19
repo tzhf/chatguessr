@@ -89,8 +89,8 @@ export interface RendererApi {
     clearMarkers();
     drParseNoCar(enable: boolean);
     drParseNoCompass(enable: boolean);
-    setSatelliteEnabled(isSatellite: boolean);
     showSatelliteMap(location: LatLng);
+    hideSatelliteMap();
     centerSatelliteView();
 }
 

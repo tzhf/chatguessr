@@ -65,6 +65,8 @@ function init(rendererApi) {
 		}
 	});
 
+	/** @type {LatLng|undefined} */
+	let currentLocation;
 	const satelliteSwitchIcon = document.createElement("div");
 	satelliteSwitchIcon.setAttribute("title", "Switch to Satellite View");
 	satelliteSwitchIcon.id = "satelliteSwitchIcon";
@@ -72,13 +74,14 @@ function init(rendererApi) {
 	satelliteSwitchIcon.addEventListener("click", () => {
 		const isSatellite = !sharedStore.get('isSatellite');
 		sharedStore.set('isSatellite', isSatellite);
-		rendererApi.setSatelliteEnabled(isSatellite);
 
 		if (isSatellite) {
+			rendererApi.showSatelliteMap(currentLocation);
 			satelliteSwitchIcon.innerHTML = "<span>🛰️</span>";
 			satelliteSwitchIcon.setAttribute("title", "Switch to StreetView");
 			centerSatelliteViewBtn.style.display = "flex";
 		} else {
+			rendererApi.hideSatelliteMap();
 			satelliteSwitchIcon.innerHTML = "<span>🏡</span>";
 			satelliteSwitchIcon.setAttribute("title", "Switch to Satellite View");
 			centerSatelliteViewBtn.style.display = "none";
@@ -94,6 +97,7 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("game-started", (e, isMultiGuess, restoredGuesses, location) => {
+		currentLocation = location;
 		if (sharedStore.get('isSatellite')) {
 			centerSatelliteViewBtn.style.display = "flex";
 			rendererApi.showSatelliteMap(location)
@@ -158,6 +162,7 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("next-round", (e, isMultiGuess, location) => {
+		currentLocation = location;
 		scoreboard.checkVisibility();
 		scoreboard.reset(isMultiGuess);
 		scoreboard.showSwitch(true);

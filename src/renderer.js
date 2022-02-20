@@ -210,12 +210,13 @@ async function showSatelliteMap(location) {
 		minZoom: 10,
 	});
 	satelliteLayer.setOptions({
-		center: location,
 		restriction: {
 			latLngBounds: bounds,
 			strictBounds: false,
 		},
 	});
+	satelliteLayer.setCenter(location);
+	satelliteLayer.setZoom(25);
 	satelliteMarker?.setMap(null);
 	satelliteMarker = new google.maps.Marker({
 		position: location,

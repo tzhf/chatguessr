@@ -66,7 +66,6 @@ function populateMap(location, scores) {
 			icon,
 			map,
 			label: { color: "#000", fontWeight: "bold", fontSize: "16px", text: `${index + 1}` },
-			clickable: false,
 			optimized: true,
 		});
 		guessMarker.addListener("mouseover", () => {

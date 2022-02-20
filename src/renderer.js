@@ -71,7 +71,7 @@ function populateMap(location, scores) {
 		guessMarker.addListener("mouseover", () => {
 			infowindow.setContent(`
 				<p class="gm-iw__content">
-					<span style="font-size:14px;">${score.flag ? `<span class="flag-icon flag-icon-${score.flag}"></span>` : ""}${score.username}</span><br>
+					<span style="font-size:14px;">${score.flag ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>` : ""}${score.username}</span><br>
 					${score.distance >= 1 ? score.distance.toFixed(1) + "km" : Math.floor(score.distance * 1000) + "m"}<br>
 					${score.score}
 				</p>

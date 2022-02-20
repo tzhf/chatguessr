@@ -9,8 +9,6 @@ const { autoUpdater } = require("electron-updater");
 const GameHandler = require("./GameHandler");
 const flags = require('./utils/flags');
 const Database = require('./utils/Database');
-const store = require('./utils/sharedStore');
-const Settings = require('./utils/Settings');
 
 /** @type {import('electron').BrowserWindow} */
 let mainWindow;

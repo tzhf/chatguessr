@@ -334,6 +334,7 @@ function drParseNoCar(noCar) {
 			if (args[0] === "webgl" || args[0] === "webgl2") {
 				/** @type {WebGLRenderingContext | WebGL2RenderingContext} */
 				const ctx = g.apply(this, args);
+				// @ts-ignore TS2339
 				if (ctx && ctx.shaderSource && ctx.shaderSource.bestcity !== "bintulu") {
 					installShaderSource(ctx);
 				}
@@ -344,12 +345,12 @@ function drParseNoCar(noCar) {
 	}
 
 	const createElement = document.createElement.bind(document);
-	document.createElement = function (...args) {
-		if (args[0] === "canvas" || args[0] === "CANVAS") {
+	document.createElement = function (tagName, options) {
+		if (tagName === "canvas" || tagName === "CANVAS") {
 			const el = createElement('canvas');
 			installGetContext(el);
 			return el;
 		}
-		return createElement(...args);
+		return createElement(tagName, options);
 	};
 }

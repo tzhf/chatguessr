@@ -346,7 +346,7 @@ class GameHandler {
 		if (message === settings.userClearStatsCmd) {
 			// @ts-ignore
 			store.delete(`users.${userstate.username}`);
-		
+
 			const dbUser = this.#db.getUser(userId);
 			if (dbUser) {
 				this.#db.resetUserStats(dbUser.id);

@@ -2,7 +2,7 @@
 
 const Database = require('./Database');
 /** @type {import('./sharedStore') & { setData: (object: any) => void }} */
-const store = (/** @type {unknown} */ require('./sharedStore'));
+const store = (/** @type {any} */ (require('./sharedStore')));
 const { getOrMigrateUser, getGlobalStats, getUserStats } = require('./legacyStoreFacade');
 
 jest.mock('./sharedStore');

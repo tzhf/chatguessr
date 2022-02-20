@@ -138,6 +138,7 @@ function closeWindow() {
 
 function openTab(e, tab) {
 	for (const el of document.querySelectorAll(".tabcontent")) {
+		// @ts-ignore TS2339
 		el.style.display = "none";
 	}
 	for (const el of document.querySelectorAll(".tablinks")) {
@@ -147,4 +148,5 @@ function openTab(e, tab) {
 	e.currentTarget.classList.add('active');
 }
 
+// @ts-ignore TS2339
 document.querySelector("#defaultOpen").click();

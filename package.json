@@ -52,6 +52,7 @@
 		"start": "parcel build --no-optimize && electron-forge start",
 		"package": "parcel build && electron-forge package",
 		"make": "electron-forge make",
+		"typecheck": "tsc --noEmit",
 		"test": "jest"
 	},
 	"config": {

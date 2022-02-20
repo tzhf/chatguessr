@@ -528,8 +528,8 @@ class Database {
 
     /**
      * 
-     * @param {*} record 
-     * @returns {{ id: string, username: string, flag: string, previousGuess: LatLng, lastLocation: LatLng, resetAt: number }}
+     * @param {Record<string, any>} record 
+     * @returns {{ id: string, username: string, flag: string|null, previousGuess: LatLng, lastLocation: LatLng, resetAt: number }}
      */
     #parseUser(record) {
         return {

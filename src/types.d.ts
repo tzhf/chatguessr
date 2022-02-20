@@ -6,7 +6,7 @@ export type Guess = {
     user: string,
     username: string,
     color: string,
-    flag: string,
+    flag: string|null,
     position: LatLng,
     streak: number,
     distance: number,

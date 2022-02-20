@@ -71,9 +71,11 @@ function randomCountryFlag() {
 /**
  * Convert a flag to an emoji. Custom flags are excluded and instead get the empty string.
  * 
- * @param {string} value
+ * @param {string|null} value
  */
 function getEmoji(value) {
+  if (!value) return '';
+
   if (!countryFlagCodes.has(value.toLowerCase())) {
     return customFlags.find((flag) => flag.code === value.toLowerCase())?.emoji ?? '';
   }

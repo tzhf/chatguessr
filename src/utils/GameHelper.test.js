@@ -16,9 +16,10 @@ describe('parseCoordinates', () => {
 		.toBeTruthy();
 	});
 	it("Checks if '-30.12345, -50.54321' are valid coordinates >> true", () => {
-		const { lat, lng } = GameHelper.parseCoordinates("-30.12345, -50.54321")
-		expect(lat).toBeCloseTo(-30.12345, 4);
-		expect(lng).toBeCloseTo(-50.54321, 4);
+		const coord = GameHelper.parseCoordinates("-30.12345, -50.54321")
+		expect(coord).toBeDefined();
+		expect(coord.lat).toBeCloseTo(-30.12345, 4);
+		expect(coord.lng).toBeCloseTo(-50.54321, 4);
 	});
 	it("Checks if '-30.12345,-50.54321' are valid coordinates >> true", () => {
 		expect(

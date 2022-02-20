@@ -9,6 +9,7 @@ function timestamp() {
     return Math.floor(Date.now() / 1000);
 }
 
+// NEVER modify existing migrations, ONLY add new ones.
 /** @type {((db: SQLite.Database) => void)[]} */
 const migrations = [
     function initialSetup(db) {
@@ -622,15 +623,14 @@ class Database {
      * @param {string} userId 
      */
     getUserStats(userId) {
-        // TODO implement victories
         const stmt = this.#db.prepare(`
             SELECT
                 username,
                 flag,
                 COALESCE(current_streak.count, 0) AS current_streak,
                 (SELECT MAX(count) FROM streaks WHERE user_id = :id AND updated_at > users.reset_at) AS best_streak,
-                (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND created_at > users.created_at) AS total_guesses,
-                (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND streak > 0 AND created_at > users.created_at) AS correct_guesses,
+                (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND created_at > users.reset_at) AS total_guesses,
+                (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND streak > 0 AND created_at > users.reset_at) AS correct_guesses,
                 (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND score = 5000 AND created_at > users.reset_at) AS perfects,
                 (SELECT AVG(score) FROM guesses WHERE user_id = users.id AND created_at > users.reset_at) AS average,
                 (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id) AS victories

@@ -198,7 +198,7 @@ async function showSatelliteMap(location) {
 		east: location.lng + 1,
 	};
 
-	if (!satelliteCanvas.closest('.game-layout__canvas')) {
+	if (!document.body.contains(satelliteCanvas)) {
 		document.querySelector('.game-layout__canvas').append(satelliteCanvas);
 	}
 	satelliteCanvas.style.display = 'block';

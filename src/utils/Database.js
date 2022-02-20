@@ -636,11 +636,11 @@ class Database {
                 (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id) AS victories
             FROM users
             LEFT JOIN streaks current_streak ON current_streak.id = users.current_streak_id
-            WHERE users.id = ?
+            WHERE users.id = :id
         `);
 
         /** @type {{ username: string, flag: string, current_streak: number, best_streak: number, total_guesses: number, correct_guesses: number, perfects: number, average: number, victories: number } | undefined} */
-        const record = stmt.get(userId);
+        const record = stmt.get({ id: userId });
         return record ? {
             username: record.username,
             flag: record.flag,

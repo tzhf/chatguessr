@@ -1,6 +1,6 @@
 [
 	{ "code": "ad", "names": "Andorra" },
-	{ "code": "ae", "names": "United Arab Emirates, UAE" },
+	{ "code": "ae", "names": "UAE, United Arab Emirates" },
 	{ "code": "af", "names": "Afghanistan" },
 	{ "code": "ag", "names": "Antigua and Barbuda" },
 	{ "code": "ai", "names": "Anguilla" },
@@ -81,7 +81,7 @@
 	{ "code": "fr", "names": "France" },
 	{ "code": "frcor", "names": "Corsica, Corse" },
 	{ "code": "ga", "names": "Gabon" },
-	{ "code": "gb", "names": "Great Britain, United Kingdom, UK" },
+	{ "code": "gb", "names": "UK, Great Britain, United Kingdom" },
 	{ "code": "gbeng", "names": "England" },
 	{ "code": "gbsct", "names": "Scotland" },
 	{ "code": "gbwls", "names": "Wales" },

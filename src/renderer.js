@@ -109,6 +109,7 @@ function clearMarkers() {
 }
 
 async function hijackMap() {
+	console.log('hijacking map');
 	const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
 	await new Promise((resolve) => {
 		let scriptObserver = new MutationObserver((mutations, observer) => {

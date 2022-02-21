@@ -21,11 +21,14 @@ function mainWindow() {
 	});
 	win.setMenuBarVisibility(false);
 
+	console.log('first load');
 	win.loadURL("https://www.geoguessr.com/classic").then(() => {
+		console.log('second load');
 		// to investigate: loading it a second time seems to resolve map dragging lag issue
 		win.loadURL("https://www.geoguessr.com/classic");
 
 		win.webContents.on('dom-ready', async () => {
+			console.log('dom-ready');
 			await win.webContents.insertCSS(styles);
 			await win.webContents.executeJavaScript(js);
 		});

@@ -21,7 +21,6 @@ contextBridge.exposeInMainWorld('chatguessrApi', chatguessrApi);
  * @param {import('./types').RendererApi} rendererApi 
  */
 function init(rendererApi) {
-	console.log('ChatguessrApi#init');
 	const Scoreboard = require("./Classes/Scoreboard");
 	const Settings = require("./utils/Settings");
 	const sharedStore = require('./utils/sharedStore');

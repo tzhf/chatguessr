@@ -1,4 +1,48 @@
-const ipcRenderer = require("electron").ipcRenderer;
+'use strict';
+
+// Parcel prevents us from `require`ing things in a "standard" script
+// and ONLY wants to output ES modules in a module. We must use `require`
+// for electron reasons. This hack prevents Parcel from seeing what we're
+// doing.
+/** @type {typeof require} */
+// @ts-ignore
+const secretRequire = (0, eval('require'));
+const { ipcRenderer } = secretRequire("electron");
+
+/** @type {HTMLInputElement} */
+const channelName = document.querySelector('#channelName')
+/** @type {HTMLInputElement} */
+const botUsername = document.querySelector('#botUsername')
+/** @type {HTMLInputElement} */
+const twitchToken = document.querySelector('#twitchToken')
+/** @type {HTMLInputElement} */
+const cgCmd = document.querySelector('#cgCmd')
+/** @type {HTMLInputElement} */
+const cgMsg = document.querySelector('#cgMsg')
+/** @type {HTMLInputElement} */
+const userGetStatsCmd = document.querySelector('#userGetStatsCmd')
+/** @type {HTMLInputElement} */
+const userClearStatsCmd = document.querySelector('#userClearStatsCmd')
+/** @type {HTMLInputElement} */
+const setStreakCmd = document.querySelector('#setStreakCmd')
+/** @type {HTMLInputElement} */
+const showHasGuessed = document.querySelector('#showHasGuessed')
+/** @type {HTMLInputElement} */
+const isMultiGuess = document.querySelector('#isMultiGuess')
+/** @type {HTMLInputElement} */
+const noCar = document.querySelector('#noCar')
+/** @type {HTMLInputElement} */
+const noCompass = document.querySelector('#noCompass')
+/** @type {HTMLInputElement} */
+const cgLink = document.querySelector('#cgLink')
+/** @type {HTMLElement} */
+const cgLinkContainer = document.querySelector('#cgLinkContainer')
+/** @type {HTMLButtonElement} */
+const copyLinkBtn = document.querySelector('#copyLinkBtn')
+/** @type {HTMLElement} */
+const twitchStatusElement = document.querySelector('#twitchStatus')
+/** @type {HTMLButtonElement} */
+const clearStatsBtn = document.querySelector('#clearStatsBtn')
 
 ipcRenderer.on("render-settings", (e, settings, twitchStatus) => {
 	channelName.value = settings.channelName;
@@ -30,8 +74,8 @@ ipcRenderer.on("twitch-disconnected", () => {
 });
 
 ipcRenderer.on("twitch-error", (e, error) => {
-	twitchStatus.textContent = error;
-	twitchStatus.style.color = "#ed2453";
+	twitchStatusElement.textContent = error;
+	twitchStatusElement.style.color = "#ed2453";
 });
 
 const twitchConnected = (botUsername) => {
@@ -47,21 +91,21 @@ const twitchConnected = (botUsername) => {
 	});
 
 	cgLinkContainer.style.display = "block";
-	twitchStatus.textContent = "Connected";
-	twitchStatus.style.color = "#3fe077";
+	twitchStatusElement.textContent = "Connected";
+	twitchStatusElement.style.color = "#3fe077";
 };
 
 const twitchDisconnected = () => {
 	cgLinkContainer.style.display = "none";
-	twitchStatus.textContent = "Disconnected";
-	twitchStatus.style.color = "#ed2453";
+	twitchStatusElement.textContent = "Disconnected";
+	twitchStatusElement.style.color = "#ed2453";
 };
 
-const gameSettingsForm = () => {
+function gameSettingsForm() {
 	ipcRenderer.send("game-form", isMultiGuess.checked, noCar.checked, noCompass.checked);
-};
+}
 
-const twitchCommandsForm = () => {
+function twitchCommandsForm() {
 	ipcRenderer.send("twitch-commands-form", {
 		cgCmdd: cgCmd.value,
 		cgMsgg: cgMsg.value,
@@ -70,38 +114,39 @@ const twitchCommandsForm = () => {
 		setStreak: setStreakCmd.value,
 		showHasGuessed: showHasGuessed.checked,
 	});
-};
+}
 
-const twitchSettingsForm = (e) => {
+function twitchSettingsForm(e) {
 	e.preventDefault();
 	ipcRenderer.send("twitch-settings-form", channelName.value, botUsername.value, twitchToken.value);
-};
+}
 
-const clearStats = () => {
+function clearStats() {
 	clearStatsBtn.value = "Are you sure ?";
 	clearStatsBtn.setAttribute("onclick", "clearStatsConfirm()");
-};
+}
 
-const clearStatsConfirm = () => {
+function clearStatsConfirm() {
 	clearStatsBtn.value = "Clear all stats";
 	clearStatsBtn.setAttribute("onclick", "clearStats()");
 	ipcRenderer.send("clearStats");
-};
+}
 
-const closeWindow = () => {
+function closeWindow() {
 	ipcRenderer.send("closeSettings");
-};
+}
 
-const openTab = (e, tab) => {
-	const tabcontent = document.getElementsByClassName("tabcontent");
-	for (let i = 0; i < tabcontent.length; i++) {
-		tabcontent[i].style.display = "none";
+function openTab(e, tab) {
+	for (const el of document.querySelectorAll(".tabcontent")) {
+		// @ts-ignore TS2339
+		el.style.display = "none";
 	}
-	const tablinks = document.getElementsByClassName("tablinks");
-	for (let i = 0; i < tablinks.length; i++) {
-		tablinks[i].className = tablinks[i].className.replace(" active", "");
+	for (const el of document.querySelectorAll(".tablinks")) {
+		el.classList.remove('active');
 	}
 	document.getElementById(tab).style.display = "block";
-	e.currentTarget.className += " active";
-};
-document.getElementById("defaultOpen").click();
+	e.currentTarget.classList.add('active');
+}
+
+// @ts-ignore TS2339
+document.querySelector("#defaultOpen").click();

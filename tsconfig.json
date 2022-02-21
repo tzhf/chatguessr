@@ -1,0 +1,23 @@
+{
+	"extends": "@tsconfig/node16",
+	"compilerOptions": {
+		"lib": ["es2021", "dom", "dom.iterable"],
+		"noEmit": true,
+		"strict": false,
+		"allowJs": true,
+		"checkJs": true,
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"allowSyntheticDefaultImports": true
+	},
+	"include": [
+		"src/modules.d.ts",
+		"src/types.d.ts",
+		"src/**/*.js",
+		"src/utils/countryCodes.json",
+		"src/utils/countryCodesNames.json"
+	],
+	"exclude": [
+		"src/utils/unityscript.js"
+	]
+}

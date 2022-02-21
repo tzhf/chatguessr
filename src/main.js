@@ -1,28 +1,59 @@
-const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
+'use strict';
+
+require('./errorReporting');
+
+const path = require('path');
+const { app, ipcMain, globalShortcut, protocol } = require("electron");
+const { initRenderer } = require('electron-store');
 const { autoUpdater } = require("electron-updater");
-
 const GameHandler = require("./GameHandler");
+const flags = require('./utils/flags');
+const Database = require('./utils/Database');
 
-app.whenReady().then(() => init());
+/** @type {import('electron').BrowserWindow} */
+let mainWindow;
 
-app.on("activate", () => {
-	if (BrowserWindow.getAllWindows().length === 0) {
-		startServer();
-	}
-});
+if (require('electron-squirrel-startup')) {
+	app.quit();
+}
+
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
 		app.quit();
 	}
 });
 
-let mainWindow;
-function init() {
+const db = new Database(path.join(app.getPath('userData'), 'scores.db'));
+
+function serveAssets() {
+	const assetDir = path.join(__dirname, '../../assets');
+	protocol.interceptFileProtocol('asset', (request, callback) => {
+		const assetFile = path.join(assetDir, new URL(request.url).pathname);
+		if (!assetFile.startsWith(assetDir)) {
+			callback({ statusCode: 404, data: 'Not Found' });
+		} else {
+			callback({ path: assetFile });
+		}
+	});
+}
+
+async function serveFlags() {
+	await flags.load();
+
+	protocol.interceptFileProtocol('flag', async (request, callback) => {
+		const name = request.url.replace(/^flag:/, '');
+		try {
+			callback(await flags.findFlagFile(name));
+		} catch (err) {
+			callback({ statusCode: 500, data: err.message });
+		}
+	});
+}
+
+function initWindow() {
 	mainWindow = require("./Windows/MainWindow");
 	mainWindow.once("ready-to-show", () => {
 		mainWindow.maximize();
-		// to investigate: loading it a second time seems to resolve map dragging lag issue
-		mainWindow.loadURL("https://www.geoguessr.com/classic");
 		setTimeout(() => {
 			autoUpdater.checkForUpdatesAndNotify();
 		}, 2000);
@@ -31,12 +62,26 @@ function init() {
 	const settingsWindow = require("./Windows/settings/SettingsWindow");
 	settingsWindow.setParentWindow(mainWindow);
 
-	const gameHandler = new GameHandler(mainWindow, settingsWindow);
+	const gameHandler = new GameHandler(db, mainWindow, settingsWindow);
 
 	globalShortcut.register("CommandOrControl+R", () => false);
 	globalShortcut.register("CommandOrControl+Shift+R", () => false);
-	globalShortcut.register("CommandOrControl+P", () => gameHandler.openSettingsWindow());
-	globalShortcut.register("Escape", () => settingsWindow.hide());
+	globalShortcut.register("CommandOrControl+P", () => {
+		gameHandler.openSettingsWindow();
+	});
+	globalShortcut.register("Escape", () => {
+		settingsWindow.hide();
+	});
+}
+
+async function init() {
+	initRenderer();
+	await app.whenReady();
+
+	serveAssets();
+	await serveFlags();
+
+	initWindow();
 }
 
 // Auto Updater
@@ -66,3 +111,5 @@ ipcMain.on("restart_app", () => {
 ipcMain.on("close_update_window", () => {
 	updateWindow.hide();
 });
+
+init();

@@ -61,16 +61,6 @@ async function getCountryCode(location) {
   const localResults = countryIso.get(location.lat, location.lng);
   const localIso = localResults.length > 0 ? iso3to2(localResults[0]) : undefined;
 
-  // do we even need this fallback?
-  // const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode');
-  // url.searchParams.append('latitude', `${location.lat}`);
-  // url.searchParams.append('longitude', `${location.lng}`);
-  // url.searchParams.append('key', process.env.BDC_KEY);
-
-  // /** @type {import("axios").AxiosResponse<{ countryCode: string }>} */
-  // const res = await axios.get(url.toString());
-  // const remoteIso = res.data.countryCode === '__' ? undefined : res.data.countryCode;
-  
   return localIso ? countryCodes[localIso] : undefined;
 }
 
@@ -125,7 +115,6 @@ function haversineDistance(mk1, mk2) {
 
 /**
  * Returns score based on distance and scale
- * FIXME this modifies the input
  * @param {number} distance
  * @param {number} scale
  * @return {number} score

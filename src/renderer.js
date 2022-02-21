@@ -108,49 +108,73 @@ function clearMarkers() {
 	polylines = [];
 }
 
-async function hijackMap() {
-	console.log('hijacking map');
-	const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
-	await new Promise((resolve) => {
-		let scriptObserver = new MutationObserver((mutations, observer) => {
-			for (const mutation of mutations) {
-				for (const tmp of mutation.addedNodes) {
-					/** @type {HTMLScriptElement} */
-					// @ts-ignore
-					const node = tmp;
-					if (node.tagName === "SCRIPT" && node.src.startsWith(MAPS_API_URL)) {
-						node.onload = () => {
-							observer.disconnect();
-							resolve(undefined);
-						};
-					}
-				}
-			}
-		});
 
+async function hijackMap() {
+	const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
+	const MAPS_SCRIPT_SELECTOR = `script[src^="${MAPS_API_URL}"]`;
+	await new Promise((resolve) => {
 		let bodyDone = false;
 		let headDone = false;
 
-		new MutationObserver((_, observer) => {
+		function checkBodyDone() {
 			if (!bodyDone && document.body) {
-				if (scriptObserver) {
-					scriptObserver.observe(document.body, { childList: true });
-					bodyDone = true;
-				}
+				scriptObserver.observe(document.body, { childList: true });
+				bodyDone = true;
 			}
+		}
+		function checkHeadDone() {
 			if (!headDone && document.head) {
-				if (scriptObserver) {
-					scriptObserver.observe(document.head, { childList: true });
-					headDone = true;
+				scriptObserver.observe(document.head, { childList: true });
+				headDone = true;
+			}
+		}
+
+		/**
+		 * Check if `element` is a Google Maps script tag and resolve the outer Promise if so.
+		 * @param {HTMLElement} element
+		 */
+		function checkMapsScript(element) {
+			if (element.matches(MAPS_SCRIPT_SELECTOR)) {
+				const onload = () => {
+					pageObserver.disconnect();
+					scriptObserver.disconnect();
+					resolve(undefined);
+				};
+				// It may already be loaded :O
+				if (typeof google !== 'undefined' && google?.maps?.Map) {
+					onload();
+				} else {
+					element.addEventListener('load', onload);
 				}
 			}
+		}
+
+		const scriptObserver = new MutationObserver((mutations, observer) => {
+			for (const mutation of mutations) {
+				for (const tmp of mutation.addedNodes) {
+					checkMapsScript(tmp);
+				}
+			}
+		});
+		const pageObserver = new MutationObserver((_, observer) => {
+			checkBodyDone();
+			checkHeadDone();
 			if (headDone && bodyDone) {
 				observer.disconnect();
 			}
-		}).observe(document.documentElement, {
+		});
+
+		pageObserver.observe(document.documentElement, {
 			childList: true,
 			subtree: true,
 		});
+
+		// Do an initial check, we may be running in a fully loaded game already.
+		checkBodyDone();
+		checkHeadDone();
+		/** @type {HTMLElement|undefined} */
+		const existingTag = document.querySelector(MAPS_SCRIPT_SELECTOR);
+		if (existingTag) checkMapsScript(existingTag);
 	});
 
 	await new Promise((resolve, reject) => {

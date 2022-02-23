@@ -16,7 +16,7 @@ function updateWindow() {
 		},
 	});
 	win.setMenuBarVisibility(false);
-	win.loadURL(path.join(__dirname, "./update.html"));
+	win.loadURL(`file://${path.join(__dirname, "./update.html")}`);
 
 	return win;
 }

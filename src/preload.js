@@ -17,6 +17,9 @@ const chatguessrApi = {
 
 contextBridge.exposeInMainWorld('chatguessrApi', chatguessrApi);
 
+const REMOVE_ALL_MARKERS_CSS = '[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"] { display: none; }';
+const REMOVE_GUESS_MARKERS_CSS = '[data-qa="result-view-top"] [data-qa="guess-marker"] { display: none; }';
+
 /**
  * @param {import('./types').RendererApi} rendererApi 
  */
@@ -28,7 +31,7 @@ function init(rendererApi) {
 	rendererApi.drParseNoCar(noCar);
 
 	const markerRemover = document.createElement("style");
-	markerRemover.textContent = '[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"] { display: none; }';
+	markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
 
 	const iconsColumn = document.createElement("div");
 	iconsColumn.classList.add("iconsColumn");
@@ -97,7 +100,9 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("game-started", (e, isMultiGuess, restoredGuesses, location) => {
-		document.body.append(markerRemover);
+		markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
+		document.head.append(markerRemover);
+
 		currentLocation = location;
 		if (sharedStore.get('isSatellite')) {
 			centerSatelliteViewBtn.style.display = "flex";
@@ -153,6 +158,7 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("show-final-results", (e, totalScores) => {
+		markerRemover.textContent = REMOVE_GUESS_MARKERS_CSS;
 		scoreboard.setTitle("HIGHSCORES");
 		scoreboard.showSwitch(false);
 		scoreboard.displayScores(totalScores, true);

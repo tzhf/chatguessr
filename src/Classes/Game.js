@@ -8,7 +8,6 @@ const legacyStoreFacade = require('../utils/legacyStoreFacade');
 /** @typedef {import('../types').LatLng} LatLng */
 /** @typedef {import('../types').Seed} Seed */
 /** @typedef {import('../types').Guess} Guess */
-/** @typedef {import("../Windows/MainWindow")} MainWindow */
 /** @typedef {import('../utils/Settings')} Settings */
 
 /**
@@ -60,12 +59,10 @@ class Game {
 
 	/**
 	 * @param {import('../utils/Database')} db
-	 * @param {MainWindow} win
 	 * @param {Settings} settings
 	 */
-	constructor(db, win, settings) {
+	constructor(db, settings) {
 		this.#db = db;
-		this.win = win;
 		this.#settings = settings;
 		/** @type {LatLng | undefined} */
 		this.lastLocation = store.get("lastLocation", undefined);
@@ -124,7 +121,6 @@ class Game {
 		const newSeed = await this.#getSeed();
 		// If a guess has been comitted, process streamer guess then return scores
 		if (this.#streamerHasGuessed(newSeed)) {
-			this.win.webContents.send("pre-round-results"); // TODO maybe the renderer side can figure this out on its own
 			this.closeGuesses();
 
 			this.seed = newSeed;

@@ -50,7 +50,7 @@ class GameHandler {
 		this.#win = win;
 		this.#settingsWindow = settingsWindow;
 		this.#twitch = new TwitchClient(settings.channelName, settings.botUsername, settings.token);
-		this.#game = new Game(db, win, settings);
+		this.#game = new Game(db, settings);
 		this.#initTmi();
 		this.init();
 	}

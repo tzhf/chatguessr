@@ -28,7 +28,7 @@ function init(rendererApi) {
 	rendererApi.drParseNoCar(noCar);
 
 	const markerRemover = document.createElement("style");
-	markerRemover.textContent = ".map-pin { display: none; }";
+	markerRemover.textContent = '[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"] { display: none; }';
 
 	const iconsColumn = document.createElement("div");
 	iconsColumn.classList.add("iconsColumn");
@@ -97,6 +97,7 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("game-started", (e, isMultiGuess, restoredGuesses, location) => {
+		document.body.append(markerRemover);
 		currentLocation = location;
 		if (sharedStore.get('isSatellite')) {
 			centerSatelliteViewBtn.style.display = "flex";
@@ -144,10 +145,6 @@ function init(rendererApi) {
 		scoreboard.renderMultiGuess(guesses);
 	});
 
-	ipcRenderer.on("pre-round-results", () => {
-		document.body.append(markerRemover);
-	});
-
 	ipcRenderer.on("show-round-results", (e, round, location, scores) => {
 		scoreboard.setTitle(`ROUND ${round} RESULTS`);
 		scoreboard.displayScores(scores);
@@ -156,7 +153,6 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("show-final-results", (e, totalScores) => {
-		document.body.append(markerRemover);
 		scoreboard.setTitle("HIGHSCORES");
 		scoreboard.showSwitch(false);
 		scoreboard.displayScores(totalScores, true);
@@ -169,7 +165,6 @@ function init(rendererApi) {
 		scoreboard.reset(isMultiGuess);
 		scoreboard.showSwitch(true);
 		setTimeout(() => {
-			markerRemover.remove();
 			rendererApi.clearMarkers();
 		}, 1000);
 

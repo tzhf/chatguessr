@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-require('./errorReporting');
+require("./errorReporting");
 
 const { contextBridge, ipcRenderer } = require("electron");
 
@@ -11,22 +11,22 @@ const { contextBridge, ipcRenderer } = require("electron");
 const chatguessrApi = {
 	init,
 	startNextRound() {
-		ipcRenderer.send('next-round-click');
+		ipcRenderer.send("next-round-click");
 	},
 };
 
-contextBridge.exposeInMainWorld('chatguessrApi', chatguessrApi);
+contextBridge.exposeInMainWorld("chatguessrApi", chatguessrApi);
 
 const REMOVE_ALL_MARKERS_CSS = '[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"] { display: none; }';
 const REMOVE_GUESS_MARKERS_CSS = '[data-qa="result-view-top"] [data-qa="guess-marker"] { display: none; }';
 
 /**
- * @param {import('./types').RendererApi} rendererApi 
+ * @param {import('./types').RendererApi} rendererApi
  */
 function init(rendererApi) {
 	const Scoreboard = require("./Classes/Scoreboard");
 	const Settings = require("./utils/Settings");
-	const sharedStore = require('./utils/sharedStore');
+	const sharedStore = require("./utils/sharedStore");
 	const { noCar } = Settings.read();
 	rendererApi.drParseNoCar(noCar);
 
@@ -37,10 +37,7 @@ function init(rendererApi) {
 	iconsColumn.classList.add("iconsColumn");
 	document.body.append(iconsColumn);
 
-	const settingsIcon = document.createElement("div");
-	settingsIcon.setAttribute("title", "Settings (ctrl+p)");
-	settingsIcon.id = "settingsIcon";
-	settingsIcon.innerHTML = "<span>⚙️</span>";
+	const settingsIcon = createDivElement("settingsIcon", "Settings (ctrl+p)", "<span>⚙️</span>");
 	settingsIcon.addEventListener("click", () => {
 		ipcRenderer.send("openSettings");
 	});
@@ -50,10 +47,7 @@ function init(rendererApi) {
 	scoreboardContainer.setAttribute("id", "scoreboardContainer");
 	document.body.append(scoreboardContainer);
 
-	const showScoreboard = document.createElement("div");
-	showScoreboard.setAttribute("title", "Show scoreboard");
-	showScoreboard.id = "showScoreboard";
-	showScoreboard.innerHTML = "<span>👁️‍🗨️</span>";
+	const showScoreboard = createDivElement("showScoreboard", "Show scoreboard", "<span>👁️‍🗨️</span>");
 	showScoreboard.addEventListener("click", () => {
 		scoreboard.setVisibility();
 	});
@@ -61,22 +55,20 @@ function init(rendererApi) {
 	const scoreboard = new Scoreboard(scoreboardContainer, {
 		onToggleGuesses(open) {
 			if (open) {
-				ipcRenderer.send('open-guesses');
+				ipcRenderer.send("open-guesses");
 			} else {
-				ipcRenderer.send('close-guesses');
+				ipcRenderer.send("close-guesses");
 			}
-		}
+		},
 	});
 
 	/** @type {LatLng|undefined} */
 	let currentLocation;
-	const satelliteSwitchIcon = document.createElement("div");
-	satelliteSwitchIcon.setAttribute("title", "Switch to Satellite View");
-	satelliteSwitchIcon.id = "satelliteSwitchIcon";
-	satelliteSwitchIcon.innerHTML = "<span>🏡</span>";
+
+	const satelliteSwitchIcon = createDivElement("satelliteSwitchIcon", "Switch to Satellite View", "<span>🏡</span>");
 	satelliteSwitchIcon.addEventListener("click", () => {
-		const isSatellite = !sharedStore.get('isSatellite');
-		sharedStore.set('isSatellite', isSatellite);
+		const isSatellite = !sharedStore.get("isSatellite");
+		sharedStore.set("isSatellite", isSatellite);
 
 		if (isSatellite) {
 			rendererApi.showSatelliteMap(currentLocation);
@@ -91,22 +83,33 @@ function init(rendererApi) {
 		}
 	});
 
-	const centerSatelliteViewBtn = document.createElement("div");
-	centerSatelliteViewBtn.setAttribute("title", "Center map to location");
-	centerSatelliteViewBtn.id = "centerSatelliteViewBtn";
-	centerSatelliteViewBtn.innerHTML = "<span>🏁</span>";
+	const centerSatelliteViewBtn = createDivElement("centerSatelliteViewBtn", "Center map to location", "<span>🏁</span>");
 	centerSatelliteViewBtn.addEventListener("click", () => {
 		rendererApi.centerSatelliteView();
 	});
 
+	/**
+	 * @param {String} id
+	 * @param {String} title
+	 * @param {String} content
+	 */
+	function createDivElement(id, title, content) {
+		const div = document.createElement("div");
+		div.id = id;
+		div.setAttribute("title", title);
+		div.innerHTML = content;
+		return div;
+	}
+
+	// IPC RENDERERS
 	ipcRenderer.on("game-started", (e, isMultiGuess, restoredGuesses, location) => {
 		markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
 		document.head.append(markerRemover);
 
 		currentLocation = location;
-		if (sharedStore.get('isSatellite')) {
+		if (sharedStore.get("isSatellite")) {
 			centerSatelliteViewBtn.style.display = "flex";
-			rendererApi.showSatelliteMap(location)
+			rendererApi.showSatelliteMap(location);
 		}
 
 		iconsColumn.append(showScoreboard, satelliteSwitchIcon, centerSatelliteViewBtn);
@@ -174,7 +177,7 @@ function init(rendererApi) {
 			rendererApi.clearMarkers();
 		}, 1000);
 
-		if (sharedStore.get('isSatellite')) {
+		if (sharedStore.get("isSatellite")) {
 			rendererApi.showSatelliteMap(location);
 		}
 	});

@@ -3,14 +3,13 @@
 const flags = require('./flags');
 
 describe('getEmoji', () => {
-    it("Check emoji for 'AR' >> '🇦🇷'", () => {
+    it("Check emoji for country flags", () => {
         expect(flags.getEmoji("AR")).toBe("🇦🇷");
-    });
-    it("Check emoji for 'GBSCT' >> '🇬🇧 🇸 🇨 🇹'", () => {
         expect(flags.getEmoji("GBSCT")).toBe("🇬🇧 🇸 🇨 🇹");
     });
-    it("Check emoji for 'ESCT' >> '🇪🇸 🇨 🇹'", () => {
-        expect(flags.getEmoji("ESCT")).toBe("🇪🇸 🇨 🇹");
+    it("Check emoji for custom builtin flags", () => {
+        expect(flags.getEmoji("ESCT")).toBe("🇪🇸 (CT)");
+        expect(flags.getEmoji("LGBT")).toBe("\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08");
     });
     it("should not crash with empty flags", () => {
         expect(flags.getEmoji(null)).toBe('');

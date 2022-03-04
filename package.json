@@ -25,6 +25,7 @@
 		"match-sorter": "^6.3.1",
 		"p-map": "^4.0.0",
 		"pkg-up": "^3.1.0",
+		"socket.io-client": "^4.4.1",
 		"tmi.js": "^1.8.5"
 	},
 	"devDependencies": {

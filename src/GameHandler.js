@@ -1,13 +1,15 @@
-'use strict';
+"use strict";
 
 const { ipcMain } = require("electron");
 const Game = require("./Classes/Game");
 const GameHelper = require("./utils/GameHelper");
 const Settings = require("./utils/Settings");
 const TwitchClient = require("./Classes/tmi");
-const flags = require('./utils/flags');
-const legacyStoreFacade = require('./utils/legacyStoreFacade');
+const flags = require("./utils/flags");
+const legacyStoreFacade = require("./utils/legacyStoreFacade");
 const store = require("./utils/sharedStore");
+
+import { io } from "socket.io-client";
 
 const settings = Settings.read();
 
@@ -42,8 +44,8 @@ class GameHandler {
 
 	/**
 	 * @param {Database} db
-	 * @param {MainWindow} win 
-	 * @param {SettingsWindow} settingsWindow 
+	 * @param {MainWindow} win
+	 * @param {SettingsWindow} settingsWindow
 	 */
 	constructor(db, win, settingsWindow) {
 		this.#db = db;
@@ -77,23 +79,21 @@ class GameHandler {
 		}
 	}
 
-	async #processTotalScores () {
+	async #processTotalScores() {
 		const totalScores = this.#game.getTotalScores();
 		const locations = this.#game.getLocations();
 		const link = await GameHelper.makeLink(settings.channelName, this.#game.mapName, this.#game.mode, locations, totalScores);
 		this.#win.webContents.send("show-final-results", totalScores);
 		await this.#twitch.action(
-			`🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${
-				link != undefined ? `Game summary: ${link}` : ""
-			}`
+			`🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${link != undefined ? `Game summary: ${link}` : ""}`
 		);
 	}
 
 	/**
-	 * @param {{ lat: number, lng: number }} location 
-	 * @param {Guess[]} scores 
+	 * @param {{ lat: number, lng: number }} location
+	 * @param {Guess[]} scores
 	 */
-	#showResults (location, scores) {
+	#showResults(location, scores) {
 		const round = this.#game.seed.state === "finished" ? this.#game.round : this.#game.round - 1;
 		this.#win.webContents.send("show-round-results", round, location, scores);
 		this.#twitch.action(`🌎 Round ${round} has finished. Congrats ${flags.getEmoji(scores[0].flag)} ${scores[0].username} !`);
@@ -103,22 +103,25 @@ class GameHandler {
 		// Browser Listening
 		this.#win.webContents.on("did-navigate-in-page", (e, url) => {
 			if (GameHelper.isGameURL(url)) {
-				this.#game.start(url, settings.isMultiGuess).then(() => {
-					const guesses = this.#game.isMultiGuess ? this.#game.getMultiGuesses() : this.#game.getRoundScores();
-					this.#win.webContents.send("game-started", this.#game.isMultiGuess, guesses, this.#game.getLocation());
+				this.#game
+					.start(url, settings.isMultiGuess)
+					.then(() => {
+						const guesses = this.#game.isMultiGuess ? this.#game.getMultiGuesses() : this.#game.getRoundScores();
+						this.#win.webContents.send("game-started", this.#game.isMultiGuess, guesses, this.#game.getLocation());
 
-					if (guesses.length > 0) {
-						this.#twitch.action(`🌎 Round ${this.#game.round} has resumed`)
-					} else if (this.#game.round === 1) {
-						this.#twitch.action(`🌎 A new seed of ${this.#game.mapName} has started`);
-					} else {
-						this.#twitch.action(`🌎 Round ${this.#game.round} has started`);
-					}
+						if (guesses.length > 0) {
+							this.#twitch.action(`🌎 Round ${this.#game.round} has resumed`);
+						} else if (this.#game.round === 1) {
+							this.#twitch.action(`🌎 A new seed of ${this.#game.mapName} has started`);
+						} else {
+							this.#twitch.action(`🌎 Round ${this.#game.round} has started`);
+						}
 
-					this.openGuesses();
-				}).catch((error) => {
-					console.error(error);
-				});
+						this.openGuesses();
+					})
+					.catch((error) => {
+						console.error(error);
+					});
 			} else {
 				this.#game.outGame();
 				this.#win.webContents.send("game-quitted");
@@ -213,21 +216,18 @@ class GameHandler {
 	}
 
 	/**
-	 * 
-	 * @param {string} from 
-	 * @param {import("tmi.js").ChatUserstate} userstate 
-	 * @param {string} message 
-	 * @param {boolean} self 
+	 *
+	 * @param {string} from
+	 * @param {import("tmi.js").ChatUserstate} userstate
+	 * @param {string} message
+	 * @param {boolean} self
 	 */
-	async #handleWhisper(from, userstate, message, self) {
-		if (self || !message.startsWith("!g") || !this.#game.guessesOpen) {
-			return;
-		}
+	async #handleGuess(from, userstate, message, self) {
+		if (self || !message.startsWith("!g") || !this.#game.guessesOpen) return;
 
-		const location = GameHelper.parseCoordinates(message.replace(/^!g\s+/, ''));
-		if (!location) {
-			return;
-		}
+		const location = GameHelper.parseCoordinates(message.replace(/^!g\s+/, ""));
+
+		if (!location) return;
 
 		try {
 			const guess = await this.#game.handleUserGuess(userstate, location);
@@ -260,17 +260,17 @@ class GameHandler {
 	}
 
 	/**
-	 * 
-	 * @param {string} channel 
-	 * @param {import("tmi.js").ChatUserstate} userstate 
-	 * @param {string} message 
-	 * @param {boolean} self 
+	 *
+	 * @param {string} channel
+	 * @param {import("tmi.js").ChatUserstate} userstate
+	 * @param {string} message
+	 * @param {boolean} self
 	 */
 	async #handleMessage(channel, userstate, message, self) {
 		if (self || !message.startsWith("!")) return;
 		message = message.toLowerCase();
 
-		const userId = userstate.badges?.broadcaster === '1' ? 'BROADCASTER' : userstate['user-id'];
+		const userId = userstate.badges?.broadcaster === "1" ? "BROADCASTER" : userstate["user-id"];
 
 		if (message === settings.userGetStatsCmd) {
 			const userInfo = legacyStoreFacade.getUserStats(this.#db, userId, userstate.username);
@@ -281,7 +281,7 @@ class GameHandler {
 					${flags.getEmoji(userInfo.flag)} ${userInfo.username} : Current streak: ${userInfo.streak}.
 					Best streak: ${userInfo.bestStreak}.
 					Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses}${
-						userInfo.nbGuesses > 0 ? ` (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).` : "."
+					userInfo.nbGuesses > 0 ? ` (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).` : "."
 				}
 					Avg. score: ${Math.round(userInfo.meanScore)}.
 					Victories: ${userInfo.victories}.
@@ -301,15 +301,15 @@ class GameHandler {
 			if (!streak && !victories && !perfects) {
 				await this.#twitch.say("No stats available.");
 			} else {
-				let msg = '';
+				let msg = "";
 				if (streak) {
-					msg += `Streak: ${streak.streak} (${streak.username}). `
+					msg += `Streak: ${streak.streak} (${streak.username}). `;
 				}
 				if (victories) {
-					msg += `Victories: ${victories.victories} (${victories.username}). `
+					msg += `Victories: ${victories.victories} (${victories.username}). `;
 				}
 				if (perfects) {
-					msg += `Perfects: ${perfects.perfects} (${perfects.username}). `
+					msg += `Perfects: ${perfects.perfects} (${perfects.username}). `;
 				}
 				await this.#twitch.say(`Channels best: ${msg}`);
 			}
@@ -318,12 +318,12 @@ class GameHandler {
 
 		if (message.startsWith("!flag")) {
 			const countryReq = message.substr(message.indexOf(" ") + 1);
-			const { dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userId, userstate.username, userstate['display-name']);
+			const { dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userId, userstate.username, userstate["display-name"]);
 
 			let newFlag;
-			if (countryReq === 'none') {
+			if (countryReq === "none") {
 				newFlag = null;
-			} else if (countryReq === 'random') {
+			} else if (countryReq === "random") {
 				newFlag = flags.randomCountryFlag();
 			} else {
 				newFlag = flags.selectFlag(countryReq);
@@ -335,9 +335,9 @@ class GameHandler {
 
 			this.#db.setUserFlag(dbUser.id, newFlag);
 
-			if (countryReq === 'none') {
+			if (countryReq === "none") {
 				await this.#twitch.say(`${userstate["display-name"]} flag removed`);
-			} else if (countryReq === 'random') {
+			} else if (countryReq === "random") {
 				await this.#twitch.say(`${userstate["display-name"]} got ${flags.getEmoji(newFlag)}`);
 			}
 			return;
@@ -359,7 +359,7 @@ class GameHandler {
 		}
 
 		// streamer commands
-		if (userstate.badges?.broadcaster !== '1') {
+		if (userstate.badges?.broadcaster !== "1") {
 			return;
 		}
 
@@ -379,23 +379,47 @@ class GameHandler {
 
 			const username = msgArr[1];
 			await this.#twitch.action(`cannot set streak for ${username}: functionality currently not supported`);
-		} else if (message.startsWith('!spamguess')) {
-			const max = parseInt(message.split(' ')[1] ?? '50', 10)
-			for (let i = 0; i < max; i += 1) {
-				const lat = (Math.random() * 180) - 90;
-				const lng = (Math.random() * 360) - 180;
-				await this.#handleWhisper(`fake_${i}`, {
-					'user-id': `123450${i}`,
-					username: `fake_${i}`,
-					'display-name': `fake_${i}`,
-					color: `#${Math.random().toString(16).slice(2, 8).padStart(6, '0')}`
-				}, `!g ${lat},${lng}`, false);
-			}
 		}
+		// else if (message.startsWith("!spamguess")) {
+		// 	const max = parseInt(message.split(" ")[1] ?? "50", 10);
+		// 	for (let i = 0; i < max; i += 1) {
+		// 		const lat = Math.random() * 180 - 90;
+		// 		const lng = Math.random() * 360 - 180;
+		// 		await this.#handleGuess(
+		// 			`fake_${i}`,
+		// 			{
+		// 				"user-id": `123450${i}`,
+		// 				username: `fake_${i}`,
+		// 				"display-name": `fake_${i}`,
+		// 				color: `#${Math.random().toString(16).slice(2, 8).padStart(6, "0")}`,
+		// 			},
+		// 			`!g ${lat},${lng}`,
+		// 			false
+		// 		);
+		// 	}
+		// }
+	}
+
+	/**
+	 * @param {String} bot
+	 */
+	ioInit(bot) {
+		const socket = io("https://chatguessr-server.herokuapp.com");
+		socket.emit("join", bot);
+
+		socket.on("connection", () => {
+			console.log("Connected to socket !");
+		});
+
+		socket.on("guess", async (userData, guess) => {
+			const self = userData.username == settings.channelName;
+			await this.#handleGuess(null, userData, guess, self);
+		});
 	}
 
 	#tmiListening() {
 		this.#twitch.client.on("connected", () => {
+			this.ioInit(settings.botUsername);
 			this.#settingsWindow.webContents.send("twitch-connected", settings.botUsername);
 			this.#twitch.action("is now connected");
 		});
@@ -404,7 +428,7 @@ class GameHandler {
 		});
 
 		this.#twitch.client.on("whisper", (from, userstate, message, self) => {
-			this.#handleWhisper(from, userstate, message, self).catch((error) => {
+			this.#handleGuess(from, userstate, message, self).catch((error) => {
 				console.error(error);
 			});
 		});

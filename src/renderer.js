@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 window.chatguessrApi.init({
 	populateMap,
@@ -8,7 +8,7 @@ window.chatguessrApi.init({
 	showSatelliteMap,
 	hideSatelliteMap,
 	centerSatelliteView,
-})
+});
 
 /** @type {google.maps.Map | undefined} */
 let globalMap = undefined;
@@ -18,8 +18,8 @@ let satelliteCenter = undefined;
 let satelliteLayer = undefined;
 /** @type {google.maps.Marker | undefined} */
 let satelliteMarker = undefined;
-const satelliteCanvas = document.createElement('div');
-satelliteCanvas.id = 'satelliteCanvas';
+const satelliteCanvas = document.createElement("div");
+satelliteCanvas.id = "satelliteCanvas";
 
 const mapReady = hijackMap();
 
@@ -108,7 +108,6 @@ function clearMarkers() {
 	polylines = [];
 }
 
-
 async function hijackMap() {
 	const MAPS_API_URL = "https://maps.googleapis.com/maps/api/js?";
 	const MAPS_SCRIPT_SELECTOR = `script[src^="${MAPS_API_URL}"]`;
@@ -141,10 +140,10 @@ async function hijackMap() {
 					resolve(undefined);
 				};
 				// It may already be loaded :O
-				if (typeof google !== 'undefined' && google?.maps?.Map) {
+				if (typeof google !== "undefined" && google?.maps?.Map) {
 					onload();
 				} else {
-					element.addEventListener('load', onload);
+					element.addEventListener("load", onload);
 				}
 			}
 		}
@@ -183,8 +182,7 @@ async function hijackMap() {
 		/** @param {google.maps.Map} map */
 		function onMapUpdate(map) {
 			try {
-				if (!isGamePage())
-					return;
+				if (!isGamePage()) return;
 				globalMap = map;
 				resolve();
 			} catch (error) {
@@ -199,11 +197,22 @@ async function hijackMap() {
 			 * @param {google.maps.MapOptions} opts
 			 */
 			constructor(mapDiv, opts) {
-				super(mapDiv, opts)
+				super(mapDiv, opts);
 				this.addListener("idle", () => {
 					if (globalMap == null) {
 						onMapUpdate(this);
 					}
+				});
+				// Displays layer controls on the guess map
+				// Prevent GeoGuessr to revert it back to default settings
+				this.addListener("maptypeid_changed", () => {
+					this.setOptions({
+						mapTypeControl: true,
+						mapTypeControlOptions: {
+							style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+							position: google.maps.ControlPosition.TOP_RIGHT,
+						},
+					});
 				});
 			}
 		};
@@ -223,9 +232,9 @@ async function showSatelliteMap(location) {
 	};
 
 	if (!document.body.contains(satelliteCanvas)) {
-		document.querySelector('.game-layout__canvas').append(satelliteCanvas);
+		document.querySelector(".game-layout__canvas").append(satelliteCanvas);
 	}
-	satelliteCanvas.style.display = 'block';
+	satelliteCanvas.style.display = "block";
 
 	satelliteLayer ??= new google.maps.Map(satelliteCanvas, {
 		fullscreenControl: false,
@@ -249,7 +258,7 @@ async function showSatelliteMap(location) {
 
 	// If we do this immediately GeoGuessr might revert it back to roadmap, so we wait a bit.
 	setTimeout(() => {
-		globalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+		globalMap.setMapTypeId(google.maps.MapTypeId.HYBRID);
 	}, 2000);
 }
 
@@ -258,7 +267,7 @@ async function hideSatelliteMap() {
 	await mapReady;
 
 	globalMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
-	satelliteCanvas.style.display = 'none';
+	satelliteCanvas.style.display = "none";
 }
 
 /** @type {import('./types').RendererApi['centerSatelliteView']} */
@@ -335,7 +344,7 @@ function drParseNoCar(noCar) {
 		}
 	`;
 
-    /** @param {WebGLRenderingContext | WebGL2RenderingContext} ctx */
+	/** @param {WebGLRenderingContext | WebGL2RenderingContext} ctx */
 	function installShaderSource(ctx) {
 		const g = ctx.shaderSource;
 		/** @type {WebGLRenderingContext['shaderSource']} */
@@ -352,7 +361,7 @@ function drParseNoCar(noCar) {
 		ctx.shaderSource = shaderSource;
 	}
 
-    /** @param {HTMLCanvasElement} el */
+	/** @param {HTMLCanvasElement} el */
 	function installGetContext(el) {
 		const g = el.getContext;
 		el.getContext = function (...args) {
@@ -372,7 +381,7 @@ function drParseNoCar(noCar) {
 	const createElement = document.createElement.bind(document);
 	document.createElement = function (tagName, options) {
 		if (tagName === "canvas" || tagName === "CANVAS") {
-			const el = createElement('canvas');
+			const el = createElement("canvas");
 			installGetContext(el);
 			return el;
 		}

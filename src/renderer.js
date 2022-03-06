@@ -223,13 +223,26 @@ async function hijackMap() {
 async function showSatelliteMap(location) {
 	await mapReady;
 
+	/**
+	 * @param {Number} lat
+	 * @param {Number} lng
+	 * @param {Number} meters
+	 **/
+	function getBounds(lat, lng, meters) {
+		const earth = 6371.071;
+		const pi = Math.PI;
+		const cos = Math.cos;
+		const m = 1 / (((2 * pi) / 360) * earth) / 1000;
+
+		const north = lat + meters * m;
+		const south = lat - meters * m;
+		const west = lng - (meters * m) / cos(lat * (pi / 180));
+		const east = lng + (meters * m) / cos(lat * (pi / 180));
+
+		return { north, south, west, east };
+	}
+
 	satelliteCenter = location;
-	const bounds = {
-		north: location.lat + 1,
-		south: location.lat - 1,
-		west: location.lng - 1,
-		east: location.lng + 1,
-	};
 
 	if (!document.body.contains(satelliteCanvas)) {
 		document.querySelector(".game-layout__canvas").append(satelliteCanvas);
@@ -239,13 +252,13 @@ async function showSatelliteMap(location) {
 	satelliteLayer ??= new google.maps.Map(satelliteCanvas, {
 		fullscreenControl: false,
 		mapTypeId: google.maps.MapTypeId.SATELLITE,
-		zoom: 25,
-		minZoom: 10,
+		// zoom: 25,
+		// minZoom: 10,
 	});
 	satelliteLayer.setOptions({
 		restriction: {
-			latLngBounds: bounds,
-			strictBounds: false,
+			latLngBounds: getBounds(location.lat, location.lng, 10000),
+			strictBounds: true,
 		},
 	});
 	satelliteLayer.setCenter(location);

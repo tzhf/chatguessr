@@ -1,12 +1,12 @@
-'use strict';
+"use strict";
 
 const { Client } = require("tmi.js");
 
 class TMI {
 	/**
-	 * @param {string} channelName 
-	 * @param {string} botUsername 
-	 * @param {string} token 
+	 * @param {string} channelName
+	 * @param {string} botUsername
+	 * @param {string} token
 	 */
 	constructor(channelName, botUsername, token) {
 		this.channelName = channelName;

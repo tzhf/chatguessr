@@ -10,6 +10,7 @@ const legacyStoreFacade = require("./utils/legacyStoreFacade");
 const store = require("./utils/sharedStore");
 
 import { io } from "socket.io-client";
+const socket = io(process.env.SOCKET_SERVER);
 
 const settings = Settings.read();
 
@@ -51,9 +52,10 @@ class GameHandler {
 		this.#db = db;
 		this.#win = win;
 		this.#settingsWindow = settingsWindow;
-		this.#twitch = new TwitchClient(settings.channelName, settings.botUsername, settings.token);
+		this.#twitch = undefined;
 		this.#game = new Game(db, settings);
 		this.#initTmi();
+		this.ioInit();
 		this.init();
 	}
 
@@ -204,6 +206,8 @@ class GameHandler {
 		if (!settings.channelName) {
 			return;
 		}
+
+		this.#twitch = new TwitchClient(settings.channelName, settings.botUsername, settings.token);
 
 		this.#tmiListening();
 
@@ -400,13 +404,7 @@ class GameHandler {
 		// }
 	}
 
-	/**
-	 * @param {String} bot
-	 */
-	ioInit(bot) {
-		const socket = io("https://chatguessr-server.herokuapp.com");
-		socket.emit("join", bot);
-
+	ioInit() {
 		socket.on("connection", () => {
 			console.log("Connected to socket !");
 		});
@@ -419,7 +417,8 @@ class GameHandler {
 
 	#tmiListening() {
 		this.#twitch.client.on("connected", () => {
-			this.ioInit(settings.botUsername);
+			socket.emit("join", settings.botUsername);
+
 			this.#settingsWindow.webContents.send("twitch-connected", settings.botUsername);
 			this.#twitch.action("is now connected");
 		});
@@ -441,7 +440,7 @@ class GameHandler {
 	}
 
 	openSettingsWindow() {
-		this.#settingsWindow.webContents.send("render-settings", settings, this.#twitch.client ? this.#twitch.client.readyState() : "");
+		this.#settingsWindow.webContents.send("render-settings", settings, this.#twitch?.client ? this.#twitch.client.readyState() : "");
 		this.#settingsWindow.show();
 	}
 }

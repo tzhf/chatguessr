@@ -277,7 +277,7 @@ class GameHandler {
 		const userId = userstate.badges?.broadcaster === "1" ? "BROADCASTER" : userstate["user-id"];
 
 		if (message === settings.userGetStatsCmd) {
-			const userInfo = legacyStoreFacade.getUserStats(this.#db, userId, userstate.username);
+			const userInfo = this.#db.getUserStats(userId);
 			if (!userInfo) {
 				await this.#twitch.say(`${userstate["display-name"]} you've never guessed yet.`);
 			} else {
@@ -301,7 +301,7 @@ class GameHandler {
 		}
 
 		if (message === "!best") {
-			const { streak, victories, perfects } = legacyStoreFacade.getGlobalStats(this.#db);
+			const { streak, victories, perfects } = this.#db.getGlobalStats();
 			if (!streak && !victories && !perfects) {
 				await this.#twitch.say("No stats available.");
 			} else {
@@ -321,7 +321,7 @@ class GameHandler {
 		}
 
 		if (message.startsWith("!flag")) {
-			const countryReq = message.substr(message.indexOf(" ") + 1);
+			const countryReq = message.slice(message.indexOf(" ") + 1).trim();
 			const { dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userId, userstate.username, userstate["display-name"]);
 
 			let newFlag;

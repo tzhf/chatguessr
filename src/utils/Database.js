@@ -494,7 +494,7 @@ class Database {
         // checking the current streak at a previous point. The only option atm is to use this subquery I think, hopefully the
         // performance is not too bad.
 
-        // TODO /!\ game results are anormally long to process, we prob don't need the db to calculate the final scores, we can do that after populating scoreboard (+api post request)
+        // TODO /!\ game results are anormally long to process, we prob don't need the db here
         const stmt = this.#db.prepare(`
             SELECT
                 users.username,

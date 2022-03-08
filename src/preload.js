@@ -27,30 +27,16 @@ function init(rendererApi) {
 	const Scoreboard = require("./Classes/Scoreboard");
 	const Settings = require("./utils/Settings");
 	const sharedStore = require("./utils/sharedStore");
+
 	const { noCar } = Settings.read();
 	rendererApi.drParseNoCar(noCar);
 
 	const markerRemover = document.createElement("style");
 	markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
 
-	const iconsColumn = document.createElement("div");
-	iconsColumn.classList.add("iconsColumn");
-	document.body.append(iconsColumn);
-
-	const settingsIcon = createDivElement("settingsIcon", "Settings (ctrl+p)", "<span>⚙️</span>");
-	settingsIcon.addEventListener("click", () => {
-		ipcRenderer.send("openSettings");
-	});
-	iconsColumn.append(settingsIcon);
-
-	const scoreboardContainer = document.createElement("div");
-	scoreboardContainer.setAttribute("id", "scoreboardContainer");
+	// SCOREBOARD
+	const scoreboardContainer = createEl("div", { id: "scoreboardContainer" });
 	document.body.append(scoreboardContainer);
-
-	const showScoreboard = createDivElement("showScoreboard", "Show scoreboard", "<span>👁️‍🗨️</span>");
-	showScoreboard.addEventListener("click", () => {
-		scoreboard.setVisibility();
-	});
 
 	const scoreboard = new Scoreboard(scoreboardContainer, {
 		onToggleGuesses(open) {
@@ -62,44 +48,52 @@ function init(rendererApi) {
 		},
 	});
 
+	// GAME ICONS
+	const iconsColumn = createEl("div", { class: "iconsColumn" });
+	document.body.append(iconsColumn);
+
+	const settingsBtn = createEl("div", { title: "Settings (ctrl+p)" }, createEl("span", { class: "icon gearIcon" }));
+	settingsBtn.addEventListener("click", () => {
+		ipcRenderer.send("openSettings");
+	});
+	iconsColumn.append(settingsBtn);
+
+	const showScoreboardBtn = createEl("div", { id: "showScoreboardBtn", title: "Show scoreboard" }, createEl("span", { class: "icon eyeIcon" }));
+	showScoreboardBtn.addEventListener("click", () => {
+		scoreboard.setVisibility();
+	});
+
 	/** @type {LatLng|undefined} */
 	let currentLocation;
 
-	const satelliteSwitchIcon = createDivElement("satelliteSwitchIcon", "Switch to Satellite View", "<span>🏡</span>");
-	satelliteSwitchIcon.addEventListener("click", () => {
+	const isSatellite = sharedStore.get("isSatellite");
+	const satelliteIcon = createEl("span", { class: `icon ${isSatellite ? "satelliteIcon" : "streetIcon"}` });
+	const satelliteSwitchBtn = createEl(
+		"div",
+		{ id: "satelliteSwitchBtn", title: `${isSatellite ? "Switch to StreetView" : "Switch to Satellite View"}` },
+		satelliteIcon
+	);
+	satelliteSwitchBtn.addEventListener("click", () => {
 		const isSatellite = !sharedStore.get("isSatellite");
 		sharedStore.set("isSatellite", isSatellite);
 
 		if (isSatellite) {
 			rendererApi.showSatelliteMap(currentLocation);
-			satelliteSwitchIcon.innerHTML = "<span>🛰️</span>";
-			satelliteSwitchIcon.setAttribute("title", "Switch to StreetView");
+			satelliteIcon.className = "icon satelliteIcon";
+			satelliteSwitchBtn.title = "Switch to StreetView";
 			centerSatelliteViewBtn.style.display = "flex";
 		} else {
 			rendererApi.hideSatelliteMap();
-			satelliteSwitchIcon.innerHTML = "<span>🏡</span>";
-			satelliteSwitchIcon.setAttribute("title", "Switch to Satellite View");
+			satelliteIcon.className = "icon streetIcon";
+			satelliteSwitchBtn.title = "Switch to Satellite View";
 			centerSatelliteViewBtn.style.display = "none";
 		}
 	});
 
-	const centerSatelliteViewBtn = createDivElement("centerSatelliteViewBtn", "Center map to location", "<span>🏁</span>");
+	const centerSatelliteViewBtn = createEl("div", { id: "centerSatelliteViewBtn", title: "Center view" }, createEl("span", { class: "icon startFlagIcon" }));
 	centerSatelliteViewBtn.addEventListener("click", () => {
 		rendererApi.centerSatelliteView();
 	});
-
-	/**
-	 * @param {String} id
-	 * @param {String} title
-	 * @param {String} content
-	 */
-	function createDivElement(id, title, content) {
-		const div = document.createElement("div");
-		div.id = id;
-		div.setAttribute("title", title);
-		div.innerHTML = content;
-		return div;
-	}
 
 	// IPC RENDERERS
 	ipcRenderer.on("game-started", (e, isMultiGuess, restoredGuesses, location) => {
@@ -112,7 +106,7 @@ function init(rendererApi) {
 			rendererApi.showSatelliteMap(location);
 		}
 
-		iconsColumn.append(showScoreboard, satelliteSwitchIcon, centerSatelliteViewBtn);
+		iconsColumn.append(showScoreboardBtn, satelliteSwitchBtn, centerSatelliteViewBtn);
 		scoreboard.checkVisibility();
 		scoreboard.reset(isMultiGuess);
 
@@ -129,7 +123,7 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("refreshed-in-game", (e, noCompass) => {
-		iconsColumn.append(showScoreboard, satelliteSwitchIcon, centerSatelliteViewBtn);
+		iconsColumn.append(showScoreboardBtn, satelliteSwitchBtn, centerSatelliteViewBtn);
 		scoreboard.checkVisibility();
 		rendererApi.drParseNoCompass(noCompass);
 	});
@@ -140,8 +134,8 @@ function init(rendererApi) {
 		rendererApi.clearMarkers();
 
 		// Hide in-game-only buttons
-		document.querySelector("#showScoreboard")?.remove();
-		document.querySelector("#satelliteSwitchIcon")?.remove();
+		document.querySelector("#showScoreboardBtn")?.remove();
+		document.querySelector("#satelliteSwitchBtn")?.remove();
 		document.querySelector("#centerSatelliteViewBtn")?.remove();
 	});
 
@@ -192,4 +186,24 @@ function init(rendererApi) {
 	ipcRenderer.on("game-settings-change", (e, noCompass) => {
 		rendererApi.drParseNoCompass(noCompass);
 	});
+
+	/**
+	 * @param {String} type
+	 * @param {Object} attributes
+	 * @param {String[]|HTMLElement[]} children
+	 */
+	function createEl(type, attributes, ...children) {
+		const el = document.createElement(type);
+		for (let key in attributes) {
+			el.setAttribute(key, attributes[key]);
+		}
+		children.forEach((child) => {
+			if (typeof child === "string") {
+				el.appendChild(document.createTextNode(child));
+			} else {
+				el.appendChild(child);
+			}
+		});
+		return el;
+	}
 }

@@ -10,7 +10,7 @@ const legacyStoreFacade = require("./utils/legacyStoreFacade");
 const store = require("./utils/sharedStore");
 
 import { io } from "socket.io-client";
-const socket = io(process.env.SOCKET_SERVER);
+const socket = io(process.env.SOCKET_SERVER_URL);
 
 const settings = Settings.read();
 

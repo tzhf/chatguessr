@@ -75,7 +75,7 @@ function init(rendererApi) {
 	});
 	iconsColumn.append(settingsBtn);
 
-	const showScoreboardBtn = createEl("div", { id: "showScoreboardBtn", title: "Show scoreboard" }, createEl("span", { class: "icon eyeIcon" }));
+	const showScoreboardBtn = createEl("div", { id: "showScoreboardBtn", title: "Show/Hide scoreboard" }, createEl("span", { class: "icon eyeIcon" }));
 	showScoreboardBtn.addEventListener("click", () => {
 		scoreboard.setVisibility();
 	});

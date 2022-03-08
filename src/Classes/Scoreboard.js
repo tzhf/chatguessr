@@ -1,40 +1,16 @@
-'use strict';
+"use strict";
 
-const $ = require('jquery');
+const $ = require("jquery");
 window.$ = window.jQuery = $;
-require('jquery-ui-dist/jquery-ui');
-require('datatables.net/js/jquery.dataTables')(window, $);
-require('datatables.net-plugins/sorting/natural');
-require('datatables.net-plugins/features/scrollResize/dataTables.scrollResize')(window, $);
-require('datatables.net-buttons/js/dataTables.buttons')(window, $);
-require('datatables.net-buttons/js/buttons.colVis')(window, $);
-require('datatables.net-scroller/js/dataTables.scroller')(window, $);
+require("jquery-ui-dist/jquery-ui");
+require("datatables.net/js/jquery.dataTables")(window, $);
+require("datatables.net-plugins/sorting/natural");
+require("datatables.net-plugins/features/scrollResize/dataTables.scrollResize")(window, $);
+require("datatables.net-buttons/js/dataTables.buttons")(window, $);
+require("datatables.net-buttons/js/buttons.colVis")(window, $);
+require("datatables.net-scroller/js/dataTables.scroller")(window, $);
 
 /** @typedef {import('../types').Guess} Guess */
-
-// ColVis Cookies
-function setCookie(name, value, exdays = 60) {
-	const d = new Date();
-	d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-	const expires = "expires=" + d.toUTCString();
-	document.cookie = name + "=" + value + ";" + expires + ";path=/";
-}
-
-function getCookie(name, defaultValue = {}) {
-	const cname = name + "=";
-	var decodedCookie = decodeURIComponent(document.cookie);
-	var ca = decodedCookie.split(";");
-	for (var i = 0; i < ca.length; i++) {
-		var c = ca[i];
-		while (c.charAt(0) == " ") {
-			c = c.substring(1);
-		}
-		if (c.indexOf(cname) == 0) {
-			return JSON.parse(c.substring(cname.length, c.length));
-		}
-	}
-	return defaultValue;
-}
 
 /**
  * @typedef {object} Options
@@ -43,7 +19,7 @@ function getCookie(name, defaultValue = {}) {
 
 class Scoreboard {
 	/**
-	 * @param {HTMLElement} container 
+	 * @param {HTMLElement} container
 	 * @param {Options} props
 	 */
 	constructor(container, props) {
@@ -53,8 +29,8 @@ class Scoreboard {
 		this.speed = 50;
 		this.onToggleGuesses = props.onToggleGuesses;
 
-		this.visibility = getCookie("visibility", true);
-		this.position = getCookie("scoreboard_position", { top: 20, left: 5, width: 380, height: 180 });
+		this.visibility = JSON.parse(localStorage.getItem("visibility")) || true;
+		this.position = JSON.parse(localStorage.getItem("scoreboard_position")) || { top: 20, left: 5, width: 380, height: 180 };
 		this.container = $(container);
 		this.scoreboard = $(`
 			<div id='scoreboard'>
@@ -81,10 +57,10 @@ class Scoreboard {
 			</div>
 		`);
 		this.container.append(this.scoreboard);
-		this.title = this.scoreboard.find('#scoreboardTitle');
+		this.title = this.scoreboard.find("#scoreboardTitle");
 		this.switchContainer = this.scoreboard.find("#switchContainer");
 		this.switchBtn = this.scoreboard.find("#switchBtn");
-		
+
 		this.scoreboard
 			.css({
 				top: this.position.top,
@@ -99,31 +75,31 @@ class Scoreboard {
 			.draggable({
 				containment: this.container,
 			})
-			.on('mouseup', () => {
+			.on("mouseup", () => {
 				const currentPosition = this.getPosition();
 				if (JSON.stringify(this.position) !== JSON.stringify(currentPosition)) {
 					this.setPosition(currentPosition);
-					this.setCookie("scoreboard_position", JSON.stringify(currentPosition));
+					localStorage.setItem("scoreboard_position", JSON.stringify(currentPosition));
 				}
 			});
-			
+
 		this.switchBtn.on("change", () => {
 			this.onToggleGuesses(this.switchBtn.is(":checked"));
 		});
-		
+
 		// Column Visisbility
-		this.columnState = getCookie("CG_ColVis", [
+		this.columnState = JSON.parse(localStorage.getItem("CG_ColVis")) || [
 			{ column: 0, state: true },
 			{ column: 2, state: true },
 			{ column: 3, state: true },
 			{ column: 4, state: true },
-		]);
-		
+		];
+
 		this.table = this.scoreboard.find("#datatable").DataTable({
 			info: false,
 			searching: false,
 			paging: false,
-			scrollY: '100px',
+			scrollY: "100px",
 			scrollResize: true,
 			scrollCollapse: true,
 			language: { zeroRecords: " " },
@@ -171,20 +147,17 @@ class Scoreboard {
 				this.columnState.push({ column, state });
 			}
 
-			setCookie("CG_ColVis", JSON.stringify(this.columnState));
+			localStorage.setItem("CG_ColVis", JSON.stringify(this.columnState));
 		});
 
 		// SCROLLER
-		const slider = $(`<input type="range" min="5" max="50" value="20" id="scrollSpeedSlider" />`)
-			.on('input', (e) => {
-				// @ts-ignore
-				this.speed = e.currentTarget.value;
-				this.scroller(".dataTables_scrollBody");
-			});
-		
-		this.table.buttons().container()
-			.append(slider)
-			.prepend(`
+		const slider = $(`<input type="range" min="5" max="50" value="20" id="scrollSpeedSlider" />`).on("input", (e) => {
+			// @ts-ignore
+			this.speed = e.currentTarget.value;
+			this.scroller(".dataTables_scrollBody");
+		});
+
+		this.table.buttons().container().append(slider).prepend(`
 				<div class="dt-button scrollBtn">
 					<label>
 						<input type="checkbox" id="scrollBtn"><span>⮃</span>
@@ -192,17 +165,20 @@ class Scoreboard {
 				</div>
 			`);
 
-		this.scoreboard.find('#scrollBtn').on("change", /** @param {JQuery.ChangeEvent<HTMLInputElement>} e */ (e) => {
-			if (e.currentTarget.checked != true) {
-				this.isScrolling = $(e.currentTarget).is(":checked");
-				this.stop(".dataTables_scrollBody");
-				slider.css('display', "none");
-			} else {
-				this.isScrolling = $(e.currentTarget).is(":checked");
-				this.scroller(".dataTables_scrollBody");
-				slider.css('display', "inline");
+		this.scoreboard.find("#scrollBtn").on(
+			"change",
+			/** @param {JQuery.ChangeEvent<HTMLInputElement>} e */ (e) => {
+				if (e.currentTarget.checked != true) {
+					this.isScrolling = $(e.currentTarget).is(":checked");
+					this.stop(".dataTables_scrollBody");
+					slider.css("display", "none");
+				} else {
+					this.isScrolling = $(e.currentTarget).is(":checked");
+					this.scroller(".dataTables_scrollBody");
+					slider.css("display", "inline");
+				}
 			}
-		});
+		);
 	}
 
 	/**
@@ -219,7 +195,7 @@ class Scoreboard {
 
 	setVisibility() {
 		this.visibility = !this.visibility;
-		this.setCookie("visibility", this.visibility);
+		localStorage.setItem("visibility", JSON.stringify(this.visibility));
 		this.checkVisibility();
 	}
 
@@ -240,14 +216,14 @@ class Scoreboard {
 	}
 
 	/**
-	 * @param {Guess} guess 
+	 * @param {Guess} guess
 	 */
 	renderGuess(guess) {
 		const row = {
 			Position: "",
-			Player: `${guess.flag ? `<span class="flag-icon" style="background-image: url(flag:${guess.flag})"></span>` : ""}<span class='username' style='color:${guess.color}'>${
-				guess.username
-			}</span>`,
+			Player: `${guess.flag ? `<span class="flag-icon" style="background-image: url(flag:${guess.flag})"></span>` : ""}<span class='username' style='color:${
+				guess.color
+			}'>${guess.username}</span>`,
 			Streak: guess.streak,
 			Distance: guess.distance,
 			Score: guess.score,
@@ -262,7 +238,7 @@ class Scoreboard {
 			.each((cell, i) => {
 				cell.innerHTML = i + 1;
 			});
-			
+
 		this.setTitle(`GUESSES (${this.table.rows().data().length})`);
 	}
 
@@ -273,9 +249,9 @@ class Scoreboard {
 		const rows = guesses.map((guess) => {
 			return {
 				Position: "",
-				Player: `${guess.flag ? `<span class="flag-icon" style="background-image: url(flag:${guess.flag})"></span>` : ""}<span class='username' style='color:${guess.color}'>${
-					guess.username
-				}</span>`,
+				Player: `${guess.flag ? `<span class="flag-icon" style="background-image: url(flag:${guess.flag})"></span>` : ""}<span class='username' style='color:${
+					guess.color
+				}'>${guess.username}</span>`,
 				Streak: "",
 				Distance: "",
 				Score: "",
@@ -299,9 +275,9 @@ class Scoreboard {
 		const rows = scores.map((score) => {
 			return {
 				Position: "",
-				Player: `${score.flag ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>` : ""}<span class='username' style='color:${score.color}'>${
-					score.username
-				}</span>`,
+				Player: `${score.flag ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>` : ""}<span class='username' style='color:${
+					score.color
+				}'>${score.username}</span>`,
 				Streak: score.streak,
 				Distance: score.distance,
 				Score: `${score.score}${isTotal ? " [" + score.rounds + "]" : ""}`,
@@ -382,7 +358,7 @@ class Scoreboard {
 	}
 
 	setPosition(position) {
-		return this.position = position;
+		return (this.position = position);
 	}
 
 	setTitle(title) {
@@ -394,7 +370,7 @@ class Scoreboard {
 	}
 
 	/**
-	 * @param {boolean} state 
+	 * @param {boolean} state
 	 */
 	switchOn(state) {
 		return this.switchBtn.prop("checked", state);
@@ -406,30 +382,6 @@ class Scoreboard {
 	toMeter(distance) {
 		return distance >= 1 ? distance.toFixed(1) + "km" : Math.floor(distance * 1000) + "m";
 	}
-
-	// ColVis Cookies
-	setCookie = (name, value, exdays = 60) => {
-		const d = new Date();
-		d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-		const expires = "expires=" + d.toUTCString();
-		document.cookie = name + "=" + value + ";" + expires + ";path=/";
-	};
-
-	getCookie = (name, defaultValue = {}) => {
-		const cname = name + "=";
-		var decodedCookie = decodeURIComponent(document.cookie);
-		var ca = decodedCookie.split(";");
-		for (var i = 0; i < ca.length; i++) {
-			var c = ca[i];
-			while (c.charAt(0) == " ") {
-				c = c.substring(1);
-			}
-			if (c.indexOf(cname) == 0) {
-				return JSON.parse(c.substring(cname.length, c.length));
-			}
-		}
-		return defaultValue;
-	};
 }
 
 module.exports = Scoreboard;

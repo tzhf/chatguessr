@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld("chatguessrApi", chatguessrApi);
 
 const REMOVE_ALL_MARKERS_CSS = '[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"] { display: none; }';
 const REMOVE_GUESS_MARKERS_CSS = '[data-qa="result-view-top"] [data-qa="guess-marker"] { display: none; }';
+const REMOVE_GAME_CONTROLS_CSS = ".styles_columnTwo___2qFL, .styles_controlGroup___ArrW, .compass { display: none !important; }";
 
 /**
  * @param {import('./types').RendererApi} rendererApi
@@ -33,6 +34,9 @@ function init(rendererApi) {
 
 	const markerRemover = document.createElement("style");
 	markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
+
+	const gameControlsRemover = document.createElement("style");
+	gameControlsRemover.textContent = REMOVE_GAME_CONTROLS_CSS;
 
 	// SCOREBOARD
 	const scoreboardContainer = createEl("div", { id: "scoreboardContainer" });
@@ -67,6 +71,8 @@ function init(rendererApi) {
 	let currentLocation;
 
 	const isSatellite = sharedStore.get("isSatellite");
+	if (isSatellite) document.head.append(gameControlsRemover);
+
 	const satelliteIcon = createEl("span", { class: `icon ${isSatellite ? "satelliteIcon" : "streetIcon"}` });
 	const satelliteSwitchBtn = createEl(
 		"div",
@@ -82,11 +88,13 @@ function init(rendererApi) {
 			satelliteIcon.className = "icon satelliteIcon";
 			satelliteSwitchBtn.title = "Switch to StreetView";
 			centerSatelliteViewBtn.style.display = "flex";
+			document.head.append(gameControlsRemover);
 		} else {
 			rendererApi.hideSatelliteMap();
 			satelliteIcon.className = "icon streetIcon";
 			satelliteSwitchBtn.title = "Switch to Satellite View";
 			centerSatelliteViewBtn.style.display = "none";
+			gameControlsRemover.remove();
 		}
 	});
 

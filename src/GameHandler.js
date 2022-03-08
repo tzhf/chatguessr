@@ -132,7 +132,7 @@ class GameHandler {
 
 		this.#win.webContents.on("did-frame-finish-load", () => {
 			if (!this.#game.isInGame) return;
-			this.#win.webContents.send("refreshed-in-game", settings.noCompass);
+			this.#win.webContents.send("refreshed-in-game");
 			// Checks and update seed when the this.game has refreshed
 			// update the current location if it was skipped
 			// if the streamer has guessed returns scores
@@ -165,13 +165,9 @@ class GameHandler {
 			this.closeGuesses();
 		});
 
-		ipcMain.on("game-form", (e, isMultiGuess, noCar, noCompass) => {
-			this.#win.webContents.send("game-settings-change", noCompass);
+		ipcMain.on("game-form", (e, isMultiGuess) => {
+			settings.setGameSettings(isMultiGuess);
 			this.#settingsWindow.hide();
-
-			if (settings.noCar != noCar) this.#win.reload();
-
-			settings.setGameSettings(isMultiGuess, noCar, noCompass);
 		});
 
 		ipcMain.on("twitch-commands-form", (e, commands) => {

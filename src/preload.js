@@ -19,21 +19,34 @@ contextBridge.exposeInMainWorld("chatguessrApi", chatguessrApi);
 
 const REMOVE_ALL_MARKERS_CSS = '[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"] { display: none; }';
 const REMOVE_GUESS_MARKERS_CSS = '[data-qa="result-view-top"] [data-qa="guess-marker"] { display: none; }';
-const REMOVE_GAME_CONTROLS_CSS = ".styles_columnTwo___2qFL, .styles_controlGroup___ArrW, .compass { display: none !important; }";
+const REMOVE_GAME_CONTROLS_CSS = ".styles_columnTwo___2qFL, .styles_controlGroup___ArrW, .compass, .game-layout__compass { display: none !important; }";
+const REMOVE_COMPASS_CSS = ".compass, .game-layout__compass { display: none; }";
 
 /**
  * @param {import('./types').RendererApi} rendererApi
  */
 function init(rendererApi) {
 	const Scoreboard = require("./Classes/Scoreboard");
-	const Settings = require("./utils/Settings");
 	const sharedStore = require("./utils/sharedStore");
 
-	const { noCar } = Settings.read();
-	rendererApi.drParseNoCar(noCar);
+	/** @type {Boolean} */
+	const isNoCar = sharedStore.get("isNoCar", false);
+	rendererApi.drParseNoCar(isNoCar);
+
+	/** @type {Boolean} */
+	const isNoCompass = sharedStore.get("isNoCompass", false);
+
+	/** @type {Boolean} */
+	const isSatellite = sharedStore.get("isSatellite", false);
+
+	/** @type {LatLng|undefined} */
+	let currentLocation;
 
 	const markerRemover = document.createElement("style");
 	markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
+
+	const compassRemover = document.createElement("style");
+	compassRemover.textContent = REMOVE_COMPASS_CSS;
 
 	const gameControlsRemover = document.createElement("style");
 	gameControlsRemover.textContent = REMOVE_GAME_CONTROLS_CSS;
@@ -67,12 +80,40 @@ function init(rendererApi) {
 		scoreboard.setVisibility();
 	});
 
-	/** @type {LatLng|undefined} */
-	let currentLocation;
+	// NO COMPASS
+	if (isNoCompass) document.head.append(compassRemover);
+	const compassIcon = createEl("span", { class: `icon ${isNoCompass ? "compassHiddenIcon" : "compassIcon"}` });
+	const noCompassBtn = createEl("div", { title: "Show/Hide compass" }, compassIcon);
+	noCompassBtn.addEventListener("click", () => {
+		const isNoCompass = !sharedStore.get("isNoCompass");
+		sharedStore.set("isNoCompass", isNoCompass);
+		if (isNoCompass) {
+			compassIcon.className = "icon compassHiddenIcon";
+			document.head.append(compassRemover);
+		} else {
+			compassIcon.className = "icon compassIcon";
+			compassRemover.remove();
+		}
+	});
+	iconsColumn.append(noCompassBtn);
 
-	const isSatellite = sharedStore.get("isSatellite");
+	// NO CAR
+	const carIcon = createEl("span", { class: `icon ${isNoCar ? "noCarIcon" : "carIcon"}` });
+	const noCarBtn = createEl("div", { title: "Show/Hide Google Car" }, carIcon);
+	noCarBtn.addEventListener("click", () => {
+		const isNoCar = !sharedStore.get("isNoCar");
+		sharedStore.set("isNoCar", isNoCar);
+		if (isNoCar) {
+			carIcon.className = "icon noCarIcon";
+		} else {
+			carIcon.className = "icon carIcon";
+		}
+		location.reload();
+	});
+	iconsColumn.append(noCarBtn);
+
+	// SATELLITE MODE
 	if (isSatellite) document.head.append(gameControlsRemover);
-
 	const satelliteIcon = createEl("span", { class: `icon ${isSatellite ? "satelliteIcon" : "streetIcon"}` });
 	const satelliteSwitchBtn = createEl(
 		"div",
@@ -83,24 +124,26 @@ function init(rendererApi) {
 		const isSatellite = !sharedStore.get("isSatellite");
 		sharedStore.set("isSatellite", isSatellite);
 
+		const isInGame = location.pathname.startsWith("/game/");
 		if (isSatellite) {
-			rendererApi.showSatelliteMap(currentLocation);
+			if (isInGame) rendererApi.showSatelliteMap(currentLocation);
 			satelliteIcon.className = "icon satelliteIcon";
 			satelliteSwitchBtn.title = "Switch to StreetView";
 			centerSatelliteViewBtn.style.display = "flex";
 			document.head.append(gameControlsRemover);
 		} else {
-			rendererApi.hideSatelliteMap();
+			if (isInGame) rendererApi.hideSatelliteMap();
 			satelliteIcon.className = "icon streetIcon";
 			satelliteSwitchBtn.title = "Switch to Satellite View";
 			centerSatelliteViewBtn.style.display = "none";
 			gameControlsRemover.remove();
 		}
 	});
+	iconsColumn.append(satelliteSwitchBtn);
 
 	const centerSatelliteViewBtn = createEl("div", { id: "centerSatelliteViewBtn", title: "Center view" }, createEl("span", { class: "icon startFlagIcon" }));
 	centerSatelliteViewBtn.addEventListener("click", () => {
-		rendererApi.centerSatelliteView();
+		rendererApi.centerSatelliteView(currentLocation);
 	});
 
 	// IPC RENDERERS
@@ -114,7 +157,7 @@ function init(rendererApi) {
 			rendererApi.showSatelliteMap(location);
 		}
 
-		iconsColumn.append(showScoreboardBtn, satelliteSwitchBtn, centerSatelliteViewBtn);
+		iconsColumn.append(centerSatelliteViewBtn, showScoreboardBtn);
 		scoreboard.checkVisibility();
 		scoreboard.reset(isMultiGuess);
 
@@ -130,10 +173,9 @@ function init(rendererApi) {
 		}
 	});
 
-	ipcRenderer.on("refreshed-in-game", (e, noCompass) => {
-		iconsColumn.append(showScoreboardBtn, satelliteSwitchBtn, centerSatelliteViewBtn);
+	ipcRenderer.on("refreshed-in-game", () => {
+		iconsColumn.append(centerSatelliteViewBtn, showScoreboardBtn);
 		scoreboard.checkVisibility();
-		rendererApi.drParseNoCompass(noCompass);
 	});
 
 	ipcRenderer.on("game-quitted", () => {
@@ -142,9 +184,8 @@ function init(rendererApi) {
 		rendererApi.clearMarkers();
 
 		// Hide in-game-only buttons
-		document.querySelector("#showScoreboardBtn")?.remove();
-		document.querySelector("#satelliteSwitchBtn")?.remove();
 		document.querySelector("#centerSatelliteViewBtn")?.remove();
+		document.querySelector("#showScoreboardBtn")?.remove();
 	});
 
 	ipcRenderer.on("render-guess", (e, guess) => {
@@ -156,7 +197,7 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("show-round-results", (e, round, location, scores) => {
-		scoreboard.setTitle(`ROUND ${round} RESULTS`);
+		scoreboard.setTitle(`ROUND ${round} RESULTS (${scores.length})`);
 		scoreboard.displayScores(scores);
 		scoreboard.showSwitch(false);
 		rendererApi.populateMap(location, scores);
@@ -164,7 +205,7 @@ function init(rendererApi) {
 
 	ipcRenderer.on("show-final-results", (e, totalScores) => {
 		markerRemover.textContent = REMOVE_GUESS_MARKERS_CSS;
-		scoreboard.setTitle("HIGHSCORES");
+		scoreboard.setTitle(`HIGHSCORES (${totalScores.length})`);
 		scoreboard.showSwitch(false);
 		scoreboard.displayScores(totalScores, true);
 		rendererApi.clearMarkers();
@@ -191,10 +232,6 @@ function init(rendererApi) {
 		scoreboard.switchOn(false);
 	});
 
-	ipcRenderer.on("game-settings-change", (e, noCompass) => {
-		rendererApi.drParseNoCompass(noCompass);
-	});
-
 	/**
 	 * @param {String} type
 	 * @param {Object} attributes
@@ -202,7 +239,7 @@ function init(rendererApi) {
 	 */
 	function createEl(type, attributes, ...children) {
 		const el = document.createElement(type);
-		for (let key in attributes) {
+		for (const key in attributes) {
 			el.setAttribute(key, attributes[key]);
 		}
 		children.forEach((child) => {

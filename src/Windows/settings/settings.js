@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 // Parcel prevents us from `require`ing things in a "standard" script
 // and ONLY wants to output ES modules in a module. We must use `require`
@@ -6,43 +6,39 @@
 // doing.
 /** @type {typeof require} */
 // @ts-ignore
-const secretRequire = (0, eval('require'));
+const secretRequire = (0, eval("require"));
 const { ipcRenderer } = secretRequire("electron");
 
 /** @type {HTMLInputElement} */
-const channelName = document.querySelector('#channelName')
+const channelName = document.querySelector("#channelName");
 /** @type {HTMLInputElement} */
-const botUsername = document.querySelector('#botUsername')
+const botUsername = document.querySelector("#botUsername");
 /** @type {HTMLInputElement} */
-const twitchToken = document.querySelector('#twitchToken')
+const twitchToken = document.querySelector("#twitchToken");
 /** @type {HTMLInputElement} */
-const cgCmd = document.querySelector('#cgCmd')
+const cgCmd = document.querySelector("#cgCmd");
 /** @type {HTMLInputElement} */
-const cgMsg = document.querySelector('#cgMsg')
+const cgMsg = document.querySelector("#cgMsg");
 /** @type {HTMLInputElement} */
-const userGetStatsCmd = document.querySelector('#userGetStatsCmd')
+const userGetStatsCmd = document.querySelector("#userGetStatsCmd");
 /** @type {HTMLInputElement} */
-const userClearStatsCmd = document.querySelector('#userClearStatsCmd')
+const userClearStatsCmd = document.querySelector("#userClearStatsCmd");
 /** @type {HTMLInputElement} */
-const setStreakCmd = document.querySelector('#setStreakCmd')
+const setStreakCmd = document.querySelector("#setStreakCmd");
 /** @type {HTMLInputElement} */
-const showHasGuessed = document.querySelector('#showHasGuessed')
+const showHasGuessed = document.querySelector("#showHasGuessed");
 /** @type {HTMLInputElement} */
-const isMultiGuess = document.querySelector('#isMultiGuess')
+const isMultiGuess = document.querySelector("#isMultiGuess");
 /** @type {HTMLInputElement} */
-const noCar = document.querySelector('#noCar')
-/** @type {HTMLInputElement} */
-const noCompass = document.querySelector('#noCompass')
-/** @type {HTMLInputElement} */
-const cgLink = document.querySelector('#cgLink')
+const cgLink = document.querySelector("#cgLink");
 /** @type {HTMLElement} */
-const cgLinkContainer = document.querySelector('#cgLinkContainer')
+const cgLinkContainer = document.querySelector("#cgLinkContainer");
 /** @type {HTMLButtonElement} */
-const copyLinkBtn = document.querySelector('#copyLinkBtn')
+const copyLinkBtn = document.querySelector("#copyLinkBtn");
 /** @type {HTMLElement} */
-const twitchStatusElement = document.querySelector('#twitchStatus')
+const twitchStatusElement = document.querySelector("#twitchStatus");
 /** @type {HTMLButtonElement} */
-const clearStatsBtn = document.querySelector('#clearStatsBtn')
+const clearStatsBtn = document.querySelector("#clearStatsBtn");
 
 ipcRenderer.on("render-settings", (e, settings, twitchStatus) => {
 	channelName.value = settings.channelName;
@@ -55,8 +51,6 @@ ipcRenderer.on("render-settings", (e, settings, twitchStatus) => {
 	setStreakCmd.value = settings.setStreakCmd;
 	showHasGuessed.checked = settings.showHasGuessed;
 	isMultiGuess.checked = settings.isMultiGuess;
-	noCar.checked = settings.noCar;
-	noCompass.checked = settings.noCompass;
 
 	if (twitchStatus == "OPEN") {
 		twitchConnected(settings.botUsername);
@@ -102,7 +96,7 @@ const twitchDisconnected = () => {
 };
 
 function gameSettingsForm() {
-	ipcRenderer.send("game-form", isMultiGuess.checked, noCar.checked, noCompass.checked);
+	ipcRenderer.send("game-form", isMultiGuess.checked);
 }
 
 function twitchCommandsForm() {
@@ -142,10 +136,10 @@ function openTab(e, tab) {
 		el.style.display = "none";
 	}
 	for (const el of document.querySelectorAll(".tablinks")) {
-		el.classList.remove('active');
+		el.classList.remove("active");
 	}
 	document.getElementById(tab).style.display = "block";
-	e.currentTarget.classList.add('active');
+	e.currentTarget.classList.add("active");
 }
 
 // @ts-ignore TS2339

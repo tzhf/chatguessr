@@ -89,7 +89,7 @@ button:focus {
 	background-image: url(asset:icons/gear.svg);
 }
 .eyeIcon {
-	background-image: url(asset:icons/openedEye.svg);
+	background-image: url(asset:icons/opened_eye.svg);
 }
 .streetIcon {
 	background-image: url(asset:icons/street.svg);
@@ -99,6 +99,18 @@ button:focus {
 }
 .startFlagIcon {
 	background-image: url(asset:icons/startFlag.svg);
+}
+.compassIcon {
+	background-image: url(asset:icons/compass.svg);
+}
+.compassHiddenIcon {
+	background-image: url(asset:icons/compass_hidden.svg);
+}
+.carIcon {
+	background-image: url(asset:icons/google_car.svg);
+}
+.noCarIcon {
+	background-image: url(asset:icons/google_car_hidden.svg);
 }
 
 #scoreboardContainer {
@@ -225,6 +237,9 @@ th.sorting_desc:hover {
 	-webkit-transition: 0.1s;
 	transition: 0.2s;
 	color: #d6d6d6;
+}
+.dt-down-arrow {
+	display: none;
 }
 .dataTables_empty {
 	display: none;

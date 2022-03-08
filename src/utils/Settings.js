@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-const store = require('./sharedStore');
+const store = require("./sharedStore");
 
 /**
  * @typedef {object} SettingsProps
@@ -14,8 +14,6 @@ const store = require('./sharedStore');
  * @prop {string} setStreakCmd
  * @prop {boolean} showHasGuessed
  * @prop {boolean} isMultiGuess
- * @prop {boolean} noCar
- * @prop {boolean} noCompass
  */
 
 class Settings {
@@ -31,32 +29,24 @@ class Settings {
 		setStreakCmd = "!setstreak",
 		showHasGuessed = true,
 		isMultiGuess = false,
-		noCar = false,
-		noCompass = false
 	} = {}) {
-			this.channelName = channelName;
-			this.botUsername = botUsername;
-			this.token = token;
-			this.cgCmd = cgCmd;
-			this.cgMsg = cgMsg;
-			this.userGetStatsCmd = userGetStatsCmd;
-			this.userClearStatsCmd = userClearStatsCmd;
-			this.setStreakCmd = setStreakCmd;
-			this.showHasGuessed = showHasGuessed;
-			this.isMultiGuess = isMultiGuess;
-			this.noCar = noCar;
-			this.noCompass = noCompass;
+		this.channelName = channelName;
+		this.botUsername = botUsername;
+		this.token = token;
+		this.cgCmd = cgCmd;
+		this.cgMsg = cgMsg;
+		this.userGetStatsCmd = userGetStatsCmd;
+		this.userClearStatsCmd = userClearStatsCmd;
+		this.setStreakCmd = setStreakCmd;
+		this.showHasGuessed = showHasGuessed;
+		this.isMultiGuess = isMultiGuess;
 	}
 
 	/**
 	 * @param {boolean} isMultiGuess
-	 * @param {boolean} noCar
-	 * @param {boolean} noCompass
 	 */
-	setGameSettings(isMultiGuess, noCar, noCompass) {
+	setGameSettings(isMultiGuess) {
 		this.isMultiGuess = isMultiGuess;
-		this.noCar = noCar;
-		this.noCompass = noCompass;
 		this.#save();
 	}
 
@@ -97,17 +87,15 @@ class Settings {
 			setStreakCmd: this.setStreakCmd,
 			showHasGuessed: this.showHasGuessed,
 			isMultiGuess: this.isMultiGuess,
-			noCar: this.noCar,
-			noCompass: this.noCompass,
-		}
+		};
 	}
 
 	static read() {
-		return new Settings(store.get('settings'));
+		return new Settings(store.get("settings"));
 	}
 
 	#save() {
-		store.set('settings', this.toJSON());
+		store.set("settings", this.toJSON());
 	}
 }
 

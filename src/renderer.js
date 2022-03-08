@@ -4,16 +4,14 @@ window.chatguessrApi.init({
 	populateMap,
 	clearMarkers,
 	drParseNoCar,
-	drParseNoCompass,
 	showSatelliteMap,
 	hideSatelliteMap,
 	centerSatelliteView,
+	getBounds,
 });
 
 /** @type {google.maps.Map | undefined} */
 let globalMap = undefined;
-/** @type {google.maps.LatLngLiteral | undefined} */
-let satelliteCenter = undefined;
 /** @type {google.maps.Map | undefined} */
 let satelliteLayer = undefined;
 /** @type {google.maps.Marker | undefined} */
@@ -223,27 +221,6 @@ async function hijackMap() {
 async function showSatelliteMap(location) {
 	await mapReady;
 
-	/**
-	 * @param {Number} lat
-	 * @param {Number} lng
-	 * @param {Number} meters
-	 **/
-	function getBounds(lat, lng, meters) {
-		const earth = 6371.071;
-		const pi = Math.PI;
-		const cos = Math.cos;
-		const m = 1 / (((2 * pi) / 360) * earth) / 1000;
-
-		const north = lat + meters * m;
-		const south = lat - meters * m;
-		const west = lng - (meters * m) / cos(lat * (pi / 180));
-		const east = lng + (meters * m) / cos(lat * (pi / 180));
-
-		return { north, south, west, east };
-	}
-
-	satelliteCenter = location;
-
 	if (!document.body.contains(satelliteCanvas)) {
 		document.querySelector(".game-layout__canvas").append(satelliteCanvas);
 	}
@@ -252,17 +229,15 @@ async function showSatelliteMap(location) {
 	satelliteLayer ??= new google.maps.Map(satelliteCanvas, {
 		fullscreenControl: false,
 		mapTypeId: google.maps.MapTypeId.SATELLITE,
-		// zoom: 25,
-		// minZoom: 10,
 	});
 	satelliteLayer.setOptions({
 		restriction: {
-			latLngBounds: getBounds(location.lat, location.lng, 10000),
+			latLngBounds: getBounds(location, 10000),
 			strictBounds: true,
 		},
 	});
 	satelliteLayer.setCenter(location);
-	satelliteLayer.setZoom(25);
+	satelliteLayer.setZoom(20);
 	satelliteMarker?.setMap(null);
 	satelliteMarker = new google.maps.Marker({
 		position: location,
@@ -284,24 +259,23 @@ async function hideSatelliteMap() {
 }
 
 /** @type {import('./types').RendererApi['centerSatelliteView']} */
-function centerSatelliteView() {
-	satelliteLayer.setCenter(satelliteCenter);
+function centerSatelliteView(location) {
+	satelliteLayer.setCenter(location);
 }
 
-/** @type {import('./types').RendererApi['drParseNoCompass']} */
-// TODO just use `webContents.insertCSS` for this
-function drParseNoCompass(noCompass) {
-	const style = document.querySelector("#noCompass");
-	if (noCompass) {
-		if (!style) {
-			const style = document.createElement("style");
-			style.id = "noCompass";
-			style.innerHTML = ".compass{display: none}";
-			document.head.appendChild(style);
-		}
-	} else {
-		if (style) style.remove();
-	}
+/** @type {import('./types').RendererApi['getBounds']} */
+function getBounds(location, meters) {
+	const earth = 6371.071;
+	const pi = Math.PI;
+	const cos = Math.cos;
+	const m = 1 / (((2 * pi) / 360) * earth) / 1000;
+
+	const north = location.lat + meters * m;
+	const south = location.lat - meters * m;
+	const west = location.lng - (meters * m) / cos(location.lat * (pi / 180));
+	const east = location.lng + (meters * m) / cos(location.lat * (pi / 180));
+
+	return { north, south, west, east };
 }
 
 /** @type {import('./types').RendererApi['drParseNoCar']} */

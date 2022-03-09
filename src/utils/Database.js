@@ -114,40 +114,54 @@ const migrations = [
 
         db.prepare(`ALTER TABLE users ADD COLUMN current_streak_id TEXT DEFAULT NULL`).run();
     },
-    function createGameWinners(db) {
-        // TODO the final LEFT JOIN needs a way to include the guessed_at
-        // this query is based on https://stackoverflow.com/a/7745635/591962
-        // could be possible to use windowing functions on the game_scores query too, partitioning by game_id and then selecting only
-        // those where rank() = 1.
+    function createGameWinners(_db) {
+        // This used to create a game_winners view, but that was obsoleted by the next migration.
+        // For new users who didn't run this migration yet we can keep it a noop.
+        // This empty function needs to remain so the `user_version` value in SQLite stays correct.
+    },
+    function addGameStateColumn(db) {
+        db.prepare(`ALTER TABLE games ADD COLUMN state TEXT DEFAULT 'started'`).run();
+        db.prepare(`CREATE INDEX games_state ON games(state)`).run();
+
+        // Mark all existing games with at least 5 rounds as finished.
         db.prepare(`
-            CREATE VIEW game_winners (id, user_id, score) AS
-            -- Only count completed games (with at least 5 rounds), else there is no winner yet
-            WITH completed_games AS (
+            UPDATE games SET state = 'finished' WHERE id IN (
                 SELECT games.id
                 FROM games, rounds
                 WHERE rounds.game_id = games.id
                 GROUP BY games.id
                 HAVING COUNT(rounds.id) >= 5
-            ),
-            -- Prepare all users' total scores in each game
-            game_scores AS (
-                SELECT guesses.user_id, completed_games.id AS game_id, SUM(guesses.score) AS score, MAX(guesses.created_at) AS guessed_at
-                FROM completed_games
-                LEFT JOIN rounds ON rounds.game_id = completed_games.id
-                LEFT JOIN guesses ON guesses.round_id = rounds.id
-                GROUP BY guesses.user_id, completed_games.id
             )
-            SELECT completed_games.id, top_scores.user_id, top_scores.score
-            FROM completed_games
+        `).run();
+
+        db.prepare(`DROP VIEW IF EXISTS game_winners`).run();
+        // TODO the final LEFT JOIN needs a way to include the guessed_at
+        // this query is based on https://stackoverflow.com/a/7745635/591962
+        // It could be possible to use windowing functions on the game_scores query too,
+        // partitioning by game_id and then selecting only those where rank() = 1 to filter top scores.
+        db.prepare(`
+            CREATE VIEW game_winners (id, user_id, score) AS
+            -- Prepare all users' total scores in each game
+            WITH game_scores AS (
+                SELECT guesses.user_id, games.id AS game_id, SUM(guesses.score) AS score, MAX(guesses.created_at) AS guessed_at
+                FROM games
+                LEFT JOIN rounds ON rounds.game_id = games.id
+                LEFT JOIN guesses ON guesses.round_id = rounds.id
+                WHERE games.state = 'finished'
+                GROUP BY guesses.user_id, games.id
+            )
+            SELECT games.id, top_scores.user_id, top_scores.score
+            FROM games
             -- Match the highest total score for each game
-            -- This can return multiple records if the top score was a tie: it means we just end up all of them as winners, which seems fair.
+            -- This can return multiple records if the top score was a tie: it means we count all of them as winners, which seems fair.
             LEFT JOIN (
                 SELECT user_id, game_id, MAX(score) AS score
                 FROM game_scores
                 GROUP BY game_id
-            ) top_scores ON completed_games.id = top_scores.game_id
+            ) top_scores ON games.id = top_scores.game_id
+            WHERE games.state = 'finished'
         `).run();
-    }
+    },
 ];
 
 class Database {
@@ -486,15 +500,23 @@ class Database {
     }
 
     /**
-     * 
-     * @param {string} gameId 
+     * Mark a game as finished. It will now count for the victory calculations.
+     * @param {string} gameId
+     */
+    finishGame(gameId) {
+        const stmt = this.#db.prepare(`UPDATE games SET state = 'finished' WHERE id = ?`);
+        stmt.run(gameId);
+    }
+
+    /**
+     * Get the total scores for a game, across all rounds, ordered from highest to lowest points.
+     * @param {string} gameId
      */
     getGameScores(gameId) {
         // We need to pick the last guess's streak value OR calculate them on the fly. Our streak tracking table is not suitable for
         // checking the current streak at a previous point. The only option atm is to use this subquery I think, hopefully the
         // performance is not too bad.
 
-        // TODO /!\ game results are anormally long to process, we prob don't need the db here
         const stmt = this.#db.prepare(`
             SELECT
                 users.username,

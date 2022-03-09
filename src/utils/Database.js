@@ -493,8 +493,6 @@ class Database {
         // We need to pick the last guess's streak value OR calculate them on the fly. Our streak tracking table is not suitable for
         // checking the current streak at a previous point. The only option atm is to use this subquery I think, hopefully the
         // performance is not too bad.
-
-        // TODO /!\ game results are anormally long to process, we prob don't need the db here
         const stmt = this.#db.prepare(`
             SELECT
                 users.username,

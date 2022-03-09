@@ -130,7 +130,7 @@ async function hijackMap() {
 
 		/**
 		 * Check if `element` is a Google Maps script tag and resolve the outer Promise if so.
-		 * @param {HTMLElement} element
+		 * @param {Element} element
 		 */
 		function checkMapsScript(element) {
 			if (element.matches(MAPS_SCRIPT_SELECTOR)) {
@@ -151,7 +151,9 @@ async function hijackMap() {
 		const scriptObserver = new MutationObserver((mutations, observer) => {
 			for (const mutation of mutations) {
 				for (const tmp of mutation.addedNodes) {
-					checkMapsScript(tmp);
+					if (tmp.nodeType === Node.ELEMENT_NODE) {
+						checkMapsScript(/** @type {Element} */ (tmp));
+					}
 				}
 			}
 		});

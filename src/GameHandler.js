@@ -69,7 +69,8 @@ class GameHandler {
 	}
 
 	nextRound() {
-		if (this.#game.seed.state === "finished") {
+		if (this.#game.isFinished) {
+			this.#game.finishGame();
 			this.#processTotalScores();
 		} else {
 			this.#win.webContents.send("next-round", this.#game.isMultiGuess, this.#game.getLocation());
@@ -94,7 +95,7 @@ class GameHandler {
 	 * @param {Guess[]} scores
 	 */
 	#showResults(location, scores) {
-		const round = this.#game.seed.state === "finished" ? this.#game.round : this.#game.round - 1;
+		const round = this.#game.isFinished ? this.#game.round : this.#game.round - 1;
 		this.#win.webContents.send("show-round-results", round, location, scores);
 		this.#twitch.action(`🌎 Round ${round} has finished. Congrats ${flags.getEmoji(scores[0].flag)} ${scores[0].username} !`);
 	}

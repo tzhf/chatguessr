@@ -46,7 +46,10 @@ class Game {
 	 */
 	#country;
 
-	/** @type {Seed | undefined} */
+	/**
+	 * @type {Seed | undefined}
+	 * @private
+	 */
 	seed;
 	/** @type {number | undefined} */
 	mapScale;
@@ -333,11 +336,19 @@ class Game {
 		return this.#db.getRoundScores(this.#roundId);
 	}
 
+	finishGame() {
+		return this.#db.finishGame(this.seed.token);
+	}
+
 	/**
 	 * Get the combined scores for the current game, sorted from highest to lowest score.
 	 */
 	getTotalScores() {
 		return this.#db.getGameScores(this.seed.token);
+	}
+
+	get isFinished() {
+		return this.seed.state === 'finished';
 	}
 
 	get mapName() {

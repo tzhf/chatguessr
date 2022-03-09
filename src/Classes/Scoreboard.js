@@ -29,7 +29,7 @@ class Scoreboard {
 		this.speed = 50;
 		this.onToggleGuesses = props.onToggleGuesses;
 
-		this.visibility = JSON.parse(localStorage.getItem("visibility")) || true;
+		this.visibility = JSON.parse(localStorage.getItem("scoreboard_visibility")) || true;
 		this.position = JSON.parse(localStorage.getItem("scoreboard_position")) || { top: 20, left: 5, width: 380, height: 180 };
 		this.container = $(container);
 		this.scoreboard = $(`
@@ -193,9 +193,9 @@ class Scoreboard {
 		this.table.clear().draw();
 	}
 
-	setVisibility() {
+	toogleVisibility() {
 		this.visibility = !this.visibility;
-		localStorage.setItem("visibility", JSON.stringify(this.visibility));
+		localStorage.setItem("scoreboard_visibility", JSON.stringify(this.visibility));
 		this.checkVisibility();
 	}
 

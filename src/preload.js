@@ -77,7 +77,7 @@ function init(rendererApi) {
 
 	const showScoreboardBtn = createEl("div", { id: "showScoreboardBtn", title: "Show/Hide scoreboard" }, createEl("span", { class: "icon eyeIcon" }));
 	showScoreboardBtn.addEventListener("click", () => {
-		scoreboard.setVisibility();
+		scoreboard.toogleVisibility();
 	});
 
 	// NO COMPASS

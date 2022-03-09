@@ -645,6 +645,18 @@ class Database {
     /**
      * 
      * @param {string} userId 
+     * @param {LatLng} previousGuess 
+     */
+    setUserPreviousGuess(userId, previousGuess) {
+        this.#db.prepare(`UPDATE users SET previous_guess = :previousGuess WHERE id = :id`).run({
+            id: userId,
+            previousGuess: JSON.stringify(previousGuess),
+        })
+    }
+
+    /**
+     * 
+     * @param {string} userId 
      */
     getUserStats(userId) {
         const stmt = this.#db.prepare(`

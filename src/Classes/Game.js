@@ -194,7 +194,7 @@ class Game {
 		const streamerGuess = this.seed.player.guesses[this.seed.round - index];
 		const location = { lat: streamerGuess.lat, lng: streamerGuess.lng };
 
-		const { user, dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, 'BROADCASTER', this.#settings.channelName, this.#settings.channelName);
+		const { dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, 'BROADCASTER', this.#settings.channelName, this.#settings.channelName);
 
 		const guessedCountry = await GameHelper.getCountryCode(location);
 		if (guessedCountry === this.#country) {
@@ -225,13 +225,14 @@ class Game {
 	 * @param {LatLng} location
 	 */
 	async handleUserGuess(userstate, location) {
-		const { user, dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userstate['user-id'], userstate.username, userstate['display-name']);
+		const { dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userstate['user-id'], userstate.username, userstate['display-name']);
 
 		const existingGuess = this.#db.getUserGuess(this.#roundId, dbUser.id);
 		if (!this.isMultiGuess && existingGuess) {
 			throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' });
 		}
 		
+		console.log("🚀 ~ handleUserGuess ~ dbUser.previousGuess", dbUser.previousGuess)
 		if (dbUser.previousGuess && latLngEqual(dbUser.previousGuess, location)) {
 			throw Object.assign(new Error('Same guess'), { code: 'pastedPreviousGuess' });
 		}
@@ -280,9 +281,11 @@ class Game {
 		}
 
 		// TODO I think this is only used for streaks,
-		// TODO save previous guess? No, fetch previous guess from the DB
 		// DB streaks track their own last round id so then this would be unnecessary
 		this.#db.setUserLastLocation(dbUser.id, this.location);
+		
+		// TODO save previous guess? No, fetch previous guess from the DB
+		this.#db.setUserPreviousGuess(dbUser.id, location);
 
 		// Old shape, for the scoreboard UI
 		return {

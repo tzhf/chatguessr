@@ -1,17 +1,14 @@
-"use strict";
-
-const { ipcMain } = require("electron");
-const Game = require("./Classes/Game");
-const GameHelper = require("./utils/GameHelper");
-const Settings = require("./utils/Settings");
-const TwitchClient = require("./Classes/tmi");
-const flags = require("./utils/flags");
-const legacyStoreFacade = require("./utils/legacyStoreFacade");
-const store = require("./utils/sharedStore");
-
+import { ipcMain } from "electron";
+import Game from "./Classes/Game";
+import GameHelper from "./utils/GameHelper";
+import Settings from "./utils/Settings";
+import TwitchClient from "./Classes/tmi";
+import flags from "./utils/flags";
+import legacyStoreFacade from "./utils/legacyStoreFacade";
+import store from "./utils/sharedStore";
 import { io } from "socket.io-client";
-const socket = io(process.env.SOCKET_SERVER_URL);
 
+const socket = io(process.env.SOCKET_SERVER_URL);
 const settings = Settings.read();
 
 /** @typedef {import('./types').Guess} Guess */
@@ -84,9 +81,10 @@ class GameHandler {
 
 	async #processTotalScores() {
 		const totalScores = this.#game.getTotalScores();
+		this.#win.webContents.send("show-final-results", totalScores);
+
 		const locations = this.#game.getLocations();
 		const link = await GameHelper.makeLink(settings.channelName, this.#game.mapName, this.#game.mode, locations, totalScores);
-		this.#win.webContents.send("show-final-results", totalScores);
 		await this.#twitch.action(
 			`🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${link != undefined ? `Game summary: ${link}` : ""}`
 		);
@@ -442,4 +440,4 @@ class GameHandler {
 	}
 }
 
-module.exports = GameHandler;
+export default GameHandler;

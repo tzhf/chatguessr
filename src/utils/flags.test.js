@@ -1,19 +1,36 @@
 'use strict';
 
-const { getEmoji } = require('./flags');
+const flags = require('./flags');
 
 describe('getEmoji', () => {
     it("Check emoji for 'AR' >> '🇦🇷'", () => {
-        expect(getEmoji("AR")).toBe("🇦🇷");
+        expect(flags.getEmoji("AR")).toBe("🇦🇷");
     });
     it("Check emoji for 'GBSCT' >> '🇬🇧 🇸 🇨 🇹'", () => {
-        expect(getEmoji("GBSCT")).toBe("🇬🇧 🇸 🇨 🇹");
+        expect(flags.getEmoji("GBSCT")).toBe("🇬🇧 🇸 🇨 🇹");
     });
     it("Check emoji for 'ESCT' >> '🇪🇸 🇨 🇹'", () => {
-        expect(getEmoji("ESCT")).toBe("🇪🇸 🇨 🇹");
+        expect(flags.getEmoji("ESCT")).toBe("🇪🇸 🇨 🇹");
     });
     it("should not crash with empty flags", () => {
-        expect(getEmoji(null)).toBe('');
-        expect(getEmoji('')).toBe('');
+        expect(flags.getEmoji(null)).toBe('');
+        expect(flags.getEmoji('')).toBe('');
     });
+});
+
+describe('selectFlag', () => {
+	it('supports country/region code input', () => {
+		expect(flags.selectFlag('GB')).toBe('gb');
+		expect(flags.selectFlag('uk')).toBe('gb');
+		expect(flags.selectFlag('SK')).toBe('sk');
+		expect(flags.selectFlag('CAqc')).toBe('caqc');
+		expect(flags.selectFlag('mySWK')).toBe('myswk');
+	});
+	it('supports name input', () => {
+		expect(flags.selectFlag('Brunei')).toBe('bn');
+		expect(flags.selectFlag('korea')).toBe('kr');
+		expect(flags.selectFlag('dprk')).toBe('kp');
+		expect(flags.selectFlag('England')).toBe('gbeng');
+		expect(flags.selectFlag('alabama')).toBe('usal');
+	});
 });

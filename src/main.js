@@ -6,7 +6,7 @@ const path = require('path');
 const { app, ipcMain, globalShortcut, protocol } = require("electron");
 const { initRenderer } = require('electron-store');
 const { autoUpdater } = require("electron-updater");
-const GameHandler = require("./GameHandler");
+const GameHandler = require("./GameHandler").default;
 const flags = require('./utils/flags');
 const Database = require('./utils/Database');
 

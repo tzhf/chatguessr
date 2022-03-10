@@ -701,8 +701,9 @@ class Database {
         `);
         const victoriesQuery = this.#db.prepare(`
             SELECT users.id, users.username, COUNT(*) AS victories
-            FROM game_winners
-            LEFT JOIN users ON users.id = game_winners.user_id AND game_winners.created_at > users.reset_at
+            FROM game_winners, users
+            WHERE users.id = game_winners.user_id
+              AND game_winners.created_at > users.reset_at
             GROUP BY users.id
             ORDER BY victories DESC
         `);

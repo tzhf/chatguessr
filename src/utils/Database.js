@@ -114,7 +114,7 @@ const migrations = [
 
         db.prepare(`ALTER TABLE users ADD COLUMN current_streak_id TEXT DEFAULT NULL`).run();
     },
-    function createGameWinners(_db) {
+    function createGameWinnersObsolete(_db) {
         // This used to create a game_winners view, but that was obsoleted by the next migration.
         // For new users who didn't run this migration yet we can keep it a noop.
         // This empty function needs to remain so the `user_version` value in SQLite stays correct.
@@ -133,14 +133,14 @@ const migrations = [
                 HAVING COUNT(rounds.id) >= 5
             )
         `).run();
-
+    },
+    function createGameWinners(db) {
         db.prepare(`DROP VIEW IF EXISTS game_winners`).run();
-        // TODO the final LEFT JOIN needs a way to include the guessed_at
         // this query is based on https://stackoverflow.com/a/7745635/591962
         // It could be possible to use windowing functions on the game_scores query too,
         // partitioning by game_id and then selecting only those where rank() = 1 to filter top scores.
         db.prepare(`
-            CREATE VIEW game_winners (id, user_id, score) AS
+            CREATE VIEW game_winners (id, user_id, score, created_at) AS
             -- Prepare all users' total scores in each game
             WITH game_scores AS (
                 SELECT guesses.user_id, games.id AS game_id, SUM(guesses.score) AS score, MAX(guesses.created_at) AS guessed_at
@@ -150,12 +150,12 @@ const migrations = [
                 WHERE games.state = 'finished'
                 GROUP BY guesses.user_id, games.id
             )
-            SELECT games.id, top_scores.user_id, top_scores.score
+            SELECT games.id, top_scores.user_id, top_scores.score, top_scores.guessed_at AS created_at
             FROM games
             -- Match the highest total score for each game
             -- This can return multiple records if the top score was a tie: it means we count all of them as winners, which seems fair.
             LEFT JOIN (
-                SELECT user_id, game_id, MAX(score) AS score
+                SELECT user_id, game_id, MAX(score) AS score, guessed_at
                 FROM game_scores
                 GROUP BY game_id
             ) top_scores ON games.id = top_scores.game_id
@@ -669,7 +669,7 @@ class Database {
                 (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND streak > 0 AND created_at > users.reset_at) AS correct_guesses,
                 (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND score = 5000 AND created_at > users.reset_at) AS perfects,
                 (SELECT AVG(score) FROM guesses WHERE user_id = users.id AND created_at > users.reset_at) AS average,
-                (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id) AS victories
+                (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id AND created_at > users.reset_at) AS victories
             FROM users
             LEFT JOIN streaks current_streak ON current_streak.id = users.current_streak_id
             WHERE users.id = :id
@@ -701,8 +701,9 @@ class Database {
         `);
         const victoriesQuery = this.#db.prepare(`
             SELECT users.id, users.username, COUNT(*) AS victories
-            FROM game_winners
-            LEFT JOIN users ON users.id = game_winners.user_id
+            FROM game_winners, users
+            WHERE users.id = game_winners.user_id
+              AND game_winners.created_at > users.reset_at
             GROUP BY users.id
             ORDER BY victories DESC
         `);

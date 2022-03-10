@@ -3,7 +3,6 @@
 const pMap = require("p-map");
 const GameHelper = require("../utils/GameHelper");
 const store = require("../utils/sharedStore");
-const legacyStoreFacade = require('../utils/legacyStoreFacade');
 
 /** @typedef {import('../types').LatLng} LatLng */
 /** @typedef {import('../types').Seed} Seed */
@@ -194,7 +193,7 @@ class Game {
 		const streamerGuess = this.seed.player.guesses[this.seed.round - index];
 		const location = { lat: streamerGuess.lat, lng: streamerGuess.lng };
 
-		const { dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, 'BROADCASTER', this.#settings.channelName, this.#settings.channelName);
+		const dbUser = this.#db.getOrCreateUser('BROADCASTER', this.#settings.channelName);
 
 		const guessedCountry = await GameHelper.getCountryCode(location);
 		if (guessedCountry === this.#country) {
@@ -225,14 +224,13 @@ class Game {
 	 * @param {LatLng} location
 	 */
 	async handleUserGuess(userstate, location) {
-		const { dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userstate['user-id'], userstate.username, userstate['display-name']);
+		const dbUser = this.#db.getOrCreateUser(userstate['user-id'], userstate.username);
 
 		const existingGuess = this.#db.getUserGuess(this.#roundId, dbUser.id);
 		if (!this.isMultiGuess && existingGuess) {
 			throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' });
 		}
 		
-		console.log("🚀 ~ handleUserGuess ~ dbUser.previousGuess", dbUser.previousGuess)
 		if (dbUser.previousGuess && latLngEqual(dbUser.previousGuess, location)) {
 			throw Object.assign(new Error('Same guess'), { code: 'pastedPreviousGuess' });
 		}

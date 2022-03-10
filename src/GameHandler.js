@@ -4,7 +4,7 @@ import GameHelper from "./utils/GameHelper";
 import Settings from "./utils/Settings";
 import TwitchClient from "./Classes/tmi";
 import flags from "./utils/flags";
-import legacyStoreFacade from "./utils/legacyStoreFacade";
+
 import store from "./utils/sharedStore";
 import { io } from "socket.io-client";
 
@@ -317,7 +317,7 @@ class GameHandler {
 
 		if (message.startsWith("!flag")) {
 			const countryReq = message.slice(message.indexOf(" ") + 1).trim();
-			const { dbUser } = legacyStoreFacade.getOrMigrateUser(this.#db, userId, userstate.username, userstate["display-name"]);
+			const dbUser = this.#db.getOrCreateUser(userId, userstate.username);
 
 			let newFlag;
 			if (countryReq === "none") {

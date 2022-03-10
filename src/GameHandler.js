@@ -187,10 +187,11 @@ class GameHandler {
 			this.openSettingsWindow();
 		});
 
-		ipcMain.on("clearStats", () => {
+		ipcMain.on("clearStats", async () => {
 			store.delete("users"); // from pre-sqlite chatguessr versions
 			store.delete("lastRoundPlayers"); // from even older versions
-			this.#twitch.action("All stats cleared 🗑️");
+			await this.#db.clear();
+			await this.#twitch.action("All stats cleared 🗑️");
 		});
 	}
 

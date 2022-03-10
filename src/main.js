@@ -23,7 +23,8 @@ app.on("window-all-closed", () => {
 	}
 });
 
-const db = new Database(path.join(app.getPath('userData'), 'scores.db'));
+const dbPath = path.join(app.getPath('userData'), 'scores.db');
+const db = new Database(dbPath);
 
 function serveAssets() {
 	const assetDir = path.join(__dirname, '../../assets');

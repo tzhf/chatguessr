@@ -597,29 +597,6 @@ class Database {
 
     /**
      * 
-     * @param {string} userId
-     * @param {string} username
-     * @param {import('./sharedStore').LegacyUser} storeUser 
-     */
-    migrateUser(userId, username, storeUser) {
-        const migrate = this.#db.prepare(`
-            INSERT INTO users(id, username, flag, previous_guess, last_location)
-            VALUES (:id, :username, :flag, :previousGuess, :lastLocation)
-        `);
-
-        migrate.run({
-            id: userId,
-            username,
-            flag: storeUser.flag,
-            previousGuess: storeUser.previousGuess ? JSON.stringify(storeUser.previousGuess) : null,
-            lastLocation: storeUser.lastLocation ? JSON.stringify(storeUser.lastLocation) : null,
-        });
-
-        return this.getUser(userId);
-    }
-
-    /**
-     * 
      * @param {string} userId 
      * @param {string} flag 
      */
@@ -739,6 +716,26 @@ class Database {
             id: userId,
             resetAt: timestamp(),
         });
+    }
+
+    async clear() {
+        if (!this.#db.memory) {
+            try {
+                await this.#db.backup(`${this.#db.name}.bak`);
+            } catch {}
+        }
+
+        const deleteEverything = this.#db.transaction(() => {
+            // Disable foreign key checking while we delete everything
+            this.#db.prepare('PRAGMA foreign_keys=0;').run();
+            this.#db.prepare('DELETE FROM guesses;').run();
+            this.#db.prepare('DELETE FROM streaks;').run();
+            this.#db.prepare('DELETE FROM rounds;').run();
+            this.#db.prepare('DELETE FROM games;').run();
+            this.#db.prepare('DELETE FROM users;').run();
+            this.#db.prepare('PRAGMA foreign_keys=1;').run();
+        });
+        deleteEverything();
     }
 }
 

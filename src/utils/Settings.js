@@ -11,7 +11,6 @@ const store = require("./sharedStore");
  * @prop {string} cgMsg
  * @prop {string} userGetStatsCmd
  * @prop {string} userClearStatsCmd
- * @prop {string} setStreakCmd
  * @prop {boolean} showHasGuessed
  * @prop {boolean} isMultiGuess
  */
@@ -26,7 +25,6 @@ class Settings {
 		cgMsg = "To play along, go to this link, pick a location, and paste the whole command into chat: <your cg link>",
 		userGetStatsCmd = "!me",
 		userClearStatsCmd = "!clear",
-		setStreakCmd = "!setstreak",
 		showHasGuessed = true,
 		isMultiGuess = false,
 	} = {}) {
@@ -37,7 +35,6 @@ class Settings {
 		this.cgMsg = cgMsg;
 		this.userGetStatsCmd = userGetStatsCmd;
 		this.userClearStatsCmd = userClearStatsCmd;
-		this.setStreakCmd = setStreakCmd;
 		this.showHasGuessed = showHasGuessed;
 		this.isMultiGuess = isMultiGuess;
 	}
@@ -51,14 +48,13 @@ class Settings {
 	}
 
 	/**
-	 * @param {{ cgCmdd: string, cgMsgg: string, userGetStats: string, userClearStats: string, setStreak: string, showHasGuessed: boolean }} commands
+	 * @param {{ cgCmdd: string, cgMsgg: string, userGetStats: string, userClearStats: string, showHasGuessed: boolean }} commands
 	 */
 	setTwitchCommands(commands) {
 		this.cgCmd = commands.cgCmdd;
 		this.cgMsg = commands.cgMsgg;
 		this.userGetStatsCmd = commands.userGetStats;
 		this.userClearStatsCmd = commands.userClearStats;
-		this.setStreakCmd = commands.setStreak;
 		this.showHasGuessed = commands.showHasGuessed;
 		this.#save();
 	}
@@ -84,7 +80,6 @@ class Settings {
 			cgMsg: this.cgMsg,
 			userGetStatsCmd: this.userGetStatsCmd,
 			userClearStatsCmd: this.userClearStatsCmd,
-			setStreakCmd: this.setStreakCmd,
 			showHasGuessed: this.showHasGuessed,
 			isMultiGuess: this.isMultiGuess,
 		};

@@ -7,8 +7,8 @@ function settingsWindow() {
 	const win = new BrowserWindow({
 		width: 600,
 		minWidth: 600,
-		height: 500,
-		minHeight: 500,
+		height: 550,
+		minHeight: 550,
 		show: false,
 		frame: false,
 		maximizable: false,

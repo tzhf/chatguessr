@@ -9,13 +9,13 @@
 	<body>
 		<div class="settings-container">
 			<div class="tab">
-				<button class="tablinks" onclick="openTab(event, 'gameSettings')" id="defaultOpen">Game Settings</button>
-				<button class="tablinks" onclick="openTab(event, 'twitchSettings')">Twitch Settings</button>
+				<button class="tablinks" onclick="openTab(event, 'settings')" id="defaultOpen">Settings</button>
+				<!-- <button class="tablinks" onclick="openTab(event, 'twitchSettings')">Twitch Settings</button> -->
 				<button class="tablinks" onclick="openTab(event, 'twitchConnect')">Twitch Connect</button>
 				<button class="close" onclick="closeWindow()">X</button>
 			</div>
 
-			<div id="gameSettings" class="tabcontent">
+			<div id="settings" class="tabcontent">
 				<h2>Game Settings</h2>
 				<div data-tip="Players can change their guess. Streaks, scores & distances won't be displayed on the leaderboard.">
 					<label class="checkbox-container">
@@ -26,9 +26,9 @@
 				</div>
 				<input type="button" class="btn save" value="SAVE" onclick="gameSettingsForm()" />
 				<input type="button" class="btn danger" id="clearStatsBtn" value="Clear all stats" onclick="clearStats()" />
-			</div>
-
-			<div id="twitchSettings" class="tabcontent">
+			
+				<hr>
+			
 				<h2>Twitch Settings</h2>
 				<label class="checkbox-container">
 					<div data-tip="Display &lt;User&gt; guessed in chat">Display guess confirmation</div>
@@ -62,14 +62,6 @@
 								<input class="form__field" type="text" id="userClearStatsCmd" spellcheck="false" required />
 							</div>
 						</div>
-					</div>
-				</div>
-
-				<h3>Streamer commands</h3>
-				<div class="form__group">
-					<label class="form__label">Set @user streak : </label>
-					<div data-tip="Type this command followed by @User and the streak to set. e.g: !setstreak @User 42">
-						<input class="form__field" type="text" id="setStreakCmd" spellcheck="false" required />
 					</div>
 				</div>
 

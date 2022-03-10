@@ -24,8 +24,6 @@ const userGetStatsCmd = document.querySelector("#userGetStatsCmd");
 /** @type {HTMLInputElement} */
 const userClearStatsCmd = document.querySelector("#userClearStatsCmd");
 /** @type {HTMLInputElement} */
-const setStreakCmd = document.querySelector("#setStreakCmd");
-/** @type {HTMLInputElement} */
 const showHasGuessed = document.querySelector("#showHasGuessed");
 /** @type {HTMLInputElement} */
 const isMultiGuess = document.querySelector("#isMultiGuess");
@@ -48,7 +46,6 @@ ipcRenderer.on("render-settings", (e, settings, twitchStatus) => {
 	cgMsg.value = settings.cgMsg;
 	userGetStatsCmd.value = settings.userGetStatsCmd;
 	userClearStatsCmd.value = settings.userClearStatsCmd;
-	setStreakCmd.value = settings.setStreakCmd;
 	showHasGuessed.checked = settings.showHasGuessed;
 	isMultiGuess.checked = settings.isMultiGuess;
 
@@ -105,7 +102,6 @@ function twitchCommandsForm() {
 		cgMsgg: cgMsg.value,
 		userGetStats: userGetStatsCmd.value,
 		userClearStats: userClearStatsCmd.value,
-		setStreak: setStreakCmd.value,
 		showHasGuessed: showHasGuessed.checked,
 	});
 }

@@ -359,28 +359,11 @@ class GameHandler {
 		}
 
 		// streamer commands
-		if (userstate.badges?.broadcaster !== "1") {
-			return;
-		}
+		// if (userstate.badges?.broadcaster !== "1") {
+		// 	return;
+		// }
 
-		if (message.startsWith(settings.setStreakCmd)) {
-			const msgArr = message.split(" ");
-			if (msgArr.length != 3) {
-				await this.#twitch.action(`Valid command: ${settings.setStreakCmd} user 42`);
-				return;
-			}
-
-			const newStreak = parseInt(msgArr[2]);
-			if (!Number.isInteger(newStreak)) {
-				await this.#twitch.action(`Invalid number.`);
-				return;
-			}
-			if (msgArr[1].charAt(0) === "@") msgArr[1] = msgArr[1].substring(1);
-
-			const username = msgArr[1];
-			await this.#twitch.action(`cannot set streak for ${username}: functionality currently not supported`);
-		}
-		// else if (message.startsWith("!spamguess")) {
+		// if (message.startsWith("!spamguess")) {
 		// 	const max = parseInt(message.split(" ")[1] ?? "50", 10);
 		// 	for (let i = 0; i < max; i += 1) {
 		// 		const lat = Math.random() * 180 - 90;

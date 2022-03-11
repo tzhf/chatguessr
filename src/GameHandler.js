@@ -217,13 +217,15 @@ class GameHandler {
 
 	/**
 	 *
-	 * @param {string} from
+	 * @param {string} _from
 	 * @param {import("tmi.js").ChatUserstate} userstate
 	 * @param {string} message
 	 * @param {boolean} self
 	 */
-	async #handleGuess(from, userstate, message, self) {
+	async #handleGuess(_from, userstate, message, self) {
 		if (self || !message.startsWith("!g") || !this.#game.guessesOpen) return;
+		// Ignore guesses made by the broadcaster with the CG map: prevents seemingly duplicate guesses
+		if (userstate.username.toLowerCase() === settings.channelName.toLowerCase()) return;
 
 		const location = GameHelper.parseCoordinates(message.replace(/^!g\s+/, ""));
 
@@ -261,12 +263,12 @@ class GameHandler {
 
 	/**
 	 *
-	 * @param {string} channel
+	 * @param {string} _channel
 	 * @param {import("tmi.js").ChatUserstate} userstate
 	 * @param {string} message
 	 * @param {boolean} self
 	 */
-	async #handleMessage(channel, userstate, message, self) {
+	async #handleMessage(_channel, userstate, message, self) {
 		if (self || !message.startsWith("!")) return;
 		message = message.toLowerCase();
 

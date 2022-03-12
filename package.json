@@ -1,10 +1,10 @@
 {
 	"name": "chatguessr",
-	"productName": "Chatguessr",
+	"productName": "ChatGuessr",
 	"version": "1.0.9",
-	"description": "Chatbot for Geoguessr",
-	"author": "MrAmericanMike & T.ZHF",
-	"license": "ISC",
+	"description": "The original GeoGuessr Twitch Chatbot",
+	"author": "ChatGuessr",
+	"license": "MIT",
 	"main": "./dist/cg-main/main.js",
 	"dependencies": {
 		"@paulrosania/better-sqlite3": "^8.1.0",

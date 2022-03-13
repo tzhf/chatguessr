@@ -171,6 +171,9 @@ function init(rendererApi) {
 				}
 			}
 		}
+
+		noCarBtn.style.visibility = "visible";
+		noCompassBtn.style.visibility = "visible";
 	});
 
 	ipcRenderer.on("refreshed-in-game", () => {
@@ -186,6 +189,9 @@ function init(rendererApi) {
 		// Hide in-game-only buttons
 		document.querySelector("#centerSatelliteViewBtn")?.remove();
 		document.querySelector("#showScoreboardBtn")?.remove();
+
+		noCarBtn.style.visibility = "visible";
+		noCompassBtn.style.visibility = "visible";
 	});
 
 	ipcRenderer.on("render-guess", (e, guess) => {

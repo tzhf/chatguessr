@@ -79,10 +79,15 @@ const migrations = [
             FOREIGN KEY(round_id) REFERENCES rounds(id)
         )`);
 
+        const bannedUsersTable = db.prepare(`CREATE TABLE banned_users (
+            username TEXT NOT NULL
+        )`);
+
         usersTable.run();
         gamesTable.run();
         roundsTable.run();
         guessesTable.run();
+        bannedUsersTable.run();
 
         // These are all deriveable … maybe add them later if it is useful
         /*

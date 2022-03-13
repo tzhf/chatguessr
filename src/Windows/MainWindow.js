@@ -19,7 +19,7 @@ function mainWindow() {
 			devTools: process.env.NODE_ENV === "development",
 		},
 	});
-	win.webContents.openDevTools();
+	// win.webContents.openDevTools();
 	win.setMenuBarVisibility(false);
 
 	win.loadURL("https://www.geoguessr.com/classic").then(() => {

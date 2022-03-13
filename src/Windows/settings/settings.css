@@ -54,7 +54,7 @@ hr {
 	overflow: hidden;
 	border-radius: 5px;
 	display: grid;
-	grid-template-columns: 1fr 1fr 40px;
+	grid-template-columns: 1fr 1fr 1fr 40px;
 }
 .tab button {
 	float: left;
@@ -158,14 +158,21 @@ hr {
 	border: none;
 	-webkit-app-region: no-drag;
 	cursor: pointer;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
 }
-.save {
+#copyLinkBtn,
+#banUserBtn {
+	max-width: 85px;
+	padding: 10px;
+	margin-left: 15px;
+}
+.success {
 	background: #5ad497;
 }
-.save:hover {
+.success:hover {
 	background: #56ca90;
 }
-.save:active {
+.success:active {
 	background: #4eb883;
 }
 .danger {
@@ -180,14 +187,14 @@ hr {
 .btn:focus {
 	outline: 0;
 }
-.cglink_form__field {
-	position: relative;
+.flex {
 	display: flex;
 }
-#copyLinkBtn {
-	max-width: 85px;
-	padding: 10px;
-	margin-left: 15px;
+.wrap {
+	flex-wrap: wrap;
+}
+.gap-05 {
+	gap: 0.5rem;
 }
 .oauth-link {
 	font-size: 12px;
@@ -280,4 +287,15 @@ hr {
 [data-tip]:hover:after,
 [data-tip]:hover:before {
 	display: block;
+}
+#bannedUsersList {
+	-webkit-app-region: no-drag;
+}
+
+.badge {
+	cursor: pointer;
+	padding: 5px;
+	background-color: #5ad497;
+	border-radius: 5px;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
 }

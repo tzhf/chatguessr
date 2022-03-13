@@ -10,8 +10,8 @@
 		<div class="settings-container">
 			<div class="tab">
 				<button class="tablinks" onclick="openTab(event, 'settings')" id="defaultOpen">Settings</button>
-				<!-- <button class="tablinks" onclick="openTab(event, 'twitchSettings')">Twitch Settings</button> -->
 				<button class="tablinks" onclick="openTab(event, 'twitchConnect')">Twitch Connect</button>
+				<button class="tablinks" onclick="openTab(event, 'bannedList')">Banlist</button>
 				<button class="close" onclick="closeWindow()">X</button>
 			</div>
 
@@ -24,11 +24,11 @@
 						<span class="checkmark"></span>
 					</label>
 				</div>
-				<input type="button" class="btn save" value="SAVE" onclick="gameSettingsForm()" />
+				<input type="button" class="btn success" value="SAVE" onclick="gameSettingsForm()" />
 				<input type="button" class="btn danger" id="clearStatsBtn" value="Clear all stats" onclick="clearStats()" />
-			
-				<hr>
-			
+
+				<hr />
+
 				<h2>Twitch Settings</h2>
 				<label class="checkbox-container">
 					<div data-tip="Display &lt;User&gt; guessed in chat">Display guess confirmation</div>
@@ -65,7 +65,7 @@
 					</div>
 				</div>
 
-				<input type="button" class="btn save" value="SAVE" onclick="twitchCommandsForm()" />
+				<input type="button" class="btn success" value="SAVE" onclick="twitchCommandsForm()" />
 			</div>
 
 			<div id="twitchConnect" class="tabcontent">
@@ -73,9 +73,9 @@
 
 				<div class="form__group" id="cgLinkContainer">
 					<label class="form__label">You cg link :</label>
-					<div class="cglink_form__field">
+					<div class="flex gap-05">
 						<input class="form__field" type="text" id="cgLink" disabled />
-						<button class="btn save" id="copyLinkBtn">Copy</button>
+						<button id="copyLinkBtn" class="btn small success">Copy</button>
 					</div>
 				</div>
 				<form name="twitch-form" onsubmit="twitchSettingsForm(event)">
@@ -99,8 +99,21 @@
 						<a href="https://twitchapps.com/tmi/" class="oauth-link" target="_blank">get oAuth Token</a>
 					</div>
 
-					<input type="submit" class="btn save" value="SAVE" />
+					<input type="submit" class="btn success" value="SAVE" />
 				</form>
+			</div>
+
+			<div id="bannedList" class="tabcontent">
+				<form onsubmit="addUser(event)">
+					<div class="form__group">
+						<div class="flex gap-05">
+							<input class="form__field" type="text" id="banUserInput" spellcheck="false" />
+							<input type="submit" id="banUserBtn" class="btn small success" value="Ban User" />
+						</div>
+					</div>
+				</form>
+				<h3>Banned users :</h3>
+				<div id="bannedUsersList" class="flex wrap gap-05"></div>
 			</div>
 		</div>
 		<script src="./settings.js"></script>

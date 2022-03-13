@@ -37,8 +37,14 @@ const copyLinkBtn = document.querySelector("#copyLinkBtn");
 const twitchStatusElement = document.querySelector("#twitchStatus");
 /** @type {HTMLButtonElement} */
 const clearStatsBtn = document.querySelector("#clearStatsBtn");
+/** @type {HTMLInputElement} */
+const banUserInput = document.querySelector("#banUserInput");
+/** @type {HTMLDivElement} */
+const bannedUsersList = document.querySelector("#bannedUsersList");
 
-ipcRenderer.on("render-settings", (e, settings, twitchStatus) => {
+let bannedUsersArr = [];
+
+ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus) => {
 	channelName.value = settings.channelName;
 	botUsername.value = settings.botUsername;
 	twitchToken.value = settings.token;
@@ -48,6 +54,14 @@ ipcRenderer.on("render-settings", (e, settings, twitchStatus) => {
 	userClearStatsCmd.value = settings.userClearStatsCmd;
 	showHasGuessed.checked = settings.showHasGuessed;
 	isMultiGuess.checked = settings.isMultiGuess;
+
+	bannedUsersArr = [...bannedUsers];
+	let newChilds = [];
+	bannedUsersArr.map((user) => {
+		const userBadge = createBadge(user.username);
+		newChilds.push(userBadge);
+	});
+	bannedUsersList.replaceChildren(...newChilds);
 
 	if (twitchStatus == "OPEN") {
 		twitchConnected(settings.botUsername);
@@ -124,6 +138,39 @@ function clearStatsConfirm() {
 
 function closeWindow() {
 	ipcRenderer.send("closeSettings");
+}
+
+function addUser(e) {
+	e.preventDefault();
+	const input = banUserInput.value.toLowerCase();
+	if (input.trim() != "") {
+		bannedUsersArr.push({ username: input });
+		const userBadge = createBadge(input);
+		bannedUsersList.appendChild(userBadge);
+		banUserInput.value = "";
+		ipcRenderer.send("add-banned-user", input);
+	}
+}
+
+function removeUser(e) {
+	const clickedUser = e.target;
+	const itemId = clickedUser.id;
+	const index = bannedUsersArr.findIndex((o) => o.username === itemId);
+	if (index !== -1) {
+		bannedUsersArr.splice(index, 1);
+		clickedUser.parentNode.removeChild(clickedUser);
+		ipcRenderer.send("delete-banned-user", itemId);
+	}
+}
+
+function createBadge(username) {
+	const userBadge = document.createElement("div");
+	userBadge.className = "badge";
+	userBadge.textContent = username;
+	userBadge.id = username;
+	userBadge.title = "Unban";
+	userBadge.addEventListener("click", removeUser);
+	return userBadge;
 }
 
 function openTab(e, tab) {

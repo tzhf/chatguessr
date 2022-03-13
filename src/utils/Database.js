@@ -737,6 +737,38 @@ class Database {
         });
         deleteEverything();
     }
+
+	/**
+	 *
+	 * @param {string} username
+	 */
+	addBannedUser(username) {
+		this.#db
+			.prepare(`
+                INSERT INTO banned_users (username)
+                VALUES (:username)
+            `)
+			.run({ username: username });
+	}
+
+	/**
+	 *
+	 * @param {string} username
+	 */
+	deleteBannedUser(username) {
+		this.#db
+			.prepare(`
+                DELETE FROM banned_users
+                WHERE username = :username
+            `)
+			.run({ username: username });
+	}
+
+	getBannedUsers() {
+		const bannedUsers = this.#db.prepare(`SELECT username FROM banned_users`).all();
+
+		return bannedUsers;
+	}
 }
 
 module.exports = Database;

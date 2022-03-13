@@ -179,6 +179,14 @@ class GameHandler {
 			this.#initTmi();
 		});
 
+		ipcMain.on("add-banned-user", (e, username) => {
+			this.#db.addBannedUser(username);
+		});
+
+		ipcMain.on("delete-banned-user", (e, username) => {
+			this.#db.deleteBannedUser(username);
+		});
+
 		ipcMain.on("closeSettings", () => {
 			this.#settingsWindow.hide();
 		});
@@ -226,6 +234,11 @@ class GameHandler {
 		if (self || !message.startsWith("!g") || !this.#game.guessesOpen) return;
 		// Ignore guesses made by the broadcaster with the CG map: prevents seemingly duplicate guesses
 		if (userstate.username.toLowerCase() === settings.channelName.toLowerCase()) return;
+
+		// Check if user is banned
+		const bannedUsers = this.#db.getBannedUsers();
+		const isBanned = bannedUsers.some(user => user.username === userstate.username);
+		if (isBanned) return;
 
 		const location = GameHelper.parseCoordinates(message.replace(/^!g\s+/, ""));
 
@@ -421,7 +434,9 @@ class GameHandler {
 	}
 
 	openSettingsWindow() {
-		this.#settingsWindow.webContents.send("render-settings", settings, this.#twitch?.client ? this.#twitch.client.readyState() : "");
+		const bannedUsers = this.#db.getBannedUsers();
+
+		this.#settingsWindow.webContents.send("render-settings", settings, bannedUsers, this.#twitch?.client ? this.#twitch.client.readyState() : "");
 		this.#settingsWindow.show();
 	}
 }

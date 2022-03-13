@@ -201,6 +201,9 @@ function init(rendererApi) {
 		scoreboard.displayScores(scores);
 		scoreboard.showSwitch(false);
 		rendererApi.populateMap(location, scores);
+
+		noCarBtn.style.visibility = "hidden";
+		noCompassBtn.style.visibility = "hidden";
 	});
 
 	ipcRenderer.on("show-final-results", (e, totalScores) => {
@@ -209,6 +212,9 @@ function init(rendererApi) {
 		scoreboard.showSwitch(false);
 		scoreboard.displayScores(totalScores, true);
 		rendererApi.clearMarkers();
+
+		noCarBtn.style.visibility = "hidden";
+		noCompassBtn.style.visibility = "hidden";
 	});
 
 	ipcRenderer.on("next-round", (e, isMultiGuess, location) => {
@@ -216,6 +222,10 @@ function init(rendererApi) {
 		scoreboard.checkVisibility();
 		scoreboard.reset(isMultiGuess);
 		scoreboard.showSwitch(true);
+
+		noCarBtn.style.visibility = "visible";
+		noCompassBtn.style.visibility = "visible";
+
 		setTimeout(() => {
 			rendererApi.clearMarkers();
 		}, 1000);

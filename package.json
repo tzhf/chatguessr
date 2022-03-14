@@ -62,7 +62,8 @@
 		"forge": {
 			"packagerConfig": {
 				"asar": true,
-				"ignore": "\\.parcel-cache"
+				"ignore": "\\.parcel-cache",
+				"icon": "build/icon"
 			},
 			"makers": [
 				{

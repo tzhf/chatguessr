@@ -52,7 +52,7 @@ async function findFlagFile(id) {
 		return { path: customFlagPath };
 	} catch {
 		// we naively fall back to the builtin SVGs. electron will return a 404 for us if the file doesn't exist.
-		return { path: path.join(__dirname, `../../assets/flags/${id}.svg`) };
+		return { path: path.join(__dirname, `../../assets/flags/${id.toUpperCase()}.svg`) };
 	}
 }
 

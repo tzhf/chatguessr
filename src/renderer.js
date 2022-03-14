@@ -1,6 +1,6 @@
 "use strict";
 
-require('./utils/extenssrMenuItemsPlugin');
+require("./utils/extenssrMenuItemsPlugin");
 
 window.chatguessrApi.init({
 	populateMap,
@@ -208,6 +208,7 @@ async function hijackMap() {
 				// Displays layer controls on the guess map
 				// Prevent GeoGuessr to revert it back to default settings
 				this.addListener("maptypeid_changed", () => {
+					console.log("maptypidchanged");
 					this.setOptions({
 						mapTypeControl: true,
 						mapTypeControlOptions: {

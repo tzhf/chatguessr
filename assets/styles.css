@@ -36,6 +36,7 @@ button:focus {
 .result-map__line {
 	display: none;
 }
+/* INFOWINDOW */
 .gm-ui-hover-effect {
 	display: none !important;
 }
@@ -46,13 +47,22 @@ button:focus {
 .gm-style-iw-t::after {
 	top: -4px !important;
 }
+.gm-style .gm-style-iw-c,
+.gm-style .gm-style-iw-t::after {
+	background: rgba(0, 0, 0, 0.5) !important;
+}
+.gm-style .gm-style-iw-d::-webkit-scrollbar-track,
+.gm-style .gm-style-iw-d::-webkit-scrollbar-track-piece {
+	background: transparent !important;
+}
 .gm-iw__content {
-	color: #000;
+	color: #ffffff;
 	text-align: center;
 	font-weight: 700;
 }
+
 .gm-style-cc,
-.gmnoprint {
+#satelliteCanvas .gmnoprint {
 	display: none;
 }
 
@@ -62,7 +72,7 @@ button:focus {
 	font-weight: 400;
 	font-style: normal;
 }
-
+/* ICONS */
 .iconsColumn {
 	z-index: 99998;
 	display: flex;
@@ -510,15 +520,11 @@ input:checked + .slider:before {
 .guess-map__canvas > div > div {
 	background: rgba(0, 0, 0, 0.5) !important;
 }
-.guess-map__canvas .gmnoprint {
-	display: block;
-	z-index: 999999 !important;
-}
 
-.guess-map__canvas .gm-style-mtc :is(button, ul, li) {
+.gm-style-mtc :is(button, ul, li) {
 	background: rgba(0, 0, 0, 0.5) !important;
 	color: #fff !important;
 }
-.guess-map__canvas .gm-style-mtc img {
+.gm-style-mtc img {
 	background: #22da8d !important;
 }

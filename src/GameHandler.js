@@ -411,7 +411,7 @@ class GameHandler {
 
 	#tmiListening() {
 		this.#twitch.client.on("connected", () => {
-			socket.emit("join", process.env.SOCKET_PASSPHRASE, settings.botUsername);
+			socket.emit("join", settings.token, settings.channelName, settings.botUsername);
 
 			this.#settingsWindow.webContents.send("twitch-connected", settings.botUsername);
 			this.#twitch.action("is now connected");

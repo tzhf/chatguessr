@@ -237,7 +237,7 @@ class GameHandler {
 
 		// Check if user is banned
 		const bannedUsers = this.#db.getBannedUsers();
-		const isBanned = bannedUsers.some(user => user.username === userstate.username);
+		const isBanned = bannedUsers.some((user) => user.username === userstate.username);
 		if (isBanned) return;
 
 		const location = GameHelper.parseCoordinates(message.replace(/^!g\s+/, ""));
@@ -411,7 +411,7 @@ class GameHandler {
 
 	#tmiListening() {
 		this.#twitch.client.on("connected", () => {
-			socket.emit("join", settings.botUsername);
+			socket.emit("join", process.env.SOCKET_PASSPHRASE, settings.botUsername);
 
 			this.#settingsWindow.webContents.send("twitch-connected", settings.botUsername);
 			this.#twitch.action("is now connected");

@@ -333,7 +333,7 @@ class GameHandler {
 
 		if (message.startsWith("!flag")) {
 			const countryReq = message.slice(message.indexOf(" ") + 1).trim();
-			const dbUser = this.#db.getOrCreateUser(userId, userstate.username);
+			const dbUser = this.#db.getOrCreateUser(userId, userstate['display-name']);
 
 			let newFlag;
 			if (countryReq === "none") {

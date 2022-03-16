@@ -10,13 +10,18 @@ const iso3to2 = require('country-iso-3-to-2');
 // @ts-ignore
 const countryCodes = require('./countryCodes.json')
 
+const GEOGUESSR_URL = "https://geoguessr.com";
+const CG_API_URL = process.env.API_URL ?? "https://chatguessr-api.vercel.app";
+const CG_PUBLIC_URL = process.env.BASE_URL ?? "https://chatguessr.com";
+
 /** @typedef {import('../types').LatLng} LatLng */
 /** @typedef {import('../types').Guess} Guess */
 /** @typedef {import('../types').Seed} Seed */
 
 /**
- * Checks if '/game/' is in the URL
- * @param {string} url Game URL
+ * Checks if the URL is an in-game page.
+ *
+ * @param {string} url
  * @return {boolean}
  */
 function isGameURL(url) {
@@ -30,15 +35,15 @@ function isGameURL(url) {
  * @return {string|undefined}
  */
 function getGameId(url) {
-  const id = url.substring(url.lastIndexOf("/") + 1);
+  const id = url.slice(url.lastIndexOf("/") + 1);
   if (id.length == 16) {
     return id;
   }
 }
 
 /**
- * Fetch a game seed
- * @param {string} url
+ * Fetch a game seed from the GeoGuessr API.
+ * @param {string} url URL for the game.
  * @return {Promise<Seed | undefined>} Seed Promise
  */
 async function fetchSeed(url) {
@@ -48,14 +53,15 @@ async function fetchSeed(url) {
   }
 
   /** @type {import("axios").AxiosResponse<Seed>} */
-  const { data } = await axios.get(`https://www.geoguessr.com/api/v3/games/${gameId}`);
+  const { data } = await axios.get(`${GEOGUESSR_URL}/api/v3/games/${gameId}`);
   return data;
 }
 
 /**
- * Returns a country code
+ * Get the country code for a coordinate.
+ *
  * @param {LatLng} location
- * @return {Promise<string | undefined>} Country code Promise
+ * @return {Promise<string | undefined>} Country code or `undefined` if the location is not in a known country.
  */
 async function getCountryCode(location) {
   const localResults = countryIso.get(location.lat, location.lng);
@@ -65,7 +71,8 @@ async function getCountryCode(location) {
 }
 
 /**
- * Check if the param is coordinates
+ * Parse lat/lng coordinates from a string.
+ *
  * @param {string} coordinates
  * @return {LatLng | undefined}
  */
@@ -124,8 +131,8 @@ function calculateScore(distance, scale) {
 }
 
 /**
- * Make game summary link
- * 
+ * Upload scores to the Chatguessr API and return the public URL to the scoreboard.
+ *
  * @param  {string} streamer
  * @param  {string} mapName
  * @param {Object} mode
@@ -134,25 +141,25 @@ function calculateScore(distance, scale) {
  * @return {Promise<string>} link
  */
 async function makeLink(streamer, mapName, mode, locations, totalScores) {
-  const players = totalScores.map((guess) => {
-    return {
-      username: guess.username,
-      flag: guess.flag,
-      score: guess.score,
-      rounds: guess.rounds,
-    };
-  });
+	const players = totalScores.map((guess) => {
+		return {
+			username: guess.username,
+			flag: guess.flag,
+			score: guess.score,
+			rounds: guess.rounds,
+		};
+	});
 
-  /** @type {import("axios").AxiosResponse<{ code: string }>} */
-  const res = await axios.post(`${process.env.API_URL}/game`, {
-    streamer: streamer,
-    map: mapName,
+	/** @type {import("axios").AxiosResponse<{ code: string }>} */
+	const res = await axios.post(`${CG_API_URL}/game`, {
+		streamer: streamer,
+		map: mapName,
 		mode: mode,
-    locations: locations,
-    players: players,
-  });
+		locations: locations,
+		players: players,
+	});
 
-  return `${process.env.BASE_URL}/game/${res.data.code}`;
+	return `${CG_PUBLIC_URL}/game/${res.data.code}`;
 }
 
 exports.isGameURL = isGameURL;

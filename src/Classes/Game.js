@@ -224,13 +224,13 @@ class Game {
 	 * @param {LatLng} location
 	 */
 	async handleUserGuess(userstate, location) {
-		const dbUser = this.#db.getOrCreateUser(userstate['user-id'], userstate.username);
+		const dbUser = this.#db.getOrCreateUser(userstate['user-id'], userstate['display-name']);
 
 		const existingGuess = this.#db.getUserGuess(this.#roundId, dbUser.id);
 		if (!this.isMultiGuess && existingGuess) {
 			throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' });
 		}
-		
+
 		if (dbUser.previousGuess && latLngEqual(dbUser.previousGuess, location)) {
 			throw Object.assign(new Error('Same guess'), { code: 'pastedPreviousGuess' });
 		}
@@ -281,7 +281,7 @@ class Game {
 		// TODO I think this is only used for streaks,
 		// DB streaks track their own last round id so then this would be unnecessary
 		this.#db.setUserLastLocation(dbUser.id, this.location);
-		
+
 		// TODO save previous guess? No, fetch previous guess from the DB
 		this.#db.setUserPreviousGuess(dbUser.id, location);
 

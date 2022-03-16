@@ -247,18 +247,12 @@ async function showSatelliteMap(location) {
 		position: location,
 		map: satelliteLayer,
 	});
-
-	// If we do this immediately GeoGuessr might revert it back to roadmap, so we wait a bit.
-	setTimeout(() => {
-		globalMap.setMapTypeId(google.maps.MapTypeId.HYBRID);
-	}, 2000);
 }
 
 /** @type {import('./types').RendererApi['hideSatelliteMap']} */
 async function hideSatelliteMap() {
 	await mapReady;
 
-	globalMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
 	satelliteCanvas.style.display = "none";
 }
 

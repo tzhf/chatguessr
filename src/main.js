@@ -5,15 +5,17 @@ require('./errorReporting');
 const path = require('path');
 const { app, ipcMain, globalShortcut, protocol } = require("electron");
 const { initRenderer } = require('electron-store');
+const { autoUpdater } = require("electron-updater");
 const GameHandler = require("./GameHandler").default;
 const flags = require('./utils/flags');
 const Database = require('./utils/Database');
 
-if (require("electron-squirrel-startup")) {
+/** @type {import('electron').BrowserWindow} */
+let mainWindow;
+
+if (require('electron-squirrel-startup')) {
 	app.quit();
 }
-
-require("update-electron-app")();
 
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
@@ -50,9 +52,12 @@ async function serveFlags() {
 }
 
 function initWindow() {
-	const mainWindow = require("./Windows/MainWindow");
+	mainWindow = require("./Windows/MainWindow");
 	mainWindow.once("ready-to-show", () => {
 		mainWindow.maximize();
+		setTimeout(() => {
+			autoUpdater.checkForUpdatesAndNotify();
+		}, 2000);
 	});
 
 	const settingsWindow = require("./Windows/settings/SettingsWindow");
@@ -79,5 +84,33 @@ async function init() {
 
 	initWindow();
 }
+
+// Auto Updater
+let updateWindow;
+autoUpdater.on("update-available", () => {
+	updateWindow = require("./Windows/update/UpdateWindow");
+	updateWindow.setParentWindow(mainWindow);
+	// updateWindow.webContents.send("update_available");
+});
+
+autoUpdater.on("download-progress", () => {
+	updateWindow.webContents.send("download_progress");
+});
+
+autoUpdater.on("update-downloaded", () => {
+	updateWindow.webContents.send("update_downloaded");
+});
+
+autoUpdater.on("error", (e, err) => {
+	updateWindow.webContents.send("update_error", err);
+});
+
+ipcMain.on("restart_app", () => {
+	autoUpdater.quitAndInstall();
+});
+
+ipcMain.on("close_update_window", () => {
+	updateWindow.hide();
+});
 
 init();

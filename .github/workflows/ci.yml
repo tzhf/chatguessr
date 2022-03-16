@@ -49,6 +49,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Package
+        if: ${{github.ref_type != 'tag'}}
         run: npm run package
       - name: Publish
         if: ${{github.ref_type == 'tag'}}

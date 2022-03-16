@@ -83,7 +83,11 @@
 				},
 				{
 					"name": "@electron-forge/maker-deb",
-					"config": {}
+					"config": {
+						"options": {
+							"bin": "Chatguessr"
+						}
+					}
 				}
 			],
 			"publishers": [

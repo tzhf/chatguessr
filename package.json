@@ -6,6 +6,7 @@
 	"author": "ChatGuessr",
 	"license": "MIT",
 	"main": "./dist/cg-main/main.js",
+	"repository": "https://github.com/tzhf/chatguessr",
 	"dependencies": {
 		"@paulrosania/better-sqlite3": "^8.1.0",
 		"@sentry/electron": "^3.0.0",
@@ -19,7 +20,6 @@
 		"dotenv": "^8.2.0",
 		"electron-squirrel-startup": "^1.0.0",
 		"electron-store": "^8.0.1",
-		"electron-updater": "^4.3.9",
 		"jquery": "^3.6.0",
 		"jquery-ui-dist": "^1.12.1",
 		"match-sorter": "^6.3.1",
@@ -27,6 +27,7 @@
 		"pkg-up": "^3.1.0",
 		"socket.io-client": "^4.4.1",
 		"tmi.js": "^1.8.5",
+		"update-electron-app": "^2.0.1",
 		"when-dom-ready": "^1.2.12"
 	},
 	"devDependencies": {

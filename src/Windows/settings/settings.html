@@ -12,7 +12,7 @@
 				<button class="tablinks" onclick="openTab(event, 'settings')" id="defaultOpen">Settings</button>
 				<button class="tablinks" onclick="openTab(event, 'twitchConnect')">Twitch Connect</button>
 				<button class="tablinks" onclick="openTab(event, 'banList')">Banlist</button>
-				<button class="close" onclick="closeWindow()">X</button>
+				<button class="close" onclick="closeWindow()">&times;</button>
 			</div>
 
 			<div id="settings" class="tabcontent">
@@ -35,12 +35,12 @@
 					<input type="checkbox" id="showHasGuessed" />
 					<span class="checkmark"></span>
 				</label>
-				<h3>User commands</h3>
+				<h3>User commands <small>(leave empty to disable)</small></h3>
 				<div class="grid__col">
 					<div class="col">
 						<div class="form__group">
 							<label class="form__label">Get map link :</label>
-							<div data-tip="Get map link (!cg by default). Leave empty to disable">
+							<div data-tip="Get map link (!cg by default)">
 								<input class="form__field" type="text" id="cgCmd" spellcheck="false" />
 							</div>
 						</div>
@@ -75,7 +75,7 @@
 					<label class="form__label">You cg link :</label>
 					<div class="flex gap-05">
 						<input class="form__field" type="text" id="cgLink" disabled />
-						<button id="copyLinkBtn" class="btn small success">Copy</button>
+						<button id="copyLinkBtn" class="btn small success" title="Make sure to copy this link in your !cg link message">Copy</button>
 					</div>
 				</div>
 				<form name="twitch-form" onsubmit="twitchSettingsForm(event)">

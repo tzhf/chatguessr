@@ -70,7 +70,7 @@
 					"name": "@electron-forge/maker-squirrel",
 					"config": {
 						"name": "chatguessr",
-						"iconUrl": "build/icon.ico"
+						"iconUrl": "file://build/icon.ico"
 					}
 				},
 				{

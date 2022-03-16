@@ -205,17 +205,26 @@ async function hijackMap() {
 						onMapUpdate(this);
 					}
 				});
-				// Displays layer controls on the guess map
-				// Prevent GeoGuessr to revert it back to default settings
 				this.addListener("maptypeid_changed", () => {
-					this.setOptions({
-						mapTypeControl: true,
-						mapTypeControlOptions: {
-							style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-							position: google.maps.ControlPosition.TOP_RIGHT,
-						},
-					});
+					// Save the map type ID so we can prevent GeoGuessr from resetting it
+					localStorage.chatguessrMapTypeId = this.getMapTypeId();
 				});
+			}
+			/**
+			 * @param {google.maps.MapOptions} opts
+			 */
+			setOptions(opts) {
+				// GeoGuessr's `setOptions` calls always include `backgroundColor`
+				// so this is how we can distinguish between theirs and ours
+				if (opts.backgroundColor) {
+					opts.mapTypeId = localStorage.chatguessrMapTypeId ?? opts.mapTypeId;
+					opts.mapTypeControl = true;
+					opts.mapTypeControlOptions = {
+						style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+						position: google.maps.ControlPosition.TOP_RIGHT,
+					};
+				}
+				super.setOptions(opts);
 			}
 		};
 	});

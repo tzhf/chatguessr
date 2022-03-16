@@ -33,7 +33,9 @@ jobs:
         run: npm test
   package:
     name: Package
+    needs: [test, types]
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}

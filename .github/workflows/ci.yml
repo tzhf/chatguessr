@@ -54,3 +54,7 @@ jobs:
       - name: Publish
         if: ${{github.ref_type == 'tag'}}
         run: npm run publish
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Chatguessr-${{runner.os}}
+          path: out/*/

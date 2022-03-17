@@ -8,13 +8,14 @@ import flags from "./utils/flags";
 import store from "./utils/sharedStore";
 import { io } from "socket.io-client";
 
-const socket = io(process.env.SOCKET_SERVER_URL);
+const SOCKET_SERVER_URL = process.env.SOCKET_SERVER_URL ?? "https://chatguessr-server.herokuapp.com";
 const settings = Settings.read();
 
 /** @typedef {import('./types').Guess} Guess */
 /** @typedef {import('./utils/Database')} Database */
 /** @typedef {import('./Windows/MainWindow')} MainWindow */
 /** @typedef {import('./Windows/settings/SettingsWindow')} SettingsWindow */
+/** @typedef {import('socket.io-client').Socket} Socket */
 
 class GameHandler {
 	/** @type {Database} */
@@ -36,6 +37,11 @@ class GameHandler {
 	#twitch;
 
 	/**
+	 * @type {Socket}
+	 */
+	#socket;
+
+	/**
 	 * @type {Game}
 	 */
 	#game;
@@ -50,9 +56,9 @@ class GameHandler {
 		this.#win = win;
 		this.#settingsWindow = settingsWindow;
 		this.#twitch = undefined;
+		this.#socket = undefined;
 		this.#game = new Game(db, settings);
 		this.#initTmi();
-		this.ioInit();
 		this.init();
 	}
 
@@ -204,7 +210,7 @@ class GameHandler {
 	}
 
 	async #initTmi() {
-		if (this.#twitch && this.#twitch.client.readyState() === "OPEN") {
+		if (this.#twitch?.client.readyState() === "OPEN") {
 			this.#twitch.client.disconnect();
 		}
 		if (!settings.channelName) {
@@ -333,7 +339,7 @@ class GameHandler {
 
 		if (message.startsWith("!flag")) {
 			const countryReq = message.slice(message.indexOf(" ") + 1).trim();
-			const dbUser = this.#db.getOrCreateUser(userId, userstate['display-name']);
+			const dbUser = this.#db.getOrCreateUser(userId, userstate["display-name"]);
 
 			let newFlag;
 			if (countryReq === "none") {
@@ -399,11 +405,33 @@ class GameHandler {
 	}
 
 	ioInit() {
-		socket.on("connection", () => {
+		if (this.#socket?.connected) {
+			this.#socket.disconnect();
+		}
+
+		this.#socket = io(SOCKET_SERVER_URL, {
+			transportOptions: {
+				polling: {
+					extraHeaders: {
+						oauthtoken: settings.token,
+						channelname: settings.channelName,
+						bot: settings.botUsername,
+					},
+				},
+			},
+		});
+
+		this.#socket.on("connect", () => {
+			this.#socket.emit("join", settings.botUsername);
+			this.#settingsWindow.webContents.send("socket-connected");
 			console.log("Connected to socket !");
 		});
 
-		socket.on("guess", async (userData, guess) => {
+		this.#socket.on("disconnect", () => {
+			this.#settingsWindow.webContents.send("socket-disconnected");
+		});
+
+		this.#socket.on("guess", async (userData, guess) => {
 			const self = userData.username == settings.channelName;
 			await this.#handleGuess(null, userData, guess, self);
 		});
@@ -411,7 +439,7 @@ class GameHandler {
 
 	#tmiListening() {
 		this.#twitch.client.on("connected", () => {
-			socket.emit("join", settings.token, settings.channelName, settings.botUsername);
+			this.ioInit();
 
 			this.#settingsWindow.webContents.send("twitch-connected", settings.botUsername);
 			this.#twitch.action("is now connected");
@@ -436,7 +464,13 @@ class GameHandler {
 	openSettingsWindow() {
 		const bannedUsers = this.#db.getBannedUsers();
 
-		this.#settingsWindow.webContents.send("render-settings", settings, bannedUsers, this.#twitch?.client ? this.#twitch.client.readyState() : "");
+		this.#settingsWindow.webContents.send(
+			"render-settings",
+			settings,
+			bannedUsers,
+			this.#twitch?.client ? this.#twitch.client.readyState() : "",
+			this.#socket?.connected
+		);
 		this.#settingsWindow.show();
 	}
 }

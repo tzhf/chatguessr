@@ -47,8 +47,6 @@ const bannedUsersList = document.querySelector("#bannedUsersList");
 let bannedUsersArr = [];
 
 ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus, socketStatus) => {
-	console.log("🚀 ~ ipcRenderer.on ~ socketStatus", socketStatus);
-
 	channelName.value = settings.channelName;
 	botUsername.value = settings.botUsername;
 	twitchToken.value = settings.token;

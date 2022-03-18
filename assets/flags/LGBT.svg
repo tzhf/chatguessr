@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300">
-	<rect fill="#750787" width="600" height="300" />
-	<rect fill="#004dff" width="600" height="250" />
-	<rect fill="#008026" width="600" height="200" />
-	<rect fill="#ffed00" width="600" height="150" />
-	<rect fill="#ff8c00" width="600" height="100" />
-	<rect fill="#e40303" width="600" height="50" />
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+	<rect fill="#750787" width="400" height="300" />
+	<rect fill="#004dff" width="400" height="250" />
+	<rect fill="#008026" width="400" height="200" />
+	<rect fill="#ffed00" width="400" height="150" />
+	<rect fill="#ff8c00" width="400" height="100" />
+	<rect fill="#e40303" width="400" height="50" />
 </svg>

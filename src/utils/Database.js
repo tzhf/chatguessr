@@ -678,7 +678,8 @@ class Database {
         const streakQuery = this.#db.prepare(`
             SELECT users.id, users.username, MAX(streaks.count) AS streak
             FROM users, streaks
-            WHERE streaks.user_id = users.id
+            WHERE NOT users.id = 'BROADCASTER'
+              AND streaks.user_id = users.id
               AND streaks.created_at > users.reset_at
             GROUP BY users.id
             ORDER BY streak DESC
@@ -686,7 +687,8 @@ class Database {
         const victoriesQuery = this.#db.prepare(`
             SELECT users.id, users.username, COUNT(*) AS victories
             FROM game_winners, users
-            WHERE users.id = game_winners.user_id
+            WHERE NOT users.id = 'BROADCASTER'
+              AND users.id = game_winners.user_id
               AND game_winners.created_at > users.reset_at
             GROUP BY users.id
             ORDER BY victories DESC
@@ -695,7 +697,8 @@ class Database {
             SELECT users.id, users.username, COUNT(guesses.id) AS perfects
             FROM users
             LEFT JOIN guesses ON guesses.user_id = users.id AND guesses.created_at > users.reset_at
-            WHERE guesses.score = 5000
+            WHERE NOT users.id = 'BROADCASTER'
+              AND guesses.score = 5000
             GROUP BY users.id
             ORDER BY perfects DESC
         `);

@@ -52,16 +52,18 @@ jobs:
         if: ${{github.ref_type != 'tag'}}
         run: npm run package
         env:
-          API_URL: ${{secrets.API_URL}}
-          BASE_URL: ${{secrets.BASE_URL}}
+          CG_PUBLIC_URL: ${{secrets.CG_PUBLIC_URL}}
+          CG_API_URL: ${{secrets.CG_API_URL}}
+          SOCKET_SERVER_URL: ${{secrets.SOCKET_SERVER_URL}}
           SENTRY_DSN: ${{secrets.SENTRY_DSN}}
       - name: Publish
         if: ${{github.ref_type == 'tag'}}
         run: npm run publish
         env:
           GITHUB_TOKEN: ${{github.token}}
-          API_URL: ${{secrets.API_URL}}
-          BASE_URL: ${{secrets.BASE_URL}}
+          CG_PUBLIC_URL: ${{secrets.CG_PUBLIC_URL}}
+          CG_API_URL: ${{secrets.CG_API_URL}}
+          SOCKET_SERVER_URL: ${{secrets.SOCKET_SERVER_URL}}
           SENTRY_DSN: ${{secrets.SENTRY_DSN}}
       - uses: actions/upload-artifact@v3
         with:

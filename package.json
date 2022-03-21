@@ -1,12 +1,12 @@
 {
 	"name": "chatguessr",
 	"productName": "ChatGuessr",
-	"version": "1.1.0-alpha.3",
+	"version": "1.1.0-alpha.0",
 	"description": "The original GeoGuessr Twitch Chatbot",
 	"author": "ChatGuessr",
 	"license": "MIT",
 	"main": "./dist/cg-main/main.js",
-	"repository": "https://github.com/ReAnnannanna/chatguessr",
+	"repository": "https://github.com/tzhf/chatguessr",
 	"dependencies": {
 		"@paulrosania/better-sqlite3": "^8.1.0",
 		"@sentry/electron": "^3.0.0",
@@ -95,7 +95,7 @@
 					"name": "@electron-forge/publisher-github",
 					"config": {
 						"repository": {
-							"owner": "ReAnnannanna",
+							"owner": "tzhf",
 							"name": "chatguessr"
 						}
 					}

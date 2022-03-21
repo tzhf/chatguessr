@@ -170,12 +170,12 @@ class GameHandler {
 
 		ipcMain.on("game-form", (e, isMultiGuess) => {
 			settings.setGameSettings(isMultiGuess);
-			this.#settingsWindow?.hide();
+			this.#settingsWindow?.close();
 		});
 
 		ipcMain.on("twitch-commands-form", (e, commands) => {
-			this.#settingsWindow?.hide();
 			settings.setTwitchCommands(commands);
+			this.#settingsWindow?.close();
 		});
 
 		ipcMain.on("twitch-settings-form", (e, channelName, botUsername, token) => {

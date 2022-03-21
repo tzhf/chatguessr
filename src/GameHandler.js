@@ -423,12 +423,16 @@ class GameHandler {
 
 		this.#socket.on("connect", () => {
 			this.#socket.emit("join", settings.botUsername);
-			this.#settingsWindow.webContents.send("socket-connected");
+			if (this.#settingsWindow) {
+				this.#settingsWindow.webContents.send("socket-connected");
+			}
 			console.log("Connected to socket !");
 		});
 
 		this.#socket.on("disconnect", () => {
-			this.#settingsWindow.webContents.send("socket-disconnected");
+			if (this.#settingsWindow) {
+				this.#settingsWindow.webContents.send("socket-disconnected");
+			}
 		});
 
 		this.#socket.on("guess", async (userData, guess) => {

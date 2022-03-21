@@ -200,6 +200,7 @@ button:focus {
 }
 .dataTables_scrollBody {
 	padding-top: 2px;
+	padding-bottom: 55px;
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 }
@@ -234,8 +235,9 @@ tbody .even {
 	background-color: rgba(0, 0, 0, 0.2);
 }
 tbody > tr:hover {
-	-webkit-transition: 0.2s;
-	transition: 0.2s;
+	-webkit-transition: 0.1s;
+	transition: 0.1s;
+	transform: scale(1.01);
 	background-color: rgba(0, 0, 0, 0.4);
 }
 tbody tr:hover > .sorting_1,

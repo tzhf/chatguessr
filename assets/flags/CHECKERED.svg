@@ -1,15 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 5" height="300" width="600">
-<rect x="0" y="0" width="10" height="5"/>
-<path fill="#FFF" d="
-	M 0,1 H 10 v 1 H 0 z
-	m 0,2 H 10 v 1 H 0 z
-	m 0,2 H 10 v 1 H 0 z
-	m 0,2 H 10 v 1 H 0 z
-	m 0,2 H 10 v 1 H 0 z
-	M 1,0 V 5h 1 V 0 z
-	m 2,0 V 5h 1 V 0 z
-	m 2,0 V 5h 1 V 0 z
-	m 2,0 V 5h 1 V 0 z
-	m 2,0 V 5 h 1 V 0 z" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 7">
+<path d="M0,0H9V7H0" fill="#322c24"/>
+<path stroke="#fff" stroke-dasharray="1" d="M1,.5h9M0,1.5h9M1,2.5h9M0,3.5h9M1,4.5h9M0,5.5h9M1,6.5h9"/>
 </svg>

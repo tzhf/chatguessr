@@ -1,18 +1,18 @@
-const axios = require("axios").default;
-const countryIso = require("country-iso");
+const axios = require('axios').default;
+const countryIso = require('country-iso');
 const iso3to2 = require('country-iso-3-to-2');
 /**
  * Country code mapping for 2-character ISO codes that should be considered
  * part of another country for GeoGuessr streak purposes.
- * 
+ *
  * @type {Record<string, string>}
  */
 // @ts-ignore
-const countryCodes = require('./countryCodes.json')
+const countryCodes = require('./countryCodes.json');
 
 const GEOGUESSR_URL = "https://geoguessr.com";
-const CG_API_URL = process.env.API_URL ?? "https://chatguessr-api.vercel.app";
-const CG_PUBLIC_URL = process.env.BASE_URL ?? "https://chatguessr.com";
+const CG_API_URL = process.env.CG_API_URL ?? "https://chatguessr-api.vercel.app";
+const CG_PUBLIC_URL = process.env.CG_PUBLIC_URL ?? "chatguessr.com";
 
 /** @typedef {import('../types').LatLng} LatLng */
 /** @typedef {import('../types').Guess} Guess */
@@ -25,7 +25,7 @@ const CG_PUBLIC_URL = process.env.BASE_URL ?? "https://chatguessr.com";
  * @return {boolean}
  */
 function isGameURL(url) {
-  return url.includes("/game/");
+	return url.includes("/game/");
 }
 
 /**
@@ -35,10 +35,10 @@ function isGameURL(url) {
  * @return {string|undefined}
  */
 function getGameId(url) {
-  const id = url.slice(url.lastIndexOf("/") + 1);
-  if (id.length == 16) {
-    return id;
-  }
+	const id = url.slice(url.lastIndexOf("/") + 1);
+	if (id.length == 16) {
+		return id;
+	}
 }
 
 /**
@@ -47,14 +47,14 @@ function getGameId(url) {
  * @return {Promise<Seed | undefined>} Seed Promise
  */
 async function fetchSeed(url) {
-  const gameId = getGameId(url);
-  if (!gameId) {
-    return;
-  }
+	const gameId = getGameId(url);
+	if (!gameId) {
+		return;
+	}
 
-  /** @type {import("axios").AxiosResponse<Seed>} */
-  const { data } = await axios.get(`${GEOGUESSR_URL}/api/v3/games/${gameId}`);
-  return data;
+	/** @type {import("axios").AxiosResponse<Seed>} */
+	const { data } = await axios.get(`${GEOGUESSR_URL}/api/v3/games/${gameId}`);
+	return data;
 }
 
 /**
@@ -64,10 +64,10 @@ async function fetchSeed(url) {
  * @return {Promise<string | undefined>} Country code or `undefined` if the location is not in a known country.
  */
 async function getCountryCode(location) {
-  const localResults = countryIso.get(location.lat, location.lng);
-  const localIso = localResults.length > 0 ? iso3to2(localResults[0]) : undefined;
+	const localResults = countryIso.get(location.lat, location.lng);
+	const localIso = localResults.length > 0 ? iso3to2(localResults[0]) : undefined;
 
-  return localIso ? countryCodes[localIso] : undefined;
+	return localIso ? countryCodes[localIso] : undefined;
 }
 
 /**
@@ -77,11 +77,11 @@ async function getCountryCode(location) {
  * @return {LatLng | undefined}
  */
 function parseCoordinates(coordinates) {
-  const regex = /^(?<lat>[-+]?(?:[1-8]?\d(?:\.\d+)?|90(?:\.0+)?)),\s*(?<lng>[-+]?(?:180(?:\.0+)?|(?:(?:1[0-7]\d)|(?:[1-9]?\d))(?:\.\d+)?))$/;
-  const m = regex.exec(coordinates);
-  if (m?.groups) {
-    return { lat: parseFloat(m.groups.lat), lng: parseFloat(m.groups.lng) };
-  }
+	const regex = /^(?<lat>[-+]?(?:[1-8]?\d(?:\.\d+)?|90(?:\.0+)?)),\s*(?<lng>[-+]?(?:180(?:\.0+)?|(?:(?:1[0-7]\d)|(?:[1-9]?\d))(?:\.\d+)?))$/;
+	const m = regex.exec(coordinates);
+	if (m?.groups) {
+		return { lat: parseFloat(m.groups.lat), lng: parseFloat(m.groups.lng) };
+	}
 }
 
 /**
@@ -90,7 +90,7 @@ function parseCoordinates(coordinates) {
  * @return {number} map scale
  */
 function calculateScale(bounds) {
-  return haversineDistance(bounds.min, bounds.max) / 7.458421;
+	return haversineDistance(bounds.min, bounds.max) / 7.458421;
 }
 
 /**
@@ -100,24 +100,14 @@ function calculateScale(bounds) {
  * @return {number} km
  */
 function haversineDistance(mk1, mk2) {
-  const R = 6371.071;
-  const rlat1 = mk1.lat * (Math.PI / 180);
-  const rlat2 = mk2.lat * (Math.PI / 180);
-  const difflat = rlat2 - rlat1;
-  const difflon = (mk2.lng - mk1.lng) * (Math.PI / 180);
-  const km =
-    2 *
-    R *
-    Math.asin(
-      Math.sqrt(
-        Math.sin(difflat / 2) * Math.sin(difflat / 2) +
-          Math.cos(rlat1) *
-            Math.cos(rlat2) *
-            Math.sin(difflon / 2) *
-            Math.sin(difflon / 2)
-      )
-    );
-  return km;
+	const R = 6371.071;
+	const rlat1 = mk1.lat * (Math.PI / 180);
+	const rlat2 = mk2.lat * (Math.PI / 180);
+	const difflat = rlat2 - rlat1;
+	const difflon = (mk2.lng - mk1.lng) * (Math.PI / 180);
+	const km =
+		2 * R * Math.asin(Math.sqrt(Math.sin(difflat / 2) * Math.sin(difflat / 2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.sin(difflon / 2) * Math.sin(difflon / 2)));
+	return km;
 }
 
 /**
@@ -127,7 +117,7 @@ function haversineDistance(mk1, mk2) {
  * @return {number} score
  */
 function calculateScore(distance, scale) {
-  return Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale));
+	return Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale));
 }
 
 /**

@@ -35,6 +35,8 @@ const cgLinkContainer = document.querySelector("#cgLinkContainer");
 const copyLinkBtn = document.querySelector("#copyLinkBtn");
 /** @type {HTMLElement} */
 const twitchStatusElement = document.querySelector("#twitchStatus");
+/** @type {HTMLElement} */
+const socketStatusElement = document.querySelector("#socketStatus");
 /** @type {HTMLButtonElement} */
 const clearStatsBtn = document.querySelector("#clearStatsBtn");
 /** @type {HTMLInputElement} */
@@ -44,7 +46,7 @@ const bannedUsersList = document.querySelector("#bannedUsersList");
 
 let bannedUsersArr = [];
 
-ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus) => {
+ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus, socketStatus) => {
 	channelName.value = settings.channelName;
 	botUsername.value = settings.botUsername;
 	twitchToken.value = settings.token;
@@ -68,6 +70,12 @@ ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus) => {
 	} else {
 		twitchDisconnected();
 	}
+
+	if (socketStatus) {
+		socketConnected();
+	} else {
+		socketDisconnected();
+	}
 });
 
 ipcRenderer.on("twitch-connected", (e, botUsername) => {
@@ -81,6 +89,14 @@ ipcRenderer.on("twitch-disconnected", () => {
 ipcRenderer.on("twitch-error", (e, error) => {
 	twitchStatusElement.textContent = error;
 	twitchStatusElement.style.color = "#ed2453";
+});
+
+ipcRenderer.on("socket-connected", () => {
+	socketConnected();
+});
+
+ipcRenderer.on("socket-disconnected", () => {
+	socketDisconnected();
 });
 
 const twitchConnected = (botUsername) => {
@@ -124,6 +140,16 @@ function twitchSettingsForm(e) {
 	e.preventDefault();
 	ipcRenderer.send("twitch-settings-form", channelName.value, botUsername.value, twitchToken.value);
 }
+
+const socketConnected = () => {
+	socketStatusElement.textContent = "Connected";
+	socketStatusElement.style.color = "#3fe077";
+};
+
+const socketDisconnected = () => {
+	socketStatusElement.textContent = "Disconnected";
+	socketStatusElement.style.color = "#ed2453";
+};
 
 function clearStats() {
 	clearStatsBtn.value = "Are you sure ?";

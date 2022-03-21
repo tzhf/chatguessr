@@ -255,6 +255,8 @@ class Game {
 		const distance = GameHelper.haversineDistance(location, this.location);
 		const score = GameHelper.calculateScore(distance, this.mapScale);
 
+		userstate.color = userstate.color || "#FFF";
+
 		// Modify guess or push it
 		if (this.isMultiGuess && existingGuess) {
 			this.#db.updateGuess(existingGuess.id, {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300">
-	<rect fill="#5bcefa" width="600" height="300" />
-	<rect fill="#f5a9b8" width="600" height="240" />
-	<rect fill="#ffffff" width="600" height="180" />
-	<rect fill="#f5a9b8" width="600" height="120" />
-	<rect fill="#5bcefa" width="600" height="60" />
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+	<rect fill="#5bcefa" width="400" height="300" />
+	<rect fill="#f5a9b8" width="400" height="240" />
+	<rect fill="#ffffff" width="400" height="180" />
+	<rect fill="#f5a9b8" width="400" height="120" />
+	<rect fill="#5bcefa" width="400" height="60" />
 </svg>

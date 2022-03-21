@@ -33,7 +33,9 @@ jobs:
         run: npm test
   package:
     name: Package
+    needs: [test, types]
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
@@ -47,4 +49,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Package
+        if: ${{github.ref_type != 'tag'}}
         run: npm run package
+        env:
+          API_URL: ${{secrets.API_URL}}
+          BASE_URL: ${{secrets.BASE_URL}}
+          SENTRY_DSN: ${{secrets.SENTRY_DSN}}
+      - name: Publish
+        if: ${{github.ref_type == 'tag'}}
+        run: npm run publish
+        env:
+          GITHUB_TOKEN: ${{github.token}}
+          API_URL: ${{secrets.API_URL}}
+          BASE_URL: ${{secrets.BASE_URL}}
+          SENTRY_DSN: ${{secrets.SENTRY_DSN}}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Chatguessr-${{runner.os}}
+          path: out/*/

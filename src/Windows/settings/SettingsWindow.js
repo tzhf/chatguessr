@@ -3,16 +3,23 @@
 const path = require("path");
 const { BrowserWindow, shell } = require("electron");
 
-function settingsWindow() {
+/**
+ * @param {BrowserWindow} parentWindow
+ */
+function createSettingsWindow(parentWindow) {
+	const isLinux = process.platform === 'linux';
+
 	const win = new BrowserWindow({
+		title: 'Chatguessr Settings',
+		parent: parentWindow,
 		width: 600,
 		minWidth: 600,
 		height: 550,
 		minHeight: 550,
 		show: false,
-		frame: false,
 		maximizable: false,
-		transparent: true,
+		frame: isLinux ? true: false,
+		transparent: isLinux ? false : true,
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
@@ -20,7 +27,7 @@ function settingsWindow() {
 		},
 	});
 	win.setMenuBarVisibility(false);
-	win.loadURL(path.join(__dirname, "../../dist/settings/settings.html"));
+	win.loadURL(`file://${path.join(__dirname, "../../dist/settings/settings.html")}`);
 
 	win.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);
@@ -30,4 +37,4 @@ function settingsWindow() {
 	return win;
 }
 
-module.exports = settingsWindow();
+module.exports = createSettingsWindow;

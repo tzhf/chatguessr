@@ -1,11 +1,12 @@
 {
 	"name": "chatguessr",
 	"productName": "ChatGuessr",
-	"version": "1.0.9",
+	"version": "1.1.0-alpha.3",
 	"description": "The original GeoGuessr Twitch Chatbot",
 	"author": "ChatGuessr",
 	"license": "MIT",
 	"main": "./dist/cg-main/main.js",
+	"repository": "https://github.com/ReAnnannanna/chatguessr",
 	"dependencies": {
 		"@paulrosania/better-sqlite3": "^8.1.0",
 		"@sentry/electron": "^3.0.0",
@@ -54,7 +55,8 @@
 	"scripts": {
 		"start": "parcel build --no-optimize && electron-forge start",
 		"package": "parcel build && electron-forge package",
-		"make": "electron-forge make",
+		"make": "parcel build && electron-forge make",
+		"publish": "parcel build && electron-forge publish",
 		"typecheck": "tsc --noEmit",
 		"test": "jest"
 	},
@@ -70,7 +72,7 @@
 					"name": "@electron-forge/maker-squirrel",
 					"config": {
 						"name": "chatguessr",
-						"iconUrl": "build/icon.ico"
+						"iconUrl": "file://build/icon.ico"
 					}
 				},
 				{
@@ -81,7 +83,11 @@
 				},
 				{
 					"name": "@electron-forge/maker-deb",
-					"config": {}
+					"config": {
+						"options": {
+							"bin": "Chatguessr"
+						}
+					}
 				}
 			],
 			"publishers": [
@@ -89,7 +95,7 @@
 					"name": "@electron-forge/publisher-github",
 					"config": {
 						"repository": {
-							"owner": "tzhf",
+							"owner": "ReAnnannanna",
 							"name": "chatguessr"
 						}
 					}

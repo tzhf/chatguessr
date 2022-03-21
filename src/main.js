@@ -60,10 +60,7 @@ function initWindow() {
 		}, 2000);
 	});
 
-	const settingsWindow = require("./Windows/settings/SettingsWindow");
-	settingsWindow.setParentWindow(mainWindow);
-
-	const gameHandler = new GameHandler(db, mainWindow, settingsWindow);
+	const gameHandler = new GameHandler(db, mainWindow);
 
 	globalShortcut.register("CommandOrControl+R", () => false);
 	globalShortcut.register("CommandOrControl+Shift+R", () => false);
@@ -71,7 +68,7 @@ function initWindow() {
 		gameHandler.openSettingsWindow();
 	});
 	globalShortcut.register("Escape", () => {
-		settingsWindow.hide();
+		gameHandler.closeSettingsWindow();
 	});
 }
 

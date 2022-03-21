@@ -4,7 +4,7 @@ import GameHelper from "./utils/GameHelper";
 import Settings from "./utils/Settings";
 import TwitchClient from "./Classes/tmi";
 import flags from "./utils/flags";
-
+import createSettingsWindow from "./Windows/settings/SettingsWindow";
 import store from "./utils/sharedStore";
 import { io } from "socket.io-client";
 
@@ -14,7 +14,7 @@ const settings = Settings.read();
 /** @typedef {import('./types').Guess} Guess */
 /** @typedef {import('./utils/Database')} Database */
 /** @typedef {import('./Windows/MainWindow')} MainWindow */
-/** @typedef {import('./Windows/settings/SettingsWindow')} SettingsWindow */
+/** @typedef {import('electron').BrowserWindow} BrowserWindow */
 /** @typedef {import('socket.io-client').Socket} Socket */
 
 class GameHandler {
@@ -27,7 +27,7 @@ class GameHandler {
 	#win;
 
 	/**
-	 * @type {SettingsWindow}
+	 * @type {BrowserWindow|undefined}
 	 */
 	#settingsWindow;
 
@@ -49,12 +49,10 @@ class GameHandler {
 	/**
 	 * @param {Database} db
 	 * @param {MainWindow} win
-	 * @param {SettingsWindow} settingsWindow
 	 */
-	constructor(db, win, settingsWindow) {
+	constructor(db, win) {
 		this.#db = db;
 		this.#win = win;
-		this.#settingsWindow = settingsWindow;
 		this.#twitch = undefined;
 		this.#socket = undefined;
 		this.#game = new Game(db, settings);
@@ -172,11 +170,11 @@ class GameHandler {
 
 		ipcMain.on("game-form", (e, isMultiGuess) => {
 			settings.setGameSettings(isMultiGuess);
-			this.#settingsWindow.hide();
+			this.#settingsWindow?.hide();
 		});
 
 		ipcMain.on("twitch-commands-form", (e, commands) => {
-			this.#settingsWindow.hide();
+			this.#settingsWindow?.hide();
 			settings.setTwitchCommands(commands);
 		});
 
@@ -194,7 +192,7 @@ class GameHandler {
 		});
 
 		ipcMain.on("closeSettings", () => {
-			this.#settingsWindow.hide();
+			this.closeSettingsWindow();
 		});
 
 		ipcMain.on("openSettings", () => {
@@ -224,7 +222,9 @@ class GameHandler {
 		try {
 			await this.#twitch.client.connect();
 		} catch (error) {
-			this.#settingsWindow.webContents.send("twitch-error", error);
+			if (this.#settingsWindow) {
+				this.#settingsWindow.webContents.send("twitch-error", error);
+			}
 			console.error(error);
 		}
 	}
@@ -441,11 +441,15 @@ class GameHandler {
 		this.#twitch.client.on("connected", () => {
 			this.ioInit();
 
-			this.#settingsWindow.webContents.send("twitch-connected", settings.botUsername);
+			if (this.#settingsWindow) {
+				this.#settingsWindow.webContents.send("twitch-connected", settings.botUsername);
+			}
 			this.#twitch.action("is now connected");
 		});
 		this.#twitch.client.on("disconnected", () => {
-			this.#settingsWindow.webContents.send("twitch-disconnected");
+			if (this.#settingsWindow) {
+				this.#settingsWindow.webContents.send("twitch-disconnected");
+			}
 		});
 
 		this.#twitch.client.on("whisper", (from, userstate, message, self) => {
@@ -462,16 +466,30 @@ class GameHandler {
 	}
 
 	openSettingsWindow() {
-		const bannedUsers = this.#db.getBannedUsers();
+		// Initialise the window if it doesn't exist,
+		// especially important in non-windows systems where Chatguessr may not be able
+		// to prevent the window from being completely closed.
+		if (!this.#settingsWindow) {
+			this.#settingsWindow = createSettingsWindow(this.#win).on("closed", () => {
+				this.#settingsWindow = undefined;
+			});
 
-		this.#settingsWindow.webContents.send(
-			"render-settings",
-			settings,
-			bannedUsers,
-			this.#twitch?.client ? this.#twitch.client.readyState() : "",
-			this.#socket?.connected
-		);
-		this.#settingsWindow.show();
+			this.#settingsWindow.webContents.on("did-finish-load", () => {
+				this.#settingsWindow.webContents.send(
+					"render-settings",
+					settings,
+					this.#db.getBannedUsers(),
+					this.#twitch?.client ? this.#twitch.client.readyState() : "",
+					this.#socket?.connected
+				);
+
+				this.#settingsWindow.show();
+			});
+		}
+	}
+
+	closeSettingsWindow() {
+		this.#settingsWindow?.close();
 	}
 }
 

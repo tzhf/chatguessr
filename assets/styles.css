@@ -17,7 +17,7 @@
 .side-tray_body__Uy1NP,
 .version3_sidebar__WE547,
 .classic_section__kj5y2 {
-	display: none;
+	display: none !important;
 }
 .result-layout_content__jAHfP {
 	padding: 2rem 0 0 !important;

@@ -2,7 +2,7 @@
 
 require("./errorReporting");
 
-require("update-electron-app")();
+if (process.platform == "win32") require("update-electron-app")();
 
 const path = require("path");
 const { app, globalShortcut, protocol } = require("electron");

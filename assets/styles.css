@@ -3,9 +3,6 @@
 [data-qa="result-view-top"] {
 	max-height: 100vh;
 }
-[data-qa="result-view-bottom"] > div > div:last-child {
-	display: none;
-}
 [data-qa="result-view-bottom"] {
 	position: fixed;
 	width: 100%;
@@ -15,6 +12,10 @@
 [data-qa="result-view-bottom"] > div {
 	background: linear-gradient(transparent, #000), linear-gradient(90deg, #28374c36, #221d6ca1);
 }
+[data-qa="result-view-bottom"] > div > div:last-child,
+[data-qa="game-type-challenge"],
+.side-tray_body__Uy1NP,
+.version3_sidebar__WE547,
 .classic_section__kj5y2 {
 	display: none;
 }

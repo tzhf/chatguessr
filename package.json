@@ -75,7 +75,7 @@
 						"name": "chatguessr",
 						"setupIcon": "build/icon.ico",
 						"loadingGif": "build/icon_installer.gif",
-						"iconUrl": "file://build/icon.ico"
+						"iconUrl": "build/icon.ico"
 					}
 				},
 				{
@@ -89,7 +89,7 @@
 					"config": {
 						"options": {
 							"bin": "chatguessr",
-							"icon": "file://build/icon.ico"
+							"icon": "build/icon.ico"
 						}
 					}
 				}

@@ -18,7 +18,7 @@ function createSettingsWindow(parentWindow) {
 		minHeight: 550,
 		show: false,
 		maximizable: false,
-		frame: false,
+		frame: isLinux ? true : false,
 		transparent: isLinux ? false : true,
 		webPreferences: {
 			nodeIntegration: true,

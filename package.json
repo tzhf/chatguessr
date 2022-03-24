@@ -88,8 +88,7 @@
 					"name": "@electron-forge/maker-deb",
 					"config": {
 						"options": {
-							"bin": "chatguessr",
-							"icon": "build/icon.ico"
+							"bin": "chatguessr"
 						}
 					}
 				}

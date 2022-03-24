@@ -11,9 +11,6 @@ const GameHandler = require("./GameHandler").default;
 const flags = require("./utils/flags");
 const Database = require("./utils/Database");
 
-// /** @type {import('electron').BrowserWindow} */
-// let mainWindow;
-
 if (require("electron-squirrel-startup")) {
 	app.quit();
 }

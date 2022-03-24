@@ -65,7 +65,7 @@
 			"packagerConfig": {
 				"asar": true,
 				"ignore": "\\.parcel-cache",
-				"icon": "file://build/icon",
+				"icon": "build/icon",
 				"executableName": "chatguessr"
 			},
 			"makers": [
@@ -73,8 +73,8 @@
 					"name": "@electron-forge/maker-squirrel",
 					"config": {
 						"name": "chatguessr",
-						"setupIcon": "file://build/icon.ico",
-						"loadingGif": "file://build/icon_installer.gif",
+						"setupIcon": "build/icon.ico",
+						"loadingGif": "build/icon_installer.gif",
 						"iconUrl": "file://build/icon.ico"
 					}
 				},

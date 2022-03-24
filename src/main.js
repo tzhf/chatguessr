@@ -66,7 +66,7 @@ function createWindow() {
 	});
 }
 
-async function init() {
+function init() {
 	initRenderer();
 
 	app.whenReady().then(async () => {

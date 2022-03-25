@@ -8,7 +8,7 @@ const { BrowserWindow, shell } = require("electron");
 const styles = require("bundle-text:../../assets/styles.css");
 const js = fs.readFileSync(path.join(__dirname, "../cg-renderer/renderer.js"), "utf8");
 
-function mainWindow() {
+function createMainWindow() {
 	let win = new BrowserWindow({
 		show: false,
 		webPreferences: {
@@ -41,4 +41,4 @@ function mainWindow() {
 	return win;
 }
 
-module.exports = mainWindow();
+module.exports = createMainWindow;

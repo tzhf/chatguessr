@@ -10,6 +10,7 @@ const { initRenderer } = require("electron-store");
 const GameHandler = require("./GameHandler").default;
 const flags = require("./utils/flags");
 const Database = require("./utils/Database");
+const createMainWindow = require("./Windows/MainWindow");
 
 if (require("electron-squirrel-startup")) {
 	app.quit();
@@ -44,8 +45,7 @@ async function serveFlags() {
 }
 
 function createWindow() {
-	/** @type {import('electron').BrowserWindow} */
-	const mainWindow = require("./Windows/MainWindow");
+	const mainWindow = createMainWindow();
 
 	mainWindow.once("ready-to-show", () => {
 		mainWindow.show();

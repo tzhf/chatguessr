@@ -13,7 +13,6 @@ const settings = Settings.read();
 
 /** @typedef {import('./types').Guess} Guess */
 /** @typedef {import('./utils/Database')} Database */
-/** @typedef {import('./Windows/MainWindow')} MainWindow */
 /** @typedef {import('electron').BrowserWindow} BrowserWindow */
 /** @typedef {import('socket.io-client').Socket} Socket */
 
@@ -22,7 +21,7 @@ class GameHandler {
 	#db;
 
 	/**
-	 * @type {MainWindow}
+	 * @type {BrowserWindow}
 	 */
 	#win;
 
@@ -48,7 +47,7 @@ class GameHandler {
 
 	/**
 	 * @param {Database} db
-	 * @param {MainWindow} win
+	 * @param {BrowserWindow} win
 	 */
 	constructor(db, win) {
 		this.#db = db;

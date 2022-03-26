@@ -31,5 +31,18 @@ describe('selectFlag', () => {
 		expect(flags.selectFlag('dprk')).toBe('kp');
 		expect(flags.selectFlag('England')).toBe('gbeng');
 		expect(flags.selectFlag('alabama')).toBe('usal');
+		expect(flags.selectFlag('pride')).toBe('lgbt');
+		expect(flags.selectFlag('lgbt')).toBe('lgbt');
+	});
+	it('matches custom names', () => {
+		flags.TEST_setCustomFlags([
+			{ "code": "corgipasta", "names": "corgipasta", "emoji": "😳" },
+			{ "code": "eviecaps", "names": "evie, eviecaps", "emoji": "🏴‍☠️" },
+		]);
+
+		expect(flags.selectFlag('evie')).toBe('eviecaps');
+		expect(flags.selectFlag('ie')).toBe('ie');
+		expect(flags.selectFlag('corgipasta')).toBe('corgipasta');
+		expect(flags.selectFlag('pasta')).toBe('corgipasta');
 	});
 });

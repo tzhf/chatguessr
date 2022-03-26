@@ -42,18 +42,34 @@ async function loadCustomFlagMetadata() {
 }
 
 /**
+ * @param {Flag[]} flags
+ */
+function setCustomFlags(flags) {
+	customFlags = flags;
+}
+
+/**
  * @param {string} id
  * @returns {Promise<import('electron').ProtocolResponse>}
  */
 async function findFlagFile(id) {
-	try {
-		const customFlagPath = path.join(customFlagsDir, `${id}.png`);
-		await fs.access(customFlagPath);
-		return { path: customFlagPath };
-	} catch {
-		// we naively fall back to the builtin SVGs. electron will return a 404 for us if the file doesn't exist.
-		return { path: path.join(__dirname, `../../assets/flags/${id.toUpperCase()}.svg`) };
+	const customFlagPaths = [
+		path.join(customFlagsDir, `${id}.png`),
+		path.join(customFlagsDir, `${id}.svg`),
+	];
+
+	for (const customFlagPath of customFlagPaths) {
+		try {
+			await fs.access(customFlagPath);
+			return { path: customFlagPath };
+		} catch {
+			// Flag file doesn't exist. Try the next, or fall back to builtin flags.
+		}
 	}
+
+	// We always return a path to the builtin SVGs because it's easy.
+	// electron will return a 404 for us if the file doesn't exist.
+	return { path: path.join(__dirname, `../../assets/flags/${id.toUpperCase()}.svg`) };
 }
 
 /**
@@ -67,8 +83,8 @@ function selectFlag(input) {
 
 	const matches = matchSorter(availableFlags, input, {
 		keys: [
-			{ threshold: matchSorter.rankings.EQUAL, key: 'code' },
 			'names',
+			{ threshold: matchSorter.rankings.EQUAL, key: 'code' },
 		],
 	});
 
@@ -135,3 +151,4 @@ exports.findFlagFile = findFlagFile;
 exports.selectFlag = selectFlag;
 exports.randomCountryFlag = randomCountryFlag;
 exports.getEmoji = getEmoji;
+exports.TEST_setCustomFlags = setCustomFlags;

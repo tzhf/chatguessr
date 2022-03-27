@@ -34,9 +34,7 @@ button:focus {
 .hud-button-group:last-child {
 	display: none;
 }
-.result-map__line {
-	display: none;
-}
+
 /* INFOWINDOW */
 .gm-ui-hover-effect {
 	display: none !important;

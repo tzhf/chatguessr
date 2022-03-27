@@ -17,8 +17,8 @@ const chatguessrApi = {
 
 contextBridge.exposeInMainWorld("chatguessrApi", chatguessrApi);
 
-const REMOVE_ALL_MARKERS_CSS = '[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"] { display: none; }';
-const REMOVE_GUESS_MARKERS_CSS = '[data-qa="result-view-top"] [data-qa="guess-marker"] { display: none; }';
+const REMOVE_ALL_MARKERS_CSS =
+	'[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"], .result-map__line { display: none; }';
 const REMOVE_GAME_CONTROLS_CSS = ".styles_columnTwo___2qFL, .styles_controlGroup___ArrW, .compass, .game-layout__compass { display: none !important; }";
 const REMOVE_COMPASS_CSS = ".compass, .game-layout__compass { display: none; }";
 
@@ -177,6 +177,7 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("refreshed-in-game", () => {
+		document.head.append(markerRemover);
 		iconsColumn.append(centerSatelliteViewBtn, showScoreboardBtn);
 		scoreboard.checkVisibility();
 	});
@@ -213,7 +214,6 @@ function init(rendererApi) {
 	});
 
 	ipcRenderer.on("show-final-results", (e, totalScores) => {
-		markerRemover.textContent = REMOVE_GUESS_MARKERS_CSS;
 		scoreboard.setTitle(`HIGHSCORES (${totalScores.length})`);
 		scoreboard.showSwitch(false);
 		scoreboard.displayScores(totalScores, true);
@@ -221,6 +221,10 @@ function init(rendererApi) {
 
 		noCarBtn.style.visibility = "hidden";
 		noCompassBtn.style.visibility = "hidden";
+		// refreshed-in-game is triggered here so we wait a bit to remove the style
+		setTimeout(() => {
+			markerRemover.remove();
+		}, 1000);
 	});
 
 	ipcRenderer.on("next-round", (e, isMultiGuess, location) => {

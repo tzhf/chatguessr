@@ -12,12 +12,15 @@
 [data-qa="result-view-bottom"] > div {
 	background: linear-gradient(transparent, #000), linear-gradient(90deg, #28374c36, #221d6ca1);
 }
+[data-qa="game-type-challenge"] {
+	display: none !important;
+}
+
 [data-qa="result-view-bottom"] > div > div:last-child,
-[data-qa="game-type-challenge"],
-.side-tray_body__Uy1NP,
+[data-qa="close-round-result"] + .button_link__xHa3x,
 .version3_sidebar__WE547,
 .classic_section__kj5y2 {
-	display: none !important;
+	display: none;
 }
 .result-layout_content__jAHfP {
 	padding: 2rem 0 0 !important;

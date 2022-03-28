@@ -254,6 +254,7 @@ class Game {
 		const streak =  this.#db.getUserStreak(dbUser.id);
 		const distance = GameHelper.haversineDistance(location, this.location);
 		const score = GameHelper.calculateScore(distance, this.mapScale);
+		let modified = false;
 
 		userstate.color = userstate.color || "#FFF";
 
@@ -268,6 +269,7 @@ class Game {
 				distance,
 				score,
 			});
+			modified = true;
 		} else {
 			this.#db.createGuess(this.#roundId, dbUser.id, {
 				color: userstate.color,
@@ -297,7 +299,7 @@ class Game {
 			streak: streak?.count ?? 0,
 			distance,
 			score,
-			modified: false,
+			modified,
 		};
 	}
 

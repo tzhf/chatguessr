@@ -482,6 +482,7 @@ class Database {
         const stmt = this.#db.prepare(`
             SELECT
               guesses.id,
+              guesses.user_id,
               users.username,
               guesses.color,
               guesses.flag,
@@ -494,15 +495,21 @@ class Database {
             ORDER BY distance ASC
         `)
 
-        /** @type {{ id: string, username: string, color: string, flag: string, location: string, streak: number, distance: number, score: number }[]} */
+        /** @type {{ id: string, user_id: string, username: string, color: string, flag: string, location: string, streak: number, distance: number, score: number }[]} */
         const records = stmt.all(roundId);
 
         return records.map((record) => ({
-            ...record,
+            id: record.id,
+            userId: record.user_id,
+            username: record.username,
             user: record.username,
+            color: record.color,
+            flag: record.flag,
+            streak: record.streak,
+            distance: record.distance,
+            score: record.score,
             /** @type {LatLng} */
             position: JSON.parse(record.location),
-            modified: false,
         }));
     }
 

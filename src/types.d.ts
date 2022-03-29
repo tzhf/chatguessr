@@ -11,7 +11,6 @@ export type Guess = {
 	streak: number;
 	distance: number;
 	score: number;
-	modified: boolean;
 };
 
 export type Bounds = {

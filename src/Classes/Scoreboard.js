@@ -137,6 +137,12 @@ class Scoreboard {
 				{ targets: 3, width: "100px" },
 				{ targets: 4, width: "75px", type: "natural" },
 			],
+			createdRow: function (row) {
+				$(row).addClass("expand");
+				setTimeout(() => {
+					$(row).removeClass("expand");
+				}, 200);
+			},
 		});
 
 		// Handle ColVis change

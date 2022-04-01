@@ -4,6 +4,8 @@ require("./errorReporting");
 
 const { contextBridge, ipcRenderer } = require("electron");
 
+import { qs, createEl } from "./utils/domUtils";
+
 /** @typedef {import('./types').LatLng} LatLng */
 /** @typedef {import('./types').Guess} Guess */
 
@@ -56,6 +58,9 @@ function init(rendererApi) {
 	document.body.append(scoreboardContainer);
 
 	const scoreboard = new Scoreboard(scoreboardContainer, {
+		focusOnGuess(location) {
+			rendererApi.focusOnGuess(location);
+		},
 		onToggleGuesses(open) {
 			if (open) {
 				ipcRenderer.send("open-guesses");
@@ -188,8 +193,8 @@ function init(rendererApi) {
 		rendererApi.clearMarkers();
 
 		// Hide in-game-only buttons
-		document.querySelector("#centerSatelliteViewBtn")?.remove();
-		document.querySelector("#showScoreboardBtn")?.remove();
+		qs("#centerSatelliteViewBtn")?.remove();
+		qs("#showScoreboardBtn")?.remove();
 
 		noCarBtn.style.visibility = "visible";
 		noCompassBtn.style.visibility = "visible";
@@ -251,24 +256,4 @@ function init(rendererApi) {
 	ipcRenderer.on("switch-off", () => {
 		scoreboard.switchOn(false);
 	});
-
-	/**
-	 * @param {String} type
-	 * @param {Object} attributes
-	 * @param {String[]|HTMLElement[]} children
-	 */
-	function createEl(type, attributes, ...children) {
-		const el = document.createElement(type);
-		for (const key in attributes) {
-			el.setAttribute(key, attributes[key]);
-		}
-		children.forEach((child) => {
-			if (typeof child === "string") {
-				el.appendChild(document.createTextNode(child));
-			} else {
-				el.appendChild(child);
-			}
-		});
-		return el;
-	}
 }

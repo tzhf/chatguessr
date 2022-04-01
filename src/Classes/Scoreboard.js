@@ -11,10 +11,12 @@ require("datatables.net-buttons/js/buttons.colVis")(window, $);
 require("datatables.net-scroller/js/dataTables.scroller")(window, $);
 
 /** @typedef {import('../types').Guess} Guess */
+/** @typedef {import("../types").LatLng} LatLng */
 
 /**
  * @typedef {object} Options
  * @prop {(open: boolean) => void} onToggleGuesses
+ * @prop {(location: LatLng) => void} focusOnGuess
  */
 
 class Scoreboard {
@@ -28,6 +30,7 @@ class Scoreboard {
 		this.isScrolling = false;
 		this.speed = 50;
 		this.onToggleGuesses = props.onToggleGuesses;
+		this.focusOnGuess = props.focusOnGuess;
 
 		this.visibility = JSON.parse(localStorage.getItem("scoreboard_visibility")) || true;
 		this.position = JSON.parse(localStorage.getItem("scoreboard_position")) || { top: 20, left: 5, width: 380, height: 180 };
@@ -265,9 +268,11 @@ class Scoreboard {
 	}
 
 	/**
-	 * @param {{ username: string, color: string, flag: string, streak: number, distance: number, score: number, rounds: number }[]} scores
+	 *
+	 * @param {{ username: string, position: LatLng, color: string, flag: string, streak: number, distance: number, score: number, rounds: number }[]} scores
 	 */
 	displayScores(scores, isTotal = false) {
+		// const self = this;
 		this.isResults = true;
 		if (scores[0]) scores[0].color = "#E3BB39";
 		if (scores[1]) scores[1].color = "#C9C9C9";
@@ -287,6 +292,14 @@ class Scoreboard {
 		this.table.clear().draw();
 		this.table.rows.add(rows);
 
+		// Maybe to the fastest, seems a bit laggy to me with !spamguess but not sure
+		// also do we have to remove those listeners to avoid memory leaks ?
+		// this.table.rows().every(function (rowIdx) {
+		// 	this.node().addEventListener("click", function () {
+		// 		self.focusOnGuess(scores[rowIdx].position);
+		// 	});
+		// });
+
 		this.table.order([4, "desc"]).draw(false);
 
 		let content;
@@ -296,9 +309,9 @@ class Scoreboard {
 			.each((cell, i) => {
 				content = i + 1;
 				if (isTotal) {
-					if (i == 0) content = "<span class='icon'>🏆</span>";
-					else if (i == 1) content = "<span class='icon'>🥈</span>";
-					else if (i == 2) content = "<span class='icon'>🥉</span>";
+					if (i == 0) content = "<span class='medal'>🏆</span>";
+					else if (i == 1) content = "<span class='medal'>🥈</span>";
+					else if (i == 2) content = "<span class='medal'>🥉</span>";
 				}
 
 				cell.innerHTML = content;

@@ -10,39 +10,39 @@ const secretRequire = (0, eval("require"));
 const { ipcRenderer } = secretRequire("electron");
 
 /** @type {HTMLInputElement} */
-const channelName = document.querySelector("#channelName");
+const channelName = qs("#channelName");
 /** @type {HTMLInputElement} */
-const botUsername = document.querySelector("#botUsername");
+const botUsername = qs("#botUsername");
 /** @type {HTMLInputElement} */
-const twitchToken = document.querySelector("#twitchToken");
+const twitchToken = qs("#twitchToken");
 /** @type {HTMLInputElement} */
-const cgCmd = document.querySelector("#cgCmd");
+const cgCmd = qs("#cgCmd");
 /** @type {HTMLInputElement} */
-const cgMsg = document.querySelector("#cgMsg");
+const cgMsg = qs("#cgMsg");
 /** @type {HTMLInputElement} */
-const userGetStatsCmd = document.querySelector("#userGetStatsCmd");
+const userGetStatsCmd = qs("#userGetStatsCmd");
 /** @type {HTMLInputElement} */
-const userClearStatsCmd = document.querySelector("#userClearStatsCmd");
+const userClearStatsCmd = qs("#userClearStatsCmd");
 /** @type {HTMLInputElement} */
-const showHasGuessed = document.querySelector("#showHasGuessed");
+const showHasGuessed = qs("#showHasGuessed");
 /** @type {HTMLInputElement} */
-const isMultiGuess = document.querySelector("#isMultiGuess");
+const isMultiGuess = qs("#isMultiGuess");
 /** @type {HTMLInputElement} */
-const cgLink = document.querySelector("#cgLink");
+const cgLink = qs("#cgLink");
 /** @type {HTMLElement} */
-const cgLinkContainer = document.querySelector("#cgLinkContainer");
+const cgLinkContainer = qs("#cgLinkContainer");
 /** @type {HTMLButtonElement} */
-const copyLinkBtn = document.querySelector("#copyLinkBtn");
+const copyLinkBtn = qs("#copyLinkBtn");
 /** @type {HTMLElement} */
-const twitchStatusElement = document.querySelector("#twitchStatus");
+const twitchStatusElement = qs("#twitchStatus");
 /** @type {HTMLElement} */
-const socketStatusElement = document.querySelector("#socketStatus");
+const socketStatusElement = qs("#socketStatus");
 /** @type {HTMLButtonElement} */
-const clearStatsBtn = document.querySelector("#clearStatsBtn");
+const clearStatsBtn = qs("#clearStatsBtn");
 /** @type {HTMLInputElement} */
-const banUserInput = document.querySelector("#banUserInput");
+const banUserInput = qs("#banUserInput");
 /** @type {HTMLDivElement} */
-const bannedUsersList = document.querySelector("#bannedUsersList");
+const bannedUsersList = qs("#bannedUsersList");
 
 let bannedUsersArr = [];
 
@@ -212,4 +212,8 @@ function openTab(e, tab) {
 }
 
 // @ts-ignore TS2339
-document.querySelector("#defaultOpen").click();
+qs("#defaultOpen").click();
+
+function qs(selector, parent = document) {
+	return parent.querySelector(selector);
+}

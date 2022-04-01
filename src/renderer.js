@@ -10,6 +10,7 @@ window.chatguessrApi.init({
 	hideSatelliteMap,
 	centerSatelliteView,
 	getBounds,
+	focusOnGuess,
 });
 
 /** @type {google.maps.Map | undefined} */
@@ -267,6 +268,11 @@ async function hideSatelliteMap() {
 /** @type {import('./types').RendererApi['centerSatelliteView']} */
 function centerSatelliteView(location) {
 	satelliteLayer.setCenter(location);
+}
+
+/** @type {import('./types').RendererApi['focusOnGuess']} */
+function focusOnGuess(location) {
+	globalMap.setCenter(location);
 }
 
 /** @type {import('./types').RendererApi['getBounds']} */

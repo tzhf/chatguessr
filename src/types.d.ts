@@ -93,6 +93,7 @@ export interface RendererApi {
 	hideSatelliteMap();
 	centerSatelliteView(location: LatLng);
 	getBounds(location: LatLng, meters: number);
+	focusOnGuess(location: LatLng);
 }
 
 export interface ChatguessrApi {

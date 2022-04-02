@@ -181,8 +181,13 @@ class Game {
 		const guesses = this.#db.getRoundScores(this.#roundId);
 		await pMap(guesses, async (guess) => {
 			const guessedCountry = await GameHelper.getCountryCode(guess.position);
-			const streak = guessedCountry === this.#country ? guess.streak + 1 : 0;
-			this.#db.setGuessCountry(guess.id, guessedCountry, streak);
+			const correct = guessedCountry === this.#country
+			this.#db.setGuessCountry(guess.id, guessedCountry, correct ? guess.streak + 1 : 0);
+			if (guessedCountry === this.#country) {
+				this.#db.addUserStreak(guess.userId, this.#roundId);
+			} else {
+				this.#db.resetUserStreak(guess.userId);
+			}
 		}, { concurrency: 10 });
 	}
 

@@ -3,9 +3,6 @@
 		<div title="Settings (ctrl+p)" @click="openSettings">
 			<span class="icon gearIcon"></span>
 		</div>
-		<div v-if="isInGame" id="showScoreboardBtn" title="Show/Hide scoreboard" @click="toggleScoreboard">
-			<span class="icon eyeIcon"></span>
-		</div>
 		<div title="Show/Hide compass" @click="toggleNoCompass">
 			<span :class="['icon', isNoCompass ? 'compassHiddenIcon' : 'compassIcon']"></span>
 		</div>
@@ -18,12 +15,15 @@
 		<div v-if="isInGame && isSatellite" id="centerSatelliteViewBtn" title="Center view" @click="centerSatelliteView">
 			<span class="icon startFlagIcon"></span>
 		</div>
+		<div v-if="isInGame" id="showScoreboardBtn" title="Show/Hide scoreboard" @click="toggleScoreboard">
+			<span class="icon eyeIcon"></span>
+		</div>
 	</div>
 </template>
 
-<script setup lang="ts">
-import { defineProps } from "vue";
-import { contextBridge, ipcRenderer } from "electron";
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
+import { ipcRenderer } from "electron";
 import sharedStore from "./utils/sharedStore";
 import type { LatLng, Guess, RendererApi } from "./types";
 
@@ -36,87 +36,90 @@ compassRemover.textContent = REMOVE_COMPASS_CSS;
 const gameControlsRemover = document.createElement("style");
 gameControlsRemover.textContent = REMOVE_GAME_CONTROLS_CSS;
 
-const props = defineProps<{
-	rendererApi: RendererApi,
-	toggleScoreboard: () => void,
-}>();
-const { rendererApi } = props;
+export default defineComponent({
+	props: {
+		rendererApi: { type: Object as PropType<RendererApi>, required: true },
+		toggleScoreboard: { type: Function as PropType<() => void>, required: true },
+	},
+	created() {
+		// Events
+		ipcRenderer.on("game-started", (e, isMultiGuess: boolean, restoredGuesses: Guess[], location: LatLng) => {
+			this.currentLocation = location;
+			this.isInGame = true;
+			if (this.isSatellite) {
+				this.rendererApi.showSatelliteMap(location);
+			}
+		});
 
-// Template properties
-let isInGame: boolean = false
-let isNoCar: boolean = sharedStore.get("isNoCar", false);
-let isNoCompass: boolean = sharedStore.get("isNoCompass", false);
-let isSatellite: boolean = sharedStore.get("isSatellite", false);
-let currentLocation: LatLng|null = null;
+		ipcRenderer.on("game-quitted", () => {
+			this.isInGame = false;
+			this.currentLocation = null;
+		});
 
-function openSettings () {
-	ipcRenderer.send("openSettings");
-}
+		ipcRenderer.on("show-round-results", (e, round, location, scores) => {
+			this.isInGame = false;
+		});
 
-function toggleScoreboard () {
-	props.toggleScoreboard();
-}
+		ipcRenderer.on("show-final-results", (e, totalScores) => {
+			this.isInGame = false;
+			this.currentLocation = null;
+		});
 
-function toggleNoCompass () {
-	isNoCompass = !isNoCompass;
-	sharedStore.set("isNoCompass", isNoCompass);
-	if (isNoCompass) {
-		document.head.append(compassRemover);
-	} else {
-		compassRemover.remove();
-	}
-}
-
-function toggleNoCar () {
-	isNoCar = !isNoCar;
-	sharedStore.set("isNoCar", isNoCar);
-	location.reload();
-}
-
-function toggleSatellite () {
-	isSatellite = !isSatellite;
-	sharedStore.set("isSatellite", isSatellite);
-	if (isSatellite) {
-		if (isInGame) rendererApi.showSatelliteMap(currentLocation);
-	} else {
-		if (isInGame) rendererApi.hideSatelliteMap();
-	}
-}
-
-function centerSatelliteView () {
-	rendererApi.centerSatelliteView(currentLocation);
-}
-
-// Events
-ipcRenderer.on("game-started", (e, isMultiGuess: boolean, restoredGuesses: Guess[], location: LatLng) => {
-	currentLocation = location;
-	isInGame = true;
-	if (isSatellite) {
-		rendererApi.showSatelliteMap(location);
-	}
+		ipcRenderer.on("next-round", (e, isMultiGuess, location: LatLng) => {
+			this.currentLocation = location;
+			if (this.isSatellite) {
+				this.rendererApi.showSatelliteMap(location);
+			}
+		});
+		
+		this.rendererApi.drParseNoCar(this.isNoCar);
+	},
+	data() {
+		return {
+			isInGame: false,
+			isNoCar: sharedStore.get("isNoCar", false),
+			isNoCompass: sharedStore.get("isNoCompass", false),
+			isSatellite: sharedStore.get("isSatellite", false),
+			currentLocation: null as LatLng|null,
+		};
+	},
+	methods: {
+		/** Get the current location's coordinates as a plain object (not behind a vue Proxy). */
+		getLocation() {
+			if (this.currentLocation) {
+				return { lat: this.currentLocation.lat, lng: this.currentLocation.lng };
+			}
+		},
+		openSettings() {
+			ipcRenderer.send("openSettings");
+		},
+		toggleNoCompass() {
+			this.isNoCompass = !this.isNoCompass;
+			sharedStore.set("isNoCompass", this.isNoCompass);
+			if (this.isNoCompass) {
+				document.head.append(compassRemover);
+			} else {
+				compassRemover.remove();
+			}
+		},
+		toggleNoCar() {
+			this.isNoCar = !this.isNoCar;
+			sharedStore.set("isNoCar", this.isNoCar);
+			location.reload();
+		},
+		toggleSatellite() {
+			this.isSatellite = !this.isSatellite;
+			sharedStore.set("isSatellite", this.isSatellite);
+			if (!this.isInGame) return;
+			if (this.isSatellite) {
+				this.rendererApi.showSatelliteMap(this.getLocation());
+			} else {
+				this.rendererApi.hideSatelliteMap();
+			}
+		},
+		centerSatelliteView() {
+			this.rendererApi.centerSatelliteView(this.getLocation());
+		},
+	},
 });
-
-ipcRenderer.on("game-quitted", () => {
-	isInGame = false;
-	currentLocation = null;
-});
-
-ipcRenderer.on("show-round-results", (e, round, location, scores) => {
-	isInGame = false;
-});
-
-ipcRenderer.on("show-final-results", (e, totalScores) => {
-	isInGame = false;
-	currentLocation = null;
-});
-
-ipcRenderer.on("next-round", (e, isMultiGuess, location) => {
-	currentLocation = location;
-	if (isSatellite) {
-		rendererApi.showSatelliteMap(location);
-	}
-});
-
-// Setup
-rendererApi.drParseNoCar(isNoCar);
 </script>

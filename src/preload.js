@@ -25,17 +25,21 @@ const REMOVE_ALL_MARKERS_CSS =
  */
 function init(rendererApi) {
 	const Scoreboard = require("./Classes/Scoreboard");
-	const { createApp } = require("vue");
-	const InGameUI = require("./InGameUI.vue");
+	const { createApp, h } = require("vue");
+	const InGameUI = require("./InGameUI.vue").default;
 
+	const markerRemover = document.createElement("style");
+	markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
+
+	// Settings UI
+	const iconsContainer = createEl("div", { id: "iconsContainer" });
+	document.body.append(iconsContainer);
+	
 	const ingameUi = createApp(InGameUI, {
 		rendererApi,
 		toggleScoreboard,
 	});
-	ingameUi.mount(document.body);
-
-	const markerRemover = document.createElement("style");
-	markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
+	ingameUi.mount(iconsContainer);
 
 	// SCOREBOARD
 	const scoreboardContainer = createEl("div", { id: "scoreboardContainer" });

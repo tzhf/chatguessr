@@ -1,6 +1,6 @@
-const axios = require('axios').default;
-const countryIso = require('country-iso');
-const iso3to2 = require('country-iso-3-to-2');
+const axios = require("axios").default;
+const countryIso = require("country-iso");
+const iso3to2 = require("country-iso-3-to-2");
 /**
  * Country code mapping for 2-character ISO codes that should be considered
  * part of another country for GeoGuessr streak purposes.
@@ -8,7 +8,7 @@ const iso3to2 = require('country-iso-3-to-2');
  * @type {Record<string, string>}
  */
 // @ts-ignore
-const countryCodes = require('./countryCodes.json');
+const countryCodes = require("./countryCodes.json");
 
 const GEOGUESSR_URL = "https://geoguessr.com";
 const CG_API_URL = process.env.CG_API_URL ?? "https://chatguessr-api.vercel.app";
@@ -123,6 +123,7 @@ function calculateScore(distance, scale) {
 /**
  * Upload scores to the Chatguessr API and return the public URL to the scoreboard.
  *
+ * @param  {string} token
  * @param  {string} streamer
  * @param  {string} mapName
  * @param {Object} mode
@@ -130,7 +131,7 @@ function calculateScore(distance, scale) {
  * @param  {({ username: string, flag: string, score: number, rounds: number })[]} totalScores
  * @return {Promise<string>} link
  */
-async function makeLink(streamer, mapName, mode, locations, totalScores) {
+async function makeLink(token, streamer, mapName, mode, locations, totalScores) {
 	const players = totalScores.map((guess) => {
 		return {
 			username: guess.username,
@@ -141,13 +142,19 @@ async function makeLink(streamer, mapName, mode, locations, totalScores) {
 	});
 
 	/** @type {import("axios").AxiosResponse<{ code: string }>} */
-	const res = await axios.post(`${CG_API_URL}/game`, {
-		streamer: streamer,
-		map: mapName,
-		mode: mode,
-		locations: locations,
-		players: players,
-	});
+	const res = await axios.post(
+		`${CG_API_URL}/game`,
+		{
+			streamer: streamer,
+			map: mapName,
+			mode: mode,
+			locations: locations,
+			players: players,
+		},
+		{
+			headers: { oauthtoken: token },
+		}
+	);
 
 	return `${CG_PUBLIC_URL}/game/${res.data.code}`;
 }

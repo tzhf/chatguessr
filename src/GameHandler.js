@@ -88,7 +88,7 @@ class GameHandler {
 		this.#win.webContents.send("show-final-results", totalScores);
 
 		const locations = this.#game.getLocations();
-		const link = await GameHelper.makeLink(settings.channelName, this.#game.mapName, this.#game.mode, locations, totalScores);
+		const link = await GameHelper.makeLink(settings.token, settings.channelName, this.#game.mapName, this.#game.mode, locations, totalScores);
 		await this.#twitch.action(
 			`🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${link != undefined ? `Game summary: ${link}` : ""}`
 		);

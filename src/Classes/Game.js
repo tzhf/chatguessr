@@ -181,9 +181,12 @@ class Game {
 		const guesses = this.#db.getRoundScores(this.#roundId);
 		await pMap(guesses, async (guess) => {
 			const guessedCountry = await GameHelper.getCountryCode(guess.position);
+
+			this.#db.setUserLastLocation(guess.userId, this.location);
+			
 			const correct = guessedCountry === this.#country
 			this.#db.setGuessCountry(guess.id, guessedCountry, correct ? guess.streak + 1 : 0);
-			if (guessedCountry === this.#country) {
+			if (correct) {
 				this.#db.addUserStreak(guess.userId, this.#roundId);
 			} else {
 				this.#db.resetUserStreak(guess.userId);
@@ -248,6 +251,10 @@ class Game {
 		/** @type {string | null} */
 		let guessedCountry = null;
 		if (!this.isMultiGuess) {
+			// TODO I think this is only used for streaks,
+			// DB streaks track their own last round id so then this would be unnecessary
+			this.#db.setUserLastLocation(dbUser.id, this.location);
+
 			guessedCountry = await GameHelper.getCountryCode(location);
 			if (guessedCountry === this.#country) {
 				this.#db.addUserStreak(dbUser.id, this.#roundId);
@@ -286,10 +293,6 @@ class Game {
 				score,
 			});
 		}
-
-		// TODO I think this is only used for streaks,
-		// DB streaks track their own last round id so then this would be unnecessary
-		this.#db.setUserLastLocation(dbUser.id, this.location);
 
 		// TODO save previous guess? No, fetch previous guess from the DB
 		this.#db.setUserPreviousGuess(dbUser.id, location);

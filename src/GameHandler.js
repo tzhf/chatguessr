@@ -88,7 +88,13 @@ class GameHandler {
 		this.#win.webContents.send("show-final-results", totalScores);
 
 		const locations = this.#game.getLocations();
-		const link = await GameHelper.makeLink(settings.token, settings.channelName, this.#game.mapName, this.#game.mode, locations, totalScores);
+		/** @type {string|undefined} */
+		let link;
+		try {
+			link = await GameHelper.makeLink(settings.token, settings.channelName, settings.botUsername, this.#game.mapName, this.#game.mode, locations, totalScores);
+		} catch (error) {
+			console.error("could not upload summary", error);
+		}
 		await this.#twitch.action(
 			`🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${link != undefined ? `Game summary: ${link}` : ""}`
 		);

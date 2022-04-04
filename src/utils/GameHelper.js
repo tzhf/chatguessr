@@ -125,13 +125,14 @@ function calculateScore(distance, scale) {
  *
  * @param  {string} token
  * @param  {string} streamer
+ * @param  {string} bot
  * @param  {string} mapName
  * @param {Object} mode
  * @param  {LatLng[]} locations
  * @param  {({ username: string, flag: string, score: number, rounds: number })[]} totalScores
  * @return {Promise<string>} link
  */
-async function makeLink(token, streamer, mapName, mode, locations, totalScores) {
+async function makeLink(token, streamer, bot, mapName, mode, locations, totalScores) {
 	const players = totalScores.map((guess) => {
 		return {
 			username: guess.username,
@@ -146,6 +147,7 @@ async function makeLink(token, streamer, mapName, mode, locations, totalScores) 
 		`${CG_API_URL}/game`,
 		{
 			streamer: streamer,
+			bot: bot,
 			map: mapName,
 			mode: mode,
 			locations: locations,

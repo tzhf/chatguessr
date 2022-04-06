@@ -22,7 +22,7 @@ class Settings {
 		botUsername = "",
 		token = "",
 		cgCmd = "!cg",
-		cgMsg = "To play along, go to this link, pick a location, and paste the whole command into chat: <your cg link>",
+		cgMsg = "Two ways to play: 1. Login with Twitch, make your guess and press guess (spacebar). 2. Paste the command into chat without editing: <your cg link>",
 		userGetStatsCmd = "!me",
 		userClearStatsCmd = "!clear",
 		showHasGuessed = true,

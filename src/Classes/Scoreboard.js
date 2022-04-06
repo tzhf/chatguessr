@@ -137,12 +137,6 @@ class Scoreboard {
 				{ targets: 3, width: "100px" },
 				{ targets: 4, width: "75px", type: "natural" },
 			],
-			createdRow: function (row) {
-				$(row).addClass("expand");
-				setTimeout(() => {
-					$(row).removeClass("expand");
-				}, 200);
-			},
 		});
 
 		// Handle ColVis change
@@ -228,7 +222,7 @@ class Scoreboard {
 	 * @param {Guess} guess
 	 */
 	renderGuess(guess) {
-		const row = {
+		const guessRow = {
 			Position: "",
 			Player: `${guess.flag ? `<span class="flag-icon" style="background-image: url(flag:${guess.flag})"></span>` : ""}<span class='username' style='color:${
 				guess.color
@@ -238,7 +232,12 @@ class Scoreboard {
 			Score: guess.score,
 		};
 
-		this.table.row.add(row);
+		// @ts-ignore
+		const rowNode = this.table.row.add(guessRow).node();
+		rowNode.classList.add("expand");
+		setTimeout(() => {
+			rowNode.classList.remove("expand");
+		}, 200);
 
 		this.table.order([3, "asc"]).draw(false);
 		this.table

@@ -319,7 +319,7 @@ class GameHandler {
 		}
 
 		if (message === settings.cgCmd && settings.cgCmd !== "") {
-			await this.#twitch.say(settings.cgMsg);
+			await this.#twitch.say(settings.cgMsg.replace('<your cg link>', `https://chatguessr.com/map/${settings.botUsername}`));
 			return;
 		}
 

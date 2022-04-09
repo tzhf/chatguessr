@@ -10,6 +10,7 @@
 	"dependencies": {
 		"@paulrosania/better-sqlite3": "^8.1.0",
 		"@sentry/electron": "^3.0.0",
+		"@supabase/supabase-js": "^1.33.3",
 		"axios": "^0.23.0",
 		"country-iso": "^2.0.5",
 		"country-iso-3-to-2": "^1.1.0",

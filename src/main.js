@@ -10,6 +10,7 @@ const { initRenderer } = require("electron-store");
 const GameHandler = require("./GameHandler").default;
 const flags = require("./utils/flags");
 const Database = require("./utils/Database");
+const { supabase } = require("./utils/supabase");
 
 if (require("electron-squirrel-startup")) {
 	app.quit();
@@ -64,33 +65,49 @@ function createWindow() {
 	});
 }
 
-function init() {
+async function setupAuthentication() {
+	supabase.auth.onAuthStateChange((event, session) => {
+		console.log({event, session});
+	});
+	if (!supabase.auth.user()) {
+		const authConfig = await supabase.auth.signIn({
+			provider: "twitch",
+		}, {
+			redirectTo: new URL("/streamer/redirect", process.env.CG_PUBLIC_URL).href,
+			scopes: ["chat:read", "chat:write", "whispers:read"].join(" "),
+		})
+		console.log(authConfig);
+	}
+}
+
+async function init() {
 	initRenderer();
 
-	app.whenReady().then(async () => {
-		serveAssets();
-		await serveFlags();
+	await app.whenReady()
+	serveAssets();
+	await serveFlags();
 
-		createWindow();
+	createWindow();
 
-		app.on("activate", () => {
-			// On OS X it's common to re-create a window in the app when the
-			// dock icon is clicked and there are no other windows open.
-			if (BrowserWindow.getAllWindows().length === 0) {
-				createWindow();
-			}
-		});
-
-		// Quit when all windows are closed, except on macOS. There, it's common
-		// for applications and their menu bar to stay active until the user quits
-		// explicitly with Cmd + Q.
-		app.on("window-all-closed", () => {
-			// temporary fix for macOS on closed app issue
-			// if (process.platform !== "darwin") {
-			app.quit();
-			// }
-		});
+	app.on("activate", () => {
+		// On OS X it's common to re-create a window in the app when the
+		// dock icon is clicked and there are no other windows open.
+		if (BrowserWindow.getAllWindows().length === 0) {
+			createWindow();
+		}
 	});
+
+	// Quit when all windows are closed, except on macOS. There, it's common
+	// for applications and their menu bar to stay active until the user quits
+	// explicitly with Cmd + Q.
+	app.on("window-all-closed", () => {
+		// temporary fix for macOS on closed app issue
+		// if (process.platform !== "darwin") {
+		app.quit();
+		// }
+	});
+
+	await setupAuthentication();
 }
 
 init();

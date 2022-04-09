@@ -8,6 +8,7 @@
 // @ts-ignore
 const secretRequire = (0, eval("require"));
 const { ipcRenderer } = secretRequire("electron");
+const { version } = secretRequire("../../package.json"); // path relative to dist/settings
 
 /** @type {HTMLInputElement} */
 const channelName = qs("#channelName");
@@ -43,6 +44,8 @@ const clearStatsBtn = qs("#clearStatsBtn");
 const banUserInput = qs("#banUserInput");
 /** @type {HTMLDivElement} */
 const bannedUsersList = qs("#bannedUsersList");
+/** @type {HTMLElement} */
+const versionText = qs("#version");
 
 let bannedUsersArr = [];
 
@@ -213,6 +216,7 @@ function openTab(e, tab) {
 
 // @ts-ignore TS2339
 qs("#defaultOpen").click();
+versionText.append(document.createTextNode(`ChatGuessr version ${version}`));
 
 function qs(selector, parent = document) {
 	return parent.querySelector(selector);

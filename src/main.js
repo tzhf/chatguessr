@@ -5,12 +5,14 @@ require("./errorReporting");
 if (process.platform == "win32") require("update-electron-app")();
 
 const path = require("path");
-const { app, BrowserWindow, globalShortcut, protocol } = require("electron");
+const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const { initRenderer } = require("electron-store");
 const GameHandler = require("./GameHandler").default;
 const flags = require("./utils/flags");
 const Database = require("./utils/Database");
+const sharedStore = require("./utils/sharedStore");
 const { supabase } = require("./utils/supabase");
+const createAuthWindow = require("./Windows/auth/AuthWindow");
 
 if (require("electron-squirrel-startup")) {
 	app.quit();
@@ -54,30 +56,37 @@ function createWindow() {
 	});
 
 	const gameHandler = new GameHandler(db, mainWindow);
-
-	globalShortcut.register("CommandOrControl+R", () => false);
-	globalShortcut.register("CommandOrControl+Shift+R", () => false);
-	globalShortcut.register("CommandOrControl+P", () => {
-		gameHandler.openSettingsWindow();
-	});
-	globalShortcut.register("Escape", () => {
-		gameHandler.closeSettingsWindow();
-	});
 }
 
 async function setupAuthentication() {
 	supabase.auth.onAuthStateChange((event, session) => {
-		console.log({event, session});
+		if (event === "SIGNED_IN") {
+			sharedStore.set("session", session);
+		} else if (event === "SIGNED_OUT") {
+			sharedStore.set("session", null);
+		}
 	});
 	if (!supabase.auth.user()) {
 		const authConfig = await supabase.auth.signIn({
 			provider: "twitch",
 		}, {
-			redirectTo: new URL("/streamer/redirect", process.env.CG_PUBLIC_URL).href,
-			scopes: ["chat:read", "chat:write", "whispers:read"].join(" "),
+			redirectTo: new URL("/streamer/redirect", `https://${process.env.CG_PUBLIC_URL}`).href,
+			scopes: ["chat:read", "chat:edit", "whispers:read"].join(" "),
 		})
 		console.log(authConfig);
+		createAuthWindow(authConfig.url);
 	}
+
+	ipcMain.on(
+		"set-session",
+		/**
+		 * @param {import('@supabase/supabase-js').Session} session
+		 */
+		(session) => {
+			console.log({session});
+			supabase.auth.setSession(session.refresh_token);
+		},
+	);
 }
 
 async function init() {

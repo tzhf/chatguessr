@@ -121,6 +121,10 @@
 			"context": "browser",
 			"source": "./src/renderer.js"
 		},
+		"auth-preload": {
+			"context": "electron-renderer",
+			"source": "./src/Windows/auth/preload.js"
+		},
 		"settings": {
 			"context": "electron-renderer",
 			"outputFormat": "commonjs",

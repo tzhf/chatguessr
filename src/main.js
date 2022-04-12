@@ -77,7 +77,7 @@ async function setupAuthentication(gameHandler) {
 		redirectTo: new URL("/streamer/redirect", `https://${process.env.CG_PUBLIC_URL}`).href,
 		scopes: ["chat:read", "chat:edit", "whispers:read"].join(" "),
 	})
-	createAuthWindow(authConfig.url);
+	const authWindow = createAuthWindow(authConfig.url);
 
 	ipcMain.on(
 		"set-session",
@@ -88,6 +88,8 @@ async function setupAuthentication(gameHandler) {
 		(_event, session) => {
 			supabase.auth.setSession(session.refresh_token);
 			gameHandler.authenticate(session);
+
+			authWindow.close();
 		},
 	);
 }
@@ -122,6 +124,7 @@ async function init() {
 
 	const gameHandler = new GameHandler(db, mainWindow);
 	ipcMain.handle("get-connection-state", () => gameHandler.getConnectionState());
+	// TODO(reanna) If the game handler requires re-authentication, we need to run through this again
 	await setupAuthentication(gameHandler);
 }
 

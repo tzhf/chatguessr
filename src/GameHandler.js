@@ -237,7 +237,7 @@ class GameHandler {
 	 * @param {import("@supabase/supabase-js").Session} session
 	 */
 	async #initBackend(session) {
-		this.#backend.close();
+		this.#backend?.close();
 		if (!settings.channelName) {
 			return;
 		}

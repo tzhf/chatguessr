@@ -152,7 +152,7 @@ function init(rendererApi) {
 	});
 
 	// IPC RENDERERS
-	ipcRenderer.on("game-started", (e, isMultiGuess, restoredGuesses, location) => {
+	ipcRenderer.on("game-started", (_event, isMultiGuess, restoredGuesses, location) => {
 		markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
 		document.head.append(markerRemover);
 
@@ -200,15 +200,15 @@ function init(rendererApi) {
 		noCompassBtn.style.visibility = "visible";
 	});
 
-	ipcRenderer.on("render-guess", (e, guess) => {
+	ipcRenderer.on("render-guess", (_event, guess) => {
 		scoreboard.renderGuess(guess);
 	});
 
-	ipcRenderer.on("render-multiguess", (e, guesses) => {
+	ipcRenderer.on("render-multiguess", (_event, guesses) => {
 		scoreboard.renderMultiGuess(guesses);
 	});
 
-	ipcRenderer.on("show-round-results", (e, round, location, scores) => {
+	ipcRenderer.on("show-round-results", (_event, round, location, scores) => {
 		scoreboard.setTitle(`ROUND ${round} RESULTS (${scores.length})`);
 		scoreboard.displayScores(scores);
 		scoreboard.showSwitch(false);
@@ -218,7 +218,7 @@ function init(rendererApi) {
 		noCompassBtn.style.visibility = "hidden";
 	});
 
-	ipcRenderer.on("show-final-results", (e, totalScores) => {
+	ipcRenderer.on("show-final-results", (_event, totalScores) => {
 		scoreboard.setTitle(`HIGHSCORES (${totalScores.length})`);
 		scoreboard.showSwitch(false);
 		scoreboard.displayScores(totalScores, true);
@@ -232,7 +232,7 @@ function init(rendererApi) {
 		}, 1000);
 	});
 
-	ipcRenderer.on("next-round", (e, isMultiGuess, location) => {
+	ipcRenderer.on("next-round", (_event, isMultiGuess, location) => {
 		currentLocation = location;
 		scoreboard.checkVisibility();
 		scoreboard.reset(isMultiGuess);
@@ -255,5 +255,19 @@ function init(rendererApi) {
 	});
 	ipcRenderer.on("switch-off", () => {
 		scoreboard.switchOn(false);
+	});
+
+	ipcRenderer.on("twitch-connected", () => {
+		settingsBtn.classList.remove("disconnected");
+		settingsBtn.classList.add("connected");
+	});
+
+	ipcRenderer.on("twitch-disconnected", () => {
+		settingsBtn.classList.add("disconnected");
+	});
+
+	ipcRenderer.invoke("get-connection-state").then(({ state }) => {
+		settingsBtn.classList.remove("connected", "connecting", "disconnected");
+		settingsBtn.classList.add(state);
 	});
 }

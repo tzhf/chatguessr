@@ -13,9 +13,7 @@ const { version } = secretRequire("../../package.json"); // path relative to dis
 /** @type {HTMLInputElement} */
 const channelName = qs("#channelName");
 /** @type {HTMLInputElement} */
-const botUsername = qs("#botUsername");
-/** @type {HTMLInputElement} */
-const twitchToken = qs("#twitchToken");
+const botUsernameEl = qs("#botUsername");
 /** @type {HTMLInputElement} */
 const cgCmd = qs("#cgCmd");
 /** @type {HTMLInputElement} */
@@ -49,10 +47,8 @@ const versionText = qs("#version");
 
 let bannedUsersArr = [];
 
-ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus, socketStatus) => {
+ipcRenderer.on("render-settings", (_event, settings, bannedUsers, connectionState, socketStatus) => {
 	channelName.value = settings.channelName;
-	botUsername.value = settings.botUsername;
-	twitchToken.value = settings.token;
 	cgCmd.value = settings.cgCmd;
 	cgMsg.value = settings.cgMsg;
 	userGetStatsCmd.value = settings.userGetStatsCmd;
@@ -68,11 +64,7 @@ ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus, socke
 	});
 	bannedUsersList.replaceChildren(...newChilds);
 
-	if (twitchStatus == "OPEN") {
-		twitchConnected(settings.botUsername);
-	} else {
-		twitchDisconnected();
-	}
+	handleConnectionState(connectionState);
 
 	if (socketStatus) {
 		socketConnected();
@@ -81,15 +73,11 @@ ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus, socke
 	}
 });
 
-ipcRenderer.on("twitch-connected", (e, botUsername) => {
-	twitchConnected(botUsername);
+ipcRenderer.on("connection-state", (_event, connectionState) => {
+	handleConnectionState(connectionState);
 });
 
-ipcRenderer.on("twitch-disconnected", () => {
-	twitchDisconnected();
-});
-
-ipcRenderer.on("twitch-error", (e, error) => {
+ipcRenderer.on("twitch-error", (_event, error) => {
 	twitchStatusElement.textContent = error;
 	twitchStatusElement.style.color = "#ed2453";
 });
@@ -102,9 +90,21 @@ ipcRenderer.on("socket-disconnected", () => {
 	socketDisconnected();
 });
 
+const handleConnectionState = (connectionState) => {
+	if (connectionState.state == "connected") {
+		twitchConnected(connectionState.botUsername);
+	} else {
+		twitchDisconnected();
+	}
+};
+
+/**
+ * @param {string} botUsername
+ */
 const twitchConnected = (botUsername) => {
 	const linkStr = `chatguessr.com/map/${botUsername}`;
 	cgLink.value = linkStr;
+	botUsernameEl.value = botUsername;
 
 	copyLinkBtn.addEventListener("click", () => {
 		navigator.clipboard.writeText(linkStr);
@@ -141,7 +141,7 @@ function twitchCommandsForm() {
 
 function twitchSettingsForm(e) {
 	e.preventDefault();
-	ipcRenderer.send("twitch-settings-form", channelName.value, botUsername.value, twitchToken.value);
+	ipcRenderer.send("twitch-settings-form", channelName.value);
 }
 
 const socketConnected = () => {
@@ -202,7 +202,7 @@ function createBadge(username) {
 	return userBadge;
 }
 
-function openTab(e, tab) {
+function openTab(_event, tab) {
 	for (const el of document.querySelectorAll(".tabcontent")) {
 		// @ts-ignore TS2339
 		el.style.display = "none";

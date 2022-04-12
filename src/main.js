@@ -55,10 +55,13 @@ function createWindow() {
 		mainWindow.maximize();
 	});
 
-	const gameHandler = new GameHandler(db, mainWindow);
+	return mainWindow;
 }
 
-async function setupAuthentication() {
+/**
+ * @param {GameHandler} gameHandler
+ */
+async function setupAuthentication(gameHandler) {
 	supabase.auth.onAuthStateChange((event, session) => {
 		if (event === "SIGNED_IN") {
 			sharedStore.set("session", session);
@@ -66,25 +69,25 @@ async function setupAuthentication() {
 			sharedStore.set("session", null);
 		}
 	});
-	if (!supabase.auth.user()) {
-		const authConfig = await supabase.auth.signIn({
-			provider: "twitch",
-		}, {
-			redirectTo: new URL("/streamer/redirect", `https://${process.env.CG_PUBLIC_URL}`).href,
-			scopes: ["chat:read", "chat:edit", "whispers:read"].join(" "),
-		})
-		console.log(authConfig);
-		createAuthWindow(authConfig.url);
-	}
+
+	// TODO(reanna) put this behind a button or alert
+	const authConfig = await supabase.auth.signIn({
+		provider: "twitch",
+	}, {
+		redirectTo: new URL("/streamer/redirect", `https://${process.env.CG_PUBLIC_URL}`).href,
+		scopes: ["chat:read", "chat:edit", "whispers:read"].join(" "),
+	})
+	createAuthWindow(authConfig.url);
 
 	ipcMain.on(
 		"set-session",
 		/**
+		 * @param {unknown} _event
 		 * @param {import('@supabase/supabase-js').Session} session
 		 */
-		(session) => {
-			console.log({session});
+		(_event, session) => {
 			supabase.auth.setSession(session.refresh_token);
+			gameHandler.authenticate(session);
 		},
 	);
 }
@@ -96,7 +99,7 @@ async function init() {
 	serveAssets();
 	await serveFlags();
 
-	createWindow();
+	const mainWindow = createWindow();
 
 	app.on("activate", () => {
 		// On OS X it's common to re-create a window in the app when the
@@ -109,6 +112,7 @@ async function init() {
 	// Quit when all windows are closed, except on macOS. There, it's common
 	// for applications and their menu bar to stay active until the user quits
 	// explicitly with Cmd + Q.
+	// TODO(reanna) on non-mac, maybe do this when the *main* window is closed
 	app.on("window-all-closed", () => {
 		// temporary fix for macOS on closed app issue
 		// if (process.platform !== "darwin") {
@@ -116,7 +120,9 @@ async function init() {
 		// }
 	});
 
-	await setupAuthentication();
+	const gameHandler = new GameHandler(db, mainWindow);
+	ipcMain.handle("get-connection-state", () => gameHandler.getConnectionState());
+	await setupAuthentication(gameHandler);
 }
 
 init();

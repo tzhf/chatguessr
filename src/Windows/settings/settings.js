@@ -222,7 +222,7 @@ function createBadge(username) {
 	return userBadge;
 }
 
-function openTab(_event, tab) {
+function openTab(event, tab) {
 	for (const el of document.querySelectorAll(".tabcontent")) {
 		// @ts-ignore TS2339
 		el.style.display = "none";
@@ -231,7 +231,7 @@ function openTab(_event, tab) {
 		el.classList.remove("active");
 	}
 	document.getElementById(tab).style.display = "block";
-	e.currentTarget.classList.add("active");
+	event.currentTarget.classList.add("active");
 }
 
 // @ts-ignore TS2339

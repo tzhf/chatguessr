@@ -60,8 +60,9 @@ function createWindow() {
 
 /**
  * @param {GameHandler} gameHandler
+ * @param {BrowserWindow} parentWindow
  */
-async function setupAuthentication(gameHandler) {
+async function setupAuthentication(gameHandler, parentWindow) {
 	supabase.auth.onAuthStateChange((event, session) => {
 		if (event === "SIGNED_IN") {
 			sharedStore.set("session", session);
@@ -77,21 +78,21 @@ async function setupAuthentication(gameHandler) {
 		redirectTo: new URL("/streamer/redirect", `https://${process.env.CG_PUBLIC_URL}`).href,
 		scopes: ["chat:read", "chat:edit", "whispers:read"].join(" "),
 	})
-	const authWindow = createAuthWindow(authConfig.url);
+	const authWindow = createAuthWindow(authConfig.url, parentWindow);
+	
+	/**
+	 * @param {unknown} _event
+	 * @param {import('@supabase/supabase-js').Session} session
+	 */
+	const setSession = (_event, session) => {
+		supabase.auth.setSession(session.refresh_token);
+		gameHandler.authenticate(session);
 
-	ipcMain.on(
-		"set-session",
-		/**
-		 * @param {unknown} _event
-		 * @param {import('@supabase/supabase-js').Session} session
-		 */
-		(_event, session) => {
-			supabase.auth.setSession(session.refresh_token);
-			gameHandler.authenticate(session);
+		authWindow.close();
+	};
 
-			authWindow.close();
-		},
-	);
+	ipcMain.once("set-session", setSession);
+	authWindow.on("closed", () => ipcMain.off("set-session", setSession));
 }
 
 async function init() {
@@ -114,7 +115,6 @@ async function init() {
 	// Quit when all windows are closed, except on macOS. There, it's common
 	// for applications and their menu bar to stay active until the user quits
 	// explicitly with Cmd + Q.
-	// TODO(reanna) on non-mac, maybe do this when the *main* window is closed
 	app.on("window-all-closed", () => {
 		// temporary fix for macOS on closed app issue
 		// if (process.platform !== "darwin") {
@@ -124,8 +124,10 @@ async function init() {
 
 	const gameHandler = new GameHandler(db, mainWindow);
 	ipcMain.handle("get-connection-state", () => gameHandler.getConnectionState());
-	// TODO(reanna) If the game handler requires re-authentication, we need to run through this again
-	await setupAuthentication(gameHandler);
+	ipcMain.handle("replace-session", async () => {
+		await setupAuthentication(gameHandler, mainWindow);
+	});
+	await setupAuthentication(gameHandler, mainWindow);
 }
 
 init();

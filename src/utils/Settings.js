@@ -61,13 +61,9 @@ class Settings {
 
 	/**
 	 * @param {string} channelName
-	 * @param {string} botUsername
-	 * @param {string} token
 	 */
-	setTwitchSettings(channelName, botUsername, token) {
+	setTwitchSettings(channelName) {
 		this.channelName = channelName;
-		this.botUsername = botUsername;
-		this.token = token;
 		this.#save();
 	}
 

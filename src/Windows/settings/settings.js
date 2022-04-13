@@ -15,6 +15,8 @@ const channelName = qs("#channelName");
 /** @type {HTMLInputElement} */
 const botUsernameEl = qs("#botUsername");
 /** @type {HTMLInputElement} */
+const twitchReauthEl = qs("#twitchReauth");
+/** @type {HTMLInputElement} */
 const cgCmd = qs("#cgCmd");
 /** @type {HTMLInputElement} */
 const cgMsg = qs("#cgMsg");
@@ -104,7 +106,6 @@ const handleConnectionState = (connectionState) => {
 const twitchConnected = (botUsername) => {
 	const linkStr = `chatguessr.com/map/${botUsername}`;
 	cgLink.value = linkStr;
-	botUsernameEl.value = botUsername;
 
 	copyLinkBtn.addEventListener("click", () => {
 		navigator.clipboard.writeText(linkStr);
@@ -115,14 +116,33 @@ const twitchConnected = (botUsername) => {
 	});
 
 	cgLinkContainer.style.display = "block";
-	twitchStatusElement.textContent = "Connected";
-	twitchStatusElement.style.color = "#3fe077";
+
+	const connected = document.createElement("span");
+	connected.textContent = "Connected";
+	connected.style.color = "#3fe077";
+
+	twitchReauthEl.textContent = "Change account";
+	twitchReauthEl.classList.remove("success");
+	twitchReauthEl.classList.add("danger");
+	
+	twitchStatusElement.replaceChildren(
+		connected,
+		document.createTextNode(` as ${botUsername}`),
+	);
 };
 
 const twitchDisconnected = () => {
 	cgLinkContainer.style.display = "none";
-	twitchStatusElement.textContent = "Disconnected";
-	twitchStatusElement.style.color = "#ed2453";
+
+	const disconnected = document.createElement("span");
+	disconnected.textContent = "Disconnected";
+	disconnected.style.color = "#ed2453";
+
+	twitchReauthEl.textContent = "Log in";
+	twitchReauthEl.classList.add("success");
+	twitchReauthEl.classList.remove("danger");
+
+	twitchStatusElement.replaceChildren(disconnected);
 };
 
 function gameSettingsForm() {
@@ -217,6 +237,10 @@ function openTab(_event, tab) {
 // @ts-ignore TS2339
 qs("#defaultOpen").click();
 versionText.append(document.createTextNode(`ChatGuessr version ${version}`));
+
+twitchReauthEl.addEventListener("click", () => {
+	ipcRenderer.invoke("replace-session");
+});
 
 function qs(selector, parent = document) {
 	return parent.querySelector(selector);

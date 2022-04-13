@@ -201,8 +201,8 @@ class GameHandler {
 			this.#settingsWindow?.close();
 		});
 
-		ipcMain.on("twitch-settings-form", (_event, channelName, botUsername, token) => {
-			settings.setTwitchSettings(channelName, botUsername, token);
+		ipcMain.on("twitch-settings-form", (_event, channelName) => {
+			settings.setTwitchSettings(channelName);
 		});
 
 		ipcMain.on("add-banned-user", (_event, username) => {

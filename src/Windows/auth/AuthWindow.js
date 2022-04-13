@@ -6,10 +6,12 @@ const { BrowserWindow, shell } = require("electron");
 
 /**
  * @param {string} oauthUrl
+ * @param {BrowserWindow} parentWindow
  */
-function createAuthWindow(oauthUrl) {
+function createAuthWindow(oauthUrl, parentWindow) {
 	let win = new BrowserWindow({
 		height: 800,
+		parent: parentWindow,
 		show: false,
 		modal: true,
 		webPreferences: {

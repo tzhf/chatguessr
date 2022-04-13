@@ -33,6 +33,11 @@ class GameHandler {
 	#settingsWindow;
 
 	/**
+	 * @type {import("@supabase/supabase-js").Session|undefined}
+	 */
+	#session;
+
+	/**
 	 * @type {TwitchBackend|undefined}
 	 */
 	#backend;
@@ -91,7 +96,15 @@ class GameHandler {
 		/** @type {string|undefined} */
 		let link;
 		try {
-			link = await GameHelper.makeLink(settings.token, settings.channelName, settings.botUsername, this.#game.mapName, this.#game.mode, locations, totalScores);
+			link = await GameHelper.makeLink(
+				this.#session.access_token,
+				this.#session.user.user_metadata.name,
+				settings.channelName,
+				this.#game.mapName,
+				this.#game.mode,
+				locations,
+				totalScores,
+			);
 		} catch (error) {
 			console.error("could not upload summary", error);
 		}
@@ -229,6 +242,7 @@ class GameHandler {
 	 * @param {import("@supabase/supabase-js").Session} session
 	 */
 	async authenticate(session) {
+		this.#session = session;
 		await this.#initBackend(session);
 		await this.#initSocket(session);
 	}
@@ -238,18 +252,19 @@ class GameHandler {
 	 */
 	async #initBackend(session) {
 		this.#backend?.close();
+		this.#backend = undefined;
 		if (!settings.channelName) {
 			return;
 		}
-		if (session.user.app_metadata.provider !== "twitch") {
+		if (session.user.app_metadata.provider === "twitch") {
+			this.#backend = new TwitchBackend({
+				botUsername: session.user.user_metadata.name,
+				channelName: settings.channelName,
+				whisperToken: session.provider_token,
+			});
+		} else {
 			throw new Error("unsupported provider");
 		}
-
-		this.#backend = new TwitchBackend({
-			botUsername: session.user.user_metadata.name,
-			channelName: settings.channelName,
-			whisperToken: session.provider_token,
-		});
 
 		const emitConnectionState = () => {
 			const state = this.getConnectionState();

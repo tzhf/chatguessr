@@ -126,8 +126,7 @@
 			"source": "./src/Windows/auth/preload.js"
 		},
 		"auth": {
-			"context": "electron-renderer",
-			"outputFormat": "commonjs",
+			"context": "browser",
 			"source": [
 				"./src/Windows/auth/migrate.html",
 				"./src/Windows/auth/new.html"

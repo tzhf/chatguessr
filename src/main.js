@@ -14,6 +14,7 @@ const sharedStore = require("./utils/sharedStore");
 const Settings = require("./utils/Settings");
 const { supabase } = require("./utils/supabase");
 const createAuthWindow = require("./Windows/auth/AuthWindow");
+const axios = require("axios").default;
 
 if (require("electron-squirrel-startup")) {
 	app.quit();
@@ -60,6 +61,23 @@ function createWindow() {
 }
 
 /**
+ * Previous versions used a user-generated oauth token that had too many permissions. If we still have one of those, revoke it.
+ */
+async function revokeLegacyOauthToken() {
+	const { token } = Settings.read();
+	if (!token || !process.env.TWITCH_CLIENT_ID) {
+		return;
+	}
+
+	await axios.post("https://id.twitch.tv/oauth2/revoke", new URLSearchParams({
+		client_id: process.env.TWITCH_CLIENT_ID,
+		token,
+	}));
+
+	sharedStore.delete("settings.token");
+}
+
+/**
  * @param {GameHandler} gameHandler
  * @param {BrowserWindow} parentWindow
  */
@@ -68,7 +86,7 @@ async function setupAuthentication(gameHandler, parentWindow) {
 		if (event === "SIGNED_IN") {
 			sharedStore.set("session", session);
 		} else if (event === "SIGNED_OUT") {
-			sharedStore.set("session", null);
+			sharedStore.delete("session");
 		}
 	});
 
@@ -82,9 +100,16 @@ async function setupAuthentication(gameHandler, parentWindow) {
 		scopes: ["chat:read", "chat:edit", "whispers:read"].join(" "),
 	});
 
-	let authUrl = hasSession ? authConfig.url : (hasLegacyToken ? createAuthWindow.MIGRATE_URL : createAuthWindow.NEW_URL);
+	let authUrl = hasLegacyToken ? createAuthWindow.MIGRATE_URL : createAuthWindow.NEW_URL;
+	// If we have an existing session, we try to go through the login flow without user interaction.
+	// This way users don't have to sign in manually every time they open ChatGuessr.
+	if (hasSession) {
+		authUrl = authConfig.url;
+	}
 
-	const authWindow = createAuthWindow(authUrl, parentWindow);
+	const authWindow = await createAuthWindow(authUrl, parentWindow, {
+		clearStorageData: !hasSession,
+	});
 
 	const startAuth = () => {
 		authWindow.loadURL(authConfig.url);
@@ -96,7 +121,7 @@ async function setupAuthentication(gameHandler, parentWindow) {
 	 */
 	const setSession = (_event, session) => {
 		supabase.auth.setSession(session.refresh_token);
-		gameHandler.authenticate(session);
+		gameHandler.authenticate(session).then(revokeLegacyOauthToken);
 
 		authWindow.close();
 	};
@@ -139,6 +164,7 @@ async function init() {
 	const gameHandler = new GameHandler(db, mainWindow);
 	ipcMain.handle("get-connection-state", () => gameHandler.getConnectionState());
 	ipcMain.handle("replace-session", async () => {
+		await supabase.auth.signOut();
 		await setupAuthentication(gameHandler, mainWindow);
 	});
 	await setupAuthentication(gameHandler, mainWindow);

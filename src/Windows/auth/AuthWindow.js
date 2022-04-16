@@ -6,8 +6,9 @@ const { BrowserWindow, shell } = require("electron");
 /**
  * @param {string} initialUrl
  * @param {BrowserWindow} parentWindow
+ * @param {{ clearStorageData: boolean }} options
  */
-function createAuthWindow(initialUrl, parentWindow) {
+async function createAuthWindow(initialUrl, parentWindow, options) {
 	let win = new BrowserWindow({
 		height: 800,
 		parent: parentWindow,
@@ -15,6 +16,9 @@ function createAuthWindow(initialUrl, parentWindow) {
 		modal: true,
 		webPreferences: {
 			preload: path.join(__dirname, "../auth-preload/preload.js"),
+			// Use a separate browser session so we can force log people out of
+			// Twitch without logging them out of GeoGuessr.
+			partition: "persist:backendAuth",
 			contextIsolation: true,
 			nodeIntegration: false,
 			devTools: process.env.NODE_ENV === "development",
@@ -36,6 +40,10 @@ function createAuthWindow(initialUrl, parentWindow) {
 			win.show();
 		}
 	});
+
+	if (options.clearStorageData) {
+		await win.webContents.session.clearStorageData();
+	}
 
 	win.loadURL(initialUrl);
 	if (process.env.NODE_ENV === "development") {

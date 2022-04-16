@@ -1,14 +1,13 @@
 "use strict";
 
 const path = require("path");
-const fs = require("fs");
 const { BrowserWindow, shell } = require("electron");
 
 /**
- * @param {string} oauthUrl
+ * @param {string} initialUrl
  * @param {BrowserWindow} parentWindow
  */
-function createAuthWindow(oauthUrl, parentWindow) {
+function createAuthWindow(initialUrl, parentWindow) {
 	let win = new BrowserWindow({
 		height: 800,
 		parent: parentWindow,
@@ -38,12 +37,15 @@ function createAuthWindow(oauthUrl, parentWindow) {
 		}
 	});
 
-	win.loadURL(oauthUrl);
+	win.loadURL(initialUrl);
 	if (process.env.NODE_ENV === "development") {
 		win.webContents.openDevTools();
 	}
 
 	return win;
 }
+
+createAuthWindow.MIGRATE_URL = `file://${path.join(__dirname, "../../dist/auth/migrate.html")}`;
+createAuthWindow.NEW_URL = `file://${path.join(__dirname, "../../dist/auth/new.html")}`;
 
 module.exports = createAuthWindow;

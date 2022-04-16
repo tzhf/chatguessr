@@ -11,6 +11,7 @@ const GameHandler = require("./GameHandler").default;
 const flags = require("./utils/flags");
 const Database = require("./utils/Database");
 const sharedStore = require("./utils/sharedStore");
+const Settings = require("./utils/Settings");
 const { supabase } = require("./utils/supabase");
 const createAuthWindow = require("./Windows/auth/AuthWindow");
 
@@ -71,18 +72,27 @@ async function setupAuthentication(gameHandler, parentWindow) {
 		}
 	});
 
-	// TODO(reanna) put this behind a button or alert
+	const hasLegacyToken = !!Settings.read().token;
+	const hasSession = !!sharedStore.get("session")?.access_token;
+
 	const authConfig = await supabase.auth.signIn({
 		provider: "twitch",
 	}, {
 		redirectTo: new URL("/streamer/redirect", `https://${process.env.CG_PUBLIC_URL}`).href,
 		scopes: ["chat:read", "chat:edit", "whispers:read"].join(" "),
-	})
-	const authWindow = createAuthWindow(authConfig.url, parentWindow);
+	});
+
+	let authUrl = hasSession ? authConfig.url : (hasLegacyToken ? createAuthWindow.MIGRATE_URL : createAuthWindow.NEW_URL);
+
+	const authWindow = createAuthWindow(authUrl, parentWindow);
+
+	const startAuth = () => {
+		authWindow.loadURL(authConfig.url);
+	};
 	
 	/**
-	 * @param {unknown} _event
-	 * @param {import('@supabase/supabase-js').Session} session
+	 * @param {import("electron").IpcMainEvent} _event
+	 * @param {import("@supabase/supabase-js").Session} session
 	 */
 	const setSession = (_event, session) => {
 		supabase.auth.setSession(session.refresh_token);
@@ -92,7 +102,11 @@ async function setupAuthentication(gameHandler, parentWindow) {
 	};
 
 	ipcMain.once("set-session", setSession);
-	authWindow.on("closed", () => ipcMain.off("set-session", setSession));
+	ipcMain.handle("start-auth", startAuth);
+	authWindow.on("closed", () => {
+		ipcMain.off("set-session", setSession);
+		ipcMain.removeHandler("start-auth");
+	});
 }
 
 async function init() {

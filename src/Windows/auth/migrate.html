@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Twitch Setup</title>
+		<link rel="stylesheet" href="./styles.css">
+	</head>
+	<body>
+        <main class="container cards">
+            <div class="card">
+                <h1>Sign in with Twitch</h1>
+                <p>
+                    To use ChatGuessr, you have to log in with Twitch. We recommend logging in using a bot account or second account, not your main streamer account.
+                </p>
+
+                <div class="card danger">
+                    <p>
+                        ChatGuessr versions <strong>1.1.0-alpha.0</strong> and <strong>2.0.0</strong>, released on the 25th of March, contain a security issue that could expose your OAuth token to the ChatGuessr developers.
+                        This token could theoretically give ChatGuessr developers moderation access in your Twitch channel through your bot account.
+                    </p>
+                    <p>
+                        We obviously have no use for this access and should never have had it.
+                        The token was never stored anywhere and never seen by a human, but we recommend revoking it anyway.
+                    </p>
+                    <p>
+                        Please see the <a href="https://chatguessr.com/security" target="_blank">security announcement</a> for instructions on how to do that and more information on what happened.
+                    </p>
+                    <p>
+                        With this new version, the ChatGuessr client requires <em>less</em> access than before, and this access is not exposed anymore, so a similar mistake can not occur again.
+                        We apologise for the broken trust.
+                    </p>
+                </div>
+
+                <p>
+                    <button class="btn twitch" id="start-auth">Log in with Twitch</button>
+                </p>
+            </div>
+        </main>
+        <script>
+            const startAuth = document.querySelector("#start-auth");
+            startAuth.addEventListener("click", () => {
+                startAuth.disabled = true;
+                chatguessrApi.startAuth();
+            });
+        </script>
+	</body>
+</html>

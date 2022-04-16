@@ -125,6 +125,15 @@
 			"context": "electron-renderer",
 			"source": "./src/Windows/auth/preload.js"
 		},
+		"auth": {
+			"context": "electron-renderer",
+			"outputFormat": "commonjs",
+			"source": [
+				"./src/Windows/auth/migrate.html",
+				"./src/Windows/auth/new.html"
+			],
+			"publicUrl": "."
+		},
 		"settings": {
 			"context": "electron-renderer",
 			"outputFormat": "commonjs",

@@ -84,6 +84,7 @@ async function revokeLegacyOauthToken() {
 async function authenticateWithTwitch(gameHandler, parentWindow) {
 	const hasLegacyToken = !!Settings.read().token;
 	const hasSession = !!sharedStore.get("session")?.access_token;
+	const hasUsedDatabase = !db.isEmpty();
 
 	const authConfig = await supabase.auth.signIn({
 		provider: "twitch",
@@ -92,7 +93,9 @@ async function authenticateWithTwitch(gameHandler, parentWindow) {
 		scopes: ["chat:read", "chat:edit", "whispers:read"].join(" "),
 	});
 
-	let authUrl = hasLegacyToken ? createAuthWindow.MIGRATE_URL : createAuthWindow.NEW_URL;
+	// If there is any data in the database AND a token was configured, the streamer has likely used a vulnerable
+	// version of ChatGuessr, and we need to show the migration warning.
+	let authUrl = hasLegacyToken && hasUsedDatabase ? createAuthWindow.MIGRATE_URL : createAuthWindow.NEW_URL;
 	// If we have an existing session, we try to go through the login flow without user interaction.
 	// This way users don't have to sign in manually every time they open ChatGuessr.
 	if (hasSession) {

@@ -390,7 +390,7 @@ class GameHandler {
 		}
 
 		if (message === settings.cgCmd && settings.cgCmd !== "") {
-			await this.#backend.sendMessage(settings.cgMsg.replace('<your cg link>', `https://chatguessr.com/map/${settings.botUsername}`));
+			await this.#backend.sendMessage(settings.cgMsg.replace('<your cg link>', `https://chatguessr.com/map/${this.#backend.botUsername}`));
 			return;
 		}
 
@@ -487,27 +487,29 @@ class GameHandler {
 			this.#socket.disconnect();
 		}
 
+		const botUsername = session.user.user_metadata.name;
+
 		this.#socket = io(SOCKET_SERVER_URL, {
 			transportOptions: {
 				polling: {
 					extraHeaders: {
 						access_token: session.access_token,
 						channelname: settings.channelName,
-						bot: session.user.user_metadata.name,
+						bot: botUsername,
 					},
 				},
 			},
 		});
 
 		this.#socket.on("connect", () => {
-			this.#socket.emit("join", settings.botUsername);
+			this.#socket.emit("join", botUsername);
 			if (this.#settingsWindow) {
 				this.#settingsWindow.webContents.send("socket-connected");
 			}
 			console.log("Connected to socket !");
 		});
 
-		this.#socket.on("disconnect", () => {
+		this.#socket.on("disconnect", (reason) => {
 			if (this.#settingsWindow) {
 				this.#settingsWindow.webContents.send("socket-disconnected");
 			}

@@ -5,7 +5,6 @@ const store = require("./sharedStore");
 /**
  * @typedef {object} SettingsProps
  * @prop {string} channelName
- * @prop {string} botUsername
  * @prop {string} token
  * @prop {string} cgCmd
  * @prop {string} cgMsg
@@ -19,7 +18,6 @@ class Settings {
 	/** @param {Partial<SettingsProps>} settings */
 	constructor({
 		channelName = "",
-		botUsername = "",
 		token = "",
 		cgCmd = "!cg",
 		cgMsg = "Two ways to play: 1. Login with Twitch, make your guess and press guess (spacebar). 2. Paste the command into chat without editing: <your cg link>",
@@ -29,7 +27,6 @@ class Settings {
 		isMultiGuess = false,
 	} = {}) {
 		this.channelName = channelName;
-		this.botUsername = botUsername;
 		this.token = token;
 		this.cgCmd = cgCmd;
 		this.cgMsg = cgMsg;
@@ -70,7 +67,6 @@ class Settings {
 	toJSON() {
 		return {
 			channelName: this.channelName,
-			botUsername: this.botUsername,
 			token: this.token,
 			cgCmd: this.cgCmd,
 			cgMsg: this.cgMsg,

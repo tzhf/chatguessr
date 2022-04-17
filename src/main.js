@@ -49,7 +49,6 @@ async function serveFlags() {
 }
 
 function createWindow() {
-	/** @type {import('electron').BrowserWindow} */
 	const mainWindow = require("./Windows/MainWindow");
 
 	mainWindow.once("ready-to-show", () => {
@@ -74,6 +73,7 @@ async function revokeLegacyOauthToken() {
 		token,
 	}));
 
+	// @ts-expect-error TS2345
 	sharedStore.delete("settings.token");
 }
 
@@ -81,15 +81,7 @@ async function revokeLegacyOauthToken() {
  * @param {GameHandler} gameHandler
  * @param {BrowserWindow} parentWindow
  */
-async function setupAuthentication(gameHandler, parentWindow) {
-	supabase.auth.onAuthStateChange((event, session) => {
-		if (event === "SIGNED_IN") {
-			sharedStore.set("session", session);
-		} else if (event === "SIGNED_OUT") {
-			sharedStore.delete("session");
-		}
-	});
-
+async function authenticateWithTwitch(gameHandler, parentWindow) {
 	const hasLegacyToken = !!Settings.read().token;
 	const hasSession = !!sharedStore.get("session")?.access_token;
 
@@ -161,13 +153,26 @@ async function init() {
 		// }
 	});
 
-	const gameHandler = new GameHandler(db, mainWindow);
+	const gameHandler = new GameHandler(db, mainWindow, {
+		async requestAuthentication () {
+			await authenticateWithTwitch(gameHandler, mainWindow);
+		},
+	});
 	ipcMain.handle("get-connection-state", () => gameHandler.getConnectionState());
 	ipcMain.handle("replace-session", async () => {
 		await supabase.auth.signOut();
-		await setupAuthentication(gameHandler, mainWindow);
+		await authenticateWithTwitch(gameHandler, mainWindow);
 	});
-	await setupAuthentication(gameHandler, mainWindow);
+	
+	supabase.auth.onAuthStateChange((event, session) => {
+		if (event === "SIGNED_IN") {
+			sharedStore.set("session", session);
+		} else if (event === "SIGNED_OUT") {
+			sharedStore.delete("session");
+		}
+	});
+
+	await authenticateWithTwitch(gameHandler, mainWindow);
 }
 
 init();

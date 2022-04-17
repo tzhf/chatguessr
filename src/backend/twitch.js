@@ -5,6 +5,8 @@ class TwitchBackend extends EventEmitter {
 	/** @type {TwitchClient} */
 	#tmi;
 
+	#closing = false;
+
 	/** @type {string} */
 	botUsername;
 	/** @type {string} */
@@ -40,7 +42,7 @@ class TwitchBackend extends EventEmitter {
 		});
 
 		this.#tmi.on("disconnected", () => {
-			this.emit("disconnected");
+			this.emit("disconnected", this.#closing);
 		});
 
 		this.#tmi.on("whisper", (_from, userstate, message, self) => {
@@ -59,6 +61,7 @@ class TwitchBackend extends EventEmitter {
 	}
 
 	async close() {
+		this.#closing = true;
 		await this.#tmi.disconnect();
 	}
 

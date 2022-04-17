@@ -52,16 +52,20 @@ class GameHandler {
 	 */
 	#game;
 
+	#requestAuthentication;
+
 	/**
 	 * @param {Database} db
 	 * @param {MainWindow} win
+	 * @param {{ requestAuthentication: () => Promise<void> }} options
 	 */
-	constructor(db, win) {
+	constructor(db, win, options) {
 		this.#db = db;
 		this.#win = win;
 		this.#backend = undefined;
 		this.#socket = undefined;
 		this.#game = new Game(db, settings);
+		this.#requestAuthentication = options.requestAuthentication;
 		this.init();
 	}
 
@@ -203,6 +207,7 @@ class GameHandler {
 
 		ipcMain.on("twitch-settings-form", (_event, channelName) => {
 			settings.setTwitchSettings(channelName);
+			this.#requestAuthentication();
 		});
 
 		ipcMain.on("add-banned-user", (_event, username) => {
@@ -276,8 +281,12 @@ class GameHandler {
 			emitConnectionState();
 			this.#backend.sendMessage("is now connected", { system: true });
 		});
-		this.#backend.on("disconnected", () => {
+		this.#backend.on("disconnected", (requestedClose) => {
 			emitConnectionState();
+			if (!requestedClose) {
+				// Try to reconnect.
+				this.#requestAuthentication();
+			}
 		});
 
 		this.#backend.on("whisper", (userstate, message) => {

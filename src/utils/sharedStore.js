@@ -25,6 +25,7 @@ const ElectronStore = require("electron-store");
  *   lastRoundPlayers: void,
  *   lastLocation: import('../types').LatLng | undefined,
  *   isSatellite: boolean,
+ *   session: import('@supabase/supabase-js').Session | null,
  *   current_version: string,
  * }} Schema
  */

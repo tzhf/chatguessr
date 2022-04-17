@@ -735,6 +735,15 @@ class Database {
         });
     }
 
+    /**
+     * Check if the database contains any data.
+     * @returns {boolean}
+     */
+    isEmpty() {
+        const result = this.#db.prepare('SELECT COUNT(*) as count FROM users;').get();
+        return !result || result.count === 0;
+    }
+
     async clear() {
         if (!this.#db.memory) {
             try {

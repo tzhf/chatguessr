@@ -144,16 +144,16 @@ function calculateScore(distance, scale) {
 /**
  * Upload scores to the Chatguessr API and return the public URL to the scoreboard.
  *
- * @param  {string} token
- * @param  {string} streamer
+ * @param  {string} accessToken
  * @param  {string} bot
+ * @param  {string} streamer
  * @param  {string} mapName
  * @param {Object} mode
  * @param  {LatLng[]} locations
  * @param  {({ username: string, flag: string, score: number, rounds: number })[]} totalScores
- * @return {Promise<string>} link
+ * @return {Promise<string>}
  */
-async function makeLink(token, streamer, bot, mapName, mode, locations, totalScores) {
+async function makeLink(accessToken, bot, streamer, mapName, mode, locations, totalScores) {
 	const players = totalScores.map((guess) => {
 		return {
 			username: guess.username,
@@ -174,9 +174,7 @@ async function makeLink(token, streamer, bot, mapName, mode, locations, totalSco
 			locations: locations,
 			players: players,
 		},
-		{
-			headers: { oauthtoken: token },
-		}
+		{ headers: { access_token: accessToken } },
 	);
 
 	return `${CG_PUBLIC_URL}/game/${res.data.code}`;

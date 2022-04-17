@@ -196,9 +196,9 @@ hr {
 .gap-05 {
 	gap: 0.5rem;
 }
-.oauth-link {
-	font-size: 12px;
-	font-style: italic;
+.connection-status {
+	line-height: 46px;
+	width: 100%;
 }
 .checkbox-container {
 	display: block;

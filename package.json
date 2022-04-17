@@ -10,6 +10,7 @@
 	"dependencies": {
 		"@paulrosania/better-sqlite3": "^8.1.0",
 		"@sentry/electron": "^3.0.0",
+		"@supabase/supabase-js": "^1.33.3",
 		"axios": "^0.23.0",
 		"country-iso": "^2.0.5",
 		"country-iso-3-to-2": "^1.1.0",
@@ -20,11 +21,11 @@
 		"dotenv": "^8.2.0",
 		"electron-squirrel-startup": "^1.0.0",
 		"electron-store": "^8.0.1",
+		"find-up": "^5.0.0",
 		"jquery": "^3.6.0",
 		"jquery-ui-dist": "^1.12.1",
 		"match-sorter": "^6.3.1",
 		"p-map": "^4.0.0",
-		"pkg-up": "^3.1.0",
 		"socket.io-client": "^4.4.1",
 		"tmi.js": "^1.8.5",
 		"update-electron-app": "^2.0.1",
@@ -119,6 +120,18 @@
 		"cg-renderer": {
 			"context": "browser",
 			"source": "./src/renderer.js"
+		},
+		"auth-preload": {
+			"context": "electron-renderer",
+			"source": "./src/Windows/auth/preload.js"
+		},
+		"auth": {
+			"context": "browser",
+			"source": [
+				"./src/Windows/auth/migrate.html",
+				"./src/Windows/auth/new.html"
+			],
+			"publicUrl": "."
 		},
 		"settings": {
 			"context": "electron-renderer",

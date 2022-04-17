@@ -48,23 +48,24 @@ jobs:
           node-version: 17.x
       - name: Install dependencies
         run: npm ci
-      - name: Package
-        if: ${{github.ref_type != 'tag'}}
-        run: npm run package
+      - name: Write .env
+        run: node create-env.js
         env:
           CG_PUBLIC_URL: ${{secrets.CG_PUBLIC_URL}}
           CG_API_URL: ${{secrets.CG_API_URL}}
           SOCKET_SERVER_URL: ${{secrets.SOCKET_SERVER_URL}}
           SENTRY_DSN: ${{secrets.SENTRY_DSN}}
+          SUPABASE_URL: ${{secrets.SUPABASE_URL}}
+          SUPABASE_ANON_KEY: ${{secrets.SUPABASE_ANON_KEY}}
+          TWITCH_CLIENT_ID: ${{secrets.TWITCH_CLIENT_ID}}
+      - name: Package
+        if: ${{github.ref_type != 'tag'}}
+        run: npm run package
       - name: Publish
         if: ${{github.ref_type == 'tag'}}
         run: npm run publish
         env:
           GITHUB_TOKEN: ${{github.token}}
-          CG_PUBLIC_URL: ${{secrets.CG_PUBLIC_URL}}
-          CG_API_URL: ${{secrets.CG_API_URL}}
-          SOCKET_SERVER_URL: ${{secrets.SOCKET_SERVER_URL}}
-          SENTRY_DSN: ${{secrets.SENTRY_DSN}}
       - uses: actions/upload-artifact@v3
         with:
           name: Chatguessr-${{runner.os}}

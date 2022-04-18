@@ -68,12 +68,16 @@ async function revokeLegacyOauthToken() {
 		return;
 	}
 
-	await axios.post("https://id.twitch.tv/oauth2/revoke", new URLSearchParams({
-		client_id: process.env.TWITCH_CLIENT_ID,
-		token,
-	}));
+	try {
+		await axios.post("https://id.twitch.tv/oauth2/revoke", new URLSearchParams({
+			client_id: process.env.TWITCH_CLIENT_ID,
+			token: token.replace(/^oauth:/, ''),
+		}));
+	} catch {
+		// We tried (this probably means it was not valid anymore to begin with)
+	}
 
-	// @ts-expect-error TS2345
+	// @ts-expect-error TS2345 Sub-properties are not supported by the types, but do work
 	sharedStore.delete("settings.token");
 }
 

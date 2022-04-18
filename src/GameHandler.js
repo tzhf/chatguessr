@@ -289,7 +289,7 @@ class GameHandler {
 			}
 		});
 
-		this.#backend.on("whisper", (userstate, message) => {
+		this.#backend.on("guess", (userstate, message) => {
 			this.#handleGuess(userstate, message).catch((error) => {
 				console.error(error);
 			});

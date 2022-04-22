@@ -12,7 +12,7 @@
 		"@sentry/electron": "^3.0.0",
 		"@supabase/supabase-js": "^1.33.3",
 		"axios": "^0.23.0",
-		"coordinate_to_country": "^1.0.1",
+		"coordinate_to_country": "^1.1.0",
 		"datatables.net": "^1.11.3",
 		"datatables.net-buttons": "^2.0.1",
 		"datatables.net-plugins": "^1.10.24",

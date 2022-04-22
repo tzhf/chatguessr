@@ -118,6 +118,9 @@ function haversineDistance(mk1, mk2) {
  * @return {number} score
  */
 function calculateScore(distance, scale) {
+	if(distance * 1000 < 25){
+		return 5000;
+	}
 	return Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale));
 }
 

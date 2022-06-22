@@ -53,6 +53,22 @@ describe('getCountryCode', () => {
 		const vatican = { lat: 41.903363034132724, lng: 12.452659606933594 };
 		expect(await GameHelper.getCountryCode(vatican)).toBe('VA');
 	});
+	it('Baarle-Nassau and Baarle-Hertog are resolved properly', async () => {
+		const nl = {lat: 51.439391, lng: 4.931514};
+		const be = {lat: 51.445161, lng: 4.941440};
+		expect(await GameHelper.getCountryCode(nl)).toBe('NL');
+		expect(await GameHelper.getCountryCode(be)).toBe('BE');
+	});
+	it('the Vennbahn is resolved properly', async () => {
+		const de = {lat: 50.563848, lng: 6.211089};
+		const be = {lat: 50.563992, lng: 6.231465};
+		expect(await GameHelper.getCountryCode(de)).toBe('DE');
+		expect(await GameHelper.getCountryCode(be)).toBe('BE');
+	});
+	it('counts Llívia as spain', async () => {
+		const es = { lat:42.465134, lng:1.976742 };
+		expect(await GameHelper.getCountryCode(es)).toBe('ES');
+	});
 });
 
 describe('parseCoordinates', () => {

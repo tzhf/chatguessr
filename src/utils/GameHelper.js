@@ -1,6 +1,5 @@
 const axios = require("axios").default;
-const countryIso = require("country-iso");
-const iso3to2 = require("country-iso-3-to-2");
+const countryIso = require("coordinate_to_country");
 /**
  * Country code mapping for 2-character ISO codes that should be considered
  * part of another country for GeoGuessr streak purposes.
@@ -64,31 +63,12 @@ async function fetchSeed(url) {
  * @return {Promise<string | undefined>} Country code or `undefined` if the location is not in a known country.
  */
 async function getCountryCode(location) {
-	const localResults = countryIso.get(location.lat, location.lng).map(iso3to2);
-	const localIso = localResults.length > 0 ? localResults[0] : undefined;
+	const localResults = countryIso(location.lat, location.lng, true);
+	let localIso =  localResults.length > 0 ? localResults[0] : undefined;
 	if (!localIso) {
 		return;
 	}
-
-	let mappedIso = countryCodes[localIso];
-	// `countryIso` does not seem to handle holes in the border polygons correctly,
-	// so we need to patch up some special cases.
-	// This is a short-term patch, we cannot handle anomalies like Baarle this way,
-	// we probably need to find a different library for that.
-	if (localResults.includes("LS") && localResults.includes("ZA")) {
-		mappedIso = "LS"; // Lesotho…
-	}
-	if (localResults.includes("SM") && localResults.includes("IT")) {
-		mappedIso = "SM"; // San Marino
-	}
-	if (localResults.includes("VA") && localResults.includes("IT")) {
-		mappedIso = "VA"; // Vatican City
-	}
-	if (localResults.includes("CH") && localResults.includes("IT")) {
-		mappedIso = "IT"; // Campione d'Italia
-	}
-
-	return mappedIso;
+	return countryCodes[localIso];
 }
 
 /**
@@ -138,6 +118,9 @@ function haversineDistance(mk1, mk2) {
  * @return {number} score
  */
 function calculateScore(distance, scale) {
+	if(distance * 1000 < 25){
+		return 5000;
+	}
 	return Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale));
 }
 

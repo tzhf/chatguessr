@@ -361,6 +361,11 @@ class GameHandler {
 	}
 
 	/**
+	 * @type {boolean}
+	 */
+	#cgCooldown = false;
+
+	/**
 	 * @param {import("tmi.js").ChatUserstate} userstate
 	 * @param {string} message
 	 */
@@ -390,7 +395,15 @@ class GameHandler {
 		}
 
 		if (message === settings.cgCmd && settings.cgCmd !== "") {
-			await this.#backend.sendMessage(settings.cgMsg.replace("<your cg link>", `https://chatguessr.com/map/${this.#backend.botUsername}`));
+			if (userId === "BROADCASTER") {
+				await this.#backend.sendMessage(settings.cgMsg.replace("<your cg link>", `https://chatguessr.com/map/${this.#backend.botUsername}`));
+			} else if (!this.#cgCooldown) {
+				await this.#backend.sendMessage(settings.cgMsg.replace("<your cg link>", `https://chatguessr.com/map/${this.#backend.botUsername}`));
+				this.#cgCooldown = true;
+				setTimeout(() => {
+					this.#cgCooldown = false;
+				}, settings.cgCmdCooldown * 1000);
+			}
 			return;
 		}
 

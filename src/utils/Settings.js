@@ -7,6 +7,7 @@ const store = require("./sharedStore");
  * @prop {string} channelName
  * @prop {string} token
  * @prop {string} cgCmd
+ * @prop {number} cgCmdCooldown
  * @prop {string} cgMsg
  * @prop {string} userGetStatsCmd
  * @prop {string} userClearStatsCmd
@@ -21,6 +22,7 @@ class Settings {
 		channelName = "",
 		token = "",
 		cgCmd = "!cg",
+		cgCmdCooldown = 30,
 		cgMsg = "Two ways to play: 1. Login with Twitch, make your guess and press guess (spacebar). 2. Paste the command into chat without editing: <your cg link>",
 		userGetStatsCmd = "!me",
 		userClearStatsCmd = "!clear",
@@ -31,6 +33,7 @@ class Settings {
 		this.channelName = channelName;
 		this.token = token;
 		this.cgCmd = cgCmd;
+		this.cgCmdCooldown = cgCmdCooldown;
 		this.cgMsg = cgMsg;
 		this.userGetStatsCmd = userGetStatsCmd;
 		this.userClearStatsCmd = userClearStatsCmd;
@@ -48,10 +51,11 @@ class Settings {
 	}
 
 	/**
-	 * @param {{ cgCmdd: string, cgMsgg: string, userGetStats: string, userClearStats: string, showHasGuessed: boolean, showHasAlreadyGuessed: boolean }} commands
+	 * @param {{ cgCmdd: string, cgMsgg: string, cgCmdCooldown: number, userGetStats: string, userClearStats: string, showHasGuessed: boolean, showHasAlreadyGuessed: boolean }} commands
 	 */
 	setTwitchCommands(commands) {
 		this.cgCmd = commands.cgCmdd;
+		this.cgCmdCooldown = commands.cgCmdCooldown;
 		this.cgMsg = commands.cgMsgg;
 		this.userGetStatsCmd = commands.userGetStats;
 		this.userClearStatsCmd = commands.userClearStats;
@@ -73,6 +77,7 @@ class Settings {
 			channelName: this.channelName,
 			token: this.token,
 			cgCmd: this.cgCmd,
+			cgCmdCooldown: this.cgCmdCooldown,
 			cgMsg: this.cgMsg,
 			userGetStatsCmd: this.userGetStatsCmd,
 			userClearStatsCmd: this.userClearStatsCmd,

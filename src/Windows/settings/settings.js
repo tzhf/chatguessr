@@ -19,6 +19,8 @@ const twitchReauthEl = qs("#twitchReauth");
 /** @type {HTMLInputElement} */
 const cgCmd = qs("#cgCmd");
 /** @type {HTMLInputElement} */
+const cgCmdCooldown = qs("#cgCmdCooldown");
+/** @type {HTMLInputElement} */
 const cgMsg = qs("#cgMsg");
 /** @type {HTMLInputElement} */
 const userGetStatsCmd = qs("#userGetStatsCmd");
@@ -54,6 +56,7 @@ let bannedUsersArr = [];
 ipcRenderer.on("render-settings", (_event, settings, bannedUsers, connectionState, socketStatus) => {
 	channelName.value = settings.channelName;
 	cgCmd.value = settings.cgCmd;
+	cgCmdCooldown.value = settings.cgCmdCooldown;
 	cgMsg.value = settings.cgMsg;
 	userGetStatsCmd.value = settings.userGetStatsCmd;
 	userClearStatsCmd.value = settings.userClearStatsCmd;
@@ -152,6 +155,7 @@ function gameSettingsForm() {
 function twitchCommandsForm() {
 	ipcRenderer.send("twitch-commands-form", {
 		cgCmdd: cgCmd.value,
+		cgCmdCooldown: cgCmdCooldown.value,
 		cgMsgg: cgMsg.value,
 		userGetStats: userGetStatsCmd.value,
 		userClearStats: userClearStatsCmd.value,

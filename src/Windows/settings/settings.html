@@ -40,21 +40,24 @@
 					<input type="checkbox" id="showHasAlreadyGuessed" />
 					<span class="checkmark"></span>
 				</label>
-				<br />
+
 				<h3>User commands <small>(leave empty to disable)</small></h3>
 				<div class="grid__col">
 					<div class="col">
 						<div class="form__group">
-							<label class="form__label">Get map link :</label>
+							<label class="form__label">Map link :</label>
 							<div data-tip="Get map link (!cg by default)">
 								<input class="form__field" type="text" id="cgCmd" spellcheck="false" />
 							</div>
 						</div>
 						<div class="form__group">
-							<label class="form__label">Map link message :</label>
-							<textarea class="form__field" id="cgMsg" spellcheck="false" rows="3"></textarea>
+							<label class="form__label">Map link cooldown :</label>
+							<div data-tip="Map link cooldown (default: 30)">
+								<input class="form__field" type="number" min="0" max="1000" id="cgCmdCooldown" />
+							</div>
 						</div>
 					</div>
+
 					<div class="col">
 						<div class="form__group">
 							<label class="form__label">Get user stats :</label>
@@ -71,9 +74,13 @@
 					</div>
 				</div>
 
-				<p>
-					<input type="button" class="btn success" value="SAVE" onclick="twitchCommandsForm()" />
-				</p>
+				<div class="form__group">
+					<label class="form__label">Map link message :</label>
+					<textarea class="form__field" id="cgMsg" spellcheck="false" rows="3"></textarea>
+				</div>
+
+				<input type="button" class="btn success" value="SAVE" onclick="twitchCommandsForm()" />
+
 				<p style="text-align: center">
 					<small id="version"></small>
 				</p>

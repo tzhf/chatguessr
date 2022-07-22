@@ -107,14 +107,14 @@ class GameHandler {
 				this.#game.mapName,
 				this.#game.mode,
 				locations,
-				totalScores,
+				totalScores
 			);
 		} catch (error) {
 			console.error("could not upload summary", error);
 		}
 		await this.#backend.sendMessage(
 			`🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${link != undefined ? `Game summary: ${link}` : ""}`,
-			{ system: true },
+			{ system: true }
 		);
 	}
 
@@ -233,7 +233,7 @@ class GameHandler {
 			await this.#backend.sendMessage("All stats cleared 🗑️", { system: true });
 		});
 	}
-	
+
 	getConnectionState() {
 		if (!this.#backend) {
 			return { state: "disconnected" };
@@ -336,21 +336,21 @@ class GameHandler {
 			if (!this.#game.isMultiGuess) {
 				this.#win.webContents.send("render-guess", guess);
 				if (settings.showHasGuessed) {
-					await this.#backend.sendMessage(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} guessed`);
+					await this.#backend.sendMessage(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} has guessed`);
 				}
 			} else {
 				const guesses = this.#game.getMultiGuesses();
 				this.#win.webContents.send("render-multiguess", guesses);
 				if (!guess.modified) {
 					if (settings.showHasGuessed) {
-						await this.#backend.sendMessage(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} guessed`);
+						await this.#backend.sendMessage(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} has guessed`);
 					}
 				} else {
 					await this.#backend.sendMessage(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} guess changed`);
 				}
 			}
 		} catch (err) {
-			if (err.code === "alreadyGuessed") {
+			if (err.code === "alreadyGuessed" && settings.showHasAlreadyGuessed) {
 				await this.#backend.sendMessage(`${userstate["display-name"]} you already guessed`);
 			} else if (err.code === "pastedPreviousGuess") {
 				await this.#backend.sendMessage(`${userstate["display-name"]} you pasted your previous guess :)`);
@@ -390,7 +390,7 @@ class GameHandler {
 		}
 
 		if (message === settings.cgCmd && settings.cgCmd !== "") {
-			await this.#backend.sendMessage(settings.cgMsg.replace('<your cg link>', `https://chatguessr.com/map/${this.#backend.botUsername}`));
+			await this.#backend.sendMessage(settings.cgMsg.replace("<your cg link>", `https://chatguessr.com/map/${this.#backend.botUsername}`));
 			return;
 		}
 
@@ -469,12 +469,15 @@ class GameHandler {
 			for (let i = 0; i < max; i += 1) {
 				const lat = Math.random() * 180 - 90;
 				const lng = Math.random() * 360 - 180;
-				await this.#handleGuess({
-					"user-id": `123450${i}`,
-					username: `fake_${i}`,
-					"display-name": `fake_${i}`,
-					color: `#${Math.random().toString(16).slice(2, 8).padStart(6, "0")}`,
-				}, `!g ${lat},${lng}`);
+				await this.#handleGuess(
+					{
+						"user-id": `123450${i}`,
+						username: `fake_${i}`,
+						"display-name": `fake_${i}`,
+						color: `#${Math.random().toString(16).slice(2, 8).padStart(6, "0")}`,
+					},
+					`!g ${lat},${lng}`
+				);
 			}
 		}
 	}
@@ -534,13 +537,7 @@ class GameHandler {
 			});
 
 			this.#settingsWindow.webContents.on("did-finish-load", () => {
-				this.#settingsWindow.webContents.send(
-					"render-settings",
-					settings,
-					this.#db.getBannedUsers(),
-					this.getConnectionState(),
-					this.#socket?.connected
-				);
+				this.#settingsWindow.webContents.send("render-settings", settings, this.#db.getBannedUsers(), this.getConnectionState(), this.#socket?.connected);
 
 				this.#settingsWindow.show();
 			});

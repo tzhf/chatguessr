@@ -27,6 +27,8 @@ const userClearStatsCmd = qs("#userClearStatsCmd");
 /** @type {HTMLInputElement} */
 const showHasGuessed = qs("#showHasGuessed");
 /** @type {HTMLInputElement} */
+const showHasAlreadyGuessed = qs("#showHasAlreadyGuessed");
+/** @type {HTMLInputElement} */
 const isMultiGuess = qs("#isMultiGuess");
 /** @type {HTMLInputElement} */
 const cgLink = qs("#cgLink");
@@ -56,6 +58,7 @@ ipcRenderer.on("render-settings", (_event, settings, bannedUsers, connectionStat
 	userGetStatsCmd.value = settings.userGetStatsCmd;
 	userClearStatsCmd.value = settings.userClearStatsCmd;
 	showHasGuessed.checked = settings.showHasGuessed;
+	showHasAlreadyGuessed.checked = settings.showHasAlreadyGuessed;
 	isMultiGuess.checked = settings.isMultiGuess;
 
 	bannedUsersArr = [...bannedUsers];
@@ -124,11 +127,8 @@ const twitchConnected = (botUsername) => {
 	twitchReauthEl.textContent = "Change account";
 	twitchReauthEl.classList.remove("success");
 	twitchReauthEl.classList.add("danger");
-	
-	twitchStatusElement.replaceChildren(
-		connected,
-		document.createTextNode(` as ${botUsername}`),
-	);
+
+	twitchStatusElement.replaceChildren(connected, document.createTextNode(` as ${botUsername}`));
 };
 
 const twitchDisconnected = () => {
@@ -156,6 +156,7 @@ function twitchCommandsForm() {
 		userGetStats: userGetStatsCmd.value,
 		userClearStats: userClearStatsCmd.value,
 		showHasGuessed: showHasGuessed.checked,
+		showHasAlreadyGuessed: showHasAlreadyGuessed.checked,
 	});
 }
 

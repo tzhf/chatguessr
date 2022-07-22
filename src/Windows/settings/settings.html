@@ -31,10 +31,16 @@
 
 				<h2>Twitch Settings</h2>
 				<label class="checkbox-container">
-					<div data-tip="Display &lt;User&gt; guessed in chat">Display guess confirmation</div>
+					<div data-tip="Display &lt;User&gt; has guessed">Display <i>&lt;User&gt; has guessed</i></div>
 					<input type="checkbox" id="showHasGuessed" />
 					<span class="checkmark"></span>
 				</label>
+				<label class="checkbox-container">
+					<div data-tip="Display &lt;User&gt; has already guessed">Display <i>&lt;User&gt; has already guessed</i></div>
+					<input type="checkbox" id="showHasAlreadyGuessed" />
+					<span class="checkmark"></span>
+				</label>
+				<br />
 				<h3>User commands <small>(leave empty to disable)</small></h3>
 				<div class="grid__col">
 					<div class="col">
@@ -76,7 +82,7 @@
 			<div id="twitchConnect" class="tabcontent">
 				<form name="twitch-form" onsubmit="twitchSettingsForm(event)">
 					<h2>Status :</h2>
-					
+
 					<div class="form__group">
 						<label class="form__label">Twitch :</label>
 						<div class="flex gap-05">

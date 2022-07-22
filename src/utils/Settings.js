@@ -11,6 +11,7 @@ const store = require("./sharedStore");
  * @prop {string} userGetStatsCmd
  * @prop {string} userClearStatsCmd
  * @prop {boolean} showHasGuessed
+ * @prop {boolean} showHasAlreadyGuessed
  * @prop {boolean} isMultiGuess
  */
 
@@ -24,6 +25,7 @@ class Settings {
 		userGetStatsCmd = "!me",
 		userClearStatsCmd = "!clear",
 		showHasGuessed = true,
+		showHasAlreadyGuessed = true,
 		isMultiGuess = false,
 	} = {}) {
 		this.channelName = channelName;
@@ -33,6 +35,7 @@ class Settings {
 		this.userGetStatsCmd = userGetStatsCmd;
 		this.userClearStatsCmd = userClearStatsCmd;
 		this.showHasGuessed = showHasGuessed;
+		this.showHasAlreadyGuessed = showHasAlreadyGuessed;
 		this.isMultiGuess = isMultiGuess;
 	}
 
@@ -45,7 +48,7 @@ class Settings {
 	}
 
 	/**
-	 * @param {{ cgCmdd: string, cgMsgg: string, userGetStats: string, userClearStats: string, showHasGuessed: boolean }} commands
+	 * @param {{ cgCmdd: string, cgMsgg: string, userGetStats: string, userClearStats: string, showHasGuessed: boolean, showHasAlreadyGuessed: boolean }} commands
 	 */
 	setTwitchCommands(commands) {
 		this.cgCmd = commands.cgCmdd;
@@ -53,6 +56,7 @@ class Settings {
 		this.userGetStatsCmd = commands.userGetStats;
 		this.userClearStatsCmd = commands.userClearStats;
 		this.showHasGuessed = commands.showHasGuessed;
+		this.showHasAlreadyGuessed = commands.showHasAlreadyGuessed;
 		this.#save();
 	}
 
@@ -73,6 +77,7 @@ class Settings {
 			userGetStatsCmd: this.userGetStatsCmd,
 			userClearStatsCmd: this.userClearStatsCmd,
 			showHasGuessed: this.showHasGuessed,
+			showHasAlreadyGuessed: this.showHasAlreadyGuessed,
 			isMultiGuess: this.isMultiGuess,
 		};
 	}

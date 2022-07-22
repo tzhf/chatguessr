@@ -1,7 +1,7 @@
 {
 	"name": "chatguessr",
 	"productName": "ChatGuessr",
-	"version": "2.0.2",
+	"version": "2.0.3",
 	"description": "The original GeoGuessr Twitch Chatbot",
 	"author": "ChatGuessr",
 	"license": "MIT",
@@ -10,7 +10,7 @@
 	"dependencies": {
 		"@paulrosania/better-sqlite3": "^8.1.0",
 		"@sentry/electron": "^3.0.0",
-		"@supabase/supabase-js": "^1.33.3",
+		"@supabase/supabase-js": "^1.35.4",
 		"axios": "^0.23.0",
 		"country-iso": "^2.0.5",
 		"country-iso-3-to-2": "^1.1.0",

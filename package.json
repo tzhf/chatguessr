@@ -8,10 +8,10 @@
 	"main": "./dist/cg-main/main.js",
 	"repository": "https://github.com/tzhf/chatguessr",
 	"dependencies": {
-		"@paulrosania/better-sqlite3": "^8.1.0",
 		"@sentry/electron": "^3.0.0",
 		"@supabase/supabase-js": "^1.35.4",
 		"axios": "^0.23.0",
+		"better-sqlite3": "^7.6.2",
 		"coordinate_to_country": "^1.1.0",
 		"datatables.net": "^1.11.3",
 		"datatables.net-buttons": "^2.0.1",

@@ -36,14 +36,16 @@ class Scoreboard {
 		this.position = JSON.parse(localStorage.getItem("scoreboard_position")) || { top: 20, left: 5, width: 380, height: 180 };
 		this.container = $(container);
 		this.scoreboard = $(`
-			<div id='scoreboard'>
-				<div id='scoreboardHeader'>
-					<span></span>
-					<span id='scoreboardTitle'>GUESSES (0)</span>
-					<label id='switchContainer'>
-						<input id='switchBtn' type='checkbox' />
-						<div class='slider'></div>
+			<div id="scoreboard">
+				<div id="scoreboardHeader">
+					<span class="scoreboardSettings"></span>
+					<span class="scoreboardTitle">GUESSES (0)</span>
+					<label id="switchContainer">
+						<input id="switchBtn" type="checkbox" />
+						<div class="switch"></div>
 					</label>
+					<div class="scoreboardHint"></div>
+					<div class="scoreboardSlider"></div>
 				</div>
 				<table id='datatable' width='100%'>
 					<thead>
@@ -60,7 +62,7 @@ class Scoreboard {
 			</div>
 		`);
 		this.container.append(this.scoreboard);
-		this.title = this.scoreboard.find("#scoreboardTitle");
+		this.title = this.scoreboard.find(".scoreboardTitle");
 		this.switchContainer = this.scoreboard.find("#switchContainer");
 		this.switchBtn = this.scoreboard.find("#switchBtn");
 
@@ -159,8 +161,12 @@ class Scoreboard {
 			this.speed = e.currentTarget.value;
 			this.scroller(".dataTables_scrollBody");
 		});
+		
+		this.scoreboard.find(".scoreboardSlider").append(slider);
 
-		this.table.buttons().container().append(slider).prepend(`
+		this.table.buttons().container().appendTo(this.scoreboard.find(".scoreboardSettings"));
+
+		this.table.buttons().container().prepend(`
 				<div class="dt-button scrollBtn">
 					<label>
 						<input type="checkbox" id="scrollBtn"><span>⮃</span>
@@ -174,11 +180,11 @@ class Scoreboard {
 				if (e.currentTarget.checked != true) {
 					this.isScrolling = $(e.currentTarget).is(":checked");
 					this.stop(".dataTables_scrollBody");
-					slider.css("display", "none");
+					this.scoreboard.toggleClass("is-slider-visible", false);
 				} else {
 					this.isScrolling = $(e.currentTarget).is(":checked");
 					this.scroller(".dataTables_scrollBody");
-					slider.css("display", "inline");
+					this.scoreboard.toggleClass("is-slider-visible", true);
 				}
 			}
 		);
@@ -192,6 +198,11 @@ class Scoreboard {
 		this.setColVis();
 		this.isResults = false;
 		this.setTitle("GUESSES (0)");
+		if (this.isMultiGuess) {
+			this.#setHint("Ordered by guess time");
+		} else {
+			this.#setHint(null);
+		}
 		this.showSwitch(true);
 		this.table.clear().draw();
 	}
@@ -279,6 +290,7 @@ class Scoreboard {
 	displayScores(scores, isTotal = false) {
 		// const self = this;
 		this.isResults = true;
+		this.#setHint(null);
 		if (scores[0]) scores[0].color = "#E3BB39";
 		if (scores[1]) scores[1].color = "#C9C9C9";
 		if (scores[2]) scores[2].color = "#A3682E";
@@ -381,6 +393,13 @@ class Scoreboard {
 
 	setTitle(title) {
 		return this.title.text(title);
+	}
+	/**
+	 * @param {string|null} text
+	 */
+	#setHint(text) {
+		this.scoreboard.toggleClass("is-hint-visible", !!text);
+		this.scoreboard.find(".scoreboardHint").text(text || "");
 	}
 
 	showSwitch(state) {

@@ -1,6 +1,6 @@
 <template>
 	<div class="iconsColumn">
-		<div title="Settings (ctrl+p)" @click="openSettings">
+		<div title="Settings (ctrl+p)" :class="connectionStatus" @click="openSettings">
 			<span class="icon gearIcon"></span>
 		</div>
 		<div title="Show/Hide compass" @click="toggleNoCompass">
@@ -28,7 +28,7 @@ import sharedStore from "./utils/sharedStore";
 import type { LatLng, Guess, RendererApi } from "./types";
 
 const REMOVE_GAME_CONTROLS_CSS = ".styles_columnTwo___2qFL, .styles_controlGroup___ArrW, .compass, .game-layout__compass { display: none !important; }";
-const REMOVE_COMPASS_CSS = ".compass, .game-layout__compass { display: none; }";
+const REMOVE_COMPASS_CSS = '.compass, .game-layout__compass, [class^="panorama-compass_"] { display: none; }';
 
 const compassRemover = document.createElement("style");
 compassRemover.textContent = REMOVE_COMPASS_CSS;
@@ -71,6 +71,18 @@ export default defineComponent({
 				this.rendererApi.showSatelliteMap(location);
 			}
 		});
+
+		ipcRenderer.on("twitch-connected", () => {
+			this.connectionStatus = "connected";
+		});
+
+		ipcRenderer.on("twitch-disconnected", () => {
+			this.connectionStatus = "disconnected";
+		});
+
+		ipcRenderer.invoke("get-connection-state").then(({ state }) => {
+			this.connectionStatus = state;
+		});
 		
 		this.rendererApi.drParseNoCar(this.isNoCar);
 	},
@@ -81,6 +93,7 @@ export default defineComponent({
 			isNoCompass: sharedStore.get("isNoCompass", false),
 			isSatellite: sharedStore.get("isSatellite", false),
 			currentLocation: null as LatLng|null,
+			connectionStatus: "connecting",
 		};
 	},
 	methods: {

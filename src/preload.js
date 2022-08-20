@@ -93,15 +93,6 @@ function init(rendererApi) {
 		markerRemover.remove();
 		scoreboard.hide();
 		rendererApi.clearMarkers();
-
-		/* TODO port to Vue
-		// Hide in-game-only buttons
-		qs("#centerSatelliteViewBtn")?.remove();
-		qs("#showScoreboardBtn")?.remove();
-
-		noCarBtn.style.visibility = "visible";
-		noCompassBtn.style.visibility = "visible";
-		*/
 	});
 
 	ipcRenderer.on("render-guess", (_event, guess) => {
@@ -147,20 +138,4 @@ function init(rendererApi) {
 	ipcRenderer.on("switch-off", () => {
 		scoreboard.switchOn(false);
 	});
-
-	/* TODO port to Vue
-	ipcRenderer.on("twitch-connected", () => {
-		settingsBtn.classList.remove("disconnected");
-		settingsBtn.classList.add("connected");
-	});
-
-	ipcRenderer.on("twitch-disconnected", () => {
-		settingsBtn.classList.add("disconnected");
-	});
-
-	ipcRenderer.invoke("get-connection-state").then(({ state }) => {
-		settingsBtn.classList.remove("connected", "connecting", "disconnected");
-		settingsBtn.classList.add(state);
-	});
-	*/
 }

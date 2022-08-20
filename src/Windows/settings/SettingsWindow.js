@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 const path = require("path");
 const { BrowserWindow, shell } = require("electron");
@@ -7,24 +7,24 @@ const { BrowserWindow, shell } = require("electron");
  * @param {BrowserWindow} parentWindow
  */
 function createSettingsWindow(parentWindow) {
-	const isLinux = process.platform === 'linux';
+	const isLinux = process.platform === "linux";
 
 	const win = new BrowserWindow({
-		title: 'Chatguessr Settings',
+		title: "Chatguessr Settings",
 		parent: parentWindow,
 		width: 600,
-		height: 550,
+		height: 660,
 		minWidth: 600,
-		minHeight: 550,
+		minHeight: 660,
 		show: false,
 		fullscreen: false,
 		maximizable: false,
-		frame: isLinux ? true: false,
+		frame: isLinux ? true : false,
 		transparent: isLinux ? false : true,
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false,
-			devTools: process.env.NODE_ENV === 'development',
+			devTools: process.env.NODE_ENV === "development",
 		},
 	});
 	win.setMenuBarVisibility(false);
@@ -32,7 +32,7 @@ function createSettingsWindow(parentWindow) {
 
 	win.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);
-		return { action: 'deny' };
+		return { action: "deny" };
 	});
 
 	return win;

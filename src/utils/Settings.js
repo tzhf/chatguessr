@@ -5,13 +5,14 @@ const store = require("./sharedStore");
 /**
  * @typedef {object} SettingsProps
  * @prop {string} channelName
- * @prop {string} botUsername
  * @prop {string} token
  * @prop {string} cgCmd
+ * @prop {number} cgCmdCooldown
  * @prop {string} cgMsg
  * @prop {string} userGetStatsCmd
  * @prop {string} userClearStatsCmd
  * @prop {boolean} showHasGuessed
+ * @prop {boolean} showHasAlreadyGuessed
  * @prop {boolean} isMultiGuess
  */
 
@@ -19,23 +20,25 @@ class Settings {
 	/** @param {Partial<SettingsProps>} settings */
 	constructor({
 		channelName = "",
-		botUsername = "",
 		token = "",
 		cgCmd = "!cg",
-		cgMsg = "To play along, go to this link, pick a location, and paste the whole command into chat: <your cg link>",
+		cgCmdCooldown = 30,
+		cgMsg = "Two ways to play: 1. Login with Twitch, make your guess and press guess (spacebar). 2. Paste the command into chat without editing: <your cg link>",
 		userGetStatsCmd = "!me",
 		userClearStatsCmd = "!clear",
 		showHasGuessed = true,
+		showHasAlreadyGuessed = true,
 		isMultiGuess = false,
 	} = {}) {
 		this.channelName = channelName;
-		this.botUsername = botUsername;
 		this.token = token;
 		this.cgCmd = cgCmd;
+		this.cgCmdCooldown = cgCmdCooldown;
 		this.cgMsg = cgMsg;
 		this.userGetStatsCmd = userGetStatsCmd;
 		this.userClearStatsCmd = userClearStatsCmd;
 		this.showHasGuessed = showHasGuessed;
+		this.showHasAlreadyGuessed = showHasAlreadyGuessed;
 		this.isMultiGuess = isMultiGuess;
 	}
 
@@ -48,39 +51,38 @@ class Settings {
 	}
 
 	/**
-	 * @param {{ cgCmdd: string, cgMsgg: string, userGetStats: string, userClearStats: string, showHasGuessed: boolean }} commands
+	 * @param {{ cgCmdd: string, cgMsgg: string, cgCmdCooldown: number, userGetStats: string, userClearStats: string, showHasGuessed: boolean, showHasAlreadyGuessed: boolean }} commands
 	 */
 	setTwitchCommands(commands) {
 		this.cgCmd = commands.cgCmdd;
+		this.cgCmdCooldown = commands.cgCmdCooldown;
 		this.cgMsg = commands.cgMsgg;
 		this.userGetStatsCmd = commands.userGetStats;
 		this.userClearStatsCmd = commands.userClearStats;
 		this.showHasGuessed = commands.showHasGuessed;
+		this.showHasAlreadyGuessed = commands.showHasAlreadyGuessed;
 		this.#save();
 	}
 
 	/**
 	 * @param {string} channelName
-	 * @param {string} botUsername
-	 * @param {string} token
 	 */
-	setTwitchSettings(channelName, botUsername, token) {
+	setTwitchSettings(channelName) {
 		this.channelName = channelName;
-		this.botUsername = botUsername;
-		this.token = token;
 		this.#save();
 	}
 
 	toJSON() {
 		return {
 			channelName: this.channelName,
-			botUsername: this.botUsername,
 			token: this.token,
 			cgCmd: this.cgCmd,
+			cgCmdCooldown: this.cgCmdCooldown,
 			cgMsg: this.cgMsg,
 			userGetStatsCmd: this.userGetStatsCmd,
 			userClearStatsCmd: this.userClearStatsCmd,
 			showHasGuessed: this.showHasGuessed,
+			showHasAlreadyGuessed: this.showHasAlreadyGuessed,
 			isMultiGuess: this.isMultiGuess,
 		};
 	}

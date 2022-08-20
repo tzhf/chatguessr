@@ -4,6 +4,8 @@ require("./errorReporting");
 
 const { contextBridge, ipcRenderer } = require("electron");
 
+import { qs, createEl } from "./utils/domUtils";
+
 /** @typedef {import('./types').LatLng} LatLng */
 /** @typedef {import('./types').Guess} Guess */
 
@@ -46,6 +48,9 @@ function init(rendererApi) {
 	document.body.append(scoreboardContainer);
 
 	const scoreboard = new Scoreboard(scoreboardContainer, {
+		focusOnGuess(location) {
+			rendererApi.focusOnGuess(location);
+		},
 		onToggleGuesses(open) {
 			if (open) {
 				ipcRenderer.send("open-guesses");
@@ -60,7 +65,7 @@ function init(rendererApi) {
 	}
 
 	// IPC RENDERERS
-	ipcRenderer.on("game-started", (e, isMultiGuess, restoredGuesses, location) => {
+	ipcRenderer.on("game-started", (_event, isMultiGuess, restoredGuesses, location) => {
 		markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
 		document.head.append(markerRemover);
 
@@ -88,24 +93,33 @@ function init(rendererApi) {
 		markerRemover.remove();
 		scoreboard.hide();
 		rendererApi.clearMarkers();
+
+		/* TODO port to Vue
+		// Hide in-game-only buttons
+		qs("#centerSatelliteViewBtn")?.remove();
+		qs("#showScoreboardBtn")?.remove();
+
+		noCarBtn.style.visibility = "visible";
+		noCompassBtn.style.visibility = "visible";
+		*/
 	});
 
-	ipcRenderer.on("render-guess", (e, guess) => {
+	ipcRenderer.on("render-guess", (_event, guess) => {
 		scoreboard.renderGuess(guess);
 	});
 
-	ipcRenderer.on("render-multiguess", (e, guesses) => {
+	ipcRenderer.on("render-multiguess", (_event, guesses) => {
 		scoreboard.renderMultiGuess(guesses);
 	});
 
-	ipcRenderer.on("show-round-results", (e, round, location, scores) => {
+	ipcRenderer.on("show-round-results", (_event, round, location, scores) => {
 		scoreboard.setTitle(`ROUND ${round} RESULTS (${scores.length})`);
 		scoreboard.displayScores(scores);
 		scoreboard.showSwitch(false);
 		rendererApi.populateMap(location, scores);
 	});
 
-	ipcRenderer.on("show-final-results", (e, totalScores) => {
+	ipcRenderer.on("show-final-results", (_event, totalScores) => {
 		scoreboard.setTitle(`HIGHSCORES (${totalScores.length})`);
 		scoreboard.showSwitch(false);
 		scoreboard.displayScores(totalScores, true);
@@ -117,7 +131,7 @@ function init(rendererApi) {
 		}, 1000);
 	});
 
-	ipcRenderer.on("next-round", (e, isMultiGuess, location) => {
+	ipcRenderer.on("next-round", (_event, isMultiGuess, location) => {
 		scoreboard.checkVisibility();
 		scoreboard.reset(isMultiGuess);
 		scoreboard.showSwitch(true);
@@ -134,23 +148,19 @@ function init(rendererApi) {
 		scoreboard.switchOn(false);
 	});
 
-	/**
-	 * @param {String} type
-	 * @param {Object} attributes
-	 * @param {String[]|HTMLElement[]} children
-	 */
-	function createEl(type, attributes, ...children) {
-		const el = document.createElement(type);
-		for (const key in attributes) {
-			el.setAttribute(key, attributes[key]);
-		}
-		children.forEach((child) => {
-			if (typeof child === "string") {
-				el.appendChild(document.createTextNode(child));
-			} else {
-				el.appendChild(child);
-			}
-		});
-		return el;
-	}
+	/* TODO port to Vue
+	ipcRenderer.on("twitch-connected", () => {
+		settingsBtn.classList.remove("disconnected");
+		settingsBtn.classList.add("connected");
+	});
+
+	ipcRenderer.on("twitch-disconnected", () => {
+		settingsBtn.classList.add("disconnected");
+	});
+
+	ipcRenderer.invoke("get-connection-state").then(({ state }) => {
+		settingsBtn.classList.remove("connected", "connecting", "disconnected");
+		settingsBtn.classList.add(state);
+	});
+	*/
 }

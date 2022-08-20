@@ -8,53 +8,60 @@
 // @ts-ignore
 const secretRequire = (0, eval("require"));
 const { ipcRenderer } = secretRequire("electron");
+const { version } = secretRequire("../../package.json"); // path relative to dist/settings
 
 /** @type {HTMLInputElement} */
-const channelName = document.querySelector("#channelName");
+const channelName = qs("#channelName");
 /** @type {HTMLInputElement} */
-const botUsername = document.querySelector("#botUsername");
+const botUsernameEl = qs("#botUsername");
 /** @type {HTMLInputElement} */
-const twitchToken = document.querySelector("#twitchToken");
+const twitchReauthEl = qs("#twitchReauth");
 /** @type {HTMLInputElement} */
-const cgCmd = document.querySelector("#cgCmd");
+const cgCmd = qs("#cgCmd");
 /** @type {HTMLInputElement} */
-const cgMsg = document.querySelector("#cgMsg");
+const cgCmdCooldown = qs("#cgCmdCooldown");
 /** @type {HTMLInputElement} */
-const userGetStatsCmd = document.querySelector("#userGetStatsCmd");
+const cgMsg = qs("#cgMsg");
 /** @type {HTMLInputElement} */
-const userClearStatsCmd = document.querySelector("#userClearStatsCmd");
+const userGetStatsCmd = qs("#userGetStatsCmd");
 /** @type {HTMLInputElement} */
-const showHasGuessed = document.querySelector("#showHasGuessed");
+const userClearStatsCmd = qs("#userClearStatsCmd");
 /** @type {HTMLInputElement} */
-const isMultiGuess = document.querySelector("#isMultiGuess");
+const showHasGuessed = qs("#showHasGuessed");
 /** @type {HTMLInputElement} */
-const cgLink = document.querySelector("#cgLink");
+const showHasAlreadyGuessed = qs("#showHasAlreadyGuessed");
+/** @type {HTMLInputElement} */
+const isMultiGuess = qs("#isMultiGuess");
+/** @type {HTMLInputElement} */
+const cgLink = qs("#cgLink");
 /** @type {HTMLElement} */
-const cgLinkContainer = document.querySelector("#cgLinkContainer");
+const cgLinkContainer = qs("#cgLinkContainer");
 /** @type {HTMLButtonElement} */
-const copyLinkBtn = document.querySelector("#copyLinkBtn");
+const copyLinkBtn = qs("#copyLinkBtn");
 /** @type {HTMLElement} */
-const twitchStatusElement = document.querySelector("#twitchStatus");
+const twitchStatusElement = qs("#twitchStatus");
 /** @type {HTMLElement} */
-const socketStatusElement = document.querySelector("#socketStatus");
+const socketStatusElement = qs("#socketStatus");
 /** @type {HTMLButtonElement} */
-const clearStatsBtn = document.querySelector("#clearStatsBtn");
+const clearStatsBtn = qs("#clearStatsBtn");
 /** @type {HTMLInputElement} */
-const banUserInput = document.querySelector("#banUserInput");
+const banUserInput = qs("#banUserInput");
 /** @type {HTMLDivElement} */
-const bannedUsersList = document.querySelector("#bannedUsersList");
+const bannedUsersList = qs("#bannedUsersList");
+/** @type {HTMLElement} */
+const versionText = qs("#version");
 
 let bannedUsersArr = [];
 
-ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus, socketStatus) => {
+ipcRenderer.on("render-settings", (_event, settings, bannedUsers, connectionState, socketStatus) => {
 	channelName.value = settings.channelName;
-	botUsername.value = settings.botUsername;
-	twitchToken.value = settings.token;
 	cgCmd.value = settings.cgCmd;
+	cgCmdCooldown.value = settings.cgCmdCooldown;
 	cgMsg.value = settings.cgMsg;
 	userGetStatsCmd.value = settings.userGetStatsCmd;
 	userClearStatsCmd.value = settings.userClearStatsCmd;
 	showHasGuessed.checked = settings.showHasGuessed;
+	showHasAlreadyGuessed.checked = settings.showHasAlreadyGuessed;
 	isMultiGuess.checked = settings.isMultiGuess;
 
 	bannedUsersArr = [...bannedUsers];
@@ -65,11 +72,7 @@ ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus, socke
 	});
 	bannedUsersList.replaceChildren(...newChilds);
 
-	if (twitchStatus == "OPEN") {
-		twitchConnected(settings.botUsername);
-	} else {
-		twitchDisconnected();
-	}
+	handleConnectionState(connectionState);
 
 	if (socketStatus) {
 		socketConnected();
@@ -78,15 +81,11 @@ ipcRenderer.on("render-settings", (e, settings, bannedUsers, twitchStatus, socke
 	}
 });
 
-ipcRenderer.on("twitch-connected", (e, botUsername) => {
-	twitchConnected(botUsername);
+ipcRenderer.on("connection-state", (_event, connectionState) => {
+	handleConnectionState(connectionState);
 });
 
-ipcRenderer.on("twitch-disconnected", () => {
-	twitchDisconnected();
-});
-
-ipcRenderer.on("twitch-error", (e, error) => {
+ipcRenderer.on("twitch-error", (_event, error) => {
 	twitchStatusElement.textContent = error;
 	twitchStatusElement.style.color = "#ed2453";
 });
@@ -99,6 +98,17 @@ ipcRenderer.on("socket-disconnected", () => {
 	socketDisconnected();
 });
 
+const handleConnectionState = (connectionState) => {
+	if (connectionState.state == "connected") {
+		twitchConnected(connectionState.botUsername);
+	} else {
+		twitchDisconnected();
+	}
+};
+
+/**
+ * @param {string} botUsername
+ */
 const twitchConnected = (botUsername) => {
 	const linkStr = `chatguessr.com/map/${botUsername}`;
 	cgLink.value = linkStr;
@@ -112,14 +122,30 @@ const twitchConnected = (botUsername) => {
 	});
 
 	cgLinkContainer.style.display = "block";
-	twitchStatusElement.textContent = "Connected";
-	twitchStatusElement.style.color = "#3fe077";
+
+	const connected = document.createElement("span");
+	connected.textContent = "Connected";
+	connected.style.color = "#3fe077";
+
+	twitchReauthEl.textContent = "Change account";
+	twitchReauthEl.classList.remove("success");
+	twitchReauthEl.classList.add("danger");
+
+	twitchStatusElement.replaceChildren(connected, document.createTextNode(` as ${botUsername}`));
 };
 
 const twitchDisconnected = () => {
 	cgLinkContainer.style.display = "none";
-	twitchStatusElement.textContent = "Disconnected";
-	twitchStatusElement.style.color = "#ed2453";
+
+	const disconnected = document.createElement("span");
+	disconnected.textContent = "Disconnected";
+	disconnected.style.color = "#ed2453";
+
+	twitchReauthEl.textContent = "Log in";
+	twitchReauthEl.classList.add("success");
+	twitchReauthEl.classList.remove("danger");
+
+	twitchStatusElement.replaceChildren(disconnected);
 };
 
 function gameSettingsForm() {
@@ -129,16 +155,18 @@ function gameSettingsForm() {
 function twitchCommandsForm() {
 	ipcRenderer.send("twitch-commands-form", {
 		cgCmdd: cgCmd.value,
+		cgCmdCooldown: cgCmdCooldown.value,
 		cgMsgg: cgMsg.value,
 		userGetStats: userGetStatsCmd.value,
 		userClearStats: userClearStatsCmd.value,
 		showHasGuessed: showHasGuessed.checked,
+		showHasAlreadyGuessed: showHasAlreadyGuessed.checked,
 	});
 }
 
 function twitchSettingsForm(e) {
 	e.preventDefault();
-	ipcRenderer.send("twitch-settings-form", channelName.value, botUsername.value, twitchToken.value);
+	ipcRenderer.send("twitch-settings-form", channelName.value);
 }
 
 const socketConnected = () => {
@@ -199,7 +227,7 @@ function createBadge(username) {
 	return userBadge;
 }
 
-function openTab(e, tab) {
+function openTab(event, tab) {
 	for (const el of document.querySelectorAll(".tabcontent")) {
 		// @ts-ignore TS2339
 		el.style.display = "none";
@@ -208,8 +236,17 @@ function openTab(e, tab) {
 		el.classList.remove("active");
 	}
 	document.getElementById(tab).style.display = "block";
-	e.currentTarget.classList.add("active");
+	event.currentTarget.classList.add("active");
 }
 
 // @ts-ignore TS2339
-document.querySelector("#defaultOpen").click();
+qs("#defaultOpen").click();
+versionText.append(document.createTextNode(`ChatGuessr version ${version}`));
+
+twitchReauthEl.addEventListener("click", () => {
+	ipcRenderer.invoke("replace-session");
+});
+
+function qs(selector, parent = document) {
+	return parent.querySelector(selector);
+}

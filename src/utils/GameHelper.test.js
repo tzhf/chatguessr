@@ -37,6 +37,38 @@ describe('getCountryCode', () => {
 		const aland = { lat: 60.41415638472204, lng: 20.309877225436857 };
 		await expect(GameHelper.getCountryCode(aland)).resolves.toBe('FI');
 	});
+	it('counts Lesotho as Lesotho', async () => {
+		const ls = { lat: -29.496987596535757, lng: 28.212890625 };
+		expect(await GameHelper.getCountryCode(ls)).toBe('LS');
+	});
+	it('counts Campione d\'Italia as Italy', async () => {
+		const campione = { lat: 45.9689301700563, lng: 8.973770141601562 };
+		expect(await GameHelper.getCountryCode(campione)).toBe('IT');
+	});
+	it('counts San Marino', async () => {
+		const sanMarino = { lat: 43.937461690316646, lng: 12.47222900390625 };
+		expect(await GameHelper.getCountryCode(sanMarino)).toBe('SM');
+	});
+	it('counts Vatican City', async () => {
+		const vatican = { lat: 41.903363034132724, lng: 12.452659606933594 };
+		expect(await GameHelper.getCountryCode(vatican)).toBe('VA');
+	});
+	it('Baarle-Nassau and Baarle-Hertog are resolved properly', async () => {
+		const nl = {lat: 51.439391, lng: 4.931514};
+		const be = {lat: 51.445161, lng: 4.941440};
+		expect(await GameHelper.getCountryCode(nl)).toBe('NL');
+		expect(await GameHelper.getCountryCode(be)).toBe('BE');
+	});
+	it('the Vennbahn is resolved properly', async () => {
+		const de = {lat: 50.563848, lng: 6.211089};
+		const be = {lat: 50.563992, lng: 6.231465};
+		expect(await GameHelper.getCountryCode(de)).toBe('DE');
+		expect(await GameHelper.getCountryCode(be)).toBe('BE');
+	});
+	it('counts Llívia as spain', async () => {
+		const es = { lat:42.465134, lng:1.976742 };
+		expect(await GameHelper.getCountryCode(es)).toBe('ES');
+	});
 });
 
 describe('parseCoordinates', () => {

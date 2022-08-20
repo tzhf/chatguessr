@@ -1,6 +1,5 @@
-const axios = require('axios').default;
-const countryIso = require('country-iso');
-const iso3to2 = require('country-iso-3-to-2');
+const axios = require("axios").default;
+const countryIso = require("coordinate_to_country");
 /**
  * Country code mapping for 2-character ISO codes that should be considered
  * part of another country for GeoGuessr streak purposes.
@@ -8,7 +7,7 @@ const iso3to2 = require('country-iso-3-to-2');
  * @type {Record<string, string>}
  */
 // @ts-ignore
-const countryCodes = require('./countryCodes.json');
+const countryCodes = require("./countryCodes.json");
 
 const GEOGUESSR_URL = "https://geoguessr.com";
 const CG_API_URL = process.env.CG_API_URL ?? "https://chatguessr-api.vercel.app";
@@ -64,10 +63,12 @@ async function fetchSeed(url) {
  * @return {Promise<string | undefined>} Country code or `undefined` if the location is not in a known country.
  */
 async function getCountryCode(location) {
-	const localResults = countryIso.get(location.lat, location.lng);
-	const localIso = localResults.length > 0 ? iso3to2(localResults[0]) : undefined;
-
-	return localIso ? countryCodes[localIso] : undefined;
+	const localResults = countryIso(location.lat, location.lng, true);
+	let localIso =  localResults.length > 0 ? localResults[0] : undefined;
+	if (!localIso) {
+		return;
+	}
+	return countryCodes[localIso];
 }
 
 /**
@@ -117,20 +118,25 @@ function haversineDistance(mk1, mk2) {
  * @return {number} score
  */
 function calculateScore(distance, scale) {
+	if(distance * 1000 < 25){
+		return 5000;
+	}
 	return Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale));
 }
 
 /**
  * Upload scores to the Chatguessr API and return the public URL to the scoreboard.
  *
+ * @param  {string} accessToken
+ * @param  {string} bot
  * @param  {string} streamer
  * @param  {string} mapName
  * @param {Object} mode
  * @param  {LatLng[]} locations
  * @param  {({ username: string, flag: string, score: number, rounds: number })[]} totalScores
- * @return {Promise<string>} link
+ * @return {Promise<string>}
  */
-async function makeLink(streamer, mapName, mode, locations, totalScores) {
+async function makeLink(accessToken, bot, streamer, mapName, mode, locations, totalScores) {
 	const players = totalScores.map((guess) => {
 		return {
 			username: guess.username,
@@ -141,13 +147,18 @@ async function makeLink(streamer, mapName, mode, locations, totalScores) {
 	});
 
 	/** @type {import("axios").AxiosResponse<{ code: string }>} */
-	const res = await axios.post(`${CG_API_URL}/game`, {
-		streamer: streamer,
-		map: mapName,
-		mode: mode,
-		locations: locations,
-		players: players,
-	});
+	const res = await axios.post(
+		`${CG_API_URL}/game`,
+		{
+			streamer: streamer,
+			bot: bot,
+			map: mapName,
+			mode: mode,
+			locations: locations,
+			players: players,
+		},
+		{ headers: { access_token: accessToken } },
+	);
 
 	return `${CG_PUBLIC_URL}/game/${res.data.code}`;
 }

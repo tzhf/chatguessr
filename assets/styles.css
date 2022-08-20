@@ -272,7 +272,7 @@ th.sorting_desc:hover {
 	text-shadow: 0.05em 0 0.05em #fff;
 }
 .expand {
-	animation: expand 0.3s ease-in-out;
+	animation: expand 0.2s ease-in-out;
 }
 @keyframes expand {
 	from {

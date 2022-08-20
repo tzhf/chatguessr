@@ -1,8 +1,9 @@
 import { ipcMain } from "electron";
+import { once } from "events";
 import Game from "./Classes/Game";
 import GameHelper from "./utils/GameHelper";
 import Settings from "./utils/Settings";
-import TwitchClient from "./Classes/tmi";
+import TwitchBackend from "./backend/twitch";
 import flags from "./utils/flags";
 import createSettingsWindow from "./Windows/settings/SettingsWindow";
 import store from "./utils/sharedStore";
@@ -32,9 +33,14 @@ class GameHandler {
 	#settingsWindow;
 
 	/**
-	 * @type {TwitchClient}
+	 * @type {import("@supabase/supabase-js").Session|undefined}
 	 */
-	#twitch;
+	#session;
+
+	/**
+	 * @type {TwitchBackend|undefined}
+	 */
+	#backend;
 
 	/**
 	 * @type {Socket}
@@ -46,30 +52,33 @@ class GameHandler {
 	 */
 	#game;
 
+	#requestAuthentication;
+
 	/**
 	 * @param {Database} db
 	 * @param {MainWindow} win
+	 * @param {{ requestAuthentication: () => Promise<void> }} options
 	 */
-	constructor(db, win) {
+	constructor(db, win, options) {
 		this.#db = db;
 		this.#win = win;
-		this.#twitch = undefined;
+		this.#backend = undefined;
 		this.#socket = undefined;
 		this.#game = new Game(db, settings);
-		this.#initTmi();
+		this.#requestAuthentication = options.requestAuthentication;
 		this.init();
 	}
 
 	openGuesses() {
 		this.#game.openGuesses();
 		this.#win.webContents.send("switch-on");
-		this.#twitch.action("Guesses are open...");
+		this.#backend.sendMessage("Guesses are open...", { system: true });
 	}
 
 	closeGuesses() {
 		this.#game.closeGuesses();
 		this.#win.webContents.send("switch-off");
-		this.#twitch.action("Guesses are closed.");
+		this.#backend.sendMessage("Guesses are closed.", { system: true });
 	}
 
 	nextRound() {
@@ -78,7 +87,7 @@ class GameHandler {
 			this.#processTotalScores();
 		} else {
 			this.#win.webContents.send("next-round", this.#game.isMultiGuess, this.#game.getLocation());
-			this.#twitch.action(`🌎 Round ${this.#game.round} has started`);
+			this.#backend.sendMessage(`🌎 Round ${this.#game.round} has started`, { system: true });
 			this.openGuesses();
 		}
 	}
@@ -88,9 +97,24 @@ class GameHandler {
 		this.#win.webContents.send("show-final-results", totalScores);
 
 		const locations = this.#game.getLocations();
-		const link = await GameHelper.makeLink(settings.channelName, this.#game.mapName, this.#game.mode, locations, totalScores);
-		await this.#twitch.action(
-			`🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${link != undefined ? `Game summary: ${link}` : ""}`
+		/** @type {string|undefined} */
+		let link;
+		try {
+			link = await GameHelper.makeLink(
+				this.#session.access_token,
+				this.#session.user.user_metadata.name,
+				settings.channelName,
+				this.#game.mapName,
+				this.#game.mode,
+				locations,
+				totalScores
+			);
+		} catch (error) {
+			console.error("could not upload summary", error);
+		}
+		await this.#backend.sendMessage(
+			`🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${link != undefined ? `Game summary: ${link}` : ""}`,
+			{ system: true }
 		);
 	}
 
@@ -101,13 +125,16 @@ class GameHandler {
 	#showResults(location, scores) {
 		const round = this.#game.isFinished ? this.#game.round : this.#game.round - 1;
 		this.#win.webContents.send("show-round-results", round, location, scores);
-		this.#twitch.action(`🌎 Round ${round} has finished. Congrats ${flags.getEmoji(scores[0].flag)} ${scores[0].username} !`);
+		this.#backend.sendMessage(`🌎 Round ${round} has finished. Congrats ${flags.getEmoji(scores[0].flag)} ${scores[0].username} !`, { system: true });
 	}
 
 	init() {
 		// Browser Listening
-		this.#win.webContents.on("did-navigate-in-page", (e, url) => {
+		this.#win.webContents.on("did-navigate-in-page", (_event, url) => {
 			if (GameHelper.isGameURL(url)) {
+				// TODO(reanna) warn about the thing not being connected
+				if (!this.#backend) return;
+
 				this.#game
 					.start(url, settings.isMultiGuess)
 					.then(() => {
@@ -115,11 +142,11 @@ class GameHandler {
 						this.#win.webContents.send("game-started", this.#game.isMultiGuess, guesses, this.#game.getLocation());
 
 						if (guesses.length > 0) {
-							this.#twitch.action(`🌎 Round ${this.#game.round} has resumed`);
+							this.#backend.sendMessage(`🌎 Round ${this.#game.round} has resumed`, { system: true });
 						} else if (this.#game.round === 1) {
-							this.#twitch.action(`🌎 A new seed of ${this.#game.mapName} has started`);
+							this.#backend.sendMessage(`🌎 A new seed of ${this.#game.mapName} has started`, { system: true });
 						} else {
-							this.#twitch.action(`🌎 Round ${this.#game.round} has started`);
+							this.#backend.sendMessage(`🌎 Round ${this.#game.round} has started`, { system: true });
 						}
 
 						this.openGuesses();
@@ -168,26 +195,26 @@ class GameHandler {
 			this.closeGuesses();
 		});
 
-		ipcMain.on("game-form", (e, isMultiGuess) => {
+		ipcMain.on("game-form", (_event, isMultiGuess) => {
 			settings.setGameSettings(isMultiGuess);
 			this.#settingsWindow?.close();
 		});
 
-		ipcMain.on("twitch-commands-form", (e, commands) => {
+		ipcMain.on("twitch-commands-form", (_event, commands) => {
 			settings.setTwitchCommands(commands);
 			this.#settingsWindow?.close();
 		});
 
-		ipcMain.on("twitch-settings-form", (e, channelName, botUsername, token) => {
-			settings.setTwitchSettings(channelName, botUsername, token);
-			this.#initTmi();
+		ipcMain.on("twitch-settings-form", (_event, channelName) => {
+			settings.setTwitchSettings(channelName);
+			this.#requestAuthentication();
 		});
 
-		ipcMain.on("add-banned-user", (e, username) => {
+		ipcMain.on("add-banned-user", (_event, username) => {
 			this.#db.addBannedUser(username);
 		});
 
-		ipcMain.on("delete-banned-user", (e, username) => {
+		ipcMain.on("delete-banned-user", (_event, username) => {
 			this.#db.deleteBannedUser(username);
 		});
 
@@ -203,24 +230,80 @@ class GameHandler {
 			store.delete("users"); // from pre-sqlite chatguessr versions
 			store.delete("lastRoundPlayers"); // from even older versions
 			await this.#db.clear();
-			await this.#twitch.action("All stats cleared 🗑️");
+			await this.#backend.sendMessage("All stats cleared 🗑️", { system: true });
 		});
 	}
 
-	async #initTmi() {
-		if (this.#twitch?.client.readyState() === "OPEN") {
-			this.#twitch.client.disconnect();
+	getConnectionState() {
+		if (!this.#backend) {
+			return { state: "disconnected" };
+		} else if (this.#backend.isConnected()) {
+			return { state: "connected", botUsername: this.#backend.botUsername, channelName: this.#backend.channelName };
 		}
+		return { state: "connecting" };
+	}
+
+	/**
+	 * @param {import("@supabase/supabase-js").Session} session
+	 */
+	async authenticate(session) {
+		this.#session = session;
+		await this.#initBackend(session);
+		await this.#initSocket(session);
+	}
+
+	/**
+	 * @param {import("@supabase/supabase-js").Session} session
+	 */
+	async #initBackend(session) {
+		this.#backend?.close();
+		this.#backend = undefined;
 		if (!settings.channelName) {
 			return;
 		}
+		if (session.user.app_metadata.provider === "twitch") {
+			this.#backend = new TwitchBackend({
+				botUsername: session.user.user_metadata.name,
+				channelName: settings.channelName,
+				whisperToken: session.provider_token,
+			});
+		} else {
+			throw new Error("unsupported provider");
+		}
 
-		this.#twitch = new TwitchClient(settings.channelName, settings.botUsername, settings.token);
+		const emitConnectionState = () => {
+			const state = this.getConnectionState();
+			this.#win.webContents.send("connection-state", state);
+			this.#settingsWindow?.webContents.send("connection-state", state);
+		};
 
-		this.#tmiListening();
+		this.#backend.on("connected", () => {
+			emitConnectionState();
+			this.#backend.sendMessage("is now connected", { system: true });
+		});
+		this.#backend.on("disconnected", (requestedClose) => {
+			emitConnectionState();
+			if (!requestedClose) {
+				// Try to reconnect.
+				this.#requestAuthentication();
+			}
+		});
 
+		this.#backend.on("guess", (userstate, message) => {
+			this.#handleGuess(userstate, message).catch((error) => {
+				console.error(error);
+			});
+		});
+
+		this.#backend.on("message", (userstate, message) => {
+			this.#handleMessage(userstate, message).catch((error) => {
+				console.error(error);
+			});
+		});
+
+		emitConnectionState();
 		try {
-			await this.#twitch.client.connect();
+			await this.#backend.connect();
 		} catch (error) {
 			if (this.#settingsWindow) {
 				this.#settingsWindow.webContents.send("twitch-error", error);
@@ -230,14 +313,11 @@ class GameHandler {
 	}
 
 	/**
-	 *
-	 * @param {string} _from
 	 * @param {import("tmi.js").ChatUserstate} userstate
 	 * @param {string} message
-	 * @param {boolean} self
 	 */
-	async #handleGuess(_from, userstate, message, self) {
-		if (self || !message.startsWith("!g") || !this.#game.guessesOpen) return;
+	async #handleGuess(userstate, message) {
+		if (!message.startsWith("!g") || !this.#game.guessesOpen) return;
 		// Ignore guesses made by the broadcaster with the CG map: prevents seemingly duplicate guesses
 		if (userstate.username.toLowerCase() === settings.channelName.toLowerCase()) return;
 
@@ -256,24 +336,24 @@ class GameHandler {
 			if (!this.#game.isMultiGuess) {
 				this.#win.webContents.send("render-guess", guess);
 				if (settings.showHasGuessed) {
-					await this.#twitch.say(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} guessed`);
+					await this.#backend.sendMessage(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} has guessed`);
 				}
 			} else {
 				const guesses = this.#game.getMultiGuesses();
 				this.#win.webContents.send("render-multiguess", guesses);
 				if (!guess.modified) {
 					if (settings.showHasGuessed) {
-						await this.#twitch.say(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} guessed`);
+						await this.#backend.sendMessage(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} has guessed`);
 					}
 				} else {
-					await this.#twitch.say(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} guess changed`);
+					await this.#backend.sendMessage(`${flags.getEmoji(guess.flag)} ${userstate["display-name"]} guess changed`);
 				}
 			}
 		} catch (err) {
-			if (err.code === "alreadyGuessed") {
-				await this.#twitch.say(`${userstate["display-name"]} you already guessed`);
+			if (err.code === "alreadyGuessed" && settings.showHasAlreadyGuessed) {
+				await this.#backend.sendMessage(`${userstate["display-name"]} you already guessed`);
 			} else if (err.code === "pastedPreviousGuess") {
-				await this.#twitch.say(`${userstate["display-name"]} you pasted your previous guess :)`);
+				await this.#backend.sendMessage(`${userstate["display-name"]} you pasted your previous guess :)`);
 			} else {
 				console.error(err);
 			}
@@ -281,24 +361,26 @@ class GameHandler {
 	}
 
 	/**
-	 *
-	 * @param {string} _channel
+	 * @type {boolean}
+	 */
+	#cgCooldown = false;
+
+	/**
 	 * @param {import("tmi.js").ChatUserstate} userstate
 	 * @param {string} message
-	 * @param {boolean} self
 	 */
-	async #handleMessage(_channel, userstate, message, self) {
-		if (self || !message.startsWith("!")) return;
-		message = message.toLowerCase();
+	async #handleMessage(userstate, message) {
+		if (!message.startsWith("!")) return;
+		message = message.trim().toLowerCase();
 
 		const userId = userstate.badges?.broadcaster === "1" ? "BROADCASTER" : userstate["user-id"];
 
 		if (message === settings.userGetStatsCmd) {
 			const userInfo = this.#db.getUserStats(userId);
 			if (!userInfo) {
-				await this.#twitch.say(`${userstate["display-name"]} you've never guessed yet.`);
+				await this.#backend.sendMessage(`${userstate["display-name"]} you've never guessed yet.`);
 			} else {
-				await this.#twitch.say(`
+				await this.#backend.sendMessage(`
 					${flags.getEmoji(userInfo.flag)} ${userInfo.username} : Current streak: ${userInfo.streak}.
 					Best streak: ${userInfo.bestStreak}.
 					Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses}${
@@ -313,14 +395,22 @@ class GameHandler {
 		}
 
 		if (message === settings.cgCmd && settings.cgCmd !== "") {
-			await this.#twitch.say(settings.cgMsg);
+			if (userId === "BROADCASTER") {
+				await this.#backend.sendMessage(settings.cgMsg.replace("<your cg link>", `https://chatguessr.com/map/${this.#backend.botUsername}`));
+			} else if (!this.#cgCooldown) {
+				await this.#backend.sendMessage(settings.cgMsg.replace("<your cg link>", `https://chatguessr.com/map/${this.#backend.botUsername}`));
+				this.#cgCooldown = true;
+				setTimeout(() => {
+					this.#cgCooldown = false;
+				}, settings.cgCmdCooldown * 1000);
+			}
 			return;
 		}
 
 		if (message === "!best") {
 			const { streak, victories, perfects } = this.#db.getGlobalStats();
 			if (!streak && !victories && !perfects) {
-				await this.#twitch.say("No stats available.");
+				await this.#backend.sendMessage("No stats available.");
 			} else {
 				let msg = "";
 				if (streak) {
@@ -332,7 +422,7 @@ class GameHandler {
 				if (perfects) {
 					msg += `Perfects: ${perfects.perfects} (${perfects.username}). `;
 				}
-				await this.#twitch.say(`Channels best: ${msg}`);
+				await this.#backend.sendMessage(`Channels best: ${msg}`);
 			}
 			return;
 		}
@@ -349,7 +439,7 @@ class GameHandler {
 			} else {
 				newFlag = flags.selectFlag(countryReq);
 				if (!newFlag) {
-					await this.#twitch.say(`${userstate["display-name"]} no flag found`);
+					await this.#backend.sendMessage(`${userstate["display-name"]} no flag found`);
 					return;
 				}
 			}
@@ -357,9 +447,9 @@ class GameHandler {
 			this.#db.setUserFlag(dbUser.id, newFlag);
 
 			if (countryReq === "none") {
-				await this.#twitch.say(`${userstate["display-name"]} flag removed`);
+				await this.#backend.sendMessage(`${userstate["display-name"]} flag removed`);
 			} else if (countryReq === "random") {
-				await this.#twitch.say(`${userstate["display-name"]} got ${flags.getEmoji(newFlag)}`);
+				await this.#backend.sendMessage(`${userstate["display-name"]} got ${flags.getEmoji(newFlag)}`);
 			}
 			return;
 		}
@@ -371,102 +461,83 @@ class GameHandler {
 			const dbUser = this.#db.getUser(userId);
 			if (dbUser) {
 				this.#db.resetUserStats(dbUser.id);
-				await this.#twitch.say(`${flags.getEmoji(dbUser.flag)} ${userstate["display-name"]} 🗑️ stats cleared !`);
+				await this.#backend.sendMessage(`${flags.getEmoji(dbUser.flag)} ${userstate["display-name"]} 🗑️ stats cleared !`);
 			} else {
-				await this.#twitch.say(`${userstate["display-name"]} you've never guessed yet.`);
+				await this.#backend.sendMessage(`${userstate["display-name"]} you've never guessed yet.`);
 			}
 
 			return;
 		}
 
 		// streamer commands
-		// if (userstate.badges?.broadcaster !== "1") {
-		// 	return;
-		// }
+		if (userstate.badges?.broadcaster !== "1") {
+			return;
+		}
+		if (process.env.NODE_ENV !== "development") {
+			return;
+		}
 
-		// if (message.startsWith("!spamguess")) {
-		// 	const max = parseInt(message.split(" ")[1] ?? "50", 10);
-		// 	for (let i = 0; i < max; i += 1) {
-		// 		const lat = Math.random() * 180 - 90;
-		// 		const lng = Math.random() * 360 - 180;
-		// 		await this.#handleGuess(
-		// 			`fake_${i}`,
-		// 			{
-		// 				"user-id": `123450${i}`,
-		// 				username: `fake_${i}`,
-		// 				"display-name": `fake_${i}`,
-		// 				color: `#${Math.random().toString(16).slice(2, 8).padStart(6, "0")}`,
-		// 			},
-		// 			`!g ${lat},${lng}`,
-		// 			false
-		// 		);
-		// 	}
-		// }
+		if (message.startsWith("!spamguess")) {
+			const max = parseInt(message.split(" ")[1] ?? "50", 10);
+			for (let i = 0; i < max; i += 1) {
+				const lat = Math.random() * 180 - 90;
+				const lng = Math.random() * 360 - 180;
+				await this.#handleGuess(
+					{
+						"user-id": `123450${i}`,
+						username: `fake_${i}`,
+						"display-name": `fake_${i}`,
+						color: `#${Math.random().toString(16).slice(2, 8).padStart(6, "0")}`,
+					},
+					`!g ${lat},${lng}`
+				);
+			}
+		}
 	}
 
-	ioInit() {
+	/**
+	 * @param {import("@supabase/supabase-js").Session} session
+	 */
+	async #initSocket(session) {
 		if (this.#socket?.connected) {
 			this.#socket.disconnect();
 		}
+
+		const botUsername = session.user.user_metadata.name;
 
 		this.#socket = io(SOCKET_SERVER_URL, {
 			transportOptions: {
 				polling: {
 					extraHeaders: {
-						oauthtoken: settings.token,
+						access_token: session.access_token,
 						channelname: settings.channelName,
-						bot: settings.botUsername,
+						bot: botUsername,
 					},
 				},
 			},
 		});
 
 		this.#socket.on("connect", () => {
-			this.#socket.emit("join", settings.botUsername);
+			this.#socket.emit("join", botUsername);
 			if (this.#settingsWindow) {
 				this.#settingsWindow.webContents.send("socket-connected");
 			}
 			console.log("Connected to socket !");
 		});
 
-		this.#socket.on("disconnect", () => {
+		this.#socket.on("disconnect", (reason) => {
 			if (this.#settingsWindow) {
 				this.#settingsWindow.webContents.send("socket-disconnected");
 			}
 		});
 
-		this.#socket.on("guess", async (userData, guess) => {
-			const self = userData.username == settings.channelName;
-			await this.#handleGuess(null, userData, guess, self);
-		});
-	}
-
-	#tmiListening() {
-		this.#twitch.client.on("connected", () => {
-			this.ioInit();
-
-			if (this.#settingsWindow) {
-				this.#settingsWindow.webContents.send("twitch-connected", settings.botUsername);
-			}
-			this.#twitch.action("is now connected");
-		});
-		this.#twitch.client.on("disconnected", () => {
-			if (this.#settingsWindow) {
-				this.#settingsWindow.webContents.send("twitch-disconnected");
-			}
-		});
-
-		this.#twitch.client.on("whisper", (from, userstate, message, self) => {
-			this.#handleGuess(from, userstate, message, self).catch((error) => {
+		this.#socket.on("guess", (userData, guess) => {
+			this.#handleGuess(userData, guess).catch((error) => {
 				console.error(error);
 			});
 		});
 
-		this.#twitch.client.on("message", (channel, userstate, message, self) => {
-			this.#handleMessage(channel, userstate, message, self).catch((error) => {
-				console.error(error);
-			});
-		});
+		await once(this.#socket, "connect");
 	}
 
 	openSettingsWindow() {
@@ -479,13 +550,7 @@ class GameHandler {
 			});
 
 			this.#settingsWindow.webContents.on("did-finish-load", () => {
-				this.#settingsWindow.webContents.send(
-					"render-settings",
-					settings,
-					this.#db.getBannedUsers(),
-					this.#twitch?.client ? this.#twitch.client.readyState() : "",
-					this.#socket?.connected
-				);
+				this.#settingsWindow.webContents.send("render-settings", settings, this.#db.getBannedUsers(), this.getConnectionState(), this.#socket?.connected);
 
 				this.#settingsWindow.show();
 			});

@@ -6,3 +6,10 @@ declare module 'coordinate_to_country' {
 declare module 'electron-squirrel-startup' {
     export = boolean;
 }
+
+declare module '*.vue' {
+    // Basically opts out of typechecking for Vue components, but w/e
+    import type { DefineComponent } from 'vue'
+    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>
+    export default component
+}  

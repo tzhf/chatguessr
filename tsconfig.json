@@ -14,6 +14,7 @@
 		"src/modules.d.ts",
 		"src/types.d.ts",
 		"src/**/*.js",
+		"src/**/*.vue",
 		"src/utils/countryCodes.json",
 		"src/utils/countryCodesNames.json"
 	],

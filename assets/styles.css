@@ -165,15 +165,46 @@ button:focus {
 }
 #scoreboardHeader {
 	display: grid;
+	grid-template-areas: "settings title switch";
 	grid-template-columns: 90px auto 80px;
+	grid-template-rows: 40px;
 	justify-items: center;
-	height: 55px;
 	font-size: 18px;
 	align-items: center;
 }
-#scoreboardTitle {
-	margin-top: -8px;
+.is-slider-visible #scoreboardHeader {
+	grid-template-areas:
+		"settings title switch"
+		"scroll scroll scroll";
+	grid-template-rows: 40px 10px;
 }
+.is-hint-visible #scoreboardHeader {
+	grid-template-areas:
+		"settings title switch"
+		"hint hint hint";
+	grid-template-rows: 40px 20px;
+}
+.is-slider-visible.is-hint-visible #scoreboardHeader {
+	grid-template-areas:
+		"settings title switch"
+		"hint hint hint"
+		"scroll scroll scroll";
+	grid-template-rows: 40px 20px 10px;
+}
+.scoreboardSettings { grid-area: settings; }
+.scoreboardTitle { grid-area: title; }
+.scoreboardHint {
+	grid-area: hint;
+	display: none;
+	font-size: .75rem;
+}
+.is-hint-visible .scoreboardHint { display: block; }
+.scoreboardSlider {
+	grid-area: scroll;
+	width: 100%;
+	display: none;
+}
+.is-slider-visible .scoreboardSlider { display: block; }
 
 .flag-icon-background {
 	background-size: contain;
@@ -356,10 +387,6 @@ th.sorting_desc:hover {
 	top: -3px;
 }
 .dt-buttons {
-	position: absolute;
-	top: 0;
-	margin-top: 16px;
-	width: 100%;
 	text-align: left;
 }
 .dt-button {
@@ -379,8 +406,8 @@ th.sorting_desc:hover {
 }
 .dt-button-collection {
 	margin-top: -29px;
+	margin-left: 45px;
 	position: absolute;
-	padding-left: 45px;
 }
 .dt-button-collection div {
 	background-color: #333;
@@ -419,8 +446,7 @@ th.sorting_desc:hover {
 	color: #1cd997;
 }
 #switchContainer {
-	margin-top: -9px;
-	margin-left: auto;
+	grid-area: "switch";
 	z-index: 99;
 	position: relative;
 	display: inline-block;
@@ -435,7 +461,7 @@ th.sorting_desc:hover {
 #switchContainer input {
 	display: none;
 }
-.slider {
+.switch {
 	position: absolute;
 	cursor: pointer;
 	top: 0;
@@ -444,10 +470,9 @@ th.sorting_desc:hover {
 	bottom: 0;
 	border-radius: 4px;
 	background-color: #e04352;
-	-webkit-transition: 0.1s;
 	transition: 0.1s;
 }
-.slider:before {
+.switch:before {
 	position: absolute;
 	content: "";
 	height: 16px;
@@ -456,18 +481,17 @@ th.sorting_desc:hover {
 	bottom: 3px;
 	border-radius: 3px;
 	background-color: #fff;
-	-webkit-transition: 0.2s;
 	transition: 0.2s;
 }
-input:checked + .slider {
+input:checked + .switch {
 	background-color: #1cd997;
 	box-shadow: 2px 2px 7px -2px #000;
 }
-input:checked + .slider:before {
-	-webkit-transform: translateX(17px);
+input:checked + .switch:before {
+	transform: translateX(17px);
 }
 #scrollSpeedSlider {
-	display: none;
+	vertical-align: super;
 	height: 3px;
 	padding: 0;
 	-webkit-appearance: none;

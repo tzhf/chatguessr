@@ -1,39 +1,13 @@
-name: CI
+name: Release
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:
+  release:
+    types: [created]
 
 jobs:
-  types:
-    name: Types
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v3
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-      - name: Install dependencies
-        run: npm ci
-      - name: Check types
-        run: npm run typecheck
-  test:
-    name: Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v3
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-      - name: Install dependencies
-        run: npm ci
-      - name: Run tests
-        run: npm test
-  package:
-    name: Package
-    needs: [test, types]
+  release:
+    name: Publish release
     strategy:
       fail-fast: false
       matrix:
@@ -58,9 +32,12 @@ jobs:
           SUPABASE_URL: ${{secrets.SUPABASE_URL}}
           SUPABASE_ANON_KEY: ${{secrets.SUPABASE_ANON_KEY}}
           TWITCH_CLIENT_ID: ${{secrets.TWITCH_CLIENT_ID}}
-      - name: Package
-        run: npm run package
+      - name: Publish
+        run: npm run publish
+        env:
+          GITHUB_TOKEN: ${{github.token}}
       - uses: actions/upload-artifact@v3
         with:
           name: Chatguessr-${{runner.os}}
           path: out/*/
+

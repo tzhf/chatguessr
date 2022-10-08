@@ -126,10 +126,7 @@
 		},
 		"auth": {
 			"context": "browser",
-			"source": [
-				"./src/Windows/auth/migrate.html",
-				"./src/Windows/auth/new.html"
-			],
+			"source": "./src/Windows/auth/index.html",
 			"publicUrl": "."
 		},
 		"settings": {

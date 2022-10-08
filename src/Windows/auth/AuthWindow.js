@@ -4,11 +4,10 @@ const path = require("path");
 const { BrowserWindow, shell } = require("electron");
 
 /**
- * @param {string} initialUrl
  * @param {BrowserWindow} parentWindow
- * @param {{ clearStorageData: boolean }} options
+ * @param {{ authUrl?: string | undefined, clearStorageData: boolean }} options
  */
-async function createAuthWindow(initialUrl, parentWindow, options) {
+async function createAuthWindow(parentWindow, options) {
 	let win = new BrowserWindow({
 		height: 800,
 		parent: parentWindow,
@@ -45,15 +44,12 @@ async function createAuthWindow(initialUrl, parentWindow, options) {
 		await win.webContents.session.clearStorageData();
 	}
 
-	win.loadURL(initialUrl);
+	win.loadURL(options.authUrl ?? `file://${path.join(__dirname, "../../dist/auth/index.html")}`);
 	if (process.env.NODE_ENV === "development") {
 		win.webContents.openDevTools();
 	}
 
 	return win;
 }
-
-createAuthWindow.MIGRATE_URL = `file://${path.join(__dirname, "../../dist/auth/migrate.html")}`;
-createAuthWindow.NEW_URL = `file://${path.join(__dirname, "../../dist/auth/new.html")}`;
 
 module.exports = createAuthWindow;

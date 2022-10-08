@@ -6,13 +6,13 @@ const { BrowserWindow, shell } = require("electron");
 /** @type {string} */
 // @ts-ignore
 const styles = require("bundle-text:../../assets/styles.css");
-const js = fs.readFileSync(path.join(__dirname, "../cg-renderer/renderer.js"), "utf8");
+const js = fs.readFileSync(path.join(__dirname, "../../dist/cg-renderer/renderer.js"), "utf8");
 
 function mainWindow() {
 	let win = new BrowserWindow({
 		show: false,
 		webPreferences: {
-			preload: path.join(__dirname, "../cg-preload/preload.js"),
+			preload: path.join(__dirname, "../../dist/cg-preload/preload.js"),
 			contextIsolation: true,
 			nodeIntegration: false,
 			webSecurity: false,

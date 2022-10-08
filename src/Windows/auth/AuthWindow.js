@@ -14,7 +14,7 @@ async function createAuthWindow(parentWindow, options) {
 		show: false,
 		modal: true,
 		webPreferences: {
-			preload: path.join(__dirname, "../auth-preload/preload.js"),
+			preload: path.join(__dirname, "../../../dist/auth-preload/preload.js"),
 			// Use a separate browser session so we can force log people out of
 			// Twitch without logging them out of GeoGuessr.
 			partition: "persist:backendAuth",
@@ -44,7 +44,7 @@ async function createAuthWindow(parentWindow, options) {
 		await win.webContents.session.clearStorageData();
 	}
 
-	win.loadURL(options.authUrl ?? `file://${path.join(__dirname, "../../dist/auth/index.html")}`);
+	win.loadURL(options.authUrl ?? `file://${path.join(__dirname, "../../../dist/auth/index.html")}`);
 	if (process.env.NODE_ENV === "development") {
 		win.webContents.openDevTools();
 	}

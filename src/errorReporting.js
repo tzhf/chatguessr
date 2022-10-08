@@ -7,7 +7,7 @@ const dotenv = require('dotenv');
 const { version } = require('../package.json');
 const { accessSync } = require("fs");
 
-const envPath = findUp.sync(".env") ?? path.join(__dirname, "../../.env");
+const envPath = findUp.sync(".env") ?? path.join(__dirname, "../.env");
 try {
 	accessSync(envPath);
 	dotenv.config({ path: envPath });

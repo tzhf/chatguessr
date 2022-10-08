@@ -24,7 +24,7 @@ const dbPath = path.join(app.getPath("userData"), "scores.db");
 const db = new Database(dbPath);
 
 function serveAssets() {
-	const assetDir = path.join(__dirname, "../../assets");
+	const assetDir = path.join(__dirname, "../assets");
 	protocol.interceptFileProtocol("asset", (request, callback) => {
 		const assetFile = path.join(assetDir, new URL(request.url).pathname);
 		if (!assetFile.startsWith(assetDir)) {

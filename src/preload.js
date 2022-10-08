@@ -22,7 +22,7 @@ contextBridge.exposeInMainWorld("chatguessrApi", chatguessrApi);
 const REMOVE_ALL_MARKERS_CSS =
 	'[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"], .result-map__line { display: none; }';
 const REMOVE_GAME_CONTROLS_CSS = ".styles_columnTwo___2qFL, .styles_controlGroup___ArrW, .compass, .game-layout__compass { display: none !important; }";
-const REMOVE_COMPASS_CSS = ".compass, .game-layout__compass { display: none; }";
+const REMOVE_COMPASS_CSS = '.compass, .game-layout__compass, [class^="panorama-compass_"] { display: none; }';
 
 /**
  * @param {import('./types').RendererApi} rendererApi

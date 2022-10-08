@@ -33,6 +33,7 @@ describe("getUserStats", () => {
 				panoId: null,
 				heading: 0,
 				pitch: 0,
+				zoom: 0,
 				streakLocationCode: null,
 			});
 			db.createGuess(roundId, user.id, {

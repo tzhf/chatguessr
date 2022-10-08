@@ -5,6 +5,7 @@ const GameHelper = require("../utils/GameHelper");
 const store = require("../utils/sharedStore");
 
 /** @typedef {import('../types').LatLng} LatLng */
+/** @typedef {import('../types').Location} Location */
 /** @typedef {import('../types').Seed} Seed */
 /** @typedef {import('../types').Guess} Guess */
 /** @typedef {import('../utils/Settings')} Settings */
@@ -52,7 +53,7 @@ class Game {
 	seed;
 	/** @type {number | undefined} */
 	mapScale;
-	/** @type {LatLng | undefined} */
+	/** @type {Location | undefined} */
 	location;
 
 	isInGame = false;
@@ -311,19 +312,20 @@ class Game {
 		};
 	}
 
+	/** @returns {Location} */
 	getLocation() {
-		const round = this.seed.rounds.at(-1);
-		if (round) {
-			return { lat: round.lat, lng: round.lng };
-		}
+		return this.seed.rounds.at(-1);
 	}
 
+	/** @returns {Location[]} */
 	getLocations() {
 		return this.seed.rounds.map((round) => ({
 			lat: round.lat,
 			lng: round.lng,
+			panoId: round.panoId,
 			heading: Math.round(round.heading),
 			pitch: Math.round(round.pitch),
+			zoom: round.zoom,
 		}));
 	}
 

@@ -1,6 +1,14 @@
 import { IpcRenderer } from "electron";
 
 export type LatLng = { lat: number; lng: number };
+export type Location = {
+  lat: number;
+  lng: number;
+  panoId: string | null;
+  heading: number;
+  pitch: number;
+  zoom: number;
+};
 
 export type Guess = {
 	user: string;
@@ -30,6 +38,7 @@ export type GameRound = {
 	panoId: string | null;
 	heading: number;
 	pitch: number;
+	zoom: number;
 	streakLocationCode: string | null;
 	// TODO: Add missing fields
 };
@@ -85,7 +94,7 @@ export type Seed = GameSettings & {
 };
 
 export interface RendererApi {
-	populateMap(location: LatLng, scores: { username: string; flag: string; color: string; position: LatLng; distance: number; score: number }[]);
+	populateMap(location: Location, scores: Guess[]);
 	clearMarkers();
 	drParseNoCar(enable: boolean);
 	showSatelliteMap(location: LatLng);

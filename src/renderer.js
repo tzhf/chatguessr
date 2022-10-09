@@ -52,7 +52,16 @@ function populateMap(location, scores) {
 		map,
 	});
 	locationMarker.addListener("click", () => {
-		window.open(`http://maps.google.com/maps?q=&layer=c&cbll=${location.lat},${location.lng}`, "_blank");
+		const url = new URL('https://www.google.com/maps/@?api=1&map_action=pano')
+		if (location.panoId) {
+			url.searchParams.set('pano', location.panoId)
+		}
+		url.searchParams.set('viewpoint', `${location.lat},${location.lng}`)
+		url.searchParams.set('heading', String(location.heading))
+		url.searchParams.set('pitch', String(location.pitch))
+		const fov = 180 / 2 ** location.zoom
+		url.searchParams.set('fov', String(fov))
+		window.open(url, "_blank");
 	});
 	markers.push(locationMarker);
 

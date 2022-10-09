@@ -38,6 +38,7 @@
 		"@electron-forge/publisher-github": "^6.0.0-beta.67",
 		"@parcel/transformer-inline-string": "^2.0.0",
 		"@tsconfig/node16": "^1.0.2",
+		"@types/better-sqlite3": "^7.6.1",
 		"@types/datatables.net-buttons": "^1.4.7",
 		"@types/datatables.net-scroller": "^1.4.1",
 		"@types/google.maps": "^3.45.6",

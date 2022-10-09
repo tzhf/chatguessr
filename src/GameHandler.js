@@ -350,8 +350,10 @@ class GameHandler {
 				}
 			}
 		} catch (err) {
-			if (err.code === "alreadyGuessed" && settings.showHasAlreadyGuessed) {
-				await this.#backend.sendMessage(`${userstate["display-name"]} you already guessed`);
+			if (err.code === "alreadyGuessed") {
+				if (settings.showHasAlreadyGuessed) {
+					await this.#backend.sendMessage(`${userstate["display-name"]} you already guessed`);
+				}
 			} else if (err.code === "pastedPreviousGuess") {
 				await this.#backend.sendMessage(`${userstate["display-name"]} you pasted your previous guess :)`);
 			} else {

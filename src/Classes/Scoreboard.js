@@ -92,7 +92,7 @@ class Scoreboard {
 			this.onToggleGuesses(this.switchBtn.is(":checked"));
 		});
 
-		// Column Visisbility
+		/** @type {{ column: number, state: boolean }[]} */
 		this.columnState = JSON.parse(localStorage.getItem("CG_ColVis")) || [
 			{ column: 0, state: true },
 			{ column: 2, state: true },

@@ -92,7 +92,7 @@ class Game {
 				this.#roundId = this.#db.createRound(this.seed.token, this.seed.rounds[0]);
 			} catch (err) {
 				// In this case we are restoring an existing game.
-				if (err.message.includes('UNIQUE constraint failed: games.id')) {
+				if (err instanceof Error && err.message.includes('UNIQUE constraint failed: games.id')) {
 					this.#roundId = this.#db.getCurrentRound(this.seed.token);
 				} else {
 					throw err;

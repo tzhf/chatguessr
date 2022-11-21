@@ -10,7 +10,7 @@
 	"dependencies": {
 		"@sentry/electron": "^4.1.1",
 		"@supabase/supabase-js": "^2.1.0",
-		"axios": "^0.23.0",
+		"axios": "^1.1.3",
 		"better-sqlite3": "^8.0.0",
 		"coordinate_to_country": "^1.1.0",
 		"datatables.net": "^1.11.3",

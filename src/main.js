@@ -88,16 +88,17 @@ async function revokeLegacyOauthToken() {
 async function authenticateWithTwitch(gameHandler, parentWindow) {
 	const hasSession = !!sharedStore.get("session")?.access_token;
 
-	const authConfig = await supabase.auth.signIn({
+	const authConfig = await supabase.auth.signInWithOAuth({
 		provider: "twitch",
-	}, {
-		redirectTo: new URL("/streamer/redirect", `https://${process.env.CG_PUBLIC_URL}`).href,
-		scopes: ["chat:read", "chat:edit", "whispers:read"].join(" "),
+		options: {
+			redirectTo: new URL("/streamer/redirect", `https://${process.env.CG_PUBLIC_URL}`).href,
+			scopes: ["chat:read", "chat:edit", "whispers:read"].join(" "),
+		},
 	});
 
 	// If we have an existing session, we try to go through the login flow without user interaction.
 	// This way users don't have to sign in manually every time they open ChatGuessr.
-	const authUrl = hasSession ? authConfig.url : undefined;
+	const authUrl = hasSession ? authConfig.data?.url : undefined;
 
 	const authWindow = await createAuthWindow(parentWindow, {
 		authUrl,
@@ -105,7 +106,7 @@ async function authenticateWithTwitch(gameHandler, parentWindow) {
 	});
 
 	const startAuth = () => {
-		authWindow.loadURL(authConfig.url);
+		authWindow.loadURL(authConfig.data.url);
 	};
 
 	/**
@@ -113,7 +114,7 @@ async function authenticateWithTwitch(gameHandler, parentWindow) {
 	 * @param {import("@supabase/supabase-js").Session} session
 	 */
 	const setSession = (_event, session) => {
-		supabase.auth.setSession(session.refresh_token);
+		supabase.auth.setSession(session);
 		gameHandler.authenticate(session).then(revokeLegacyOauthToken);
 
 		authWindow.close();

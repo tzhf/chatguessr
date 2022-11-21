@@ -9,7 +9,7 @@
 	"repository": "https://github.com/tzhf/chatguessr",
 	"dependencies": {
 		"@sentry/electron": "^3.0.0",
-		"@supabase/supabase-js": "^1.35.4",
+		"@supabase/supabase-js": "^2.1.0",
 		"axios": "^0.23.0",
 		"better-sqlite3": "^8.0.0",
 		"coordinate_to_country": "^1.1.0",

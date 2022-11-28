@@ -577,7 +577,7 @@ class Database {
               AND guesses.round_id = rounds.id
               AND users.id = guesses.user_id
             GROUP BY guesses.user_id
-            ORDER BY score DESC
+            ORDER BY score DESC, distance ASC
         `);
 		/** @type {{ username: string, color: string, flag: string, streak: number, rounds: number, distance: number, score: number }[]} */
 		const records = stmt.all(gameId);

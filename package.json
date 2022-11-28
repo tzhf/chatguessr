@@ -48,7 +48,7 @@
 		"@types/node": "^17.0.18",
 		"@types/tmi.js": "^1.8.0",
 		"@types/when-dom-ready": "^1.2.0",
-		"electron": "^19.1.2",
+		"electron": "^21.3.1",
 		"jest": "^29.0.1",
 		"parcel": "^2.0.0",
 		"process": "^0.11.10",

@@ -15,6 +15,7 @@ function mainWindow() {
 			preload: path.join(__dirname, "../../dist/cg-preload/preload.js"),
 			contextIsolation: true,
 			nodeIntegration: false,
+			sandbox: false, // TODO enable
 			webSecurity: false,
 			devTools: process.env.NODE_ENV === "development",
 		},

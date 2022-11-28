@@ -501,23 +501,23 @@ class Database {
 	 */
 	getRoundScores(roundId) {
 		const stmt = this.#db.prepare(`
-            SELECT
-              guesses.id,
-              guesses.user_id,
-              users.username,
-              guesses.color,
-              guesses.flag,
-              guesses.location,
-              guesses.streak,
-              guesses.distance,
-              guesses.score,
-              IIF(guesses.score = 5000, guesses.created_at, NULL) AS time_to_5k
-            FROM guesses, users
-            WHERE round_id = ? AND users.id = guesses.user_id
-            ORDER BY guesses.score DESC,
-							time_to_5k ASC,
-							guesses.distance ASC
-        `);
+			SELECT
+				guesses.id,
+				guesses.user_id,
+				users.username,
+				guesses.color,
+				guesses.flag,
+				guesses.location,
+				guesses.streak,
+				guesses.distance,
+				guesses.score,
+				IIF(guesses.score = 5000, guesses.created_at, NULL) AS time_to_5k
+			FROM guesses, users
+			WHERE round_id = ? AND users.id = guesses.user_id
+			ORDER BY guesses.score DESC,
+			         time_to_5k ASC,
+			         guesses.distance ASC
+		`);
 
 		/** @type {{ id: string, user_id: string, username: string, color: string, flag: string, location: string, streak: number, distance: number, score: number }[]} */
 		const records = stmt.all(roundId);
@@ -827,10 +827,10 @@ class Database {
 	}
 
 	/**
-    * Run a custom SQL query, for use in tests only.
+	 * Run a custom SQL query, for use in tests only.
 	 *
 	 * @param {string} query
-    * @param {object} data
+	 * @param {object} data
 	 */
 	[Symbol.for('chatguessr-test-run-query')](query, data) {
 		if (process.env.NODE_ENV !== "test") {

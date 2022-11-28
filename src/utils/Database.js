@@ -556,29 +556,29 @@ class Database {
 		// performance is not too bad.
 
 		const stmt = this.#db.prepare(`
-            SELECT
-                users.username,
-                guesses.color,
-                users.flag,
-                (
-                    SELECT streak
-                    FROM guesses ig, rounds ir
-                    WHERE ir.game_id = rounds.game_id
-                      AND ig.round_id = ir.id
-                      AND ig.user_id = users.id
-                    ORDER BY ig.created_at DESC
-                    LIMIT 1
-                ) AS streak,
-                COUNT(guesses.id) AS rounds,
-                SUM(guesses.distance) AS distance,
-                SUM(guesses.score) AS score
-            FROM rounds, guesses, users
-            WHERE rounds.game_id = ?
-              AND guesses.round_id = rounds.id
-              AND users.id = guesses.user_id
-            GROUP BY guesses.user_id
-            ORDER BY score DESC
-        `);
+			SELECT
+				users.username,
+				guesses.color,
+				users.flag,
+				(
+					SELECT streak
+					FROM guesses ig, rounds ir
+					WHERE ir.game_id = rounds.game_id
+					  AND ig.round_id = ir.id
+					  AND ig.user_id = users.id
+					ORDER BY ig.created_at DESC
+					LIMIT 1
+				) AS streak,
+				COUNT(guesses.id) AS rounds,
+				SUM(guesses.distance) AS distance,
+				SUM(guesses.score) AS score
+			FROM rounds, guesses, users
+			WHERE rounds.game_id = ?
+			  AND guesses.round_id = rounds.id
+			  AND users.id = guesses.user_id
+			GROUP BY guesses.user_id
+			ORDER BY score DESC, distance ASC
+		`);
 		/** @type {{ username: string, color: string, flag: string, streak: number, rounds: number, distance: number, score: number }[]} */
 		const records = stmt.all(gameId);
 

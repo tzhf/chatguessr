@@ -495,6 +495,7 @@ class Database {
 
 	/**
 	 * Get all the guesses for a round, sorted from closest distance to farthest away.
+	 * For 5000 scores, the time to arrive at the guess is used instead of distance.
 	 *
 	 * @param {string} roundId
 	 */
@@ -509,10 +510,13 @@ class Database {
               guesses.location,
               guesses.streak,
               guesses.distance,
-              guesses.score
+              guesses.score,
+              IIF(guesses.score = 5000, guesses.created_at, NULL) AS time_to_5k
             FROM guesses, users
             WHERE round_id = ? AND users.id = guesses.user_id
-            ORDER BY distance ASC
+            ORDER BY guesses.score DESC,
+							time_to_5k ASC,
+							guesses.distance ASC
         `);
 
 		/** @type {{ id: string, user_id: string, username: string, color: string, flag: string, location: string, streak: number, distance: number, score: number }[]} */
@@ -820,6 +824,20 @@ class Database {
 		const bannedUsers = this.#db.prepare(`SELECT username FROM banned_users`).all();
 
 		return bannedUsers;
+	}
+
+	/**
+    * Run a custom SQL query, for use in tests only.
+	 *
+	 * @param {string} query
+    * @param {object} data
+	 */
+	[Symbol.for('chatguessr-test-run-query')](query, data) {
+		if (process.env.NODE_ENV !== "test") {
+			throw new Error("Do not run queries outside of the test environment");
+		}
+
+		return this.#db.prepare(query).run(data);
 	}
 }
 

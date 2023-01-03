@@ -237,7 +237,7 @@ button:focus {
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 }
-table {
+#scoreboard table {
 	font-size: 15px;
 	line-height: 0.8;
 	font-weight: 700;
@@ -249,42 +249,42 @@ table {
 	word-wrap: break-word;
 	overflow: hidden;
 }
-thead {
+#scoreboard thead {
 	font-size: 14px;
 	background-color: rgba(0, 0, 0, 0.5);
 }
-tbody td,
-thead th {
+#scoreboard tbody td,
+#scoreboard thead th {
 	padding: 8px 0;
 	line-height: 1em;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-tbody .odd {
+#scoreboard tbody .odd {
 	background-color: rgba(0, 0, 0, 0.1);
 }
-tbody .even {
+#scoreboard tbody .even {
 	background-color: rgba(0, 0, 0, 0.2);
 }
-tbody > tr:hover {
+#scoreboard tbody > tr:hover {
 	-webkit-transition: 0.1s;
 	transition: 0.1s;
 	transform: scale(1.01);
 	background-color: rgba(0, 0, 0, 0.4);
 }
-tbody tr:hover > .sorting_1,
-tbody tr > .sorting_1 {
+#scoreboard tbody tr:hover > .sorting_1,
+#scoreboard tbody tr > .sorting_1 {
 	background-color: rgba(0, 0, 0, 0.1);
 }
-th.sorting,
-th.sorting_asc,
-th.sorting_desc {
+#scoreboard th.sorting,
+#scoreboard th.sorting_asc,
+#scoreboard th.sorting_desc {
 	cursor: pointer;
 }
-th.sorting:hover,
-th.sorting_asc:hover,
-th.sorting_desc:hover {
+#scoreboard th.sorting:hover,
+#scoreboard th.sorting_asc:hover,
+#scoreboard th.sorting_desc:hover {
 	-webkit-transition: 0.1s;
 	transition: 0.2s;
 	color: #d6d6d6;

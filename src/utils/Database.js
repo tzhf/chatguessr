@@ -512,7 +512,7 @@ class Database {
 				guesses.distance,
 				guesses.score,
 				guesses.created_at - rounds.created_at AS time,
-				IIF(guesses.score = 5000, time, NULL) AS time_to_5k
+				IIF(guesses.score = 5000, guesses.created_at - rounds.created_at, NULL) AS time_to_5k
 			FROM rounds, guesses, users
 			WHERE rounds.id = ?
 			  AND guesses.round_id = rounds.id

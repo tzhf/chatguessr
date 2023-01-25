@@ -166,6 +166,7 @@ describe("getRoundScores", () => {
 
 		// `second5k` was closer, but 20 seconds later,
 		// so it should show up *after* the first 5K.
+		// TODO maybe we can use jest simulated timers for this
 		db[Symbol.for('chatguessr-test-run-query')]('UPDATE guesses SET created_at = created_at + 20 WHERE id = :id', { id: second5k });
 
 		const leaderboard = db.getRoundScores(roundId).map((score) => score.username);
@@ -173,6 +174,61 @@ describe("getRoundScores", () => {
 			"libreanna",
 			"zehef_",
 			"mramericanmike",
+		]);
+	});
+
+	it("sorts by time in multi-guess", async () => {
+		const user = db.getOrCreateUser("1234567", "libreanna");
+		const user2 = db.getOrCreateUser("1234568", "zehef_");
+		const token = createGame();
+
+		const roundId = db.createRound(token, {
+			lat: 0,
+			lng: 0,
+			panoId: null,
+			heading: 0,
+			pitch: 0,
+			zoom: 0,
+			streakLocationCode: null,
+		});
+
+		const non5k = db.createGuess(roundId, user.id, {
+			color: "#fff",
+			flag: "jo",
+			location: { lat: 0, lng: 0 },
+			country: null,
+			streak: 0,
+			distance: 988,
+			score: 4924,
+		});
+		// adjust `non5k` to be significantly earlier than user2's 5K,
+		// so it is earlier but worse by not being a 5K. Then we can check that after
+		// updating the guess, the time is also updated.
+		db[Symbol.for('chatguessr-test-run-query')]('UPDATE guesses SET created_at = created_at - 20 WHERE id = :id', { id: non5k });
+
+		db.createGuess(roundId, user2.id, {
+			color: "#fff",
+			flag: "jo",
+			location: { lat: 0, lng: 0 },
+			country: null,
+			streak: 0,
+			distance: 8,
+			score: 5000,
+		});
+		db.updateGuess(non5k, {
+			color: "#fff",
+			flag: "jo",
+			location: { lat: 0, lng: 0 },
+			country: null,
+			streak: 0,
+			distance: 12,
+			score: 5000,
+		});
+
+		const leaderboard = db.getRoundScores(roundId).map((score) => score.username);
+		expect(leaderboard).toEqual([
+			"zehef_",
+			"libreanna",
 		]);
 	});
 });

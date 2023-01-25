@@ -48,7 +48,6 @@ class Game {
 
 	/**
 	 * @type {Seed | undefined}
-	 * @private
 	 */
 	seed;
 	/** @type {number | undefined} */

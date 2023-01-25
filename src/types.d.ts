@@ -108,6 +108,7 @@ export interface RendererApi {
 export interface ChatguessrApi {
 	init(api: RendererApi);
 	startNextRound();
+	returnToMapPage();
 }
 
 declare global {

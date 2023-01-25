@@ -93,6 +93,11 @@ class GameHandler {
 		}
 	}
 
+	returnToMapPage() {
+		const mapUrl = this.#game.seed.map
+		this.#win.loadURL(`https://www.geoguessr.com/maps/${mapUrl}/play`);
+	}
+
 	async #processTotalScores() {
 		const totalScores = this.#game.getTotalScores();
 		this.#win.webContents.send("show-final-results", totalScores);
@@ -175,10 +180,18 @@ class GameHandler {
 
 			this.#win.webContents.executeJavaScript(`
 				window.nextRoundBtn = document.querySelector('[data-qa="close-round-result"]');
+				window.playAgainBtn = document.querySelector('[data-qa="play-again-button"]');
+
 				if (window.nextRoundBtn) {
 					nextRoundBtn.addEventListener("click", () => {
 						nextRoundBtn.setAttribute('disabled', 'disabled');
 						chatguessrApi.startNextRound();
+					});
+				}
+
+				if (window.playAgainBtn) {
+					playAgainBtn.addEventListener("click", () => {
+						chatguessrApi.returnToMapPage();
 					});
 				}
 			`);
@@ -186,6 +199,10 @@ class GameHandler {
 
 		ipcMain.on("next-round-click", () => {
 			this.nextRound();
+		});
+
+		ipcMain.on("return-to-map-page", () => {
+			this.returnToMapPage();
 		});
 
 		ipcMain.on("open-guesses", () => {

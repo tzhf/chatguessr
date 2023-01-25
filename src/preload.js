@@ -15,6 +15,9 @@ const chatguessrApi = {
 	startNextRound() {
 		ipcRenderer.send("next-round-click");
 	},
+	returnToMapPage() {
+		ipcRenderer.send("return-to-map-page");
+	},
 };
 
 contextBridge.exposeInMainWorld("chatguessrApi", chatguessrApi);

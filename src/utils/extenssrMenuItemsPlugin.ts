@@ -1,7 +1,7 @@
 // Adapted from:
-// https://gitlab.com/nonreviad/extenssr/-/blob/d3996409fbf0481c81a52c86d14501ee43db6ecb/src/api/maps.ts
-// https://gitlab.com/nonreviad/extenssr/-/blob/d3996409fbf0481c81a52c86d14501ee43db6ecb/src/content_scripts/plugins/global/menu_items_plugin.ts
-// https://gitlab.com/nonreviad/extenssr/-/blob/d3996409fbf0481c81a52c86d14501ee43db6ecb/src/content_scripts/endpoint_transition_handler.ts
+// https://gitlab.com/nonreviad/extenssr/-/blob/c795a07e0eb64cb5b32d60e6f3784b044becb1c1/src/api/maps.ts
+// https://gitlab.com/nonreviad/extenssr/-/blob/c795a07e0eb64cb5b32d60e6f3784b044becb1c1/src/content_scripts/plugins/global/menu_items_plugin.ts
+// https://gitlab.com/nonreviad/extenssr/-/blob/c795a07e0eb64cb5b32d60e6f3784b044becb1c1/src/content_scripts/endpoint_transition_handler.ts
 
 import axios from 'axios'
 import whenDomReady from 'when-dom-ready'

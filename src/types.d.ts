@@ -19,6 +19,7 @@ export type Guess = {
 	streak: number;
 	distance: number;
 	score: number;
+	time: number;
 };
 
 export type Bounds = {

@@ -483,15 +483,15 @@ class Database {
 	 */
 	getRoundParticipants(roundId) {
 		const stmt = this.#db.prepare(`
-            SELECT
-                guesses.id,
-                users.username,
-                guesses.color,
-                guesses.flag
-            FROM guesses, users
-            WHERE round_id = ? AND users.id = guesses.user_id
-            ORDER BY created_at ASC
-        `);
+			SELECT
+				guesses.id,
+				users.username,
+				guesses.color,
+				guesses.flag
+			FROM guesses, users
+			WHERE round_id = ? AND users.id = guesses.user_id
+			ORDER BY created_at ASC
+		`);
 
 		/** @type {{ id: string, username: string, color: string, flag: string }[]} */
 		const records = stmt.all(roundId);
@@ -517,15 +517,18 @@ class Database {
 				guesses.streak,
 				guesses.distance,
 				guesses.score,
-				IIF(guesses.score = 5000, guesses.created_at, NULL) AS time_to_5k
-			FROM guesses, users
-			WHERE round_id = ? AND users.id = guesses.user_id
+				guesses.created_at - rounds.created_at AS time,
+				IIF(guesses.score = 5000, guesses.created_at - rounds.created_at, NULL) AS time_to_5k
+			FROM rounds, guesses, users
+			WHERE rounds.id = ?
+			  AND guesses.round_id = rounds.id
+			  AND users.id = guesses.user_id
 			ORDER BY guesses.score DESC,
 			         time_to_5k ASC,
 			         guesses.distance ASC
 		`);
 
-		/** @type {{ id: string, user_id: string, username: string, color: string, flag: string, location: string, streak: number, distance: number, score: number }[]} */
+		/** @type {{ id: string, user_id: string, username: string, color: string, flag: string, location: string, streak: number, distance: number, score: number, time: number }[]} */
 		const records = stmt.all(roundId);
 
 		return records.map((record) => ({
@@ -538,6 +541,7 @@ class Database {
 			streak: record.streak,
 			distance: record.distance,
 			score: record.score,
+			time: record.time,
 			/** @type {LatLng} */
 			position: JSON.parse(record.location),
 		}));

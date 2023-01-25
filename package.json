@@ -21,6 +21,7 @@
 		"electron-squirrel-startup": "^1.0.0",
 		"electron-store": "^8.0.1",
 		"find-up": "^5.0.0",
+		"format-duration": "^3.0.2",
 		"jquery": "^3.6.0",
 		"jquery-ui-dist": "^1.12.1",
 		"match-sorter": "^6.3.1",

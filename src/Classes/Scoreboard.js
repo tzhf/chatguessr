@@ -1,5 +1,6 @@
 "use strict";
 
+const formatDuration = require("format-duration");
 const $ = require("jquery");
 window.$ = window.jQuery = $;
 require("jquery-ui-dist/jquery-ui");
@@ -125,9 +126,9 @@ class Scoreboard {
 					data: "Distance",
 					render: (data, type) => {
 						if (type === "display" || type === "filter") {
-							return this.toMeter(data);
+							return data.display;
 						}
-						return data;
+						return data.value;
 					},
 				},
 				{ data: "Score" },
@@ -239,7 +240,7 @@ class Scoreboard {
 				guess.color
 			}'>${guess.username}</span>`,
 			Streak: guess.streak,
-			Distance: guess.distance,
+			Distance: { value: guess.distance, display: this.toMeter(guess.distance) },
 			Score: guess.score,
 		};
 
@@ -272,7 +273,7 @@ class Scoreboard {
 					guess.color
 				}'>${guess.username}</span>`,
 				Streak: "",
-				Distance: "",
+				Distance: { value: 0, display: "" },
 				Score: "",
 			};
 		});
@@ -284,25 +285,25 @@ class Scoreboard {
 	}
 
 	/**
-	 *
-	 * @param {{ username: string, position: LatLng, color: string, flag: string, streak: number, distance: number, score: number, rounds: number }[]} scores
+	 * @param {{ username: string, position: LatLng, color: string, flag: string, streak: number, distance: number, score: number, time?: number, rounds?: number }[]} scores
 	 */
 	displayScores(scores, isTotal = false) {
-		// const self = this;
 		this.isResults = true;
 		this.#setHint(null);
 		if (scores[0]) scores[0].color = "#E3BB39";
 		if (scores[1]) scores[1].color = "#C9C9C9";
 		if (scores[2]) scores[2].color = "#A3682E";
 		const rows = scores.map((score) => {
+			const isTimed5k = !isTotal && score.score === 5000;
+			const distance = this.toMeter(score.distance);
 			return {
 				Position: "",
 				Player: `${score.flag ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>` : ""}<span class='username' style='color:${
 					score.color
 				}'>${score.username}</span>`,
 				Streak: score.streak,
-				Distance: score.distance,
-				Score: `${score.score}${isTotal ? " [" + score.rounds + "]" : ""}`,
+				Distance: { value: distance, display: isTimed5k ? `${distance} [${formatDuration(score.time * 1000)}]` : distance },
+				Score: isTotal ? `${score.score} [${score.rounds}]`: score.score,
 			};
 		});
 

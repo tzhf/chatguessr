@@ -15,6 +15,7 @@ function mainWindow() {
 			preload: path.join(__dirname, "../../dist/cg-preload/preload.js"),
 			contextIsolation: true,
 			nodeIntegration: false,
+			sandbox: false, // TODO enable
 			webSecurity: false,
 			devTools: process.env.NODE_ENV === "development",
 		},
@@ -23,20 +24,17 @@ function mainWindow() {
 	if (process.env.NODE_ENV === "development") win.webContents.openDevTools();
 	win.setMenuBarVisibility(false);
 
-	win.loadURL("https://www.geoguessr.com/classic").then(() => {
-		// to investigate: loading it a second time seems to resolve map dragging lag issue
-		win.loadURL("https://www.geoguessr.com/classic");
-
-		win.webContents.on("dom-ready", async () => {
-			await win.webContents.insertCSS(styles);
-			await win.webContents.executeJavaScript(js);
-		});
+	win.webContents.on("dom-ready", async () => {
+		await win.webContents.insertCSS(styles);
+		await win.webContents.executeJavaScript(js);
 	});
 
 	win.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);
 		return { action: "deny" };
 	});
+
+	win.loadURL("https://www.geoguessr.com/classic");
 
 	return win;
 }

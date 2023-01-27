@@ -30,6 +30,10 @@ export function drParseNoCar() {
         localStorage.setItem("noCompassEnabled", "disabled");
     }
 
+    if (localStorage.getItem("noCarEnabled") === "enabled") {
+        noCarScript();
+    }
+
     window.toggleNoCarMode = (e) => {
         localStorage.setItem(
             "noCarEnabled",
@@ -65,7 +69,6 @@ export function drParseNoCar() {
 
             if (localStorage.getItem("noCarEnabled") === "enabled") {
                 document.querySelector("#enableNoCar").checked = true;
-                noCarScript();
             }
 
             if (localStorage.getItem("noCompassEnabled") === "enabled") {

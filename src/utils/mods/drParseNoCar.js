@@ -33,6 +33,9 @@ export function drParseNoCar() {
     if (localStorage.getItem("noCarEnabled") === "enabled") {
         noCarScript();
     }
+    if (localStorage.getItem("noCompassEnabled") === "enabled") {
+        document.head.append(compassRemover);
+    }
 
     window.toggleNoCarMode = (e) => {
         localStorage.setItem(
@@ -55,6 +58,12 @@ export function drParseNoCar() {
         if (document.querySelector("#enableNoCompass")) {
             document.querySelector("#enableNoCompass").checked = e.checked;
         }
+
+        if (e.checked === "enabled") {
+            document.head.append(compassRemover);
+        } else {
+            compassRemover.remove();
+        }
     };
 
     const checkInsertGui = () => {
@@ -73,8 +82,6 @@ export function drParseNoCar() {
 
             if (localStorage.getItem("noCompassEnabled") === "enabled") {
                 document.querySelector("#enableNoCompass").checked = true;
-            } else {
-                compassRemover.remove();
             }
         }
     };

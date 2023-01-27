@@ -168,7 +168,7 @@ class GameHandler {
 
 		this.#win.webContents.on("did-frame-finish-load", () => {
 			if (!this.#game.isInGame) return;
-			this.#win.webContents.send("refreshed-in-game");
+			this.#win.webContents.send("refreshed-in-game", this.#game.getLocation());
 			// Checks and update seed when the this.game has refreshed
 			// update the current location if it was skipped
 			// if the streamer has guessed returns scores

@@ -104,6 +104,8 @@ function init(rendererApi) {
             markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
             document.head.append(markerRemover);
 
+            iconsColumn.append(showScoreboardBtn);
+
             currentLocation = location;
             if (localStorage.getItem("satelliteModeEnabled") === "enabled") {
                 iconsColumn.append(centerSatelliteViewBtn);
@@ -113,8 +115,6 @@ function init(rendererApi) {
                 qs("#centerSatelliteViewBtn")?.remove();
                 gameControlsRemover.remove();
             }
-
-            iconsColumn.append(showScoreboardBtn);
 
             scoreboard.checkVisibility();
             scoreboard.reset(isMultiGuess);

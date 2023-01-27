@@ -62,28 +62,22 @@ export function drParseNoCar() {
             document
                 .querySelector(".section_sectionMedium__yXgE6")
                 .insertAdjacentHTML("beforeend", classicGameGuiHTML);
+
             if (localStorage.getItem("noCarEnabled") === "enabled") {
                 document.querySelector("#enableNoCar").checked = true;
+                noCarScript();
             }
 
             if (localStorage.getItem("noCompassEnabled") === "enabled") {
                 document.querySelector("#enableNoCompass").checked = true;
+            } else {
+                compassRemover.remove();
             }
         }
     };
 
     let observer = new MutationObserver((mutations) => {
         checkInsertGui();
-
-        if (localStorage.getItem("noCarEnabled") === "enabled") {
-            noCarScript();
-        }
-
-        if (localStorage.getItem("noCompassEnabled") === "enabled") {
-            document.head.append(compassRemover);
-        } else {
-            compassRemover.remove();
-        }
     });
 
     observer.observe(document.body, {
@@ -92,14 +86,15 @@ export function drParseNoCar() {
         childList: true,
         characterData: false,
     });
+}
 
-    function noCarScript() {
-        const OPTIONS = { colorR: 0.5, colorG: 0.5, colorB: 0.5 };
-        const vertexOld =
-            "const float f=3.1415926;varying vec3 a;uniform vec4 b;attribute vec3 c;attribute vec2 d;uniform mat4 e;void main(){vec4 g=vec4(c,1);gl_Position=e*g;a=vec3(d.xy*b.xy+b.zw,1);a*=length(c);}";
-        const fragOld =
-            "precision highp float;const float h=3.1415926;varying vec3 a;uniform vec4 b;uniform float f;uniform sampler2D g;void main(){vec4 i=vec4(texture2DProj(g,a).rgb,f);gl_FragColor=i;}";
-        const vertexNew = `
+function noCarScript() {
+    const OPTIONS = { colorR: 0.5, colorG: 0.5, colorB: 0.5 };
+    const vertexOld =
+        "const float f=3.1415926;varying vec3 a;uniform vec4 b;attribute vec3 c;attribute vec2 d;uniform mat4 e;void main(){vec4 g=vec4(c,1);gl_Position=e*g;a=vec3(d.xy*b.xy+b.zw,1);a*=length(c);}";
+    const fragOld =
+        "precision highp float;const float h=3.1415926;varying vec3 a;uniform vec4 b;uniform float f;uniform sampler2D g;void main(){vec4 i=vec4(texture2DProj(g,a).rgb,f);gl_FragColor=i;}";
+    const vertexNew = `
             const float f=3.1415926;
             varying vec3 a;
             varying vec3 potato;
@@ -116,7 +111,7 @@ export function drParseNoCar() {
             }
         `;
 
-        const fragNew = `
+    const fragNew = `
             precision highp float;
             const float h=3.1415926;
             varying vec3 a;
@@ -143,52 +138,51 @@ export function drParseNoCar() {
             }
         `;
 
-        /** @param {WebGLRenderingContext | WebGL2RenderingContext} ctx */
-        function installShaderSource(ctx) {
-            const g = ctx.shaderSource;
-            /** @type {WebGLRenderingContext['shaderSource']} */
-            function shaderSource(...args) {
-                if (typeof args[1] === "string") {
-                    let glsl = args[1];
-                    if (glsl === vertexOld) glsl = vertexNew;
-                    else if (glsl === fragOld) glsl = fragNew;
-                    return g.call(this, args[0], glsl);
-                }
-                return g.apply(this, args);
+    /** @param {WebGLRenderingContext | WebGL2RenderingContext} ctx */
+    function installShaderSource(ctx) {
+        const g = ctx.shaderSource;
+        /** @type {WebGLRenderingContext['shaderSource']} */
+        function shaderSource(...args) {
+            if (typeof args[1] === "string") {
+                let glsl = args[1];
+                if (glsl === vertexOld) glsl = vertexNew;
+                else if (glsl === fragOld) glsl = fragNew;
+                return g.call(this, args[0], glsl);
             }
-            shaderSource.bestcity = "bintulu";
-            ctx.shaderSource = shaderSource;
+            return g.apply(this, args);
         }
+        shaderSource.bestcity = "bintulu";
+        ctx.shaderSource = shaderSource;
+    }
 
-        /** @param {HTMLCanvasElement} el */
-        function installGetContext(el) {
-            const g = el.getContext;
-            el.getContext = function (...args) {
-                if (args[0] === "webgl" || args[0] === "webgl2") {
-                    /** @type {WebGLRenderingContext | WebGL2RenderingContext} */
-                    const ctx = g.apply(this, args);
-                    // @ts-ignore TS2339
-                    if (
-                        ctx &&
-                        ctx.shaderSource &&
-                        ctx.shaderSource.bestcity !== "bintulu"
-                    ) {
-                        installShaderSource(ctx);
-                    }
-                    return ctx;
+    /** @param {HTMLCanvasElement} el */
+    function installGetContext(el) {
+        const g = el.getContext;
+        el.getContext = function (...args) {
+            if (args[0] === "webgl" || args[0] === "webgl2") {
+                /** @type {WebGLRenderingContext | WebGL2RenderingContext} */
+                const ctx = g.apply(this, args);
+                // @ts-ignore TS2339
+                if (
+                    ctx &&
+                    ctx.shaderSource &&
+                    ctx.shaderSource.bestcity !== "bintulu"
+                ) {
+                    installShaderSource(ctx);
                 }
-                return g.apply(this, args);
-            };
-        }
-
-        const createElement = document.createElement.bind(document);
-        document.createElement = function (tagName, options) {
-            if (tagName === "canvas" || tagName === "CANVAS") {
-                const el = createElement("canvas");
-                installGetContext(el);
-                return el;
+                return ctx;
             }
-            return createElement(tagName, options);
+            return g.apply(this, args);
         };
     }
+
+    const createElement = document.createElement.bind(document);
+    document.createElement = function (tagName, options) {
+        if (tagName === "canvas" || tagName === "CANVAS") {
+            const el = createElement("canvas");
+            installGetContext(el);
+            return el;
+        }
+        return createElement(tagName, options);
+    };
 }

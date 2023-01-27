@@ -34,7 +34,7 @@ function mainWindow() {
 		return { action: "deny" };
 	});
 
-	win.loadURL("https://www.geoguessr.com/classic");
+	win.loadURL("https://www.geoguessr.com/maps");
 
 	return win;
 }

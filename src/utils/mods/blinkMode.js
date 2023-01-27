@@ -127,15 +127,8 @@ export function blinkMode() {
     function isBackdropThereOrLoading() {
         return (
             isLoading() || // loading
-            document.querySelector(".result-layout_root__NfX12") || // classic
-            document.querySelector(".overlay_backdrop__Rh_QC") || // duels / team duels
-            document.querySelector(".game_backdrop__A_Ze9") ||
-            document.querySelector(".overlays_backdrop__sIb35") || // live challenges
-            document.querySelector(".popup_backdrop__R52hP") || // BR
-            document.querySelector(".game-starting_container__TMoWC") ||
-            document.querySelector(".round-score_container__avps2") || // bullseye
-            document.querySelector(".overlay-modal_backlight__Ekx7t")
-        ); // city streaks
+            document.querySelector(".result-layout_root__NfX12") // classic
+        );
     }
 
     let showTimeoutID = null;

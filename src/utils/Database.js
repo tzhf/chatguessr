@@ -393,7 +393,7 @@ class Database {
 	setGuessCountry(guessId, country, streak, lastStreak = null) {
 		const updateGuess = this.#db.prepare(`
             UPDATE guesses
-            SET country = :country, streak = :streak, lastStreak = :lastStreak
+            SET country = :country, streak = :streak, last_streak = :lastStreak
             WHERE id = :id
         `);
 

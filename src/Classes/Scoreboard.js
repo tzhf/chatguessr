@@ -339,11 +339,16 @@ class Scoreboard {
 				cell.innerHTML = content;
 			});
 		
-		// onClick focusOnGuess
-		const self = this;
-		$('#datatable tbody').on('click', 'tr', function () {
-			self.focusOnGuess(scores[self.table.row(this).index()].position);
-		});
+			if (isTotal) {
+				// Removes previous onClick focusOnGuess
+				$('#datatable tbody').off('click');
+			} else {
+			// onClick focusOnGuess
+				const self = this;
+				$('#datatable tbody').on('click', 'tr', function () {
+					self.focusOnGuess(scores[self.table.row(this).index()].position);
+				});
+			}
 
 		// Restore columns visibility
 		this.table.columns().visible(true);

@@ -213,6 +213,10 @@ class Scoreboard {
 			this.#setHint(null);
 		}
 		this.showSwitch(true);
+
+		// Removes onClick focusOnGuess
+		$('#datatable tbody').off('click');
+
 		this.table.clear().draw();
 	}
 
@@ -318,14 +322,6 @@ class Scoreboard {
 		this.table.clear().draw();
 		this.table.rows.add(rows);
 
-		// Maybe to the fastest, seems a bit laggy to me with !spamguess but not sure
-		// also do we have to remove those listeners to avoid memory leaks ?
-		// this.table.rows().every(function (rowIdx) {
-		// 	this.node().addEventListener("click", function () {
-		// 		self.focusOnGuess(scores[rowIdx].position);
-		// 	});
-		// });
-
 		this.table.order([4, "desc"]).draw(false);
 
 		let content;
@@ -342,6 +338,12 @@ class Scoreboard {
 
 				cell.innerHTML = content;
 			});
+		
+		// onClick focusOnGuess
+		const self = this;
+		$('#datatable tbody').on('click', 'tr', function () {
+			self.focusOnGuess(scores[self.table.row(this).index()].position);
+		});
 
 		// Restore columns visibility
 		this.table.columns().visible(true);

@@ -59,7 +59,7 @@ export function drParseNoCar() {
             document.querySelector("#enableNoCompass").checked = e.checked;
         }
 
-        if (e.checked === "enabled") {
+        if (e.checked) {
             document.head.append(compassRemover);
         } else {
             compassRemover.remove();

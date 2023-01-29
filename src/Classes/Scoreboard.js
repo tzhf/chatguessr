@@ -309,7 +309,7 @@ class Scoreboard {
 				Player: `${score.flag ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>` : ""}<span class='username' style='color:${
 					score.color
 				}'>${score.username}</span>`,
-				Streak: { current: score.streak, last: score.lastStreak },
+				Streak: { current: score.streak, last: isTotal ? null : score.lastStreak },
 				Distance: { value: distance, display: isTimed5k ? `${distance} [${formatDuration(score.time * 1000)}]` : distance },
 				Score: isTotal ? `${score.score} [${score.rounds}]`: score.score,
 			};

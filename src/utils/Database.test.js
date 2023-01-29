@@ -48,6 +48,7 @@ describe("getUserStats", () => {
 				location: { lat: 0, lng: 0 },
 				country: null,
 				streak: 0,
+				lastStreak: null,
 				distance: 0,
 				score: 5000,
 			});
@@ -90,6 +91,7 @@ describe("getRoundScores", () => {
 			location: { lat: 0, lng: 0 },
 			country: null,
 			streak: 0,
+			lastStreak: null,
 			distance: 1234,
 			score: 3000,
 		});
@@ -99,6 +101,7 @@ describe("getRoundScores", () => {
 			location: { lat: 0, lng: 0 },
 			country: null,
 			streak: 0,
+			lastStreak: null,
 			distance: 1000,
 			score: 3600,
 		});
@@ -108,6 +111,7 @@ describe("getRoundScores", () => {
 			location: { lat: 0, lng: 0 },
 			country: null,
 			streak: 0,
+			lastStreak: null,
 			distance: 998,
 			score: 3600,
 		});
@@ -142,6 +146,7 @@ describe("getRoundScores", () => {
 			location: { lat: 0, lng: 0 },
 			country: null,
 			streak: 0,
+			lastStreak: null,
 			distance: 12,
 			score: 5000,
 		});
@@ -151,6 +156,7 @@ describe("getRoundScores", () => {
 			location: { lat: 0, lng: 0 },
 			country: null,
 			streak: 0,
+			lastStreak: null,
 			distance: 998,
 			score: 4800,
 		});
@@ -160,6 +166,7 @@ describe("getRoundScores", () => {
 			location: { lat: 0, lng: 0 },
 			country: null,
 			streak: 0,
+			lastStreak: null,
 			distance: 8,
 			score: 5000,
 		});
@@ -198,6 +205,7 @@ describe("getRoundScores", () => {
 			location: { lat: 0, lng: 0 },
 			country: null,
 			streak: 0,
+			lastStreak: null,
 			distance: 988,
 			score: 4924,
 		});
@@ -212,6 +220,7 @@ describe("getRoundScores", () => {
 			location: { lat: 0, lng: 0 },
 			country: null,
 			streak: 0,
+			lastStreak: null,
 			distance: 8,
 			score: 5000,
 		});
@@ -221,6 +230,7 @@ describe("getRoundScores", () => {
 			location: { lat: 0, lng: 0 },
 			country: null,
 			streak: 0,
+			lastStreak: null,
 			distance: 12,
 			score: 5000,
 		});

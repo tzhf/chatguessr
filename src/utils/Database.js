@@ -175,6 +175,9 @@ const migrations = [
 
 		bannedUsersTable.run();
 	},
+	function createLastStreakField(db) {
+		db.prepare(`ALTER TABLE guesses ADD COLUMN last_streak INTEGER DEFAULT NULL`).run();
+	}
 ];
 
 class Database {
@@ -301,13 +304,13 @@ class Database {
 	 *
 	 * @param {string} roundId
 	 * @param {string} userId
-	 * @param {{ color: string, flag: string, location: LatLng, country: string | null, streak: number, distance: number, score: number }} guess
+	 * @param {{ color: string, flag: string, location: LatLng, country: string | null, streak: number, lastStreak: number|null, distance: number, score: number }} guess
 	 */
 	createGuess(roundId, userId, guess) {
 		const id = randomUUID();
 		const insertGuess = this.#db.prepare(`
-            INSERT INTO guesses(id, round_id, user_id, color, flag, location, country, streak, distance, score, created_at)
-            VALUES (:id, :roundId, :userId, :color, :flag, :location, :country, :streak, :distance, :score, :createdAt)
+            INSERT INTO guesses(id, round_id, user_id, color, flag, location, country, streak, last_streak, distance, score, created_at)
+            VALUES (:id, :roundId, :userId, :color, :flag, :location, :country, :streak, :lastStreak, :distance, :score, :createdAt)
         `);
 
 		insertGuess.run({
@@ -319,6 +322,7 @@ class Database {
 			location: JSON.stringify(guess.location),
 			country: guess.country,
 			streak: guess.streak,
+			lastStreak: guess.lastStreak,
 			distance: guess.distance,
 			score: guess.score,
 			createdAt: timestamp(),
@@ -332,8 +336,8 @@ class Database {
 	 * @param {string} userId
 	 */
 	getUserGuess(roundId, userId) {
-		const stmt = this.#db.prepare("SELECT id, color, flag, location, country, streak, distance, score FROM guesses WHERE round_id = ? AND user_id = ?");
-		/** @type {{ id: string, color: string, flag: string, location: string, country: string | null, streak: number, distance: number, score: number } | undefined} */
+		const stmt = this.#db.prepare("SELECT id, color, flag, location, country, streak, last_streak AS lastStreak, distance, score FROM guesses WHERE round_id = ? AND user_id = ?");
+		/** @type {{ id: string, color: string, flag: string, location: string, country: string | null, streak: number, lastStreak: number | null, distance: number, score: number } | undefined} */
 		const row = stmt.get(roundId, userId);
 		if (!row) {
 			return;
@@ -348,7 +352,7 @@ class Database {
 
 	/**
 	 * @param {string} guessId
-	 * @param {{ color: string, flag: string, location: LatLng, country: string | null, streak: number, distance: number, score: number }} guess
+	 * @param {{ color: string, flag: string, location: LatLng, country: string | null, streak: number, lastStreak: number | null, distance: number, score: number }} guess
 	 */
 	updateGuess(guessId, guess) {
 		const updateGuess = this.#db.prepare(`
@@ -358,6 +362,7 @@ class Database {
                 location = :location,
                 country = :country,
                 streak = :streak,
+					 last_streak = :lastStreak,
                 distance = :distance,
                 score = :score,
 					 created_at = :updatedAt
@@ -371,6 +376,7 @@ class Database {
 			location: JSON.stringify(guess.location),
 			country: guess.country,
 			streak: guess.streak,
+			lastStreak: guess.lastStreak,
 			distance: guess.distance,
 			score: guess.score,
 			updatedAt: timestamp(),
@@ -382,11 +388,12 @@ class Database {
 	 * @param {string} guessId
 	 * @param {string} country
 	 * @param {number} streak
+	 * @param {number|null} [lastStreak]
 	 */
-	setGuessCountry(guessId, country, streak) {
+	setGuessCountry(guessId, country, streak, lastStreak = null) {
 		const updateGuess = this.#db.prepare(`
             UPDATE guesses
-            SET country = :country, streak = :streak
+            SET country = :country, streak = :streak, lastStreak = :lastStreak
             WHERE id = :id
         `);
 
@@ -394,6 +401,7 @@ class Database {
 			id: guessId,
 			country,
 			streak,
+			lastStreak,
 		});
 	}
 
@@ -469,11 +477,16 @@ class Database {
 	}
 
 	/**
-	 *
 	 * @param {string} userId
+	 * @returns {number|null} Previous streak, if any.
 	 */
 	resetUserStreak(userId) {
-		this.#db.prepare("UPDATE users SET current_streak_id = NULL WHERE id = ?").run(userId);
+		const tx = this.#db.transaction(() => {
+			const streak = this.getUserStreak(userId);
+			this.#db.prepare("UPDATE users SET current_streak_id = NULL WHERE id = ?").run(userId);
+			return streak;
+		});
+		return tx()?.count ?? null;
 	}
 
 	/**

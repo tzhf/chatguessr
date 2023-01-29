@@ -183,9 +183,9 @@ class Game {
 			const guessedCountry = await GameHelper.getCountryCode(guess.position);
 
 			this.#db.setUserLastLocation(guess.userId, this.location);
-			
+
 			const correct = guessedCountry === this.#country
-			this.#db.setGuessCountry(guess.id, guessedCountry, correct ? guess.streak + 1 : 0);
+			this.#db.setGuessCountry(guess.id, guessedCountry, correct ? guess.streak + 1 : 0, correct ? null : guess.streak);
 			if (correct) {
 				this.#db.addUserStreak(guess.userId, this.#roundId);
 			} else {
@@ -204,23 +204,26 @@ class Game {
 		const dbUser = this.#db.getOrCreateUser('BROADCASTER', this.#settings.channelName);
 
 		const guessedCountry = await GameHelper.getCountryCode(location);
+		/** @type {number|null} */
+		let lastStreak = null;
 		if (guessedCountry === this.#country) {
 			this.#db.addUserStreak(dbUser.id, this.#roundId);
 		} else {
-			this.#db.resetUserStreak(dbUser.id);
+			lastStreak = this.#db.resetUserStreak(dbUser.id);
 		}
 
 		const distance = GameHelper.haversineDistance(location, this.location);
 		const score = streamerGuess.timedOut ? 0 : GameHelper.calculateScore(distance, this.mapScale);
 
 		const streak = this.#db.getUserStreak(dbUser.id);
-		
+
 		this.#db.createGuess(this.#roundId, dbUser.id, {
 			color: '#fff',
 			flag: dbUser.flag,
 			location,
 			country: guessedCountry,
 			streak: streak?.count ?? 0,
+			lastStreak,
 			distance,
 			score,
 		});
@@ -250,6 +253,8 @@ class Game {
 
 		/** @type {string | null} */
 		let guessedCountry = null;
+		/** @type {number | null} */
+		let lastStreak = null;
 		if (!this.isMultiGuess) {
 			// TODO I think this is only used for streaks,
 			// DB streaks track their own last round id so then this would be unnecessary
@@ -259,7 +264,7 @@ class Game {
 			if (guessedCountry === this.#country) {
 				this.#db.addUserStreak(dbUser.id, this.#roundId);
 			} else {
-				this.#db.resetUserStreak(dbUser.id);
+				lastStreak = this.#db.resetUserStreak(dbUser.id);
 			}
 		}
 
@@ -278,6 +283,7 @@ class Game {
 				location,
 				country: guessedCountry,
 				streak: streak?.count ?? 0,
+				lastStreak,
 				distance,
 				score,
 			});
@@ -289,6 +295,7 @@ class Game {
 				location,
 				country: guessedCountry,
 				streak: streak?.count ?? 0,
+				lastStreak,
 				distance,
 				score,
 			});
@@ -305,6 +312,7 @@ class Game {
 			flag: dbUser.flag,
 			position: location,
 			streak: streak?.count ?? 0,
+			lastStreak,
 			distance,
 			score,
 			modified,

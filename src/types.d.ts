@@ -17,6 +17,7 @@ export type Guess = {
     flag: string | null;
     position: LatLng;
     streak: number;
+    lastStreak: number | null;
     distance: number;
     score: number;
     time: number;

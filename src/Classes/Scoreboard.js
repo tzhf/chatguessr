@@ -121,7 +121,15 @@ class Scoreboard {
 			columns: [
 				{ data: "Position" },
 				{ data: "Player" },
-				{ data: "Streak" },
+				{
+					data: "Streak",
+					render: (data, type) => {
+						if (type === "display" && data.last != null) {
+							return `${data.current} [${data.last}]`;
+						}
+						return data.current;
+					},
+				},
 				{
 					data: "Distance",
 					render: (data, type) => {
@@ -239,7 +247,7 @@ class Scoreboard {
 			Player: `${guess.flag ? `<span class="flag-icon" style="background-image: url(flag:${guess.flag})"></span>` : ""}<span class='username' style='color:${
 				guess.color
 			}'>${guess.username}</span>`,
-			Streak: guess.streak,
+			Streak: { current: guess.streak, last: guess.lastStreak },
 			Distance: { value: guess.distance, display: this.toMeter(guess.distance) },
 			Score: guess.score,
 		};
@@ -272,7 +280,7 @@ class Scoreboard {
 				Player: `${guess.flag ? `<span class="flag-icon" style="background-image: url(flag:${guess.flag})"></span>` : ""}<span class='username' style='color:${
 					guess.color
 				}'>${guess.username}</span>`,
-				Streak: "",
+				Streak: { current: 0, last: null },
 				Distance: { value: 0, display: "" },
 				Score: "",
 			};
@@ -285,7 +293,7 @@ class Scoreboard {
 	}
 
 	/**
-	 * @param {{ username: string, position: LatLng, color: string, flag: string, streak: number, distance: number, score: number, time?: number, rounds?: number }[]} scores
+	 * @param {{ username: string, position: LatLng, color: string, flag: string, streak: number, lastStreak: number | null, distance: number, score: number, time?: number, rounds?: number }[]} scores
 	 */
 	displayScores(scores, isTotal = false) {
 		this.isResults = true;
@@ -301,7 +309,7 @@ class Scoreboard {
 				Player: `${score.flag ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>` : ""}<span class='username' style='color:${
 					score.color
 				}'>${score.username}</span>`,
-				Streak: score.streak,
+				Streak: { current: score.streak, last: score.lastStreak },
 				Distance: { value: distance, display: isTimed5k ? `${distance} [${formatDuration(score.time * 1000)}]` : distance },
 				Score: isTotal ? `${score.score} [${score.rounds}]`: score.score,
 			};

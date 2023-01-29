@@ -528,6 +528,7 @@ class Database {
 				guesses.flag,
 				guesses.location,
 				guesses.streak,
+				guesses.last_streak,
 				guesses.distance,
 				guesses.score,
 				guesses.created_at - rounds.created_at AS time,
@@ -541,7 +542,7 @@ class Database {
 			         guesses.distance ASC
 		`);
 
-		/** @type {{ id: string, user_id: string, username: string, color: string, flag: string, location: string, streak: number, distance: number, score: number, time: number }[]} */
+		/** @type {{ id: string, user_id: string, username: string, color: string, flag: string, location: string, streak: number, last_streak: number | null, distance: number, score: number, time: number }[]} */
 		const records = stmt.all(roundId);
 
 		return records.map((record) => ({
@@ -552,6 +553,7 @@ class Database {
 			color: record.color,
 			flag: record.flag,
 			streak: record.streak,
+			lastStreak: record.last_streak,
 			distance: record.distance,
 			score: record.score,
 			time: record.time,

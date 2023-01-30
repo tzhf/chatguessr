@@ -251,7 +251,7 @@ class Scoreboard {
 			Player: `${guess.flag ? `<span class="flag-icon" style="background-image: url(flag:${guess.flag})"></span>` : ""}<span class='username' style='color:${
 				guess.color
 			}'>${guess.username}</span>`,
-			Streak: { current: guess.streak, last: guess.lastStreak },
+			Streak: { current: guess.streak, last: null },
 			Distance: { value: guess.distance, display: this.toMeter(guess.distance) },
 			Score: guess.score,
 		};

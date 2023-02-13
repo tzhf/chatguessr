@@ -16,8 +16,7 @@ export function drParseNoCar() {
     </div>
     `;
 
-    const REMOVE_COMPASS_CSS =
-        '.compass, .game-layout__compass, [class^="panorama-compass_"] { display: none; }';
+    const REMOVE_COMPASS_CSS = '.compass, .game-layout__compass, [class^="panorama-compass_"] { display: none; }';
 
     const compassRemover = document.createElement("style");
     compassRemover.textContent = REMOVE_COMPASS_CSS;
@@ -33,6 +32,7 @@ export function drParseNoCar() {
     if (localStorage.getItem("noCarEnabled") === "enabled") {
         noCarScript();
     }
+
     if (localStorage.getItem("noCompassEnabled") === "enabled") {
         document.head.append(compassRemover);
     }
@@ -67,11 +67,7 @@ export function drParseNoCar() {
     };
 
     const checkInsertGui = () => {
-        // Play page for classic games
-        if (
-            document.querySelector(".radio-box_root__ka_9S") &&
-            document.querySelector("#enableNoCar") === null
-        ) {
+        if (document.querySelector(".radio-box_root__ka_9S") && document.querySelector("#enableNoCar") === null) {
             document
                 .querySelector(".section_sectionMedium__yXgE6")
                 .insertAdjacentHTML("beforeend", classicGameGuiHTML);
@@ -86,15 +82,13 @@ export function drParseNoCar() {
         }
     };
 
-    let observer = new MutationObserver((mutations) => {
+    const observer = new MutationObserver(() => {
         checkInsertGui();
     });
 
     observer.observe(document.body, {
-        characterDataOldValue: false,
         subtree: true,
         childList: true,
-        characterData: false,
     });
 }
 

@@ -61,9 +61,7 @@ function populateMap(location, scores) {
         map,
     });
     locationMarker.addListener("click", () => {
-        const url = new URL(
-            "https://www.google.com/maps/@?api=1&map_action=pano"
-        );
+        const url = new URL("https://www.google.com/maps/@?api=1&map_action=pano");
         if (location.panoId) {
             url.searchParams.set("pano", location.panoId);
         }
@@ -78,14 +76,7 @@ function populateMap(location, scores) {
 
     icon.scale = 1;
     scores.forEach((score, index) => {
-        const color =
-            index == 0
-                ? "#E3BB39"
-                : index == 1
-                ? "#C9C9C9"
-                : index == 2
-                ? "#A3682E"
-                : score.color;
+        const color = index == 0 ? "#E3BB39" : index == 1 ? "#C9C9C9" : index == 2 ? "#A3682E" : score.color;
         icon.fillColor = color;
 
         const guessMarker = new google.maps.Marker({
@@ -108,11 +99,7 @@ function populateMap(location, scores) {
                             ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>`
                             : ""
                     }${score.username}</span><br>
-					${
-                        score.distance >= 1
-                            ? score.distance.toFixed(1) + "km"
-                            : Math.floor(score.distance * 1000) + "m"
-                    }<br>
+					${score.distance >= 1 ? score.distance.toFixed(1) + "km" : Math.floor(score.distance * 1000) + "m"}<br>
 					${score.score}
 				</p>
 			`);
@@ -220,9 +207,7 @@ async function hijackMap() {
 
     await new Promise((resolve, reject) => {
         const google = window.google;
-        const isGamePage = () =>
-            location.pathname.startsWith("/results/") ||
-            location.pathname.startsWith("/game/");
+        const isGamePage = () => location.pathname.startsWith("/results/") || location.pathname.startsWith("/game/");
         /** @param {google.maps.Map} map */
         function onMapUpdate(map) {
             try {
@@ -259,8 +244,7 @@ async function hijackMap() {
                 // GeoGuessr's `setOptions` calls always include `backgroundColor`
                 // so this is how we can distinguish between theirs and ours
                 if (opts.backgroundColor) {
-                    opts.mapTypeId =
-                        localStorage.chatguessrMapTypeId ?? opts.mapTypeId;
+                    opts.mapTypeId = localStorage.chatguessrMapTypeId ?? opts.mapTypeId;
                     opts.mapTypeControl = true;
                     opts.mapTypeControlOptions = {
                         style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
@@ -277,7 +261,7 @@ async function hijackMap() {
 async function showSatelliteMap(location) {
     await mapReady;
 
-    const boundsLimit = parseInt(localStorage.getItem("boundsLimit")) || 10000;
+    const boundsLimit = parseInt(localStorage.getItem("satelliteModeBoundsLimit")) || 10;
 
     if (!document.body.contains(satelliteCanvas)) {
         document.querySelector(".game-layout__canvas").append(satelliteCanvas);
@@ -290,7 +274,7 @@ async function showSatelliteMap(location) {
     });
     satelliteLayer.setOptions({
         restriction: {
-            latLngBounds: getBounds(location, boundsLimit),
+            latLngBounds: getBounds(location, boundsLimit * 1000),
             strictBounds: true,
         },
     });

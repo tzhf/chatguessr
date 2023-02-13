@@ -243,7 +243,7 @@ class Game {
 		}
 
 		if (dbUser.previousGuess && latLngEqual(dbUser.previousGuess, location)) {
-			throw Object.assign(new Error('Same guess'), { code: 'pastedPreviousGuess' });
+			throw Object.assign(new Error('Same guess'), { code: 'submittedPreviousGuess' });
 		}
 
 		// Reset streak if the player skipped a round

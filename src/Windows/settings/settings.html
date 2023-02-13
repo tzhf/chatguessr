@@ -1,144 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Settings</title>
-		<link rel="stylesheet" href="./settings.css" />
-	</head>
-	<body>
-		<div class="settings-container">
-			<div class="tab">
-				<button class="tablinks" onclick="openTab(event, 'settings')" id="defaultOpen">Settings</button>
-				<button class="tablinks" onclick="openTab(event, 'twitchConnect')">Twitch Connect</button>
-				<button class="tablinks" onclick="openTab(event, 'banList')">Banlist</button>
-				<button class="close" onclick="closeWindow()">&times;</button>
-			</div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Settings</title>
+        <link rel="stylesheet" href="./settings.css" />
+    </head>
+    <body>
+        <div class="settings-container">
+            <div class="tab">
+                <button class="tablinks" onclick="openTab(event, 'settings')" id="defaultOpen">Settings</button>
+                <button class="tablinks" onclick="openTab(event, 'twitchConnect')">Twitch Connect</button>
+                <button class="tablinks" onclick="openTab(event, 'banList')">Banlist</button>
+                <button class="close" onclick="closeWindow()">&times;</button>
+            </div>
 
-			<div id="settings" class="tabcontent">
-				<h2>Game Settings</h2>
-				<div data-tip="Players can change their guess. Streaks, scores & distances won't be displayed on the leaderboard.">
-					<label class="checkbox-container">
-						Allow guess changing
-						<input type="checkbox" id="isMultiGuess" />
-						<span class="checkmark"></span>
-					</label>
-				</div>
-				<input type="button" class="btn success" value="SAVE" onclick="gameSettingsForm()" />
-				<input type="button" class="btn danger" id="clearStatsBtn" value="Clear all stats" onclick="clearStats()" />
+            <div id="settings" class="tabcontent">
+                <h2>Game Settings</h2>
+                <div
+                    data-tip="Players can change their guess. Streaks, scores & distances won't be displayed on the leaderboard."
+                >
+                    <label class="checkbox-container">
+                        Allow guess changing
+                        <input type="checkbox" id="isMultiGuess" onclick="gameSettingsForm(this)" />
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
 
-				<hr />
+                <hr />
 
-				<h2>Twitch Settings</h2>
-				<label class="checkbox-container">
-					<div data-tip="Display &lt;User&gt; has guessed">Display <i>&lt;User&gt; has guessed</i></div>
-					<input type="checkbox" id="showHasGuessed" />
-					<span class="checkmark"></span>
-				</label>
-				<label class="checkbox-container">
-					<div data-tip="Display &lt;User&gt; has already guessed">Display <i>&lt;User&gt; has already guessed</i></div>
-					<input type="checkbox" id="showHasAlreadyGuessed" />
-					<span class="checkmark"></span>
-				</label>
+                <h2>Twitch notifications</h2>
+                <label class="checkbox-container">
+                    <div data-tip="Display &lt;User&gt; has guessed">
+                        <i>&lt;User&gt; has guessed</i>
+                    </div>
+                    <input type="checkbox" id="showHasGuessed" />
+                    <span class="checkmark"></span>
+                </label>
+                <label class="checkbox-container">
+                    <div data-tip="Display &lt;User&gt; has already guessed">
+                        <i>&lt;User&gt; has already guessed</i>
+                    </div>
+                    <input type="checkbox" id="showHasAlreadyGuessed" />
+                    <span class="checkmark"></span>
+                </label>
+                <label class="checkbox-container">
+                    <div data-tip="Display &lt;User&gt; guess changed">
+                        <i>&lt;User&gt; guess changed</i>
+                    </div>
+                    <input type="checkbox" id="showGuessChanged" />
+                    <span class="checkmark"></span>
+                </label>
+                <label class="checkbox-container">
+                    <div data-tip="Display &lt;User&gt; submitted previous guess">
+                        <i>&lt;User&gt; submitted previous guess</i>
+                    </div>
+                    <input type="checkbox" id="showSubmittedPreviousGuess" />
+                    <span class="checkmark"></span>
+                </label>
 
-				<h3>User commands <small>(leave empty to disable)</small></h3>
-				<div class="grid__col">
-					<div class="col">
-						<div class="form__group">
-							<label class="form__label">Map link :</label>
-							<div data-tip="Get map link (!cg by default)">
-								<input class="form__field" type="text" id="cgCmd" spellcheck="false" />
-							</div>
-						</div>
-						<div class="form__group">
-							<label class="form__label">Map link cooldown :</label>
-							<div data-tip="Map link cooldown (default: 30)">
-								<input class="form__field" type="number" min="0" max="1000" id="cgCmdCooldown" />
-							</div>
-						</div>
-					</div>
+                <hr />
 
-					<div class="col">
-						<div class="form__group">
-							<label class="form__label">Get user stats :</label>
-							<div data-tip="Displays user stats in chat">
-								<input class="form__field" type="text" id="userGetStatsCmd" spellcheck="false" required />
-							</div>
-						</div>
-						<div class="form__group">
-							<label class="form__label">Clear user stats :</label>
-							<div data-tip="Clear user stats">
-								<input class="form__field" type="text" id="userClearStatsCmd" spellcheck="false" required />
-							</div>
-						</div>
-					</div>
-				</div>
+                <h2>Twitch commands <small>(leave empty to disable)</small></h2>
+                <div class="grid__col">
+                    <div class="col">
+                        <div class="form__group">
+                            <label class="form__label">Map link :</label>
+                            <div data-tip="Get map link (!cg by default)">
+                                <input class="form__field" type="text" id="cgCmd" spellcheck="false" />
+                            </div>
+                        </div>
+                        <div class="form__group">
+                            <label class="form__label">Map link cooldown :</label>
+                            <div data-tip="Map link cooldown (default: 30)">
+                                <input class="form__field" type="number" min="0" max="1000" id="cgCmdCooldown" />
+                            </div>
+                        </div>
+                    </div>
 
-				<div class="form__group">
-					<label class="form__label">Map link message :</label>
-					<textarea class="form__field" id="cgMsg" spellcheck="false" rows="3"></textarea>
-				</div>
+                    <div class="col">
+                        <div class="form__group">
+                            <label class="form__label">Get user stats :</label>
+                            <div data-tip="Displays user stats in chat">
+                                <input
+                                    class="form__field"
+                                    type="text"
+                                    id="userGetStatsCmd"
+                                    spellcheck="false"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div class="form__group">
+                            <label class="form__label">Clear user stats :</label>
+                            <div data-tip="Clear user stats">
+                                <input
+                                    class="form__field"
+                                    type="text"
+                                    id="userClearStatsCmd"
+                                    spellcheck="false"
+                                    required
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-				<input type="button" class="btn success" value="SAVE" onclick="twitchCommandsForm()" />
+                <div class="form__group">
+                    <label class="form__label">Map link message :</label>
+                    <textarea class="form__field" id="cgMsg" spellcheck="false" rows="3"></textarea>
+                </div>
+                <div class="flex">
+                    <input type="button" class="btn success w-full" value="SAVE" onclick="twitchCommandsForm()" />
+                </div>
 
-				<p style="text-align: center">
-					<small id="version"></small>
-				</p>
-			</div>
+                <hr />
 
-			<div id="twitchConnect" class="tabcontent">
-				<form name="twitch-form" onsubmit="twitchSettingsForm(event)">
-					<h2>Status :</h2>
+                <p style="text-align: center; margin-bottom: 1rem">
+                    <small id="version"></small>
+                </p>
 
-					<div class="form__group">
-						<label class="form__label">Twitch :</label>
-						<div class="flex gap-05">
-							<div class="connection-status">
-								<span id="twitchStatus"></span>
-							</div>
-							<button id="twitchReauth" class="btn small">Log in</button>
-						</div>
-					</div>
+                <div class="flex">
+                    <input
+                        type="button"
+                        class="btn danger"
+                        id="clearStatsBtn"
+                        value="Clear users stats"
+                        onclick="clearStats()"
+                    />
+                </div>
+            </div>
 
-					<div class="form__group">
-						<label class="form__label">Server :</label>
-						<div>
-							<div class="connection-status" id="socketStatus"></div>
-						</div>
-					</div>
+            <div id="twitchConnect" class="tabcontent">
+                <form name="twitch-form" onsubmit="twitchSettingsForm(event)">
+                    <h2>Status :</h2>
 
-					<div class="form__group">
-						<label class="form__label">Channel Name :</label>
-						<div data-tip="Your streamer account">
-							<input class="form__field" type="text" id="channelName" spellcheck="false" required />
-						</div>
-					</div>
+                    <div class="form__group">
+                        <label class="form__label">Twitch :</label>
+                        <div class="flex gap-05">
+                            <div class="connection-status">
+                                <span id="twitchStatus"></span>
+                            </div>
+                            <button id="twitchReauth" class="btn small">Log in</button>
+                        </div>
+                    </div>
 
-					<div class="form__group" id="cgLinkContainer">
-						<label class="form__label">You cg link :</label>
-						<div class="flex gap-05">
-							<input class="form__field" type="text" id="cgLink" disabled />
-							<button id="copyLinkBtn" class="btn small success" title="Make sure to copy this link in your !cg link message">Copy</button>
-						</div>
-					</div>
+                    <div class="form__group">
+                        <label class="form__label">Server :</label>
+                        <div>
+                            <div class="connection-status" id="socketStatus"></div>
+                        </div>
+                    </div>
 
-					<input type="submit" class="btn success" value="SAVE" />
-				</form>
-			</div>
+                    <div class="form__group">
+                        <label class="form__label">Channel Name :</label>
+                        <div data-tip="Your streamer account">
+                            <input class="form__field" type="text" id="channelName" spellcheck="false" required />
+                        </div>
+                    </div>
 
-			<div id="banList" class="tabcontent">
-				<form onsubmit="addUser(event)">
-					<div class="form__group">
-						<div class="flex gap-05">
-							<input class="form__field" type="text" id="banUserInput" spellcheck="false" />
-							<input type="submit" id="banUserBtn" class="btn small success" value="Ban User" />
-						</div>
-					</div>
-				</form>
-				<h3>Banned users :</h3>
-				<div id="bannedUsersList" class="flex wrap gap-05"></div>
-			</div>
-		</div>
-		<script src="./settings.js"></script>
-	</body>
+                    <div class="form__group" id="cgLinkContainer">
+                        <label class="form__label">You cg link :</label>
+                        <div class="flex gap-05">
+                            <input class="form__field" type="text" id="cgLink" disabled />
+                            <div
+                                id="copyLinkBtn"
+                                class="btn success"
+                                title="Make sure to copy this link in your !cg link message"
+                            >
+                                Copy
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <input type="submit" class="btn success w-full" value="SAVE" />
+                    </div>
+                </form>
+            </div>
+
+            <div id="banList" class="tabcontent">
+                <form onsubmit="addUser(event)">
+                    <div class="form__group">
+                        <div class="flex gap-05">
+                            <input class="form__field" type="text" id="banUserInput" spellcheck="false" />
+                            <input type="submit" id="banUserBtn" class="btn small success" value="Ban User" />
+                        </div>
+                    </div>
+                </form>
+                <h3>Banned users :</h3>
+                <div id="bannedUsersList" class="flex wrap gap-05"></div>
+            </div>
+        </div>
+        <script src="./settings.js"></script>
+    </body>
 </html>

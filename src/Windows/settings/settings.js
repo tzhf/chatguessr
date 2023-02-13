@@ -31,6 +31,10 @@ const showHasGuessed = qs("#showHasGuessed");
 /** @type {HTMLInputElement} */
 const showHasAlreadyGuessed = qs("#showHasAlreadyGuessed");
 /** @type {HTMLInputElement} */
+const showGuessChanged = qs("#showGuessChanged");
+/** @type {HTMLInputElement} */
+const showSubmittedPreviousGuess = qs("#showSubmittedPreviousGuess");
+/** @type {HTMLInputElement} */
 const isMultiGuess = qs("#isMultiGuess");
 /** @type {HTMLInputElement} */
 const cgLink = qs("#cgLink");
@@ -54,189 +58,193 @@ const versionText = qs("#version");
 let bannedUsersArr = [];
 
 ipcRenderer.on("render-settings", (_event, settings, bannedUsers, connectionState, socketStatus) => {
-	channelName.value = settings.channelName;
-	cgCmd.value = settings.cgCmd;
-	cgCmdCooldown.value = settings.cgCmdCooldown;
-	cgMsg.value = settings.cgMsg;
-	userGetStatsCmd.value = settings.userGetStatsCmd;
-	userClearStatsCmd.value = settings.userClearStatsCmd;
-	showHasGuessed.checked = settings.showHasGuessed;
-	showHasAlreadyGuessed.checked = settings.showHasAlreadyGuessed;
-	isMultiGuess.checked = settings.isMultiGuess;
+    channelName.value = settings.channelName;
+    cgCmd.value = settings.cgCmd;
+    cgCmdCooldown.value = settings.cgCmdCooldown;
+    cgMsg.value = settings.cgMsg;
+    userGetStatsCmd.value = settings.userGetStatsCmd;
+    userClearStatsCmd.value = settings.userClearStatsCmd;
+    showHasGuessed.checked = settings.showHasGuessed;
+    showHasAlreadyGuessed.checked = settings.showHasAlreadyGuessed;
+    showGuessChanged.checked = settings.showGuessChanged;
+    showSubmittedPreviousGuess.checked = settings.showSubmittedPreviousGuess;
+    isMultiGuess.checked = settings.isMultiGuess;
 
-	bannedUsersArr = [...bannedUsers];
-	let newChilds = [];
-	bannedUsersArr.map((user) => {
-		const userBadge = createBadge(user.username);
-		newChilds.push(userBadge);
-	});
-	bannedUsersList.replaceChildren(...newChilds);
+    bannedUsersArr = [...bannedUsers];
+    let newChilds = [];
+    bannedUsersArr.map((user) => {
+        const userBadge = createBadge(user.username);
+        newChilds.push(userBadge);
+    });
+    bannedUsersList.replaceChildren(...newChilds);
 
-	handleConnectionState(connectionState);
+    handleConnectionState(connectionState);
 
-	if (socketStatus) {
-		socketConnected();
-	} else {
-		socketDisconnected();
-	}
+    if (socketStatus) {
+        socketConnected();
+    } else {
+        socketDisconnected();
+    }
 });
 
 ipcRenderer.on("connection-state", (_event, connectionState) => {
-	handleConnectionState(connectionState);
+    handleConnectionState(connectionState);
 });
 
 ipcRenderer.on("twitch-error", (_event, error) => {
-	twitchStatusElement.textContent = error;
-	twitchStatusElement.style.color = "#ed2453";
+    twitchStatusElement.textContent = error;
+    twitchStatusElement.style.color = "#ed2453";
 });
 
 ipcRenderer.on("socket-connected", () => {
-	socketConnected();
+    socketConnected();
 });
 
 ipcRenderer.on("socket-disconnected", () => {
-	socketDisconnected();
+    socketDisconnected();
 });
 
 const handleConnectionState = (connectionState) => {
-	if (connectionState.state == "connected") {
-		twitchConnected(connectionState.botUsername);
-	} else {
-		twitchDisconnected();
-	}
+    if (connectionState.state == "connected") {
+        twitchConnected(connectionState.botUsername);
+    } else {
+        twitchDisconnected();
+    }
 };
 
 /**
  * @param {string} botUsername
  */
 const twitchConnected = (botUsername) => {
-	const linkStr = `chatguessr.com/map/${botUsername}`;
-	cgLink.value = linkStr;
+    const linkStr = `chatguessr.com/map/${botUsername}`;
+    cgLink.value = linkStr;
 
-	copyLinkBtn.addEventListener("click", () => {
-		navigator.clipboard.writeText(linkStr);
-		copyLinkBtn.textContent = "Copied";
-		setTimeout(() => {
-			copyLinkBtn.textContent = "Copy";
-		}, 1000);
-	});
+    copyLinkBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(linkStr);
+        copyLinkBtn.textContent = "Copied";
+        setTimeout(() => {
+            copyLinkBtn.textContent = "Copy";
+        }, 1000);
+    });
 
-	cgLinkContainer.style.display = "block";
+    cgLinkContainer.style.display = "block";
 
-	const connected = document.createElement("span");
-	connected.textContent = "Connected";
-	connected.style.color = "#3fe077";
+    const connected = document.createElement("span");
+    connected.textContent = "Connected";
+    connected.style.color = "#3fe077";
 
-	twitchReauthEl.textContent = "Change account";
-	twitchReauthEl.classList.remove("success");
-	twitchReauthEl.classList.add("danger");
+    twitchReauthEl.textContent = "Change account";
+    twitchReauthEl.classList.remove("success");
+    twitchReauthEl.classList.add("danger");
 
-	twitchStatusElement.replaceChildren(connected, document.createTextNode(` as ${botUsername}`));
+    twitchStatusElement.replaceChildren(connected, document.createTextNode(` as ${botUsername}`));
 };
 
 const twitchDisconnected = () => {
-	cgLinkContainer.style.display = "none";
+    cgLinkContainer.style.display = "none";
 
-	const disconnected = document.createElement("span");
-	disconnected.textContent = "Disconnected";
-	disconnected.style.color = "#ed2453";
+    const disconnected = document.createElement("span");
+    disconnected.textContent = "Disconnected";
+    disconnected.style.color = "#ed2453";
 
-	twitchReauthEl.textContent = "Log in";
-	twitchReauthEl.classList.add("success");
-	twitchReauthEl.classList.remove("danger");
+    twitchReauthEl.textContent = "Log in";
+    twitchReauthEl.classList.add("success");
+    twitchReauthEl.classList.remove("danger");
 
-	twitchStatusElement.replaceChildren(disconnected);
+    twitchStatusElement.replaceChildren(disconnected);
 };
 
-function gameSettingsForm() {
-	ipcRenderer.send("game-form", isMultiGuess.checked);
+function gameSettingsForm(e) {
+    ipcRenderer.send("game-form", e.checked);
 }
 
 function twitchCommandsForm() {
-	ipcRenderer.send("twitch-commands-form", {
-		cgCmdd: cgCmd.value,
-		cgCmdCooldown: cgCmdCooldown.value,
-		cgMsgg: cgMsg.value,
-		userGetStats: userGetStatsCmd.value,
-		userClearStats: userClearStatsCmd.value,
-		showHasGuessed: showHasGuessed.checked,
-		showHasAlreadyGuessed: showHasAlreadyGuessed.checked,
-	});
+    ipcRenderer.send("twitch-commands-form", {
+        cgCmdd: cgCmd.value,
+        cgCmdCooldown: cgCmdCooldown.value,
+        cgMsgg: cgMsg.value,
+        userGetStats: userGetStatsCmd.value,
+        userClearStats: userClearStatsCmd.value,
+        showHasGuessed: showHasGuessed.checked,
+        showHasAlreadyGuessed: showHasAlreadyGuessed.checked,
+        showGuessChanged: showGuessChanged.checked,
+        showSubmittedPreviousGuess: showSubmittedPreviousGuess.checked,
+    });
 }
 
 function twitchSettingsForm(e) {
-	e.preventDefault();
-	ipcRenderer.send("twitch-settings-form", channelName.value);
+    e.preventDefault();
+    ipcRenderer.send("twitch-settings-form", channelName.value);
 }
 
 const socketConnected = () => {
-	socketStatusElement.textContent = "Connected";
-	socketStatusElement.style.color = "#3fe077";
+    socketStatusElement.textContent = "Connected";
+    socketStatusElement.style.color = "#3fe077";
 };
 
 const socketDisconnected = () => {
-	socketStatusElement.textContent = "Disconnected";
-	socketStatusElement.style.color = "#ed2453";
+    socketStatusElement.textContent = "Disconnected";
+    socketStatusElement.style.color = "#ed2453";
 };
 
 function clearStats() {
-	clearStatsBtn.value = "Are you sure ?";
-	clearStatsBtn.setAttribute("onclick", "clearStatsConfirm()");
+    clearStatsBtn.value = "Are you sure ?";
+    clearStatsBtn.setAttribute("onclick", "clearStatsConfirm()");
 }
 
 function clearStatsConfirm() {
-	clearStatsBtn.value = "Clear all stats";
-	clearStatsBtn.setAttribute("onclick", "clearStats()");
-	ipcRenderer.send("clearStats");
+    clearStatsBtn.value = "Clear all stats";
+    clearStatsBtn.setAttribute("onclick", "clearStats()");
+    ipcRenderer.send("clearStats");
 }
 
 function closeWindow() {
-	ipcRenderer.send("closeSettings");
+    ipcRenderer.send("closeSettings");
 }
 
 function addUser(e) {
-	e.preventDefault();
-	const input = banUserInput.value.toLowerCase();
-	if (input.trim() != "") {
-		bannedUsersArr.push({ username: input });
-		const userBadge = createBadge(input);
-		bannedUsersList.appendChild(userBadge);
-		banUserInput.value = "";
-		ipcRenderer.send("add-banned-user", input);
-	}
+    e.preventDefault();
+    const input = banUserInput.value.toLowerCase();
+    if (input.trim() != "") {
+        bannedUsersArr.push({ username: input });
+        const userBadge = createBadge(input);
+        bannedUsersList.appendChild(userBadge);
+        banUserInput.value = "";
+        ipcRenderer.send("add-banned-user", input);
+    }
 }
 
 function removeUser(e) {
-	const clickedUser = e.target;
-	const itemId = clickedUser.id;
-	const index = bannedUsersArr.findIndex((o) => o.username === itemId);
-	if (index !== -1) {
-		bannedUsersArr.splice(index, 1);
-		clickedUser.parentNode.removeChild(clickedUser);
-		ipcRenderer.send("delete-banned-user", itemId);
-	}
+    const clickedUser = e.target;
+    const itemId = clickedUser.id;
+    const index = bannedUsersArr.findIndex((o) => o.username === itemId);
+    if (index !== -1) {
+        bannedUsersArr.splice(index, 1);
+        clickedUser.parentNode.removeChild(clickedUser);
+        ipcRenderer.send("delete-banned-user", itemId);
+    }
 }
 
 function createBadge(username) {
-	const userBadge = document.createElement("div");
-	userBadge.className = "badge";
-	userBadge.textContent = username;
-	userBadge.id = username;
-	userBadge.title = "Unban";
-	userBadge.addEventListener("click", removeUser);
-	return userBadge;
+    const userBadge = document.createElement("div");
+    userBadge.className = "badge";
+    userBadge.textContent = username;
+    userBadge.id = username;
+    userBadge.title = "Unban";
+    userBadge.addEventListener("click", removeUser);
+    return userBadge;
 }
 
 function openTab(event, tab) {
-	for (const el of document.querySelectorAll(".tabcontent")) {
-		// @ts-ignore TS2339
-		el.style.display = "none";
-	}
-	for (const el of document.querySelectorAll(".tablinks")) {
-		el.classList.remove("active");
-	}
-	document.getElementById(tab).style.display = "block";
-	event.currentTarget.classList.add("active");
+    for (const el of document.querySelectorAll(".tabcontent")) {
+        // @ts-ignore TS2339
+        el.style.display = "none";
+    }
+    for (const el of document.querySelectorAll(".tablinks")) {
+        el.classList.remove("active");
+    }
+    document.getElementById(tab).style.display = "block";
+    event.currentTarget.classList.add("active");
 }
 
 // @ts-ignore TS2339
@@ -244,9 +252,9 @@ qs("#defaultOpen").click();
 versionText.append(document.createTextNode(`ChatGuessr version ${version}`));
 
 twitchReauthEl.addEventListener("click", () => {
-	ipcRenderer.invoke("replace-session");
+    ipcRenderer.invoke("replace-session");
 });
 
 function qs(selector, parent = document) {
-	return parent.querySelector(selector);
+    return parent.querySelector(selector);
 }

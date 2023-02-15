@@ -6,6 +6,8 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 import { qs, createEl } from "./utils/domUtils";
 
+const Settings = require("./utils/Settings");
+
 /** @typedef {import('./types').LatLng} LatLng */
 /** @typedef {import('./types').Guess} Guess */
 
@@ -67,11 +69,7 @@ function init(rendererApi) {
     const iconsColumn = createEl("div", { class: "iconsColumn" });
     document.body.append(iconsColumn);
 
-    const settingsBtn = createEl(
-        "div",
-        { title: "Settings (ctrl+p)" },
-        createEl("span", { class: "icon gearIcon" })
-    );
+    const settingsBtn = createEl("div", { title: "Settings (ctrl+p)" }, createEl("span", { class: "icon gearIcon" }));
     settingsBtn.addEventListener("click", () => {
         ipcRenderer.send("openSettings");
     });
@@ -98,39 +96,36 @@ function init(rendererApi) {
     });
 
     // IPC RENDERERS
-    ipcRenderer.on(
-        "game-started",
-        (_event, isMultiGuess, restoredGuesses, location) => {
-            markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
-            document.head.append(markerRemover);
+    ipcRenderer.on("game-started", (_event, isMultiGuess, restoredGuesses, location) => {
+        markerRemover.textContent = REMOVE_ALL_MARKERS_CSS;
+        document.head.append(markerRemover);
 
-            iconsColumn.append(showScoreboardBtn);
+        iconsColumn.append(showScoreboardBtn);
 
-            currentLocation = location;
-            if (localStorage.getItem("satelliteModeEnabled") === "enabled") {
-                iconsColumn.append(centerSatelliteViewBtn);
-                document.head.append(gameControlsRemover);
-                rendererApi.showSatelliteMap(location);
+        currentLocation = location;
+        if (localStorage.getItem("satelliteModeEnabled") === "enabled") {
+            iconsColumn.append(centerSatelliteViewBtn);
+            document.head.append(gameControlsRemover);
+            rendererApi.showSatelliteMap(location);
+        } else {
+            qs("#centerSatelliteViewBtn")?.remove();
+            gameControlsRemover.remove();
+        }
+
+        scoreboard.checkVisibility();
+        scoreboard.reset(isMultiGuess);
+
+        if (restoredGuesses.length > 0) {
+            if (isMultiGuess) {
+                scoreboard.renderMultiGuess(restoredGuesses);
             } else {
-                qs("#centerSatelliteViewBtn")?.remove();
-                gameControlsRemover.remove();
-            }
-
-            scoreboard.checkVisibility();
-            scoreboard.reset(isMultiGuess);
-
-            if (restoredGuesses.length > 0) {
-                if (isMultiGuess) {
-                    scoreboard.renderMultiGuess(restoredGuesses);
-                } else {
-                    // Not very fast KEKW
-                    for (const guess of restoredGuesses) {
-                        scoreboard.renderGuess(guess);
-                    }
+                // Not very fast KEKW
+                for (const guess of restoredGuesses) {
+                    scoreboard.renderGuess(guess);
                 }
             }
         }
-    );
+    });
 
     ipcRenderer.on("refreshed-in-game", (_event, location) => {
         document.head.append(markerRemover);
@@ -167,10 +162,11 @@ function init(rendererApi) {
     });
 
     ipcRenderer.on("show-round-results", (_event, round, location, scores) => {
+        const limit = Settings.read().guessMarkersLimit;
         scoreboard.setTitle(`ROUND ${round} RESULTS (${scores.length})`);
-        scoreboard.displayScores(scores);
+        scoreboard.displayScores(scores, false, limit);
         scoreboard.showSwitch(false);
-        rendererApi.populateMap(location, scores);
+        rendererApi.populateMap(location, scores, limit);
     });
 
     ipcRenderer.on("show-final-results", (_event, totalScores) => {

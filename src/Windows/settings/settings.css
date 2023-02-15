@@ -30,6 +30,17 @@ a {
 a:hover {
     color: #8ce9ba;
 }
+input,
+label,
+textarea,
+button {
+    -webkit-app-region: no-drag;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
 hr {
     margin: 1rem;
     border: 1px solid #70e2a9;
@@ -41,11 +52,10 @@ small {
     position: relative;
     height: 100%;
     width: 100%;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     font-family: Montserrat, sans-serif;
     color: #fff;
-    border-radius: 5px;
+    border-radius: 0.3rem;
     -webkit-app-region: drag;
     -webkit-user-select: none;
     user-select: none;
@@ -53,11 +63,11 @@ small {
 .grid__col {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-gap: 10px;
+    grid-gap: 1rem;
 }
 .tab {
     overflow: hidden;
-    border-radius: 5px;
+    border-radius: 0.3rem;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 40px;
 }
@@ -84,7 +94,7 @@ small {
 }
 .tabcontent {
     display: none;
-    padding: 6px 12px;
+    padding: 0.5rem 1rem;
     border-top: none;
 }
 .close {
@@ -97,43 +107,37 @@ small {
     background: #a02727;
 }
 .form__group {
-    -webkit-app-region: no-drag;
-    position: relative;
-    padding: 15px 0 0;
-    margin-bottom: 10px;
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
 }
 .form__field {
     font-family: inherit;
-    width: 100%;
+    font-size: 1rem;
     border: 0;
-    border-bottom: 1px solid #fff;
     outline: 0;
-    font-size: 1rem;
     color: #fff;
-    padding: 5px 0;
-    background: 0 0;
-    transition: border-color 0.3s;
-    margin-bottom: 4px;
-}
-.form__field:placeholder-shown ~ .form__label {
-    font-size: 1rem;
-    cursor: text;
-    top: 10px;
-}
-.form__label {
-    position: absolute;
-    top: 0;
-    display: block;
-    font-size: 1rem;
-    color: #fff;
+    background: none;
+    border-bottom: 1px solid #fff;
 }
 .form__field:focus {
     font-weight: 700;
-    border-bottom: 1px solid #70e2a9;
+    border-color: #70e2a9;
+}
+textarea.form__field {
+    width: 100%;
+}
+/* .form__field:placeholder-shown ~ .form__label {
+    font-size: 1rem;
+    cursor: text;
+    top: 10px;
+} */
+.form__label {
+    font-weight: 700;
 }
 .btn {
-    margin: auto;
     padding: 10px 20px;
     font-family: inherit;
     font-weight: 700;
@@ -142,52 +146,32 @@ small {
     color: #000;
     box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
     cursor: pointer;
-    -webkit-app-region: no-drag;
-}
-.success {
-    background: #5ad497;
-}
-.success:hover {
-    background: #56ca90;
-}
-.success:active {
-    background: #4eb883;
-}
-.danger {
-    background: #c9534e;
-}
-.danger:hover {
-    background: #bd4e4a;
-}
-.danger:active {
-    background: #b64945;
 }
 .btn:focus {
     outline: 0;
 }
-.flex {
-    display: flex;
+
+input[type="number"] {
+    padding: 0.18rem 0;
+    background: #292929;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    border: 1px solid #fff;
+    overflow: hidden;
+    outline: 0;
+    cursor: pointer;
 }
-.wrap {
-    flex-wrap: wrap;
+input[type="number"]:focus {
+    border-color: #70e2a9;
 }
-.gap-05 {
-    gap: 0.5rem;
-}
-.w-full {
-    width: 100%;
-}
-.connection-status {
-    line-height: 46px;
-    width: 100%;
-}
+
 .checkbox-container {
     display: block;
     position: relative;
     margin-bottom: 10px;
     padding-left: 25px;
     cursor: pointer;
-    -webkit-app-region: no-drag;
 }
 .checkbox-container input {
     position: absolute;
@@ -268,14 +252,51 @@ small {
 [data-tip]:hover:before {
     display: block;
 }
+
+.flex {
+    display: flex;
+}
+.flex-center {
+    display: flex;
+    align-items: center;
+}
+.flex-around {
+    display: flex;
+    justify-content: space-around;
+}
+.wrap {
+    flex-wrap: wrap;
+}
+.gap-05 {
+    gap: 0.5rem;
+}
+.w-full {
+    width: 100%;
+}
+.success {
+    background: #5ad497;
+}
+.success:hover {
+    background: #56ca90;
+}
+.success:active {
+    background: #4eb883;
+}
+.danger {
+    background: #c9534e;
+}
+.danger:hover {
+    background: #bd4e4a;
+}
+.danger:active {
+    background: #b64945;
+}
 #bannedUsersList {
     -webkit-app-region: no-drag;
 }
-
 .badge {
     cursor: pointer;
     padding: 5px;
-    background-color: #5ad497;
     border-radius: 5px;
     box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
 }

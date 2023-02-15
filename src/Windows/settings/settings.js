@@ -37,6 +37,8 @@ const showSubmittedPreviousGuess = qs("#showSubmittedPreviousGuess");
 /** @type {HTMLInputElement} */
 const isMultiGuess = qs("#isMultiGuess");
 /** @type {HTMLInputElement} */
+const guessMarkersLimit = qs("#guessMarkersLimit");
+/** @type {HTMLInputElement} */
 const cgLink = qs("#cgLink");
 /** @type {HTMLElement} */
 const cgLinkContainer = qs("#cgLinkContainer");
@@ -69,6 +71,7 @@ ipcRenderer.on("render-settings", (_event, settings, bannedUsers, connectionStat
     showGuessChanged.checked = settings.showGuessChanged;
     showSubmittedPreviousGuess.checked = settings.showSubmittedPreviousGuess;
     isMultiGuess.checked = settings.isMultiGuess;
+    guessMarkersLimit.value = settings.guessMarkersLimit;
 
     bannedUsersArr = [...bannedUsers];
     let newChilds = [];
@@ -119,7 +122,8 @@ const twitchConnected = (botUsername) => {
     const linkStr = `chatguessr.com/map/${botUsername}`;
     cgLink.value = linkStr;
 
-    copyLinkBtn.addEventListener("click", () => {
+    copyLinkBtn.addEventListener("click", (e) => {
+        e.preventDefault();
         navigator.clipboard.writeText(linkStr);
         copyLinkBtn.textContent = "Copied";
         setTimeout(() => {
@@ -154,15 +158,24 @@ const twitchDisconnected = () => {
     twitchStatusElement.replaceChildren(disconnected);
 };
 
-function gameSettingsForm(e) {
-    ipcRenderer.send("game-form", e.checked);
+function handleGuessMarkersLimit(e) {
+    let newValue = parseInt(e.value);
+    if (!isNaN(newValue)) {
+        if (newValue < 10) newValue = 10;
+        if (newValue > 1000) newValue = 1000;
+        guessMarkersLimit.value = newValue.toString();
+    } else {
+        guessMarkersLimit.value = "100";
+    }
 }
 
-function twitchCommandsForm() {
-    ipcRenderer.send("twitch-commands-form", {
-        cgCmdd: cgCmd.value,
+function saveGlobalSettings() {
+    ipcRenderer.send("save-global-settings", {
+        isMultiGuess: isMultiGuess.checked,
+        guessMarkersLimit: guessMarkersLimit.valueAsNumber,
+        cgCmd: cgCmd.value,
         cgCmdCooldown: cgCmdCooldown.value,
-        cgMsgg: cgMsg.value,
+        cgMsg: cgMsg.value,
         userGetStats: userGetStatsCmd.value,
         userClearStats: userClearStatsCmd.value,
         showHasGuessed: showHasGuessed.checked,
@@ -172,9 +185,9 @@ function twitchCommandsForm() {
     });
 }
 
-function twitchSettingsForm(e) {
+function saveTwitchSettings(e) {
     e.preventDefault();
-    ipcRenderer.send("twitch-settings-form", channelName.value);
+    ipcRenderer.send("save-twitch-settings", channelName.value);
 }
 
 const socketConnected = () => {
@@ -227,7 +240,7 @@ function removeUser(e) {
 
 function createBadge(username) {
     const userBadge = document.createElement("div");
-    userBadge.className = "badge";
+    userBadge.className = "badge danger";
     userBadge.textContent = username;
     userBadge.id = username;
     userBadge.title = "Unban";

@@ -96,7 +96,7 @@ export type Seed = GameSettings & {
 };
 
 export interface RendererApi {
-    populateMap(location: Location, scores: Guess[]);
+    populateMap(location: Location, scores: Guess[], limit: number);
     clearMarkers();
     drParseNoCar();
     blinkMode();

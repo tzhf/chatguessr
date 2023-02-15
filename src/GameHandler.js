@@ -227,17 +227,13 @@ class GameHandler {
             this.closeGuesses();
         });
 
-        ipcMain.on("game-form", (_event, isMultiGuess) => {
-            settings.setGameSettings(isMultiGuess);
-        });
-
-        ipcMain.on("twitch-commands-form", (_event, commands) => {
-            settings.setTwitchCommands(commands);
+        ipcMain.on("save-global-settings", (_event, globalSettings) => {
+            settings.saveGlobalSettings(globalSettings);
             this.#settingsWindow?.close();
         });
 
-        ipcMain.on("twitch-settings-form", (_event, channelName) => {
-            settings.setTwitchSettings(channelName);
+        ipcMain.on("save-twitch-settings", (_event, channelName) => {
+            settings.saveTwitchSettings(channelName);
             this.#requestAuthentication();
         });
 
@@ -446,11 +442,11 @@ class GameHandler {
         if (message === settings.cgCmd && settings.cgCmd !== "") {
             if (userId === "BROADCASTER") {
                 await this.#backend.sendMessage(
-                    settings.cgMsg.replace("<your cg link>", `https://chatguessr.com/map/${this.#backend.botUsername}`)
+                    settings.cgMsg.replace("<your cg link>", `chatguessr.com/map/${this.#backend.botUsername}`)
                 );
             } else if (!this.#cgCooldown) {
                 await this.#backend.sendMessage(
-                    settings.cgMsg.replace("<your cg link>", `https://chatguessr.com/map/${this.#backend.botUsername}`)
+                    settings.cgMsg.replace("<your cg link>", `chatguessr.com/map/${this.#backend.botUsername}`)
                 );
                 this.#cgCooldown = true;
                 setTimeout(() => {

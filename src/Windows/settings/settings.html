@@ -18,12 +18,25 @@
             <div id="settings" class="tabcontent">
                 <h2>Game Settings</h2>
                 <div
-                    data-tip="Players can change their guess. Streaks, scores & distances won't be displayed on the leaderboard."
+                    data-tip="Players can change their guess. Streaks, scores & distances won't be displayed on the leaderboard"
                 >
                     <label class="checkbox-container">
                         Allow guess changing
-                        <input type="checkbox" id="isMultiGuess" onclick="gameSettingsForm(this)" />
+                        <input type="checkbox" id="isMultiGuess" />
                         <span class="checkmark"></span>
+                    </label>
+                </div>
+
+                <div data-tip="Drawing too much guess markers on the map may affect performance (default: 100)">
+                    <label
+                        >Guess markers limit :
+                        <input
+                            type="number"
+                            min="10"
+                            max="1000"
+                            id="guessMarkersLimit"
+                            onchange="handleGuessMarkersLimit(this)"
+                        />
                     </label>
                 </div>
 
@@ -37,6 +50,7 @@
                     <input type="checkbox" id="showHasGuessed" />
                     <span class="checkmark"></span>
                 </label>
+
                 <label class="checkbox-container">
                     <div data-tip="Display &lt;User&gt; has already guessed">
                         <i>&lt;User&gt; has already guessed</i>
@@ -44,6 +58,7 @@
                     <input type="checkbox" id="showHasAlreadyGuessed" />
                     <span class="checkmark"></span>
                 </label>
+
                 <label class="checkbox-container">
                     <div data-tip="Display &lt;User&gt; guess changed">
                         <i>&lt;User&gt; guess changed</i>
@@ -51,6 +66,7 @@
                     <input type="checkbox" id="showGuessChanged" />
                     <span class="checkmark"></span>
                 </label>
+
                 <label class="checkbox-container">
                     <div data-tip="Display &lt;User&gt; submitted previous guess">
                         <i>&lt;User&gt; submitted previous guess</i>
@@ -66,12 +82,13 @@
                     <div class="col">
                         <div class="form__group">
                             <label class="form__label">Map link :</label>
-                            <div data-tip="Get map link (!cg by default)">
+                            <div data-tip="Get map link  (default: !cg)">
                                 <input class="form__field" type="text" id="cgCmd" spellcheck="false" />
                             </div>
                         </div>
+
                         <div class="form__group">
-                            <label class="form__label">Map link cooldown :</label>
+                            <label class="form__label">Map link cooldown (in sec) :</label>
                             <div data-tip="Map link cooldown (default: 30)">
                                 <input class="form__field" type="number" min="0" max="1000" id="cgCmdCooldown" />
                             </div>
@@ -81,26 +98,15 @@
                     <div class="col">
                         <div class="form__group">
                             <label class="form__label">Get user stats :</label>
-                            <div data-tip="Displays user stats in chat">
-                                <input
-                                    class="form__field"
-                                    type="text"
-                                    id="userGetStatsCmd"
-                                    spellcheck="false"
-                                    required
-                                />
+                            <div data-tip="Displays user stats in chat  (default: !me)">
+                                <input class="form__field" type="text" id="userGetStatsCmd" spellcheck="false" />
                             </div>
                         </div>
+
                         <div class="form__group">
                             <label class="form__label">Clear user stats :</label>
-                            <div data-tip="Clear user stats">
-                                <input
-                                    class="form__field"
-                                    type="text"
-                                    id="userClearStatsCmd"
-                                    spellcheck="false"
-                                    required
-                                />
+                            <div data-tip="Clear user stats  (default: !clear)">
+                                <input class="form__field" type="text" id="userClearStatsCmd" spellcheck="false" />
                             </div>
                         </div>
                     </div>
@@ -108,11 +114,10 @@
 
                 <div class="form__group">
                     <label class="form__label">Map link message :</label>
-                    <textarea class="form__field" id="cgMsg" spellcheck="false" rows="3"></textarea>
+                    <textarea class="form__field" id="cgMsg" spellcheck="false" rows="4"></textarea>
                 </div>
-                <div class="flex">
-                    <input type="button" class="btn success w-full" value="SAVE" onclick="twitchCommandsForm()" />
-                </div>
+
+                <input type="button" class="btn success w-full" value="SAVE" onclick="saveGlobalSettings()" />
 
                 <hr />
 
@@ -120,7 +125,7 @@
                     <small id="version"></small>
                 </p>
 
-                <div class="flex">
+                <div class="flex-around">
                     <input
                         type="button"
                         class="btn danger"
@@ -132,24 +137,16 @@
             </div>
 
             <div id="twitchConnect" class="tabcontent">
-                <form name="twitch-form" onsubmit="twitchSettingsForm(event)">
+                <form name="twitch-form" onsubmit="saveTwitchSettings(event)">
                     <h2>Status :</h2>
 
                     <div class="form__group">
-                        <label class="form__label">Twitch :</label>
-                        <div class="flex gap-05">
-                            <div class="connection-status">
-                                <span id="twitchStatus"></span>
-                            </div>
-                            <button id="twitchReauth" class="btn small">Log in</button>
-                        </div>
+                        <label class="form__label">Twitch : <span id="twitchStatus"></span></label>
+                        <button id="twitchReauth" class="btn small">Log in</button>
                     </div>
 
                     <div class="form__group">
-                        <label class="form__label">Server :</label>
-                        <div>
-                            <div class="connection-status" id="socketStatus"></div>
-                        </div>
+                        <label class="form__label">Server : <span id="socketStatus"></span></label>
                     </div>
 
                     <div class="form__group">
@@ -162,29 +159,19 @@
                     <div class="form__group" id="cgLinkContainer">
                         <label class="form__label">You cg link :</label>
                         <div class="flex gap-05">
-                            <input class="form__field" type="text" id="cgLink" disabled />
-                            <div
-                                id="copyLinkBtn"
-                                class="btn success"
-                                title="Make sure to copy this link in your !cg link message"
-                            >
-                                Copy
-                            </div>
+                            <input class="form__field w-full" type="text" id="cgLink" disabled />
+                            <button id="copyLinkBtn" class="btn success">Copy</button>
                         </div>
                     </div>
-                    <div class="flex">
-                        <input type="submit" class="btn success w-full" value="SAVE" />
-                    </div>
+                    <input type="submit" class="btn success w-full" value="SAVE" />
                 </form>
             </div>
 
             <div id="banList" class="tabcontent">
                 <form onsubmit="addUser(event)">
-                    <div class="form__group">
-                        <div class="flex gap-05">
-                            <input class="form__field" type="text" id="banUserInput" spellcheck="false" />
-                            <input type="submit" id="banUserBtn" class="btn small success" value="Ban User" />
-                        </div>
+                    <div class="form__group gap-05">
+                        <input class="form__field w-full" type="text" id="banUserInput" spellcheck="false" />
+                        <input type="submit" id="banUserBtn" class="btn small danger" value="Ban User" />
                     </div>
                 </form>
                 <h3>Banned users :</h3>

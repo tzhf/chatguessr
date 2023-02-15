@@ -39,7 +39,7 @@ let markers = [];
 let polylines = [];
 
 /** @type {import('./types').RendererApi['populateMap']} */
-function populateMap(location, scores) {
+function populateMap(location, scores, limit) {
     const map = globalMap;
     const infowindow = new google.maps.InfoWindow();
     const icon = {
@@ -76,6 +76,7 @@ function populateMap(location, scores) {
 
     icon.scale = 1;
     scores.forEach((score, index) => {
+        if (index >= limit) return;
         const color = index == 0 ? "#E3BB39" : index == 1 ? "#C9C9C9" : index == 2 ? "#A3682E" : score.color;
         icon.fillColor = color;
 
@@ -302,6 +303,7 @@ function centerSatelliteView(location) {
 /** @type {import('./types').RendererApi['focusOnGuess']} */
 function focusOnGuess(location) {
     globalMap.setCenter(location);
+    globalMap.setZoom(8);
 }
 
 /** @type {import('./types').RendererApi['getBounds']} */

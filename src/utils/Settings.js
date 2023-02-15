@@ -16,6 +16,7 @@ const store = require("./sharedStore");
  * @prop {boolean} showGuessChanged
  * @prop {boolean} showSubmittedPreviousGuess
  * @prop {boolean} isMultiGuess
+ * @prop {number} guessMarkersLimit
  */
 
 class Settings {
@@ -25,7 +26,9 @@ class Settings {
         token = "",
         cgCmd = "!cg",
         cgCmdCooldown = 30,
-        cgMsg = "Two ways to play: 1. Login with Twitch, make your guess and press guess (spacebar). 2. Paste the command into chat without editing: <your cg link>",
+        cgMsg = `Two ways to play: 
+1. Login with Twitch, make your guess and press guess (spacebar). 
+2. Paste the command into chat without editing: <your cg link>`,
         userGetStatsCmd = "!me",
         userClearStatsCmd = "!clear",
         showHasGuessed = true,
@@ -33,6 +36,7 @@ class Settings {
         showGuessChanged = true,
         showSubmittedPreviousGuess = true,
         isMultiGuess = false,
+        guessMarkersLimit = 100,
     } = {}) {
         this.channelName = channelName;
         this.token = token;
@@ -46,36 +50,31 @@ class Settings {
         this.showGuessChanged = showGuessChanged;
         this.showSubmittedPreviousGuess = showSubmittedPreviousGuess;
         this.isMultiGuess = isMultiGuess;
+        this.guessMarkersLimit = guessMarkersLimit;
     }
 
     /**
-     * @param {boolean} isMultiGuess
+     * @param {{ isMultiGuess: boolean, guessMarkersLimit: number, cgCmd: string, cgMsg: string, cgCmdCooldown: number, userGetStats: string, userClearStats: string, showHasGuessed: boolean, showHasAlreadyGuessed: boolean, showGuessChanged: boolean, showSubmittedPreviousGuess: boolean }} globalSettings
      */
-    setGameSettings(isMultiGuess) {
-        this.isMultiGuess = isMultiGuess;
-        this.#save();
-    }
-
-    /**
-     * @param {{ cgCmdd: string, cgMsgg: string, cgCmdCooldown: number, userGetStats: string, userClearStats: string, showHasGuessed: boolean, showHasAlreadyGuessed: boolean, showGuessChanged: boolean, showSubmittedPreviousGuess: boolean }} commands
-     */
-    setTwitchCommands(commands) {
-        this.cgCmd = commands.cgCmdd;
-        this.cgCmdCooldown = commands.cgCmdCooldown;
-        this.cgMsg = commands.cgMsgg;
-        this.userGetStatsCmd = commands.userGetStats;
-        this.userClearStatsCmd = commands.userClearStats;
-        this.showHasGuessed = commands.showHasGuessed;
-        this.showHasAlreadyGuessed = commands.showHasAlreadyGuessed;
-        this.showGuessChanged = commands.showGuessChanged;
-        this.showSubmittedPreviousGuess = commands.showSubmittedPreviousGuess;
+    saveGlobalSettings(globalSettings) {
+        this.isMultiGuess = globalSettings.isMultiGuess;
+        this.guessMarkersLimit = globalSettings.guessMarkersLimit;
+        this.cgCmd = globalSettings.cgCmd;
+        this.cgCmdCooldown = globalSettings.cgCmdCooldown;
+        this.cgMsg = globalSettings.cgMsg;
+        this.userGetStatsCmd = globalSettings.userGetStats;
+        this.userClearStatsCmd = globalSettings.userClearStats;
+        this.showHasGuessed = globalSettings.showHasGuessed;
+        this.showHasAlreadyGuessed = globalSettings.showHasAlreadyGuessed;
+        this.showGuessChanged = globalSettings.showGuessChanged;
+        this.showSubmittedPreviousGuess = globalSettings.showSubmittedPreviousGuess;
         this.#save();
     }
 
     /**
      * @param {string} channelName
      */
-    setTwitchSettings(channelName) {
+    saveTwitchSettings(channelName) {
         this.channelName = channelName;
         this.#save();
     }
@@ -94,6 +93,7 @@ class Settings {
             showGuessChanged: this.showGuessChanged,
             showSubmittedPreviousGuess: this.showSubmittedPreviousGuess,
             isMultiGuess: this.isMultiGuess,
+            guessMarkersLimit: this.guessMarkersLimit,
         };
     }
 

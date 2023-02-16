@@ -418,7 +418,7 @@ class GameHandler {
 
         const userId = userstate.badges?.broadcaster === "1" ? "BROADCASTER" : userstate["user-id"];
 
-        if (message === settings.userGetStatsCmd) {
+        if (message === settings.getUserStatsCmd) {
             const userInfo = this.#db.getUserStats(userId);
             if (!userInfo) {
                 await this.#backend.sendMessage(`${userstate["display-name"]} you've never guessed yet.`);
@@ -439,7 +439,7 @@ class GameHandler {
             return;
         }
 
-        if (message === settings.cgCmd && settings.cgCmd !== "") {
+        if (message === settings.cgCmd) {
             if (userId === "BROADCASTER") {
                 await this.#backend.sendMessage(
                     settings.cgMsg.replace("<your cg link>", `chatguessr.com/map/${this.#backend.botUsername}`)
@@ -503,7 +503,7 @@ class GameHandler {
             return;
         }
 
-        if (message === settings.userClearStatsCmd) {
+        if (message === settings.clearUserStatsCmd) {
             // @ts-ignore
             store.delete(`users.${userstate.username}`);
 
@@ -520,30 +520,37 @@ class GameHandler {
             return;
         }
 
-        // streamer commands
-        if (userstate.badges?.broadcaster !== "1") {
-            return;
-        }
-        if (process.env.NODE_ENV !== "development") {
-            return;
+        if (message === settings.randomPlonkCmd) {
+            const { lat, lng } = GameHelper.getRandomCoords();
+            const randomGuess = `!g ${lat}, ${lng}`;
+            this.#handleGuess(userstate, randomGuess).catch((error) => {
+                console.error(error);
+            });
         }
 
-        if (message.startsWith("!spamguess")) {
-            const max = parseInt(message.split(" ")[1] ?? "50", 10);
-            for (let i = 0; i < max; i += 1) {
-                const lat = Math.random() * 180 - 90;
-                const lng = Math.random() * 360 - 180;
-                await this.#handleGuess(
-                    {
-                        "user-id": `123450${i}`,
-                        username: `fake_${i}`,
-                        "display-name": `fake_${i}`,
-                        color: `#${Math.random().toString(16).slice(2, 8).padStart(6, "0")}`,
-                    },
-                    `!g ${lat},${lng}`
-                );
-            }
-        }
+        // streamer commands
+        // if (userstate.badges?.broadcaster !== "1") {
+        //     return;
+        // }
+        // if (process.env.NODE_ENV !== "development") {
+        //     return;
+        // }
+
+        // if (message.startsWith("!spamguess")) {
+        //     const max = parseInt(message.split(" ")[1] ?? "50", 10);
+        //     for (let i = 0; i < max; i += 1) {
+        //         const { lat, lng } = GameHelper.getRandomCoords();
+        //         await this.#handleGuess(
+        //             {
+        //                 "user-id": `123450${i}`,
+        //                 username: `fake_${i}`,
+        //                 "display-name": `fake_${i}`,
+        //                 color: `#${Math.random().toString(16).slice(2, 8).padStart(6, "0")}`,
+        //             },
+        //             `!g ${lat},${lng}`
+        //         );
+        //     }
+        // }
     }
 
     /**

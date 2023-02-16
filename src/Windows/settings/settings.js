@@ -13,8 +13,6 @@ const { version } = secretRequire("../../package.json"); // path relative to dis
 /** @type {HTMLInputElement} */
 const channelName = qs("#channelName");
 /** @type {HTMLInputElement} */
-const botUsernameEl = qs("#botUsername");
-/** @type {HTMLInputElement} */
 const twitchReauthEl = qs("#twitchReauth");
 /** @type {HTMLInputElement} */
 const cgCmd = qs("#cgCmd");
@@ -23,9 +21,11 @@ const cgCmdCooldown = qs("#cgCmdCooldown");
 /** @type {HTMLInputElement} */
 const cgMsg = qs("#cgMsg");
 /** @type {HTMLInputElement} */
-const userGetStatsCmd = qs("#userGetStatsCmd");
+const getUserStatsCmd = qs("#getUserStatsCmd");
 /** @type {HTMLInputElement} */
-const userClearStatsCmd = qs("#userClearStatsCmd");
+const clearUserStatsCmd = qs("#clearUserStatsCmd");
+/** @type {HTMLInputElement} */
+const randomPlonkCmd = qs("#randomPlonkCmd");
 /** @type {HTMLInputElement} */
 const showHasGuessed = qs("#showHasGuessed");
 /** @type {HTMLInputElement} */
@@ -64,8 +64,9 @@ ipcRenderer.on("render-settings", (_event, settings, bannedUsers, connectionStat
     cgCmd.value = settings.cgCmd;
     cgCmdCooldown.value = settings.cgCmdCooldown;
     cgMsg.value = settings.cgMsg;
-    userGetStatsCmd.value = settings.userGetStatsCmd;
-    userClearStatsCmd.value = settings.userClearStatsCmd;
+    getUserStatsCmd.value = settings.getUserStatsCmd;
+    clearUserStatsCmd.value = settings.clearUserStatsCmd;
+    randomPlonkCmd.value = settings.randomPlonkCmd;
     showHasGuessed.checked = settings.showHasGuessed;
     showHasAlreadyGuessed.checked = settings.showHasAlreadyGuessed;
     showGuessChanged.checked = settings.showGuessChanged;
@@ -176,8 +177,9 @@ function saveGlobalSettings() {
         cgCmd: cgCmd.value,
         cgCmdCooldown: cgCmdCooldown.value,
         cgMsg: cgMsg.value,
-        userGetStats: userGetStatsCmd.value,
-        userClearStats: userClearStatsCmd.value,
+        getUserStatsCmd: getUserStatsCmd.value,
+        clearUserStatsCmd: clearUserStatsCmd.value,
+        randomPlonkCmd: randomPlonkCmd.value,
         showHasGuessed: showHasGuessed.checked,
         showHasAlreadyGuessed: showHasAlreadyGuessed.checked,
         showGuessChanged: showGuessChanged.checked,

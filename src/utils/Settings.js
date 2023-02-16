@@ -9,8 +9,9 @@ const store = require("./sharedStore");
  * @prop {string} cgCmd
  * @prop {number} cgCmdCooldown
  * @prop {string} cgMsg
- * @prop {string} userGetStatsCmd
- * @prop {string} userClearStatsCmd
+ * @prop {string} getUserStatsCmd
+ * @prop {string} clearUserStatsCmd
+ * @prop {string} randomPlonkCmd
  * @prop {boolean} showHasGuessed
  * @prop {boolean} showHasAlreadyGuessed
  * @prop {boolean} showGuessChanged
@@ -29,8 +30,9 @@ class Settings {
         cgMsg = `Two ways to play: 
 1. Login with Twitch, make your guess and press guess (spacebar). 
 2. Paste the command into chat without editing: <your cg link>`,
-        userGetStatsCmd = "!me",
-        userClearStatsCmd = "!clear",
+        getUserStatsCmd = "!me",
+        clearUserStatsCmd = "!clear",
+        randomPlonkCmd = "!randomplonk",
         showHasGuessed = true,
         showHasAlreadyGuessed = true,
         showGuessChanged = true,
@@ -43,8 +45,9 @@ class Settings {
         this.cgCmd = cgCmd;
         this.cgCmdCooldown = cgCmdCooldown;
         this.cgMsg = cgMsg;
-        this.userGetStatsCmd = userGetStatsCmd;
-        this.userClearStatsCmd = userClearStatsCmd;
+        this.getUserStatsCmd = getUserStatsCmd;
+        this.clearUserStatsCmd = clearUserStatsCmd;
+        this.randomPlonkCmd = randomPlonkCmd;
         this.showHasGuessed = showHasGuessed;
         this.showHasAlreadyGuessed = showHasAlreadyGuessed;
         this.showGuessChanged = showGuessChanged;
@@ -54,20 +57,34 @@ class Settings {
     }
 
     /**
-     * @param {{ isMultiGuess: boolean, guessMarkersLimit: number, cgCmd: string, cgMsg: string, cgCmdCooldown: number, userGetStats: string, userClearStats: string, showHasGuessed: boolean, showHasAlreadyGuessed: boolean, showGuessChanged: boolean, showSubmittedPreviousGuess: boolean }} globalSettings
+     * @param {{
+     * cgCmd: string,
+     * cgMsg: string,
+     * cgCmdCooldown: number,
+     * clearUserStatsCmd: string,
+     * getUserStatsCmd: string,
+     * randomPlonkCmd: string,
+     * showHasGuessed: boolean,
+     * showHasAlreadyGuessed: boolean,
+     * showGuessChanged: boolean,
+     * showSubmittedPreviousGuess: boolean,
+     * isMultiGuess: boolean,
+     * guessMarkersLimit: number
+     * }} globalSettings
      */
     saveGlobalSettings(globalSettings) {
-        this.isMultiGuess = globalSettings.isMultiGuess;
-        this.guessMarkersLimit = globalSettings.guessMarkersLimit;
         this.cgCmd = globalSettings.cgCmd;
         this.cgCmdCooldown = globalSettings.cgCmdCooldown;
         this.cgMsg = globalSettings.cgMsg;
-        this.userGetStatsCmd = globalSettings.userGetStats;
-        this.userClearStatsCmd = globalSettings.userClearStats;
+        this.getUserStatsCmd = globalSettings.getUserStatsCmd;
+        this.clearUserStatsCmd = globalSettings.clearUserStatsCmd;
+        this.randomPlonkCmd = globalSettings.randomPlonkCmd;
         this.showHasGuessed = globalSettings.showHasGuessed;
         this.showHasAlreadyGuessed = globalSettings.showHasAlreadyGuessed;
         this.showGuessChanged = globalSettings.showGuessChanged;
         this.showSubmittedPreviousGuess = globalSettings.showSubmittedPreviousGuess;
+        this.isMultiGuess = globalSettings.isMultiGuess;
+        this.guessMarkersLimit = globalSettings.guessMarkersLimit;
         this.#save();
     }
 
@@ -86,8 +103,9 @@ class Settings {
             cgCmd: this.cgCmd,
             cgCmdCooldown: this.cgCmdCooldown,
             cgMsg: this.cgMsg,
-            userGetStatsCmd: this.userGetStatsCmd,
-            userClearStatsCmd: this.userClearStatsCmd,
+            getUserStatsCmd: this.getUserStatsCmd,
+            clearUserStatsCmd: this.clearUserStatsCmd,
+            randomPlonkCmd: this.randomPlonkCmd,
             showHasGuessed: this.showHasGuessed,
             showHasAlreadyGuessed: this.showHasAlreadyGuessed,
             showGuessChanged: this.showGuessChanged,

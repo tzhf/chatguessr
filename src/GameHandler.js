@@ -418,27 +418,6 @@ class GameHandler {
 
         const userId = userstate.badges?.broadcaster === "1" ? "BROADCASTER" : userstate["user-id"];
 
-        if (message === settings.getUserStatsCmd) {
-            const userInfo = this.#db.getUserStats(userId);
-            if (!userInfo) {
-                await this.#backend.sendMessage(`${userstate["display-name"]} you've never guessed yet.`);
-            } else {
-                await this.#backend.sendMessage(`
-					${flags.getEmoji(userInfo.flag)} ${userInfo.username} : Current streak: ${userInfo.streak}.
-					Best streak: ${userInfo.bestStreak}.
-					Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses}${
-                    userInfo.nbGuesses > 0
-                        ? ` (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).`
-                        : "."
-                }
-					Avg. score: ${Math.round(userInfo.meanScore)}.
-					Victories: ${userInfo.victories}.
-					Perfects: ${userInfo.perfects}.
-				`);
-            }
-            return;
-        }
-
         if (message === settings.cgCmd) {
             if (userId === "BROADCASTER") {
                 await this.#backend.sendMessage(
@@ -452,26 +431,6 @@ class GameHandler {
                 setTimeout(() => {
                     this.#cgCooldown = false;
                 }, settings.cgCmdCooldown * 1000);
-            }
-            return;
-        }
-
-        if (message === "!best") {
-            const { streak, victories, perfects } = this.#db.getGlobalStats();
-            if (!streak && !victories && !perfects) {
-                await this.#backend.sendMessage("No stats available.");
-            } else {
-                let msg = "";
-                if (streak) {
-                    msg += `Streak: ${streak.streak} (${streak.username}). `;
-                }
-                if (victories) {
-                    msg += `Victories: ${victories.victories} (${victories.username}). `;
-                }
-                if (perfects) {
-                    msg += `Perfects: ${perfects.perfects} (${perfects.username}). `;
-                }
-                await this.#backend.sendMessage(`Channels best: ${msg}`);
             }
             return;
         }
@@ -505,6 +464,47 @@ class GameHandler {
 
         if (message === settings.flagsCmd) {
             await this.#backend.sendMessage(settings.flagsCmdMsg);
+        }
+
+        if (message === settings.getUserStatsCmd) {
+            const userInfo = this.#db.getUserStats(userId);
+            if (!userInfo) {
+                await this.#backend.sendMessage(`${userstate["display-name"]} you've never guessed yet.`);
+            } else {
+                await this.#backend.sendMessage(`
+					${flags.getEmoji(userInfo.flag)} ${userInfo.username} : Current streak: ${userInfo.streak}.
+					Best streak: ${userInfo.bestStreak}.
+					Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses}${
+                    userInfo.nbGuesses > 0
+                        ? ` (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).`
+                        : "."
+                }
+					Avg. score: ${Math.round(userInfo.meanScore)}.
+					Victories: ${userInfo.victories}.
+					Perfects: ${userInfo.perfects}.
+				`);
+            }
+            return;
+        }
+
+        if (message === settings.getBestStatsCmd) {
+            const { streak, victories, perfects } = this.#db.getGlobalStats();
+            if (!streak && !victories && !perfects) {
+                await this.#backend.sendMessage("No stats available.");
+            } else {
+                let msg = "";
+                if (streak) {
+                    msg += `Streak: ${streak.streak} (${streak.username}). `;
+                }
+                if (victories) {
+                    msg += `Victories: ${victories.victories} (${victories.username}). `;
+                }
+                if (perfects) {
+                    msg += `Perfects: ${perfects.perfects} (${perfects.username}). `;
+                }
+                await this.#backend.sendMessage(`Channels best: ${msg}`);
+            }
+            return;
         }
 
         if (message === settings.clearUserStatsCmd) {

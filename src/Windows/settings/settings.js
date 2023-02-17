@@ -27,6 +27,8 @@ const flagsCmdMsg = qs("#flagsCmdMsg");
 /** @type {HTMLInputElement} */
 const getUserStatsCmd = qs("#getUserStatsCmd");
 /** @type {HTMLInputElement} */
+const getBestStatsCmd = qs("#getBestStatsCmd");
+/** @type {HTMLInputElement} */
 const clearUserStatsCmd = qs("#clearUserStatsCmd");
 /** @type {HTMLInputElement} */
 const randomPlonkCmd = qs("#randomPlonkCmd");
@@ -71,6 +73,7 @@ ipcRenderer.on("render-settings", (_event, settings, bannedUsers, connectionStat
     flagsCmd.value = settings.flagsCmd;
     flagsCmdMsg.value = settings.flagsCmdMsg;
     getUserStatsCmd.value = settings.getUserStatsCmd;
+    getBestStatsCmd.value = settings.getBestStatsCmd;
     clearUserStatsCmd.value = settings.clearUserStatsCmd;
     randomPlonkCmd.value = settings.randomPlonkCmd;
     showHasGuessed.checked = settings.showHasGuessed;
@@ -186,6 +189,7 @@ function saveGlobalSettings() {
         flagsCmd: flagsCmd.value,
         flagsCmdMsg: flagsCmdMsg.value,
         getUserStatsCmd: getUserStatsCmd.value,
+        getBestStatsCmd: getBestStatsCmd.value,
         clearUserStatsCmd: clearUserStatsCmd.value,
         randomPlonkCmd: randomPlonkCmd.value,
         showHasGuessed: showHasGuessed.checked,

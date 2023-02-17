@@ -94,15 +94,10 @@ function populateMap(location, scores, limit) {
         });
         guessMarker.addListener("mouseover", () => {
             infowindow.setContent(`
-				<p class="gm-iw__content">
-					<span style="font-size:14px;">${
-                        score.flag
-                            ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>`
-                            : ""
-                    }${score.username}</span><br>
-					${score.distance >= 1 ? score.distance.toFixed(1) + "km" : Math.floor(score.distance * 1000) + "m"}<br>
-					${score.score}
-				</p>
+				${score.flag ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>` : ""}
+                <span class="username" style="color:${color}">${score.username}</span><br>
+                ${score.score}<br>
+				${score.distance >= 1 ? score.distance.toFixed(1) + " km" : Math.floor(score.distance * 1000) + "m"}
 			`);
             infowindow.open(globalMap, guessMarker);
         });

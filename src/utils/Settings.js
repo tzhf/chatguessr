@@ -12,6 +12,7 @@ const store = require("./sharedStore");
  * @prop {string} flagsCmd
  * @prop {string} flagsCmdMsg
  * @prop {string} getUserStatsCmd
+ * @prop {string} getBestStatsCmd
  * @prop {string} clearUserStatsCmd
  * @prop {string} randomPlonkCmd
  * @prop {boolean} showHasGuessed
@@ -35,6 +36,7 @@ class Settings {
         flagsCmd = "!flags",
         flagsCmdMsg = "chatguessr.com/flags",
         getUserStatsCmd = "!me",
+        getBestStatsCmd = "!best",
         clearUserStatsCmd = "!clear",
         randomPlonkCmd = "!randomplonk",
         showHasGuessed = true,
@@ -52,6 +54,7 @@ class Settings {
         this.flagsCmd = flagsCmd;
         this.flagsCmdMsg = flagsCmdMsg;
         this.getUserStatsCmd = getUserStatsCmd;
+        this.getBestStatsCmd = getBestStatsCmd;
         this.clearUserStatsCmd = clearUserStatsCmd;
         this.randomPlonkCmd = randomPlonkCmd;
         this.showHasGuessed = showHasGuessed;
@@ -71,6 +74,7 @@ class Settings {
      * flagsCmdMsg: string,
      * clearUserStatsCmd: string,
      * getUserStatsCmd: string,
+     * getBestStatsCmd: string,
      * randomPlonkCmd: string,
      * showHasGuessed: boolean,
      * showHasAlreadyGuessed: boolean,
@@ -87,6 +91,7 @@ class Settings {
         this.flagsCmd = globalSettings.flagsCmd;
         this.flagsCmdMsg = globalSettings.flagsCmdMsg;
         this.getUserStatsCmd = globalSettings.getUserStatsCmd;
+        this.getBestStatsCmd = globalSettings.getBestStatsCmd;
         this.clearUserStatsCmd = globalSettings.clearUserStatsCmd;
         this.randomPlonkCmd = globalSettings.randomPlonkCmd;
         this.showHasGuessed = globalSettings.showHasGuessed;
@@ -116,6 +121,7 @@ class Settings {
             flagsCmd: this.flagsCmd,
             flagsCmdMsg: this.flagsCmdMsg,
             getUserStatsCmd: this.getUserStatsCmd,
+            getBestStatsCmd: this.getBestStatsCmd,
             clearUserStatsCmd: this.clearUserStatsCmd,
             randomPlonkCmd: this.randomPlonkCmd,
             showHasGuessed: this.showHasGuessed,

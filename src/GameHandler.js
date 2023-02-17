@@ -476,7 +476,7 @@ class GameHandler {
             return;
         }
 
-        if (message.startsWith("!flag")) {
+        if (message.startsWith("!flag ")) {
             const countryReq = message.slice(message.indexOf(" ") + 1).trim();
             const dbUser = this.#db.getOrCreateUser(userId, userstate["display-name"]);
 
@@ -501,6 +501,10 @@ class GameHandler {
                 await this.#backend.sendMessage(`${userstate["display-name"]} got ${flags.getEmoji(newFlag)}`);
             }
             return;
+        }
+
+        if (message === settings.flagsCmd) {
+            await this.#backend.sendMessage(settings.flagsCmdMsg);
         }
 
         if (message === settings.clearUserStatsCmd) {

@@ -9,6 +9,8 @@ const store = require("./sharedStore");
  * @prop {string} cgCmd
  * @prop {number} cgCmdCooldown
  * @prop {string} cgMsg
+ * @prop {string} flagsCmd
+ * @prop {string} flagsCmdMsg
  * @prop {string} getUserStatsCmd
  * @prop {string} clearUserStatsCmd
  * @prop {string} randomPlonkCmd
@@ -30,6 +32,8 @@ class Settings {
         cgMsg = `Two ways to play: 
 1. Login with Twitch, make your guess and press guess (spacebar). 
 2. Paste the command into chat without editing: <your cg link>`,
+        flagsCmd = "!flags",
+        flagsCmdMsg = "chatguessr.com/flags",
         getUserStatsCmd = "!me",
         clearUserStatsCmd = "!clear",
         randomPlonkCmd = "!randomplonk",
@@ -45,6 +49,8 @@ class Settings {
         this.cgCmd = cgCmd;
         this.cgCmdCooldown = cgCmdCooldown;
         this.cgMsg = cgMsg;
+        this.flagsCmd = flagsCmd;
+        this.flagsCmdMsg = flagsCmdMsg;
         this.getUserStatsCmd = getUserStatsCmd;
         this.clearUserStatsCmd = clearUserStatsCmd;
         this.randomPlonkCmd = randomPlonkCmd;
@@ -59,8 +65,10 @@ class Settings {
     /**
      * @param {{
      * cgCmd: string,
-     * cgMsg: string,
      * cgCmdCooldown: number,
+     * cgMsg: string,
+     * flagsCmd: string,
+     * flagsCmdMsg: string,
      * clearUserStatsCmd: string,
      * getUserStatsCmd: string,
      * randomPlonkCmd: string,
@@ -76,6 +84,8 @@ class Settings {
         this.cgCmd = globalSettings.cgCmd;
         this.cgCmdCooldown = globalSettings.cgCmdCooldown;
         this.cgMsg = globalSettings.cgMsg;
+        this.flagsCmd = globalSettings.flagsCmd;
+        this.flagsCmdMsg = globalSettings.flagsCmdMsg;
         this.getUserStatsCmd = globalSettings.getUserStatsCmd;
         this.clearUserStatsCmd = globalSettings.clearUserStatsCmd;
         this.randomPlonkCmd = globalSettings.randomPlonkCmd;
@@ -103,6 +113,8 @@ class Settings {
             cgCmd: this.cgCmd,
             cgCmdCooldown: this.cgCmdCooldown,
             cgMsg: this.cgMsg,
+            flagsCmd: this.flagsCmd,
+            flagsCmdMsg: this.flagsCmdMsg,
             getUserStatsCmd: this.getUserStatsCmd,
             clearUserStatsCmd: this.clearUserStatsCmd,
             randomPlonkCmd: this.randomPlonkCmd,

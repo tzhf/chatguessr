@@ -41,6 +41,9 @@ input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
+textarea {
+    resize: vertical;
+}
 hr {
     margin: 1rem;
     border: 1px solid #70e2a9;
@@ -184,8 +187,8 @@ input[type="number"]:focus {
     position: absolute;
     top: 0;
     left: 0;
-    height: 18px;
-    width: 18px;
+    height: 16px;
+    width: 16px;
     background: #eee;
 }
 .checkbox-container:hover input ~ .checkmark {
@@ -204,7 +207,7 @@ input[type="number"]:focus {
 }
 .checkbox-container .checkmark:after {
     left: 5px;
-    width: 8px;
+    width: 7px;
     height: 12px;
     border: solid #fff;
     border-width: 0 3px 3px 0;

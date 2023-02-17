@@ -81,12 +81,14 @@
                 <div class="grid__col">
                     <div class="col">
                         <div class="form__group">
-                            <label class="form__label">Map link :</label>
+                            <label class="form__label">Get map link :</label>
                             <div data-tip="Get map link  (default: !cg)">
                                 <input class="form__field" type="text" id="cgCmd" spellcheck="false" />
                             </div>
                         </div>
+                    </div>
 
+                    <div class="col">
                         <div class="form__group">
                             <label class="form__label">Map link cooldown (in sec) :</label>
                             <div data-tip="Map link cooldown (default: 30)">
@@ -94,7 +96,14 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
+                <div class="form__group">
+                    <label class="form__label">Map link message :</label>
+                    <textarea class="form__field" id="cgMsg" spellcheck="false" rows="3"></textarea>
+                </div>
+
+                <div class="grid__col">
                     <div class="col">
                         <div class="form__group">
                             <label class="form__label">Get user stats :</label>
@@ -109,6 +118,22 @@
                                 <input class="form__field" type="text" id="clearUserStatsCmd" spellcheck="false" />
                             </div>
                         </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="form__group">
+                            <label class="form__label">Get flags list :</label>
+                            <div data-tip="Get flags list  (default: !flags)">
+                                <input class="form__field" type="text" id="flagsCmd" spellcheck="false" />
+                            </div>
+                        </div>
+
+                        <div class="form__group">
+                            <label class="form__label">Flags link :</label>
+                            <div data-tip="Return list of available flags  (default: chatguessr.com/flags)">
+                                <input class="form__field" type="text" id="flagsCmdMsg" spellcheck="false" />
+                            </div>
+                        </div>
 
                         <div class="form__group">
                             <label class="form__label">Random plonk :</label>
@@ -117,11 +142,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="form__group">
-                    <label class="form__label">Map link message :</label>
-                    <textarea class="form__field" id="cgMsg" spellcheck="false" rows="4"></textarea>
                 </div>
 
                 <input type="button" class="btn success w-full" value="SAVE" onclick="saveGlobalSettings()" />

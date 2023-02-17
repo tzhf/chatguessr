@@ -21,6 +21,10 @@ const cgCmdCooldown = qs("#cgCmdCooldown");
 /** @type {HTMLInputElement} */
 const cgMsg = qs("#cgMsg");
 /** @type {HTMLInputElement} */
+const flagsCmd = qs("#flagsCmd");
+/** @type {HTMLInputElement} */
+const flagsCmdMsg = qs("#flagsCmdMsg");
+/** @type {HTMLInputElement} */
 const getUserStatsCmd = qs("#getUserStatsCmd");
 /** @type {HTMLInputElement} */
 const clearUserStatsCmd = qs("#clearUserStatsCmd");
@@ -64,6 +68,8 @@ ipcRenderer.on("render-settings", (_event, settings, bannedUsers, connectionStat
     cgCmd.value = settings.cgCmd;
     cgCmdCooldown.value = settings.cgCmdCooldown;
     cgMsg.value = settings.cgMsg;
+    flagsCmd.value = settings.flagsCmd;
+    flagsCmdMsg.value = settings.flagsCmdMsg;
     getUserStatsCmd.value = settings.getUserStatsCmd;
     clearUserStatsCmd.value = settings.clearUserStatsCmd;
     randomPlonkCmd.value = settings.randomPlonkCmd;
@@ -177,6 +183,8 @@ function saveGlobalSettings() {
         cgCmd: cgCmd.value,
         cgCmdCooldown: cgCmdCooldown.value,
         cgMsg: cgMsg.value,
+        flagsCmd: flagsCmd.value,
+        flagsCmdMsg: flagsCmdMsg.value,
         getUserStatsCmd: getUserStatsCmd.value,
         clearUserStatsCmd: clearUserStatsCmd.value,
         randomPlonkCmd: randomPlonkCmd.value,

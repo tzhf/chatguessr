@@ -172,11 +172,14 @@ async function makeLink(accessToken, bot, streamer, mapName, mode, locations, to
 }
 
 /**
-	@return {LatLng}
-*/
-function getRandomCoords() {
-    const lat = Math.random() * 180 - 90;
+ * Returns random coordinates within land, no Antarctica
+ * @return {Promise<LatLng>}
+ */
+async function getRandomCoordsInLand() {
+    const lat = Math.random() * (85 + 60) - 60;
     const lng = Math.random() * 360 - 180;
+    const localResults = countryIso(lat, lng, true);
+    if (!localResults.length) return await getRandomCoordsInLand();
     return { lat, lng };
 }
 
@@ -188,4 +191,4 @@ exports.calculateScale = calculateScale;
 exports.haversineDistance = haversineDistance;
 exports.calculateScore = calculateScore;
 exports.makeLink = makeLink;
-exports.getRandomCoords = getRandomCoords;
+exports.getRandomCoordsInLand = getRandomCoordsInLand;

@@ -525,7 +525,7 @@ class GameHandler {
         }
 
         if (message === settings.randomPlonkCmd) {
-            const { lat, lng } = GameHelper.getRandomCoords();
+            const { lat, lng } = await GameHelper.getRandomCoordsInLand();
             const randomGuess = `!g ${lat}, ${lng}`;
             this.#handleGuess(userstate, randomGuess).catch((error) => {
                 console.error(error);
@@ -543,7 +543,7 @@ class GameHandler {
         // if (message.startsWith("!spamguess")) {
         //     const max = parseInt(message.split(" ")[1] ?? "50", 10);
         //     for (let i = 0; i < max; i += 1) {
-        //         const { lat, lng } = GameHelper.getRandomCoords();
+        //         const { lat, lng } = await GameHelper.getRandomCoordsInLand();
         //         await this.#handleGuess(
         //             {
         //                 "user-id": `123450${i}`,

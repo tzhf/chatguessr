@@ -1,8 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
-	<rect fill="#5bcefa" width="400" height="300" />
-	<rect fill="#f5a9b8" width="400" height="240" />
-	<rect fill="#ffffff" width="400" height="180" />
-	<rect fill="#f5a9b8" width="400" height="120" />
-	<rect fill="#5bcefa" width="400" height="60" />
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><path fill="#5bcefa" d="M0 0h400v300H0z"/><path fill="#f5a9b8" d="M0 0h400v240H0z"/><path fill="#fff" d="M0 0h400v180H0z"/><path fill="#f5a9b8" d="M0 0h400v120H0z"/><path fill="#5bcefa" d="M0 0h400v60H0z"/></svg>

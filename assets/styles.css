@@ -1,47 +1,39 @@
 @import "./extenssr-styles.css";
 
-[data-qa="result-view-top"] {
-    max-height: 100vh;
-}
-[data-qa="result-view-bottom"] {
-    position: fixed;
-    width: 100%;
-    left: 0;
-    bottom: 0;
-}
-[data-qa="result-view-bottom"] > div {
-    background: linear-gradient(transparent, #000), linear-gradient(90deg, #28374c36, #221d6ca1);
+@font-face {
+    font-family: Montserrat;
+    src: url(asset:fonts/montserrat-regular-webfont.woff2) format("woff2"),
+        url(asset:fonts/montserrat-regular-webfont.woff) format("woff");
+    font-weight: 400;
+    font-style: normal;
 }
 
+/* GAME SETTINGS SCREEN */
 [data-qa="game-type-challenge"],
 [data-qa="game-type-single-player"] {
     display: none !important;
 }
-
+.play_map__V7bDj {
+    height: 9rem !important;
+}
 .start-standard-game_body__tAIZs {
     margin-top: 0 !important;
 }
 
-[data-qa="result-view-bottom"] > div > div:last-child,
-[data-qa="close-round-result"] + .button_link__xHa3x,
-.version4_sidebar__5CRI_,
-.classic_section__kj5y2,
-.challenge-friends-list_withTopMargin__i2v3c {
+/* Hides friends list bar */
+.version4_sidebar__5CRI_ {
     display: none;
 }
-.result-layout_content__jAHfP {
-    padding: 2rem 0 0 !important;
+
+/* New UI fix */
+.result-overlay_overlay__78Dlz,
+.result-overlay_overlayContent__oe0KJ,
+.result-overlay_overlayXpBar__kB5pW,
+.standard-final-result_challengeFriendButton__VgXlv {
+    display: none !important;
 }
-.standard-final-result_progressSection__6jL1y {
-    padding: 1.5rem auto !important;
-}
-button:focus {
-    outline: 0;
-}
-.game-settings .radio-box:nth-child(2) {
-    display: none;
-}
-.hud-button-group:last-child {
+/* removes game breakdown button */
+.standard-final-result_newWrapper__moI82 > div:first-child {
     display: none;
 }
 
@@ -78,14 +70,10 @@ button:focus {
     cursor: pointer;
 }
 
-/* INFOWINDOW */
+/* CG Guess Markers InfoWindow */
 .gm-ui-hover-effect {
     display: none !important;
 }
-/* .gm-style-iw-tc {
-    top: -4px !important;
-    padding: 10px 0 0 17px !important; 
-}   */
 .gm-style-iw-tc::after {
     top: -4px !important;
 }
@@ -106,20 +94,12 @@ button:focus {
 .gm-style .gm-style-iw-d::-webkit-scrollbar-track-piece {
     background: transparent !important;
 }
-
 .gm-style-cc,
 #satelliteCanvas .gmnoprint {
     display: none;
 }
 
-@font-face {
-    font-family: Montserrat;
-    src: url(asset:fonts/montserrat-regular-webfont.woff2) format("woff2"),
-        url(asset:fonts/montserrat-regular-webfont.woff) format("woff");
-    font-weight: 400;
-    font-style: normal;
-}
-/* ICONS */
+/* CG ICONS */
 .iconsColumn {
     z-index: 99998;
     display: flex;
@@ -580,11 +560,13 @@ input:checked + .switch:before {
 .guess-map__canvas > div > div {
     background: rgba(0, 0, 0, 0.5) !important;
 }
-
 .gm-style-mtc :is(button, ul, li) {
     background: rgba(0, 0, 0, 0.5) !important;
     color: #fff !important;
 }
 .gm-style-mtc img {
     background: #22da8d !important;
+}
+.ssQIHO-checkbox-menu-item span span {
+    background-color: #fff !important;
 }

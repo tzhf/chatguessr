@@ -1,14 +1,7 @@
-"use strict";
-
-require("./errorReporting");
-
-const { contextBridge, ipcRenderer } = require("electron");
-
-import { qs, createEl } from "./utils/domUtils";
+import "./errorReporting";
+import { contextBridge, ipcRenderer } from "electron";
 import { createApp } from "vue";
 import Frame from "./components/Frame.vue";
-
-const Settings = require("./utils/Settings");
 
 /** @typedef {import('./types').LatLng} LatLng */
 /** @typedef {import('./types').Guess} Guess */

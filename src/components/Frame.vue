@@ -66,11 +66,13 @@
 .cg-icon--flag { background-image: url(asset:icons/startFlag.svg); }
 </style>
 <script lang="ts" setup>
-import { useIpcRendererOn } from "@vueuse/electron";
 import { ref, onMounted, watch, computed } from "vue";
-import type { LatLng, RendererApi } from "../types";
-import type Scoreboard from "../Classes/Scoreboard";
 import { useLocalStorage, useStyleTag } from "@vueuse/core";
+import { useIpcRendererOn } from "@vueuse/electron";
+import type { LatLng, RendererApi } from "../types";
+// Only import the type here, we have to import Scoreboard on mount so jQuery has access to all the elements it needs.
+import type Scoreboard from "../Classes/Scoreboard";
+import Settings from "../utils/Settings";
 
 const {
     rendererApi,
@@ -193,15 +195,15 @@ useIpcRendererOn(ipcRenderer, "render-multiguess", (_event, guesses) => {
 useIpcRendererOn(ipcRenderer, "show-round-results", (_event, round, location, scores) => {
     gameState.value = "round-results";
     
-    const limit = 100; // Settings.read().guessMarkersLimit;
-    rendererApi.populateMap(location, scores, limit);
+    const { guessMarkersLimit } = Settings.read();
+    rendererApi.populateMap(location, scores, guessMarkersLimit);
 
     if (!scoreboard) {
         return;
     }
 
     scoreboard.setTitle(`ROUND ${round} RESULTS (${scores.length})`);
-    scoreboard.displayScores(scores, false, limit);
+    scoreboard.displayScores(scores, false, guessMarkersLimit);
     scoreboard.showSwitch(false);
 });
 

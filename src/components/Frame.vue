@@ -1,11 +1,11 @@
 <template>
-    <div class="cg-scoreboard-container" ref="scoreboardContainer"></div>
+    <div class="cg-scoreboard-container" ref="scoreboardContainer" :hidden="!isScoreboardVisible"></div>
     <div class="cg-menu">
         <button :class="['cg-button', twitchConnectionState]" title="settings" @click="openSettings">
             <span class="cg-icon cg-icon--gear"></span>
         </button>
         <button class="cg-button" title="Show/Hide scoreboard" @click="toggleScoreboard" :hidden="gameState === 'none'">
-            <span class="cg-icon cg-icon--eye"></span>
+            <span :class="['cg-icon', scoreboardVisibleSetting ? 'cg-icon--eyeOpen' : 'cg-icon--eyeClosed']"></span>
         </button>
         <button class="cg-button" title="Center view" @click="centerSatelliteView" :hidden="satelliteModeEnabled !== 'enabled'">
             <span class="cg-icon cg-icon--flag"></span>
@@ -16,7 +16,6 @@
 [hidden] { display: none !important; }
 
 .cg-scoreboard-container {
-    display: none;
     position: absolute;
     top: 0;
     left: 0;
@@ -60,7 +59,8 @@
     height: 100%;
 }
 .cg-icon--gear { background-image: url(asset:icons/gear.svg); }
-.cg-icon--eye { background-image: url(asset:icons/opened_eye.svg); }
+.cg-icon--eyeOpen { background-image: url(asset:icons/opened_eye.svg); }
+.cg-icon--eyeClosed { background-image: url(asset:icons/closed_eye.svg); }
 .cg-icon--flag { background-image: url(asset:icons/startFlag.svg); }
 </style>
 <script lang="ts" setup>
@@ -83,6 +83,8 @@ const {
 const gameState = ref<"in-round" | "round-results" | "game-results" | "none">("none");
 const currentLocation = ref<LatLng | null>(null);
 const twitchConnectionState = useTwitchConnectionState();
+const scoreboardVisibleSetting = ref(true);
+const isScoreboardVisible = computed(() => gameState.value !== "none" && scoreboardVisibleSetting.value)
 const satelliteModeEnabled = useLocalStorage<"enabled" | "disabled">("satelliteModeEnabled", "disabled");
 
 const scoreboardContainer = ref<HTMLDivElement | null>(null);
@@ -139,7 +141,6 @@ useIpcRendererOn(ipcRenderer, "game-started", (_event, isMultiGuess, restoredGue
         return;
     }
 
-    scoreboard.checkVisibility();
     scoreboard.reset(isMultiGuess);
 
     if (restoredGuesses.length > 0) {
@@ -168,7 +169,6 @@ useIpcRendererOn(ipcRenderer, "refreshed-in-game", (_event, location) => {
     if (satelliteModeEnabled.value === "enabled") {
         rendererApi.showSatelliteMap(location);
     }
-    scoreboard.checkVisibility();
 });
 
 useIpcRendererOn(ipcRenderer, "game-quitted", () => {
@@ -178,7 +178,6 @@ useIpcRendererOn(ipcRenderer, "game-quitted", () => {
         return;
     }
 
-    scoreboard.hide();
     rendererApi.clearMarkers();
 });
 
@@ -231,7 +230,6 @@ useIpcRendererOn(ipcRenderer, "next-round", (_event, isMultiGuess, location) => 
         return;
     }
 
-    scoreboard.checkVisibility();
     scoreboard.reset(isMultiGuess);
     scoreboard.showSwitch(true);
 });
@@ -264,7 +262,7 @@ function openSettings () {
 }
 
 function toggleScoreboard () {
-    scoreboard?.toogleVisibility();
+    scoreboardVisibleSetting.value = !scoreboardVisibleSetting.value;
 }
 
 function centerSatelliteView () {

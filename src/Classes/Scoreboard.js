@@ -37,7 +37,6 @@ class Scoreboard {
         this.onToggleGuesses = props.onToggleGuesses;
         this.focusOnGuess = props.focusOnGuess;
 
-        this.visibility = JSON.parse(localStorage.getItem("scoreboard_visibility")) || true;
         this.position = JSON.parse(localStorage.getItem("scoreboard_position")) || {
             top: 20,
             left: 5,
@@ -230,28 +229,6 @@ class Scoreboard {
         $("#datatable tbody").off("click");
 
         this.table.clear().draw();
-    }
-
-    toogleVisibility() {
-        this.visibility = !this.visibility;
-        localStorage.setItem("scoreboard_visibility", JSON.stringify(this.visibility));
-        this.checkVisibility();
-    }
-
-    checkVisibility() {
-        if (this.visibility) {
-            this.show();
-        } else {
-            this.hide();
-        }
-    }
-
-    show() {
-        this.container.show();
-    }
-
-    hide() {
-        this.container.hide();
     }
 
     /**

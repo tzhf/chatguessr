@@ -1,7 +1,7 @@
 {
 	"name": "chatguessr",
 	"productName": "ChatGuessr",
-	"version": "2.2.7",
+	"version": "2.2.8",
 	"description": "The original GeoGuessr Twitch Chatbot",
 	"author": "ChatGuessr",
 	"license": "MIT",

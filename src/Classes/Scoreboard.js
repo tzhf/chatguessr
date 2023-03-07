@@ -319,7 +319,7 @@ class Scoreboard {
         if (scores[2]) scores[2].color = "#A3682E";
         const rows = scores.map((score) => {
             const isTimed5k = !isTotal && score.score === 5000;
-            const distance = this.toMeter(score.distance);
+            const distanceDisplay = this.toMeter(score.distance);
             return {
                 Position: "",
                 Player: `${
@@ -329,8 +329,8 @@ class Scoreboard {
                 }<span class='username' style='color:${score.color}'>${score.username}</span>`,
                 Streak: { current: score.streak, last: isTotal ? null : score.lastStreak },
                 Distance: {
-                    value: distance,
-                    display: isTimed5k ? `${distance} [${formatDuration(score.time * 1000)}]` : distance,
+                    value: score.distance,
+                    display: isTimed5k ? `${distanceDisplay} [${formatDuration(score.time * 1000)}]` : distanceDisplay,
                 },
                 Score: isTotal ? `${score.score} [${score.rounds}]` : score.score,
             };

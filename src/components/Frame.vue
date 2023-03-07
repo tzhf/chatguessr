@@ -85,7 +85,9 @@ const currentLocation = ref<LatLng | null>(null);
 const twitchConnectionState = useTwitchConnectionState();
 const scoreboardVisibleSetting = ref(true);
 const isScoreboardVisible = computed(() => gameState.value !== "none" && scoreboardVisibleSetting.value)
-const satelliteModeEnabled = useLocalStorage<"enabled" | "disabled">("satelliteModeEnabled", "disabled");
+const satelliteModeEnabled = useLocalStorage<"enabled" | "disabled">("satelliteModeEnabled", "disabled", {
+    listenToStorageChanges: true,
+});
 
 const scoreboardContainer = ref<HTMLDivElement | null>(null);
 let scoreboard: Scoreboard | null = null;
@@ -257,7 +259,11 @@ function toggleScoreboard () {
 
 function centerSatelliteView () {
     if (currentLocation.value) {
-        rendererApi.showSatelliteMap(currentLocation.value);
+        rendererApi.showSatelliteMap({
+            // Clone because we can't send a Proxy.
+            lat: currentLocation.value.lat,
+            lng: currentLocation.value.lng,
+        });
     }
 }
 </script>

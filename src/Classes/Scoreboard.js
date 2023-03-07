@@ -1,15 +1,19 @@
-"use strict";
+import formatDuration from "format-duration";
+import "../utils/globalJquery";
+import "jquery-ui-dist/jquery-ui";
+import dataTables from "datatables.net/js/jquery.dataTables";
+dataTables(window, $);
+import scrollResize from "datatables.net-plugins/features/scrollResize/dataTables.scrollResize";
+scrollResize(window, $);
+import buttons from "datatables.net-buttons/js/dataTables.buttons";
+buttons(window, $);
+import colVis from "datatables.net-buttons/js/buttons.colVis";
+colVis(window, $);
+import scroller from "datatables.net-scroller/js/dataTables.scroller";
+scroller(window, $);
 
-const formatDuration = require("format-duration");
-const $ = require("jquery");
-window.$ = window.jQuery = $;
-require("jquery-ui-dist/jquery-ui");
-require("datatables.net/js/jquery.dataTables")(window, $);
-require("datatables.net-plugins/sorting/natural");
-require("datatables.net-plugins/features/scrollResize/dataTables.scrollResize")(window, $);
-require("datatables.net-buttons/js/dataTables.buttons")(window, $);
-require("datatables.net-buttons/js/buttons.colVis")(window, $);
-require("datatables.net-scroller/js/dataTables.scroller")(window, $);
+// We'll rely on this race condition getting loaded before it's necessary…
+import("datatables.net-plugins/sorting/natural");
 
 /** @typedef {import('../types').Guess} Guess */
 /** @typedef {import("../types").LatLng} LatLng */
@@ -461,4 +465,4 @@ class Scoreboard {
     }
 }
 
-module.exports = Scoreboard;
+export default Scoreboard;

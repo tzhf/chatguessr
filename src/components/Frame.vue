@@ -1,17 +1,15 @@
 <template>
-    <div id="chatguessr-ui">
-        <div class="cg-scoreboard-container" ref="scoreboardContainer"></div>
-        <div class="cg-menu">
-            <button :class="['cg-button', twitchConnectionState]" title="settings" @click="openSettings">
-                <span class="cg-icon cg-icon--gear"></span>
-            </button>
-            <button class="cg-button" title="Show/Hide scoreboard" @click="toggleScoreboard" :hidden="gameState === 'none'">
-                <span class="cg-icon cg-icon--eye"></span>
-            </button>
-            <button class="cg-button" title="Center view" @click="centerSatelliteView" :hidden="satelliteModeEnabled !== 'enabled'">
-                <span class="cg-icon cg-icon--flag"></span>
-            </button>
-        </div>
+    <div class="cg-scoreboard-container" ref="scoreboardContainer"></div>
+    <div class="cg-menu">
+        <button :class="['cg-button', twitchConnectionState]" title="settings" @click="openSettings">
+            <span class="cg-icon cg-icon--gear"></span>
+        </button>
+        <button class="cg-button" title="Show/Hide scoreboard" @click="toggleScoreboard" :hidden="gameState === 'none'">
+            <span class="cg-icon cg-icon--eye"></span>
+        </button>
+        <button class="cg-button" title="Center view" @click="centerSatelliteView" :hidden="satelliteModeEnabled !== 'enabled'">
+            <span class="cg-icon cg-icon--flag"></span>
+        </button>
     </div>
 </template>
 <style scoped>

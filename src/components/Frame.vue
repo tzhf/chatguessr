@@ -137,6 +137,10 @@ useIpcRendererOn(ipcRenderer, "game-started", (_event, isMultiGuess, restoredGue
     gameState.value = "in-round";
     currentLocation.value = location;
 
+    if (satelliteModeEnabled.value === "enabled") {
+        rendererApi.showSatelliteMap(location);
+    }
+
     if (!scoreboard) {
         return;
     }
@@ -153,19 +157,10 @@ useIpcRendererOn(ipcRenderer, "game-started", (_event, isMultiGuess, restoredGue
             }
         }
     }
-
-    if (satelliteModeEnabled.value === "enabled") {
-        rendererApi.showSatelliteMap(location);
-    }
 });
 
 useIpcRendererOn(ipcRenderer, "refreshed-in-game", (_event, location) => {
     gameState.value = "in-round";
-    
-    if (!scoreboard) {
-        return;
-    }
-
     if (satelliteModeEnabled.value === "enabled") {
         rendererApi.showSatelliteMap(location);
     }
@@ -173,11 +168,6 @@ useIpcRendererOn(ipcRenderer, "refreshed-in-game", (_event, location) => {
 
 useIpcRendererOn(ipcRenderer, "game-quitted", () => {
     gameState.value = "none";
-    
-    if (!scoreboard) {
-        return;
-    }
-
     rendererApi.clearMarkers();
 });
 

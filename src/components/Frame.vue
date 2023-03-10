@@ -64,7 +64,7 @@
 .cg-icon--flag { background-image: url(asset:icons/startFlag.svg); }
 </style>
 <script lang="ts" setup>
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, shallowRef, onMounted, watch, computed } from "vue";
 import { useLocalStorage, useStyleTag } from "@vueuse/core";
 import { useIpcRendererOn } from "@vueuse/electron";
 import type { LatLng, RendererApi } from "../types";
@@ -81,7 +81,7 @@ const {
 }>();
 
 const gameState = ref<"in-round" | "round-results" | "game-results" | "none">("none");
-const currentLocation = ref<LatLng | null>(null);
+const currentLocation = shallowRef<LatLng | null>(null);
 const twitchConnectionState = useTwitchConnectionState();
 const scoreboardVisibleSetting = ref(true);
 const isScoreboardVisible = computed(() => gameState.value !== "none" && scoreboardVisibleSetting.value)
@@ -119,7 +119,7 @@ watch(removeMarkers, (load) => {
     } else {
         markerRemover.unload();
     }
-});
+}, { immediate: true });
 
 // Remove the game's controls when in satellite mode.
 const gameControlsRemover = useStyleTag(".styles_columnTwo___2qFL, .styles_controlGroup___ArrW, .compass, .game-layout__compass { display: none !important; }", {
@@ -133,7 +133,7 @@ watch(removeGameControls, (load) => {
     } else {
         gameControlsRemover.unload();
     }
-});
+}, { immediate: true });
 
 useIpcRendererOn(ipcRenderer, "game-started", (_event, isMultiGuess, restoredGuesses, location) => {
     gameState.value = "in-round";
@@ -259,11 +259,7 @@ function toggleScoreboard () {
 
 function centerSatelliteView () {
     if (currentLocation.value) {
-        rendererApi.showSatelliteMap({
-            // Clone because we can't send a Proxy.
-            lat: currentLocation.value.lat,
-            lng: currentLocation.value.lng,
-        });
+        rendererApi.showSatelliteMap(currentLocation.value);
     }
 }
 </script>

@@ -132,7 +132,8 @@ class GameHandler {
      */
     #showResults(location, scores) {
         const round = this.#game.isFinished ? this.#game.round : this.#game.round - 1;
-        this.#win.webContents.send("show-round-results", round, location, scores);
+        const { guessMarkersLimit } = Settings.read();
+        this.#win.webContents.send("show-round-results", round, location, scores, guessMarkersLimit);
         this.#backend.sendMessage(
             `🌎 Round ${round} has finished. Congrats ${flags.getEmoji(scores[0].flag)} ${scores[0].username} !`,
             { system: true }

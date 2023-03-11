@@ -5,7 +5,7 @@ const fs = require("fs");
 const { BrowserWindow, shell } = require("electron");
 const styles = `
 	${require("bundle-text:../../assets/styles.css")}
-	${fs.readFileSync(path.join(__dirname, "../../dist/cg-preload/preload.css"), "utf8")}
+	${fs.readFileSync(path.join(__dirname, "../../dist/cg-renderer/renderer.css"), "utf8")}
 `;
 const js = fs.readFileSync(path.join(__dirname, "../../dist/cg-renderer/renderer.js"), "utf8");
 

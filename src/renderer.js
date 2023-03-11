@@ -1,26 +1,32 @@
-"use strict";
-
-require("./utils/mods/extenssrMenuItemsPlugin");
-
+import { createApp } from "vue";
+import "./utils/mods/extenssrMenuItemsPlugin";
 /** @type {import('./types').RendererApi['drParseNoCar']} */
 import { drParseNoCar } from "./utils/mods/drParseNoCar";
 /** @type {import('./types').RendererApi['blinkMode']} */
 import { blinkMode } from "./utils/mods/blinkMode";
 /** @type {import('./types').RendererApi['satelliteMode']} */
 import { satelliteMode } from "./utils/mods/satelliteMode";
+import Frame from "./components/Frame.vue";
 
-window.chatguessrApi.init({
-    populateMap,
-    clearMarkers,
-    drParseNoCar,
-    blinkMode,
-    satelliteMode,
-    showSatelliteMap,
-    hideSatelliteMap,
-    centerSatelliteView,
-    getBounds,
-    focusOnGuess,
-});
+function start() {
+    drParseNoCar();
+    blinkMode();
+    satelliteMode();
+
+    const wrapper = document.createElement("div");
+    document.body.append(wrapper);
+
+    const app = createApp(Frame, {
+        chatguessrApi: window.chatguessrApi,
+        populateMap,
+        clearMarkers,
+        focusOnGuess,
+        showSatelliteMap,
+        hideSatelliteMap,
+        centerSatelliteView,
+    });
+    app.mount(wrapper);
+}
 
 /** @type {google.maps.Map | undefined} */
 let globalMap = undefined;
@@ -316,3 +322,5 @@ function getBounds(location, limit) {
 
     return { north, south, west, east };
 }
+
+start();

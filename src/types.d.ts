@@ -108,17 +108,11 @@ export interface RendererApi {
     focusOnGuess(location: LatLng);
 }
 
-export interface ChatguessrApi {
-    init(api: RendererApi);
-    startNextRound();
-    returnToMapPage();
-}
-
 declare global {
     interface Window {
         jQuery: typeof import("jquery");
         $: typeof import("jquery");
-        chatguessrApi: ChatguessrApi;
+        chatguessrApi: import("./preload").ChatguessrApi;
     }
 
     namespace DataTables {

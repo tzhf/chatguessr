@@ -64,20 +64,24 @@
 .cg-icon--flag { background-image: url(asset:icons/startFlag.svg); }
 </style>
 <script lang="ts" setup>
-import { ref, shallowRef, onMounted, watch, computed } from "vue";
+import { ref, shallowRef, onMounted, onBeforeUnmount, watch, computed } from "vue";
 import { useLocalStorage, useStyleTag } from "@vueuse/core";
-import { useIpcRendererOn } from "@vueuse/electron";
-import type { LatLng, RendererApi } from "../types";
+import type { LatLng, Location } from "../types";
 // Only import the type here, we have to import Scoreboard on mount so jQuery has access to all the elements it needs.
-import type Scoreboard from "../Classes/Scoreboard";
-import Settings from "../utils/Settings";
+import Scoreboard from "../Classes/Scoreboard";
+import type { ChatguessrApi } from "./preload";
 
 const {
-    rendererApi,
-    ipcRenderer,
+    chatguessrApi,
+    ...rendererApi
 } = defineProps<{
-    rendererApi: RendererApi,
-    ipcRenderer: Electron.IpcRenderer,
+    chatguessrApi: ChatguessrApi,
+    populateMap: (location: Location, scores: Guess[], limit: number) => void,
+    clearMarkers: () => void,
+    focusOnGuess: (location: LatLng) => void,
+    showSatelliteMap: (location: LatLng) => void,
+    hideSatelliteMap: () => void,
+    centerSatelliteView: (location: LatLng) => void,
 }>();
 
 const gameState = ref<"in-round" | "round-results" | "game-results" | "none">("none");
@@ -92,17 +96,12 @@ const satelliteModeEnabled = useLocalStorage<"enabled" | "disabled">("satelliteM
 const scoreboardContainer = ref<HTMLDivElement | null>(null);
 let scoreboard: Scoreboard | null = null;
 onMounted(async () => {
-    const { default: Scoreboard } = await import("../Classes/Scoreboard");
     scoreboard = new Scoreboard(scoreboardContainer.value!, {
         focusOnGuess(location) {
             rendererApi.focusOnGuess(location);
         },
         onToggleGuesses(open) {
-            if (open) {
-                ipcRenderer.send("open-guesses");
-            } else {
-                ipcRenderer.send("close-guesses");
-            }
+            chatguessrApi.setGuessesOpen(open);
         },
     });
 });
@@ -135,7 +134,7 @@ watch(removeGameControls, (load) => {
     }
 }, { immediate: true });
 
-useIpcRendererOn(ipcRenderer, "game-started", (_event, isMultiGuess, restoredGuesses, location) => {
+chatguessrApi.onGameStarted((isMultiGuess, restoredGuesses, location) => {
     gameState.value = "in-round";
     currentLocation.value = location;
 
@@ -161,30 +160,29 @@ useIpcRendererOn(ipcRenderer, "game-started", (_event, isMultiGuess, restoredGue
     }
 });
 
-useIpcRendererOn(ipcRenderer, "refreshed-in-game", (_event, location) => {
+chatguessrApi.onRefreshRound((location) => {
     gameState.value = "in-round";
     if (satelliteModeEnabled.value === "enabled") {
         rendererApi.showSatelliteMap(location);
     }
 });
 
-useIpcRendererOn(ipcRenderer, "game-quitted", () => {
+chatguessrApi.onGameQuit(() => {
     gameState.value = "none";
     rendererApi.clearMarkers();
 });
 
-useIpcRendererOn(ipcRenderer, "render-guess", (_event, guess) => {
+chatguessrApi.onReceiveGuess((guess) => {
     scoreboard?.renderGuess(guess);
 });
 
-useIpcRendererOn(ipcRenderer, "render-multiguess", (_event, guesses) => {
+chatguessrApi.onReceiveMultiGuesses((guesses) => {
     scoreboard?.renderMultiGuess(guesses);
 });
 
-useIpcRendererOn(ipcRenderer, "show-round-results", (_event, round, location, scores) => {
+chatguessrApi.onShowRoundResults((round, location, scores, guessMarkersLimit) => {
     gameState.value = "round-results";
-    
-    const { guessMarkersLimit } = Settings.read();
+
     rendererApi.populateMap(location, scores, guessMarkersLimit);
 
     if (!scoreboard) {
@@ -196,7 +194,7 @@ useIpcRendererOn(ipcRenderer, "show-round-results", (_event, round, location, sc
     scoreboard.showSwitch(false);
 });
 
-useIpcRendererOn(ipcRenderer, "show-final-results", (_event, totalScores) => {
+chatguessrApi.onShowFinalResults((totalScores) => {
     gameState.value = "game-results";
     rendererApi.clearMarkers();
 
@@ -209,7 +207,7 @@ useIpcRendererOn(ipcRenderer, "show-final-results", (_event, totalScores) => {
     scoreboard.displayScores(totalScores, true);
 });
 
-useIpcRendererOn(ipcRenderer, "next-round", (_event, isMultiGuess, location) => {
+chatguessrApi.onStartRound((isMultiGuess, location) => {
     gameState.value = "in-round";
     currentLocation.value = location;
     
@@ -226,11 +224,8 @@ useIpcRendererOn(ipcRenderer, "next-round", (_event, isMultiGuess, location) => 
     scoreboard.showSwitch(true);
 });
 
-useIpcRendererOn(ipcRenderer, "switch-on", () => {
-    scoreboard?.switchOn(true);
-});
-useIpcRendererOn(ipcRenderer, "switch-off", () => {
-    scoreboard?.switchOn(false);
+chatguessrApi.onGuessesOpenChanged((open) => {
+    scoreboard?.switchOn(open);
 });
 
 /** Load and update twitch connection state. */
@@ -238,19 +233,19 @@ function useTwitchConnectionState () {
     const conn = ref<"connected" | 'connecting' | 'disconnected'>("disconnected");
 
     onMounted(async () => {
-        const { state } = await ipcRenderer.invoke("get-connection-state")
+        const { state } = await chatguessrApi.getConnectionState();
         conn.value = state;
     });
 
-    useIpcRendererOn(ipcRenderer, "connection-state", (_event, {  state }) => {
+    onBeforeUnmount(chatguessrApi.onConnectionStateChange(({ state }) => {
         conn.value = state;
-    });
+    }));
 
     return conn;
 }
 
 function openSettings () {
-    ipcRenderer.send("openSettings");
+    chatguessrApi.openSettings();
 }
 
 function toggleScoreboard () {
@@ -259,7 +254,7 @@ function toggleScoreboard () {
 
 function centerSatelliteView () {
     if (currentLocation.value) {
-        rendererApi.showSatelliteMap(currentLocation.value);
+        rendererApi.centerSatelliteView(currentLocation.value);
     }
 }
 </script>

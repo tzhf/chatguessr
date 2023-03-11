@@ -13,7 +13,7 @@ import scroller from "datatables.net-scroller/js/dataTables.scroller";
 scroller(window, $);
 
 // We'll rely on this race condition getting loaded before it's necessary…
-import("datatables.net-plugins/sorting/natural");
+// import("datatables.net-plugins/sorting/natural");
 
 /** @typedef {import('../types').Guess} Guess */
 /** @typedef {import("../types").LatLng} LatLng */

@@ -1,5 +1,5 @@
 {
-	"extends": "@tsconfig/node16",
+	"extends": "@tsconfig/node16/tsconfig.json",
 	"compilerOptions": {
 		"lib": ["es2021", "dom", "dom.iterable"],
 		"noEmit": true,

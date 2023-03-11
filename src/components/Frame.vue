@@ -66,10 +66,10 @@
 <script lang="ts" setup>
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, computed } from "vue";
 import { useLocalStorage, useStyleTag } from "@vueuse/core";
-import type { LatLng, Location } from "../types";
+import type { LatLng, Location, Guess } from "../types";
 // Only import the type here, we have to import Scoreboard on mount so jQuery has access to all the elements it needs.
 import Scoreboard from "../Classes/Scoreboard";
-import type { ChatguessrApi } from "./preload";
+import type { ChatguessrApi } from "../preload";
 
 const {
     chatguessrApi,

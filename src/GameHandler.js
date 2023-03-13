@@ -13,6 +13,7 @@ const SOCKET_SERVER_URL = process.env.SOCKET_SERVER_URL ?? "https://chatguessr-s
 const settings = Settings.read();
 
 /** @typedef {import('./types').Guess} Guess */
+/** @typedef {import('./types').RoundScore} RoundScore */
 /** @typedef {import('./types').Location} Location */
 /** @typedef {import('./utils/Database')} Database */
 /** @typedef {import('./Windows/MainWindow')} MainWindow */
@@ -128,7 +129,7 @@ class GameHandler {
 
     /**
      * @param {Location} location
-     * @param {Guess[]} scores
+     * @param {RoundScore[]} scores
      */
     #showResults(location, scores) {
         const round = this.#game.isFinished ? this.#game.round : this.#game.round - 1;

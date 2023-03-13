@@ -16,6 +16,8 @@ scroller(window, $);
 // import("datatables.net-plugins/sorting/natural");
 
 /** @typedef {import('../types').Guess} Guess */
+/** @typedef {import('../types').RoundScore} RoundScore */
+/** @typedef {import('../types').FinalScore} FinalScore */
 /** @typedef {import("../types").LatLng} LatLng */
 
 /**
@@ -264,7 +266,7 @@ class Scoreboard {
     }
 
     /**
-     * @param {{ username: string, flag: string, color: string }[]} guesses
+     * @param {{ username: string, flag: string | null, color: string }[]} guesses
      */
     renderMultiGuess(guesses) {
         const rows = guesses.map((guess) => {
@@ -288,9 +290,9 @@ class Scoreboard {
     }
 
     /**
-     * @param {{ username: string, position: LatLng, color: string, flag: string, streak: number, lastStreak: number | null, distance: number, score: number, time?: number, rounds?: number }[]} scores
-     * @param { boolean } isTotal
-     * @param { number } limit
+     * @param {RoundScore[] | FinalScore[]} scores
+     * @param {boolean} [isTotal]
+     * @param {number} [limit]
      */
     displayScores(scores, isTotal = false, limit = 100) {
         this.isResults = true;
@@ -345,8 +347,10 @@ class Scoreboard {
             const self = this;
             $("#datatable tbody").on("click", "tr", function () {
                 const index = self.table.row(this).index();
-                if (index >= limit) return;
-                self.focusOnGuess(scores[index].position);
+                const score = scores[index];
+                if (score && 'position' in score) {
+                    self.focusOnGuess(score.position);
+                }
             });
         }
 

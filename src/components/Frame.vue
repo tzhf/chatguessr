@@ -7,7 +7,7 @@
         <button class="cg-button" title="Show/Hide scoreboard" @click="toggleScoreboard" :hidden="gameState === 'none'">
             <span :class="['cg-icon', scoreboardVisibleSetting ? 'cg-icon--eyeOpen' : 'cg-icon--eyeClosed']"></span>
         </button>
-        <button class="cg-button" title="Center view" @click="centerSatelliteView" :hidden="satelliteModeEnabled !== 'enabled'">
+        <button class="cg-button" title="Center view" @click="centerSatelliteView" :hidden="satelliteModeEnabled.value !== 'enabled' || gameState !== 'in-round'">
             <span class="cg-icon cg-icon--flag"></span>
         </button>
     </div>
@@ -65,7 +65,7 @@
 </style>
 <script lang="ts" setup>
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, computed } from "vue";
-import { useLocalStorage, useStyleTag } from "@vueuse/core";
+import { useStyleTag } from "@vueuse/core";
 import type { LatLng, Location, Guess } from "../types";
 // Only import the type here, we have to import Scoreboard on mount so jQuery has access to all the elements it needs.
 import Scoreboard from "../Classes/Scoreboard";
@@ -89,9 +89,17 @@ const currentLocation = shallowRef<LatLng | null>(null);
 const twitchConnectionState = useTwitchConnectionState();
 const scoreboardVisibleSetting = ref(true);
 const isScoreboardVisible = computed(() => gameState.value !== "none" && scoreboardVisibleSetting.value)
-const satelliteModeEnabled = useLocalStorage<"enabled" | "disabled">("satelliteModeEnabled", "disabled", {
-    listenToStorageChanges: true,
-});
+const satelliteModeEnabled = {
+    // Manual implementation of `ref()` API
+    // As `useLocalStorage` does not receive storage events from the non-vue UI script
+    // TODO(@ReAnnannanna): Replace this with `useLocalStorage` when the pregame UI script is using Vue
+    get value(): "enabled" | "disabled" {
+        return localStorage.getItem("satelliteModeEnabled") === "enabled" ? "enabled" : "disabled";
+    },
+    set value(value: "enabled" | "disabled") {
+        localStorage.setItem("satelliteModeEnabled", value);
+    },
+};
 
 const scoreboardContainer = ref<HTMLDivElement | null>(null);
 let scoreboard: Scoreboard | null = null;
@@ -125,6 +133,7 @@ const gameControlsRemover = useStyleTag(".styles_columnTwo___2qFL, .styles_contr
     id: "cg-game-controls-remover",
     manual: true,
 });
+// `satelliteModeEnabled` is not actually reactive, but the actual change we're interested in is in `gameState` anyways.
 const removeGameControls = computed(() => gameState.value !== "none" && satelliteModeEnabled.value === "enabled");
 watch(removeGameControls, (load) => {
     if (load) {
@@ -134,7 +143,7 @@ watch(removeGameControls, (load) => {
     }
 }, { immediate: true });
 
-chatguessrApi.onGameStarted((isMultiGuess, restoredGuesses, location) => {
+onBeforeUnmount(chatguessrApi.onGameStarted((isMultiGuess, restoredGuesses, location) => {
     gameState.value = "in-round";
     currentLocation.value = location;
 
@@ -158,29 +167,29 @@ chatguessrApi.onGameStarted((isMultiGuess, restoredGuesses, location) => {
             }
         }
     }
-});
+}));
 
-chatguessrApi.onRefreshRound((location) => {
+onBeforeUnmount(chatguessrApi.onRefreshRound((location) => {
     gameState.value = "in-round";
     if (satelliteModeEnabled.value === "enabled") {
         rendererApi.showSatelliteMap(location);
     }
-});
+}));
 
-chatguessrApi.onGameQuit(() => {
+onBeforeUnmount(chatguessrApi.onGameQuit(() => {
     gameState.value = "none";
     rendererApi.clearMarkers();
-});
+}));
 
-chatguessrApi.onReceiveGuess((guess) => {
+onBeforeUnmount(chatguessrApi.onReceiveGuess((guess) => {
     scoreboard?.renderGuess(guess);
-});
+}));
 
-chatguessrApi.onReceiveMultiGuesses((guesses) => {
+onBeforeUnmount(chatguessrApi.onReceiveMultiGuesses((guesses) => {
     scoreboard?.renderMultiGuess(guesses);
-});
+}));
 
-chatguessrApi.onShowRoundResults((round, location, scores, guessMarkersLimit) => {
+onBeforeUnmount(chatguessrApi.onShowRoundResults((round, location, scores, guessMarkersLimit) => {
     gameState.value = "round-results";
 
     rendererApi.populateMap(location, scores, guessMarkersLimit);
@@ -192,9 +201,9 @@ chatguessrApi.onShowRoundResults((round, location, scores, guessMarkersLimit) =>
     scoreboard.setTitle(`ROUND ${round} RESULTS (${scores.length})`);
     scoreboard.displayScores(scores, false, guessMarkersLimit);
     scoreboard.showSwitch(false);
-});
+}));
 
-chatguessrApi.onShowFinalResults((totalScores) => {
+onBeforeUnmount(chatguessrApi.onShowFinalResults((totalScores) => {
     gameState.value = "game-results";
     rendererApi.clearMarkers();
 
@@ -205,9 +214,9 @@ chatguessrApi.onShowFinalResults((totalScores) => {
     scoreboard.setTitle(`HIGHSCORES (${totalScores.length})`);
     scoreboard.showSwitch(false);
     scoreboard.displayScores(totalScores, true);
-});
+}));
 
-chatguessrApi.onStartRound((isMultiGuess, location) => {
+onBeforeUnmount(chatguessrApi.onStartRound((isMultiGuess, location) => {
     gameState.value = "in-round";
     currentLocation.value = location;
     
@@ -222,11 +231,11 @@ chatguessrApi.onStartRound((isMultiGuess, location) => {
 
     scoreboard.reset(isMultiGuess);
     scoreboard.showSwitch(true);
-});
+}));
 
-chatguessrApi.onGuessesOpenChanged((open) => {
+onBeforeUnmount(chatguessrApi.onGuessesOpenChanged((open) => {
     scoreboard?.switchOn(open);
-});
+}));
 
 /** Load and update twitch connection state. */
 function useTwitchConnectionState () {

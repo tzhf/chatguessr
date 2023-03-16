@@ -20,7 +20,19 @@ export type Guess = {
     lastStreak: number | null;
     distance: number;
     score: number;
-    time: number;
+    time?: number;
+};
+
+export type GameResult = {
+    username: string;
+    color: string;
+    flag: string;
+    streak: number;
+    guesses: (LatLng | null)[];
+    scores: (number | null)[];
+    distances: (number | null)[];
+    totalScore: number;
+    totalDistance: number;
 };
 
 export type Bounds = {
@@ -96,16 +108,18 @@ export type Seed = GameSettings & {
 };
 
 export interface RendererApi {
-    populateMap(location: Location, scores: Guess[], limit: number);
-    clearMarkers();
+    drawRoundResults(location: Location, roundResults: Guess[], limit?: number);
+    drawGameLocations(locations: Location[]);
+    drawPlayerResults(locations: Location[], result: GameResult);
+    focusOnGuess(location: LatLng);
+    clearMarkers(keepLocationMarkers?: boolean);
     drParseNoCar();
     blinkMode();
     satelliteMode();
     showSatelliteMap(location: LatLng);
     hideSatelliteMap();
     centerSatelliteView(location: LatLng);
-    getBounds(location: LatLng, meters: number);
-    focusOnGuess(location: LatLng);
+    getBounds(location: LatLng, limit: number);
 }
 
 export interface ChatguessrApi {

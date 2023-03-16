@@ -85,7 +85,7 @@ class GameHandler {
     nextRound() {
         if (this.#game.isFinished) {
             this.#game.finishGame();
-            this.#processTotalScores();
+            this.#showGameResults();
         } else {
             this.#win.webContents.send("next-round", this.#game.isMultiGuess, this.#game.getLocation());
             this.#backend.sendMessage(`🌎 Round ${this.#game.round} has started`, { system: true });
@@ -98,11 +98,36 @@ class GameHandler {
         this.#win.loadURL(`https://www.geoguessr.com/maps/${mapUrl}/play`);
     }
 
-    async #processTotalScores() {
-        const totalScores = this.#game.getTotalScores();
-        this.#win.webContents.send("show-final-results", totalScores);
+    /**
+     * @param {Location} location
+     * @param {Guess[]} roundResults
+     */
+    #showRoundResults(location, roundResults) {
+        const round = this.#game.isFinished ? this.#game.round : this.#game.round - 1;
 
+        if (roundResults[0]) roundResults[0].color = "#E3BB39";
+        if (roundResults[1]) roundResults[1].color = "#C9C9C9";
+        if (roundResults[2]) roundResults[2].color = "#A3682E";
+
+        this.#win.webContents.send("show-round-results", round, location, roundResults);
+        this.#backend.sendMessage(
+            `🌎 Round ${round} has finished. Congrats ${flags.getEmoji(roundResults[0].flag)} ${
+                roundResults[0].username
+            } !`,
+            { system: true }
+        );
+    }
+
+    async #showGameResults() {
+        const gameResults = this.#game.getGameResults();
         const locations = this.#game.getLocations();
+
+        if (gameResults[0]) gameResults[0].color = "#E3BB39";
+        if (gameResults[1]) gameResults[1].color = "#C9C9C9";
+        if (gameResults[2]) gameResults[2].color = "#A3682E";
+
+        this.#win.webContents.send("show-game-results", locations, gameResults);
+
         /** @type {string|undefined} */
         let link;
         try {
@@ -113,28 +138,15 @@ class GameHandler {
                 this.#game.mapName,
                 this.#game.mode,
                 locations,
-                totalScores
+                gameResults
             );
         } catch (error) {
             console.error("could not upload summary", error);
         }
         await this.#backend.sendMessage(
-            `🌎 Game finished. Congrats ${flags.getEmoji(totalScores[0].flag)} ${totalScores[0].username} 🏆! ${
+            `🌎 Game finished. Congrats ${flags.getEmoji(gameResults[0].flag)} ${gameResults[0].username} 🏆! ${
                 link != undefined ? `Game summary: ${link}` : ""
             }`,
-            { system: true }
-        );
-    }
-
-    /**
-     * @param {Location} location
-     * @param {Guess[]} scores
-     */
-    #showResults(location, scores) {
-        const round = this.#game.isFinished ? this.#game.round : this.#game.round - 1;
-        this.#win.webContents.send("show-round-results", round, location, scores);
-        this.#backend.sendMessage(
-            `🌎 Round ${round} has finished. Congrats ${flags.getEmoji(scores[0].flag)} ${scores[0].username} !`,
             { system: true }
         );
     }
@@ -151,7 +163,7 @@ class GameHandler {
                     .then(() => {
                         const guesses = this.#game.isMultiGuess
                             ? this.#game.getMultiGuesses()
-                            : this.#game.getRoundScores();
+                            : this.#game.getRoundResults();
                         this.#win.webContents.send(
                             "game-started",
                             this.#game.isMultiGuess,
@@ -186,9 +198,9 @@ class GameHandler {
             // Checks and update seed when the this.game has refreshed
             // update the current location if it was skipped
             // if the streamer has guessed returns scores
-            this.#game.refreshSeed().then((scores) => {
-                if (scores) {
-                    this.#showResults(scores.location, scores.scores);
+            this.#game.refreshSeed().then((roundResults) => {
+                if (roundResults) {
+                    this.#showRoundResults(roundResults.location, roundResults.roundResults);
                 }
             });
 
@@ -533,28 +545,28 @@ class GameHandler {
         }
 
         // streamer commands
-        // if (userstate.badges?.broadcaster !== "1") {
-        //     return;
-        // }
-        // if (process.env.NODE_ENV !== "development") {
-        //     return;
-        // }
+        if (userstate.badges?.broadcaster !== "1") {
+            return;
+        }
+        if (process.env.NODE_ENV !== "development") {
+            return;
+        }
 
-        // if (message.startsWith("!spamguess")) {
-        //     const max = parseInt(message.split(" ")[1] ?? "50", 10);
-        //     for (let i = 0; i < max; i += 1) {
-        //         const { lat, lng } = await GameHelper.getRandomCoordsInLand();
-        //         await this.#handleGuess(
-        //             {
-        //                 "user-id": `123450${i}`,
-        //                 username: `fake_${i}`,
-        //                 "display-name": `fake_${i}`,
-        //                 color: `#${Math.random().toString(16).slice(2, 8).padStart(6, "0")}`,
-        //             },
-        //             `!g ${lat},${lng}`
-        //         );
-        //     }
-        // }
+        if (message.startsWith("!spamguess")) {
+            const max = parseInt(message.split(" ")[1] ?? "50", 10);
+            for (let i = 0; i < max; i += 1) {
+                const { lat, lng } = await GameHelper.getRandomCoordsInLand();
+                await this.#handleGuess(
+                    {
+                        "user-id": `123450${i}`,
+                        username: `fake_${i}`,
+                        "display-name": `fake_${i}`,
+                        color: `#${Math.random().toString(16).slice(2, 8).padStart(6, "0")}`,
+                    },
+                    `!g ${lat},${lng}`
+                );
+            }
+        }
     }
 
     /**

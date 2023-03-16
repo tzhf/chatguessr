@@ -14,7 +14,7 @@ const CG_API_URL = process.env.CG_API_URL ?? "https://chatguessr-api.vercel.app"
 const CG_PUBLIC_URL = process.env.CG_PUBLIC_URL ?? "chatguessr.com";
 
 /** @typedef {import('../types').LatLng} LatLng */
-/** @typedef {import('../types').Guess} Guess */
+/** @typedef {import('../types').GameResult} GameResult */
 /** @typedef {import('../types').Seed} Seed */
 
 /**
@@ -133,37 +133,28 @@ function calculateScore(distance, scale) {
 }
 
 /**
- * Upload scores to the Chatguessr API and return the public URL to the scoreboard.
+ * Upload scores to the Chatguessr API and return the game summary link
  *
- * @param  {string} accessToken
- * @param  {string} bot
- * @param  {string} streamer
- * @param  {string} mapName
+ * @param {string} accessToken
+ * @param {string} bot
+ * @param {string} streamer
+ * @param {string} map
  * @param {Object} mode
- * @param  {LatLng[]} locations
- * @param  {({ username: string, flag: string, score: number, rounds: number })[]} totalScores
+ * @param {LatLng[]} locations
+ * @param {GameResult[]} gameResults
  * @return {Promise<string>}
  */
-async function makeLink(accessToken, bot, streamer, mapName, mode, locations, totalScores) {
-    const players = totalScores.map((guess) => {
-        return {
-            username: guess.username,
-            flag: guess.flag,
-            score: guess.score,
-            rounds: guess.rounds,
-        };
-    });
-
+async function makeLink(accessToken, bot, streamer, map, mode, locations, gameResults) {
     /** @type {import("axios").AxiosResponse<{ code: string }>} */
     const res = await axios.post(
         `${CG_API_URL}/game`,
         {
-            streamer: streamer,
-            bot: bot,
-            map: mapName,
-            mode: mode,
-            locations: locations,
-            players: players,
+            streamer,
+            bot,
+            map,
+            mode,
+            locations,
+            gameResults,
         },
         { headers: { access_token: accessToken } }
     );

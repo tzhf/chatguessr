@@ -68,7 +68,7 @@ describe("getUserStats", () => {
 	});
 });
 
-describe("getRoundScores", () => {
+describe("getRoundResults", () => {
 	it("sorts by score and distance", () => {
 		const user = db.getOrCreateUser("1234567", "libreanna");
 		const user2 = db.getOrCreateUser("1234568", "zehef_");
@@ -116,7 +116,7 @@ describe("getRoundScores", () => {
 			score: 3600,
 		});
 
-		const leaderboard = db.getRoundScores(roundId).map((score) => score.username);
+		const leaderboard = db.getRoundResults(roundId).map((score) => score.username);
 		expect(leaderboard).toEqual([
 			"mramericanmike",
 			"libreanna",
@@ -176,7 +176,7 @@ describe("getRoundScores", () => {
 		// TODO maybe we can use jest simulated timers for this
 		db[Symbol.for('chatguessr-test-run-query')]('UPDATE guesses SET created_at = created_at + 20 WHERE id = :id', { id: second5k });
 
-		const leaderboard = db.getRoundScores(roundId).map((score) => score.username);
+		const leaderboard = db.getRoundResults(roundId).map((score) => score.username);
 		expect(leaderboard).toEqual([
 			"libreanna",
 			"zehef_",
@@ -235,7 +235,7 @@ describe("getRoundScores", () => {
 			score: 5000,
 		});
 
-		const leaderboard = db.getRoundScores(roundId).map((score) => score.username);
+		const leaderboard = db.getRoundResults(roundId).map((score) => score.username);
 		expect(leaderboard).toEqual([
 			"zehef_",
 			"libreanna",

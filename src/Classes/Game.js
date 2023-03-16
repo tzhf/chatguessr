@@ -129,7 +129,7 @@ class Game {
 			const location = this.location;
 			await this.#makeGuess();
 
-			const scores = this.getRoundScores();
+			const roundResults = this.getRoundResults();
 
 			if (this.seed.state !== "finished") {
 				this.#roundId = this.#db.createRound(this.seed.token, this.seed.rounds.at(-1));
@@ -138,7 +138,7 @@ class Game {
 				this.#roundId = undefined;
 			}
 
-			return { location, scores };
+			return { location, roundResults };
 			// Else, if only the loc has changed, the location was skipped, replace current loc
 		} else if (this.#locHasChanged(newSeed)) {
 			this.seed = newSeed;
@@ -178,7 +178,7 @@ class Game {
 	 */
 	async #processMultiGuesses() {
 		// TODO only retrieve location and streak values
-		const guesses = this.#db.getRoundScores(this.#roundId);
+		const guesses = this.#db.getRoundResults(this.#roundId);
 		await pMap(guesses, async (guess) => {
 			const guessedCountry = await GameHelper.getCountryCode(guess.position);
 
@@ -354,8 +354,8 @@ class Game {
 	/**
 	 * Get the scores for the current round, sorted by distance from closest to farthest away.
 	 */
-	getRoundScores() {
-		return this.#db.getRoundScores(this.#roundId);
+	getRoundResults() {
+		return this.#db.getRoundResults(this.#roundId);
 	}
 
 	finishGame() {
@@ -365,8 +365,8 @@ class Game {
 	/**
 	 * Get the combined scores for the current game, sorted from highest to lowest score.
 	 */
-	getTotalScores() {
-		return this.#db.getGameScores(this.seed.token);
+	getGameResults() {
+		return this.#db.getGameResults(this.seed.token);
 	}
 
 	get isFinished() {

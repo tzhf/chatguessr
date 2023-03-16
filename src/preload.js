@@ -9,7 +9,6 @@ import { qs, createEl } from "./utils/domUtils";
 const Settings = require("./utils/Settings");
 
 /** @typedef {import('./types').LatLng} LatLng */
-/** @typedef {import('./types').Guess} Guess */
 
 /** @type {import("./types").ChatguessrApi} */
 const chatguessrApi = {
@@ -55,6 +54,9 @@ function init(rendererApi) {
     const scoreboard = new Scoreboard(scoreboardContainer, {
         focusOnGuess(location) {
             rendererApi.focusOnGuess(location);
+        },
+        drawPlayerResults(locations, result) {
+            rendererApi.drawPlayerResults(locations, result);
         },
         onToggleGuesses(open) {
             if (open) {
@@ -161,24 +163,20 @@ function init(rendererApi) {
         scoreboard.renderMultiGuess(guesses);
     });
 
-    ipcRenderer.on("show-round-results", (_event, round, location, scores) => {
+    ipcRenderer.on("show-round-results", (_event, round, location, roundResults) => {
         const limit = Settings.read().guessMarkersLimit;
-        scoreboard.setTitle(`ROUND ${round} RESULTS (${scores.length})`);
-        scoreboard.displayScores(scores, false, limit);
+        rendererApi.drawRoundResults(location, roundResults, limit);
+        scoreboard.displayRoundResults(roundResults, limit);
+        scoreboard.setTitle(`ROUND ${round} RESULTS (${roundResults.length})`);
         scoreboard.showSwitch(false);
-        rendererApi.populateMap(location, scores, limit);
     });
 
-    ipcRenderer.on("show-final-results", (_event, totalScores) => {
-        scoreboard.setTitle(`HIGHSCORES (${totalScores.length})`);
+    ipcRenderer.on("show-game-results", (_event, locations, gameResults) => {
+        rendererApi.drawGameLocations(locations);
+        rendererApi.drawPlayerResults(locations, gameResults[0]);
+        scoreboard.displayGameResults(locations, gameResults);
+        scoreboard.setTitle(`HIGHSCORES (${gameResults.length})`);
         scoreboard.showSwitch(false);
-        scoreboard.displayScores(totalScores, true);
-        rendererApi.clearMarkers();
-
-        // refreshed-in-game is triggered here so we wait a bit to remove the style
-        setTimeout(() => {
-            markerRemover.remove();
-        }, 1000);
     });
 
     ipcRenderer.on("next-round", (_event, isMultiGuess, location) => {

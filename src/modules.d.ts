@@ -6,3 +6,7 @@ declare module 'coordinate_to_country' {
 declare module 'electron-squirrel-startup' {
     export = boolean;
 }
+
+declare module 'bundle-text:*' {
+    export = string;
+}

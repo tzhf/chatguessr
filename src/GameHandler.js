@@ -13,6 +13,7 @@ const SOCKET_SERVER_URL = process.env.SOCKET_SERVER_URL ?? "https://chatguessr-s
 const settings = Settings.read();
 
 /** @typedef {import('./types').Guess} Guess */
+/** @typedef {import('./types').RoundScore} RoundScore */
 /** @typedef {import('./types').Location} Location */
 /** @typedef {import('./utils/Database')} Database */
 /** @typedef {import('./Windows/MainWindow')} MainWindow */
@@ -100,7 +101,7 @@ class GameHandler {
 
     /**
      * @param {Location} location
-     * @param {Guess[]} roundResults
+     * @param {RoundScore[]} roundResults
      */
     #showRoundResults(location, roundResults) {
         const round = this.#game.isFinished ? this.#game.round : this.#game.round - 1;
@@ -109,7 +110,8 @@ class GameHandler {
         if (roundResults[1]) roundResults[1].color = "#C9C9C9";
         if (roundResults[2]) roundResults[2].color = "#A3682E";
 
-        this.#win.webContents.send("show-round-results", round, location, roundResults);
+        const { guessMarkersLimit } = Settings.read();
+        this.#win.webContents.send("show-round-results", round, location, roundResults, guessMarkersLimit);
         this.#backend.sendMessage(
             `🌎 Round ${round} has finished. Congrats ${flags.getEmoji(roundResults[0].flag)} ${
                 roundResults[0].username
@@ -193,7 +195,9 @@ class GameHandler {
         });
 
         this.#win.webContents.on("did-frame-finish-load", () => {
-            if (!this.#game.isInGame) return;
+            if (!this.#game.isInGame || this.#game.isFinished) {
+                return;
+            }
             this.#win.webContents.send("refreshed-in-game", this.#game.getLocation());
             // Checks and update seed when the this.game has refreshed
             // update the current location if it was skipped

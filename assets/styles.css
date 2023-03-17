@@ -102,56 +102,7 @@
     display: none;
 }
 
-/* CG ICONS */
-.iconsColumn {
-    z-index: 99998;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    top: 100px;
-    position: fixed;
-    right: 7px;
-}
-.iconsColumn > div {
-    display: flex;
-    user-select: none;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 50px;
-    padding: 0.5rem;
-    width: 1.7rem;
-    height: 1.7rem;
-    transition: 0.3s;
-}
-.iconsColumn > div:hover {
-    cursor: pointer;
-    background: rgba(0, 0, 0, 0.5);
-}
-.icon {
-    background-size: contain;
-    width: 100%;
-    height: 100%;
-}
-.gearIcon {
-    background-image: url(asset:icons/gear.svg);
-}
-.eyeIcon {
-    background-image: url(asset:icons/opened_eye.svg);
-}
-.startFlagIcon {
-    background-image: url(asset:icons/startFlag.svg);
-}
-
 /* SCOREBOARD */
-#scoreboardContainer {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-    pointer-events: none;
-}
 #scoreboard {
     font-family: Montserrat, sans-serif;
     position: relative;

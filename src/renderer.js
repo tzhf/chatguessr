@@ -1,31 +1,38 @@
-"use strict";
-
-require("./utils/mods/extenssrMenuItemsPlugin");
+import { createApp } from "vue";
+import "./utils/mods/extenssrMenuItemsPlugin";
+import { drParseNoCar } from "./utils/mods/drParseNoCar";
+import { blinkMode } from "./utils/mods/blinkMode";
+import { satelliteMode } from "./utils/mods/satelliteMode";
+import Frame from "./components/Frame.vue";
 
 /** @typedef {import("./types").Location} Location */
 /** @typedef {import("./types").Guess} Guess */
 
-/** @type {import('./types').RendererApi['drParseNoCar']} */
-import { drParseNoCar } from "./utils/mods/drParseNoCar";
-/** @type {import('./types').RendererApi['blinkMode']} */
-import { blinkMode } from "./utils/mods/blinkMode";
-/** @type {import('./types').RendererApi['satelliteMode']} */
-import { satelliteMode } from "./utils/mods/satelliteMode";
+function start() {
+    drParseNoCar();
+    blinkMode();
+    satelliteMode();
 
-window.chatguessrApi.init({
-    drawRoundResults,
-    clearMarkers,
-    drParseNoCar,
-    blinkMode,
-    satelliteMode,
-    showSatelliteMap,
-    hideSatelliteMap,
-    centerSatelliteView,
-    getBounds,
-    focusOnGuess,
-    drawPlayerResults,
-    drawGameLocations,
-});
+    const wrapper = document.createElement("div");
+    document.body.append(wrapper);
+
+    const app = createApp(Frame, {
+        chatguessrApi: window.chatguessrApi,
+        drawRoundResults,
+        clearMarkers,
+        drParseNoCar,
+        blinkMode,
+        satelliteMode,
+        showSatelliteMap,
+        hideSatelliteMap,
+        centerSatelliteView,
+        getBounds,
+        focusOnGuess,
+        drawPlayerResults,
+        drawGameLocations,
+    });
+    app.mount(wrapper);
+}
 
 /** @type {google.maps.Map | undefined} */
 let globalMap = undefined;
@@ -421,3 +428,5 @@ function getBounds(location, limit) {
 function toMeter(distance) {
     return distance >= 1 ? distance.toFixed(1) + "km" : Math.floor(distance * 1000) + "m";
 }
+
+start();

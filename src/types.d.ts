@@ -23,6 +23,28 @@ export type Guess = {
     time?: number;
 };
 
+export type MultiGuess = {
+    user: string;
+    username: string;
+    color: string;
+    flag: string | null;
+};
+
+export type RoundScore = {
+    id: string;
+    userId: string;
+    username: string;
+    user: string;
+    color: string;
+    flag: string | null;
+    streak: number;
+    lastStreak: number | null;
+    distance: number;
+    score: number;
+    time: number;
+    position: LatLng;
+};
+
 export type GameResult = {
     username: string;
     color: string;
@@ -57,7 +79,7 @@ export type GameRound = {
     // TODO: Add missing fields
 };
 
-export type RoundScore = {
+export type GeoGuessrRoundScore = {
     amount: string;
     unit: string;
     percentage: number;
@@ -73,7 +95,7 @@ export type GameGuess = {
     lng: number;
     timedOut: boolean;
     timedOutWithGuess: boolean;
-    roundScore: RoundScore;
+    roundScore: GeoGuessrRoundScore;
     roundScoreInPercentage: number;
     roundScoreInPoints: number;
     distance: Distance;
@@ -122,17 +144,11 @@ export interface RendererApi {
     getBounds(location: LatLng, limit: number);
 }
 
-export interface ChatguessrApi {
-    init(api: RendererApi);
-    startNextRound();
-    returnToMapPage();
-}
-
 declare global {
     interface Window {
         jQuery: typeof import("jquery");
         $: typeof import("jquery");
-        chatguessrApi: ChatguessrApi;
+        chatguessrApi: import("./preload").ChatguessrApi;
     }
 
     namespace DataTables {

@@ -1,17 +1,22 @@
-"use strict";
+import formatDuration from "format-duration";
+import "../utils/globalJquery";
+import "jquery-ui-dist/jquery-ui";
+import dataTables from "datatables.net/js/jquery.dataTables";
+dataTables(window, $);
+import scrollResize from "datatables.net-plugins/features/scrollResize/dataTables.scrollResize";
+scrollResize(window, $);
+import buttons from "datatables.net-buttons/js/dataTables.buttons";
+buttons(window, $);
+import colVis from "datatables.net-buttons/js/buttons.colVis";
+colVis(window, $);
+import scroller from "datatables.net-scroller/js/dataTables.scroller";
+scroller(window, $);
 
-const formatDuration = require("format-duration");
-const $ = require("jquery");
-window.$ = window.jQuery = $;
-require("jquery-ui-dist/jquery-ui");
-require("datatables.net/js/jquery.dataTables")(window, $);
-require("datatables.net-plugins/sorting/natural");
-require("datatables.net-plugins/features/scrollResize/dataTables.scrollResize")(window, $);
-require("datatables.net-buttons/js/dataTables.buttons")(window, $);
-require("datatables.net-buttons/js/buttons.colVis")(window, $);
-require("datatables.net-scroller/js/dataTables.scroller")(window, $);
+// We'll rely on this race condition getting loaded before it's necessary…
+// import("datatables.net-plugins/sorting/natural");
 
 /** @typedef {import('../types').Guess} Guess */
+/** @typedef {import('../types').RoundScore} RoundScore */
 /** @typedef {import('../types').GameResult} GameResult */
 /** @typedef {import("../types").LatLng} LatLng */
 /** @typedef {import("../types").Location} Location */
@@ -37,7 +42,6 @@ class Scoreboard {
         this.focusOnGuess = props.focusOnGuess;
         this.drawPlayerResults = props.drawPlayerResults;
 
-        this.visibility = JSON.parse(localStorage.getItem("scoreboard_visibility")) || true;
         this.position = JSON.parse(localStorage.getItem("scoreboard_position")) || {
             top: 20,
             left: 5,
@@ -232,28 +236,6 @@ class Scoreboard {
         this.table.clear().draw();
     }
 
-    toogleVisibility() {
-        this.visibility = !this.visibility;
-        localStorage.setItem("scoreboard_visibility", JSON.stringify(this.visibility));
-        this.checkVisibility();
-    }
-
-    checkVisibility() {
-        if (this.visibility) {
-            this.show();
-        } else {
-            this.hide();
-        }
-    }
-
-    show() {
-        this.container.show();
-    }
-
-    hide() {
-        this.container.hide();
-    }
-
     /**
      * @param {Guess} guess
      */
@@ -287,7 +269,7 @@ class Scoreboard {
     }
 
     /**
-     * @param {{ username: string, flag: string, color: string }[]} guesses
+     * @param {{ username: string, flag: string | null, color: string }[]} guesses
      */
     renderMultiGuess(guesses) {
         const rows = guesses.map((guess) => {
@@ -311,8 +293,8 @@ class Scoreboard {
     }
 
     /**
-     * @param { Guess[] } roundResults
-     * @param { number } limit
+     * @param {RoundScore[]} roundResults
+     * @param {number} limit
      */
     displayRoundResults(roundResults, limit = 100) {
         this.isResults = true;
@@ -364,8 +346,8 @@ class Scoreboard {
     }
 
     /**
-     * @param { Location[] } locations
-     * @param { GameResult[] } gameResults
+     * @param {Location[]} locations
+     * @param {GameResult[]} gameResults
      */
     displayGameResults(locations = [], gameResults) {
         this.isResults = true;
@@ -506,4 +488,4 @@ class Scoreboard {
     }
 }
 
-module.exports = Scoreboard;
+export default Scoreboard;

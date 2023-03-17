@@ -36,6 +36,9 @@
 .standard-final-result_newWrapper__moI82 > div:first-child {
     display: none;
 }
+.round-indicator_roundIndicator__ogZIY {
+    width: 150px;
+}
 
 /* CUSTOM SLIDER FOR SCRIPTS */
 .custom-slider {

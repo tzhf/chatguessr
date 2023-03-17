@@ -1,6 +1,6 @@
 import "./errorReporting";
 import { contextBridge, ipcRenderer } from "electron";
-import type { LatLng, Location, Guess, RoundScore, FinalScore } from "./types";
+import type { LatLng, Location, Guess, RoundScore, GameResult } from "./types";
 
 function ipcRendererOn(event: string, callback: (...args: unknown[]) => void) {
     const listener = (_event: unknown, ...args: unknown[]) => {
@@ -49,11 +49,11 @@ const chatguessrApi = {
     onReceiveMultiGuesses(callback: (guesses: Guess[]) => void) {
         return ipcRendererOn("render-multiguess", callback);
     },
-    onShowRoundResults(callback: (round: number, location: Location, scores: RoundScore[], markerLimit: number) => void) {
+    onShowRoundResults(callback: (round: number, location: Location, roundResults: RoundScore[], markerLimit: number) => void) {
         return ipcRendererOn("show-round-results", callback);
     },
-    onShowFinalResults(callback: (scores: FinalScore[]) => void) {
-        return ipcRendererOn("show-final-results", callback);
+    onShowGameResults(callback: (locations: Location[], gameResults: GameResult[]) => void) {
+        return ipcRendererOn("show-game-results", callback);
     },
     onStartRound(callback: (isMultiGuess: boolean, location: LatLng) => void) {
         return ipcRendererOn("next-round", callback);

@@ -66,7 +66,7 @@
 <script lang="ts" setup>
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, computed } from "vue";
 import { useStyleTag } from "@vueuse/core";
-import type { LatLng, Location, Guess } from "../types";
+import type { LatLng, Location, GameResult, Guess } from "../types";
 // Only import the type here, we have to import Scoreboard on mount so jQuery has access to all the elements it needs.
 import Scoreboard from "../Classes/Scoreboard";
 import type { ChatguessrApi } from "../preload";
@@ -76,7 +76,9 @@ const {
     ...rendererApi
 } = defineProps<{
     chatguessrApi: ChatguessrApi,
-    populateMap: (location: Location, scores: Guess[], limit: number) => void,
+    drawRoundResults: (location: Location, roundResults: Guess[], limit?: number) => void,
+    drawGameLocations: (locations: Location[]) => void,
+    drawPlayerResults: (locations: Location[], result: GameResult) => void,
     clearMarkers: () => void,
     focusOnGuess: (location: LatLng) => void,
     showSatelliteMap: (location: LatLng) => void,
@@ -108,6 +110,9 @@ onMounted(async () => {
         focusOnGuess(location) {
             rendererApi.focusOnGuess(location);
         },
+        drawPlayerResults(locations, result) {
+            rendererApi.drawPlayerResults(locations, result);
+        },
         onToggleGuesses(open) {
             chatguessrApi.setGuessesOpen(open);
         },
@@ -121,6 +126,7 @@ const markerRemover = useStyleTag('[data-qa="result-view-top"] [data-qa="guess-m
 });
 const removeMarkers = computed(() => gameState.value === "round-results" || gameState.value === "game-results");
 watch(removeMarkers, (load) => {
+    console.log(gameState.value);
     if (load) {
         markerRemover.load();
     } else {
@@ -144,6 +150,7 @@ watch(removeGameControls, (load) => {
 }, { immediate: true });
 
 onBeforeUnmount(chatguessrApi.onGameStarted((isMultiGuess, restoredGuesses, location) => {
+    console.log("onGameStarted");
     gameState.value = "in-round";
     currentLocation.value = location;
 
@@ -170,6 +177,7 @@ onBeforeUnmount(chatguessrApi.onGameStarted((isMultiGuess, restoredGuesses, loca
 }));
 
 onBeforeUnmount(chatguessrApi.onRefreshRound((location) => {
+    console.log("onRefreshRound");
     gameState.value = "in-round";
     if (satelliteModeEnabled.value === "enabled") {
         rendererApi.showSatelliteMap(location);
@@ -189,34 +197,37 @@ onBeforeUnmount(chatguessrApi.onReceiveMultiGuesses((guesses) => {
     scoreboard?.renderMultiGuess(guesses);
 }));
 
-onBeforeUnmount(chatguessrApi.onShowRoundResults((round, location, scores, guessMarkersLimit) => {
+onBeforeUnmount(chatguessrApi.onShowRoundResults((round, location, roundResults, guessMarkersLimit) => {
     gameState.value = "round-results";
 
-    rendererApi.populateMap(location, scores, guessMarkersLimit);
+    rendererApi.drawRoundResults(location, roundResults, guessMarkersLimit);
 
     if (!scoreboard) {
         return;
     }
 
-    scoreboard.setTitle(`ROUND ${round} RESULTS (${scores.length})`);
-    scoreboard.displayScores(scores, false, guessMarkersLimit);
+    scoreboard.displayRoundResults(roundResults, guessMarkersLimit);
+    scoreboard.setTitle(`ROUND ${round} RESULTS (${roundResults.length})`);
     scoreboard.showSwitch(false);
 }));
 
-onBeforeUnmount(chatguessrApi.onShowFinalResults((totalScores) => {
+onBeforeUnmount(chatguessrApi.onShowGameResults((locations, gameResults) => {
+    console.log("onShowGameResults");
     gameState.value = "game-results";
-    rendererApi.clearMarkers();
+    rendererApi.drawGameLocations(locations);
+    rendererApi.drawPlayerResults(locations, gameResults[0]);
 
     if (!scoreboard) {
         return;
     }
 
-    scoreboard.setTitle(`HIGHSCORES (${totalScores.length})`);
+    scoreboard.displayGameResults(locations, gameResults);
+    scoreboard.setTitle(`HIGHSCORES (${gameResults.length})`);
     scoreboard.showSwitch(false);
-    scoreboard.displayScores(totalScores, true);
 }));
 
 onBeforeUnmount(chatguessrApi.onStartRound((isMultiGuess, location) => {
+    console.log("onStartRound");
     gameState.value = "in-round";
     currentLocation.value = location;
     

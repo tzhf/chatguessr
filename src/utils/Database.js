@@ -4,6 +4,7 @@ const SQLite = require("better-sqlite3");
 const { randomUUID } = require("crypto");
 
 /** @typedef {import('../types').LatLng} LatLng */
+/** @typedef {import("../types").GameResult} GameResult */
 
 function timestamp() {
 	return Math.floor(Date.now() / 1000);
@@ -518,7 +519,7 @@ class Database {
 	 *
 	 * @param {string} roundId
 	 */
-	getRoundScores(roundId) {
+	getRoundResults(roundId) {
 		const stmt = this.#db.prepare(`
 			SELECT
 				guesses.id,
@@ -574,8 +575,9 @@ class Database {
 	/**
 	 * Get the total scores for a game, across all rounds, ordered from highest to lowest points.
 	 * @param {string} gameId
+	 * @returns {GameResult[]} 
 	 */
-	getGameScores(gameId) {
+	getGameResults(gameId) {
 		// We need to pick the last guess's streak value OR calculate them on the fly. Our streak tracking table is not suitable for
 		// checking the current streak at a previous point. The only option atm is to use this subquery I think, hopefully the
 		// performance is not too bad.
@@ -585,31 +587,44 @@ class Database {
 				users.username,
 				guesses.color,
 				users.flag,
+				'[' || GROUP_CONCAT(COALESCE(guesses.location, 'null')) || ']' AS guesses,
+				'[' || GROUP_CONCAT(COALESCE(guesses.score, 'null')) || ']' AS scores,
+				'[' || GROUP_CONCAT(COALESCE(guesses.distance, 'null')) || ']' AS distances,
+				SUM(guesses.score) AS total_score,
+				SUM(guesses.distance) AS total_distance,
 				(
 					SELECT streak
 					FROM guesses ig, rounds ir
 					WHERE ir.game_id = rounds.game_id
-					  AND ig.round_id = ir.id
-					  AND ig.user_id = users.id
+						AND ig.round_id = ir.id
+						AND ig.user_id = users.id
 					ORDER BY ig.created_at DESC
 					LIMIT 1
-				) AS streak,
-				COUNT(guesses.id) AS rounds,
-				SUM(guesses.distance) AS distance,
-				SUM(guesses.score) AS score
-			FROM rounds, guesses, users
+				) AS streak
+			FROM rounds 
+			JOIN users ON users.id IN (
+				SELECT DISTINCT g.user_id
+				FROM rounds r
+				JOIN guesses g ON g.round_id = r.id
+				WHERE r.game_id = ?
+			)
+			LEFT JOIN guesses ON guesses.round_id = rounds.id AND users.id = guesses.user_id
 			WHERE rounds.game_id = ?
-			  AND guesses.round_id = rounds.id
-			  AND users.id = guesses.user_id
-			GROUP BY guesses.user_id
-			ORDER BY score DESC, distance ASC
+			GROUP BY users.id
+			ORDER BY total_score DESC, total_distance ASC
 		`);
-		/** @type {{ username: string, color: string, flag: string, streak: number, rounds: number, distance: number, score: number }[]} */
-		const records = stmt.all(gameId);
-
+		const records = stmt.all(gameId, gameId);
+		
 		return records.map((record) => ({
-			...record,
-			user: record.username,
+			username: record.username,
+			color: record.color,
+			flag: record.flag,
+			streak: record.streak,
+			guesses: JSON.parse(record.guesses),
+			scores: JSON.parse(record.scores),
+			distances: JSON.parse(record.distances),
+			totalScore: record.total_score,
+			totalDistance: record.total_distance
 		}));
 	}
 

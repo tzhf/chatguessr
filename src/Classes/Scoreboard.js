@@ -17,13 +17,15 @@ scroller(window, $);
 
 /** @typedef {import('../types').Guess} Guess */
 /** @typedef {import('../types').RoundScore} RoundScore */
-/** @typedef {import('../types').FinalScore} FinalScore */
+/** @typedef {import('../types').GameResult} GameResult */
 /** @typedef {import("../types").LatLng} LatLng */
+/** @typedef {import("../types").Location} Location */
 
 /**
  * @typedef {object} Options
  * @prop {(open: boolean) => void} onToggleGuesses
- * @prop {(location: LatLng) => void} focusOnGuess
+ * @prop {import('../types').RendererApi['focusOnGuess']} focusOnGuess
+ * @prop {import('../types').RendererApi['drawPlayerResults']} drawPlayerResults
  */
 
 class Scoreboard {
@@ -38,6 +40,7 @@ class Scoreboard {
         this.speed = 50;
         this.onToggleGuesses = props.onToggleGuesses;
         this.focusOnGuess = props.focusOnGuess;
+        this.drawPlayerResults = props.drawPlayerResults;
 
         this.position = JSON.parse(localStorage.getItem("scoreboard_position")) || {
             top: 20,
@@ -290,38 +293,34 @@ class Scoreboard {
     }
 
     /**
-     * @param {RoundScore[] | FinalScore[]} scores
-     * @param {boolean} [isTotal]
-     * @param {number} [limit]
+     * @param {RoundScore[]} roundResults
+     * @param {number} limit
      */
-    displayScores(scores, isTotal = false, limit = 100) {
+    displayRoundResults(roundResults, limit = 100) {
         this.isResults = true;
         this.#setHint(null);
-        if (scores[0]) scores[0].color = "#E3BB39";
-        if (scores[1]) scores[1].color = "#C9C9C9";
-        if (scores[2]) scores[2].color = "#A3682E";
-        const rows = scores.map((score) => {
-            const isTimed5k = !isTotal && score.score === 5000;
-            const distanceDisplay = this.toMeter(score.distance);
+
+        const rows = roundResults.map((result) => {
+            const isTimed5k = result.score === 5000;
+            const distanceDisplay = this.toMeter(result.distance);
             return {
                 Position: "",
                 Player: `${
-                    score.flag
-                        ? `<span class="flag-icon" style="background-image: url(flag:${score.flag})"></span>`
+                    result.flag
+                        ? `<span class="flag-icon" style="background-image: url(flag:${result.flag})"></span>`
                         : ""
-                }<span class='username' style='color:${score.color}'>${score.username}</span>`,
-                Streak: { current: score.streak, last: isTotal ? null : score.lastStreak },
+                }<span class='username' style='color:${result.color}'>${result.username}</span>`,
+                Streak: { current: result.streak, last: result.lastStreak },
                 Distance: {
-                    value: score.distance,
-                    display: isTimed5k ? `${distanceDisplay} [${formatDuration(score.time * 1000)}]` : distanceDisplay,
+                    value: result.distance,
+                    display: isTimed5k ? `${distanceDisplay} [${formatDuration(result.time * 1000)}]` : distanceDisplay,
                 },
-                Score: isTotal ? `${score.score} [${score.rounds}]` : score.score,
+                Score: result.score,
             };
         });
 
         this.table.clear().draw();
         this.table.rows.add(rows);
-
         this.table.order([4, "desc"]).draw(false);
 
         let content;
@@ -330,29 +329,72 @@ class Scoreboard {
             .nodes()
             .each((cell, i) => {
                 content = i + 1;
-                if (isTotal) {
-                    if (i == 0) content = "<span class='medal'>🏆</span>";
-                    else if (i == 1) content = "<span class='medal'>🥈</span>";
-                    else if (i == 2) content = "<span class='medal'>🥉</span>";
-                }
-
                 cell.innerHTML = content;
             });
 
-        if (isTotal) {
-            // Removes previous onClick focusOnGuess
-            $("#datatable tbody").off("click");
-        } else {
-            // onClick focusOnGuess
-            const self = this;
-            $("#datatable tbody").on("click", "tr", function () {
-                const index = self.table.row(this).index();
-                const score = scores[index];
-                if (score && 'position' in score) {
-                    self.focusOnGuess(score.position);
-                }
+        // onClick focusOnGuess
+        const self = this;
+        $("#datatable tbody").on("click", "tr", function () {
+            const index = self.table.row(this).index();
+            if (index >= limit) return;
+            self.focusOnGuess(roundResults[index].position);
+        });
+
+        // Restore columns visibility
+        this.table.columns().visible(true);
+        this.toTop(".dataTables_scrollBody");
+    }
+
+    /**
+     * @param {Location[]} locations
+     * @param {GameResult[]} gameResults
+     */
+    displayGameResults(locations = [], gameResults) {
+        this.isResults = true;
+        this.#setHint(null);
+
+        const rows = gameResults.map((result) => {
+            const distanceDisplay = this.toMeter(result.totalDistance);
+            return {
+                Position: "",
+                Player: `${
+                    result.flag
+                        ? `<span class="flag-icon" style="background-image: url(flag:${result.flag})"></span>`
+                        : ""
+                }<span class='username' style='color:${result.color}'>${result.username}</span>`,
+                Streak: { current: result.streak },
+                Distance: {
+                    value: result.totalDistance,
+                    display: distanceDisplay,
+                },
+                Score: `${result.totalScore} [${result.guesses.filter(Boolean).length}]`,
+            };
+        });
+
+        this.table.clear().draw();
+        this.table.rows.add(rows);
+        this.table.order([4, "desc"]).draw(false);
+
+        let content;
+        this.table
+            .column(0)
+            .nodes()
+            .each((cell, i) => {
+                content = i + 1;
+                if (i == 0) content = "<span class='medal'>🏆</span>";
+                else if (i == 1) content = "<span class='medal'>🥈</span>";
+                else if (i == 2) content = "<span class='medal'>🥉</span>";
+                cell.innerHTML = content;
             });
-        }
+
+        // Removes previous onClick focusOnGuess
+        $("#datatable tbody").off("click");
+
+        const self = this;
+        $("#datatable tbody").on("click", "tr", function () {
+            const index = self.table.row(this).index();
+            self.drawPlayerResults(locations, gameResults[index]);
+        });
 
         // Restore columns visibility
         this.table.columns().visible(true);

@@ -125,12 +125,13 @@ function drawGameLocations(locations) {
 function drawPlayerResults(locations, result) {
     const map = globalMap;
     const infowindow = new google.maps.InfoWindow();
+    const color = result.color || '#fff';
 
     clearMarkers(true);
 
     const icon = makeIcon();
     icon.scale = 1;
-    icon.fillColor = result.color;
+    icon.fillColor = color;
 
     result.guesses.forEach((guess, index) => {
         if (!guess) return;
@@ -140,7 +141,7 @@ function drawPlayerResults(locations, result) {
         guessMarker.addListener("mouseover", () => {
             infowindow.setContent(`
 				${result.flag ? `<span class="flag-icon" style="background-image: url(flag:${result.flag})"></span>` : ""}
-                <span class="username" style="color:${result.color}">${result.username}</span><br>
+                <span class="username" style="color:${color}">${result.username}</span><br>
                 ${result.scores[index]}<br>
 				${toMeter(result.distances[index])}
 			`);
@@ -154,7 +155,7 @@ function drawPlayerResults(locations, result) {
 
         polylines.push(
             new google.maps.Polyline({
-                strokeColor: result.color,
+                strokeColor: color,
                 strokeWeight: 4,
                 strokeOpacity: 0.6,
                 geodesic: true,

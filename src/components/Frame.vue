@@ -40,6 +40,7 @@
     display: flex;
     user-select: none;
     background: rgba(0, 0, 0, 0.4);
+    border: none;
     border-radius: 50px;
     padding: 0.5rem;
     width: 1.7rem;

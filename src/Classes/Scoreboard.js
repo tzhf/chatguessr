@@ -152,7 +152,15 @@ class Scoreboard {
                         return data.value;
                     },
                 },
-                { data: "Score" },
+                { 
+                    data: "Score",
+                    render: (data, type) => {
+                        if (type === "display" || type === "filter") {
+                            return data.display;
+                        }
+                        return data.value;
+                    },
+                },
             ],
             columnDefs: [
                 { targets: 0, width: "35px", className: "noVis" },
@@ -247,7 +255,7 @@ class Scoreboard {
             }<span class='username' style='color:${guess.color}'>${guess.username}</span>`,
             Streak: { current: guess.streak, last: null },
             Distance: { value: guess.distance, display: this.toMeter(guess.distance) },
-            Score: guess.score,
+            Score: { value: guess.score, display: guess.score },
         };
 
         // @ts-ignore
@@ -282,7 +290,7 @@ class Scoreboard {
                 }<span class='username' style='color:${guess.color}'>${guess.username}</span>`,
                 Streak: { current: 0, last: null },
                 Distance: { value: 0, display: "" },
-                Score: "",
+                Score: { value: 0, display: "" },
             };
         });
 
@@ -315,7 +323,7 @@ class Scoreboard {
                     value: result.distance,
                     display: isTimed5k ? `${distanceDisplay} [${formatDuration(result.time * 1000)}]` : distanceDisplay,
                 },
-                Score: result.score,
+                Score: { value: result.score, display: result.score },
             };
         });
 
@@ -367,7 +375,10 @@ class Scoreboard {
                     value: result.totalDistance,
                     display: distanceDisplay,
                 },
-                Score: `${result.totalScore} [${result.guesses.filter(Boolean).length}]`,
+                Score: {
+                    value: result.totalScore,
+                    display: `${result.totalScore} [${result.guesses.filter(Boolean).length}]`
+                },
             };
         });
 

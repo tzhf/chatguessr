@@ -149,12 +149,12 @@ async function makeLink(accessToken, bot, streamer, map, mode, locations, gameRe
     const res = await axios.post(
         `${CG_API_URL}/game`,
         {
-            streamer,
-            bot,
-            map,
-            mode,
-            locations,
-            gameResults,
+            bot: bot,
+            streamer: streamer,
+            map: map,
+            mode: mode,
+            locations: locations,
+            players: gameResults,
         },
         { headers: { access_token: accessToken } }
     );

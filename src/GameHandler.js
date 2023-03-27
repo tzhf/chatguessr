@@ -195,9 +195,29 @@ class GameHandler {
         });
 
         this.#win.webContents.on("did-frame-finish-load", () => {
-            if (!this.#game.isInGame || this.#game.isFinished) {
-                return;
-            }
+            if (!this.#game.isInGame) return;
+        
+            this.#win.webContents.executeJavaScript(`
+                window.nextRoundBtn = document.querySelector('[data-qa="close-round-result"]');
+                window.playAgainBtn = document.querySelector('[data-qa="play-again-button"]');
+
+                if (window.nextRoundBtn) {
+                    nextRoundBtn.addEventListener("click", () => {
+                        nextRoundBtn.setAttribute('disabled', 'disabled');
+                        chatguessrApi.startNextRound();
+                    });
+                }
+
+                if (window.playAgainBtn) {
+                    playAgainBtn.addEventListener("click", () => {
+                        playAgainBtn.setAttribute('disabled', 'disabled');
+                        chatguessrApi.returnToMapPage();
+                    });
+                }
+            `);
+
+            if (this.#game.isFinished) return;
+
             this.#win.webContents.send("refreshed-in-game", this.#game.getLocation());
             // Checks and update seed when the this.game has refreshed
             // update the current location if it was skipped
@@ -207,24 +227,6 @@ class GameHandler {
                     this.#showRoundResults(roundResults.location, roundResults.roundResults);
                 }
             });
-
-            this.#win.webContents.executeJavaScript(`
-				window.nextRoundBtn = document.querySelector('[data-qa="close-round-result"]');
-				window.playAgainBtn = document.querySelector('[data-qa="play-again-button"]');
-
-				if (window.nextRoundBtn) {
-					nextRoundBtn.addEventListener("click", () => {
-						nextRoundBtn.setAttribute('disabled', 'disabled');
-						chatguessrApi.startNextRound();
-					});
-				}
-
-				if (window.playAgainBtn) {
-					playAgainBtn.addEventListener("click", () => {
-						chatguessrApi.returnToMapPage();
-					});
-				}
-			`);
         });
 
         ipcMain.on("next-round-click", () => {

@@ -102,7 +102,7 @@ export default class MenuItemsPlugin {
 
         const referenceElement = document.querySelector(DESELECTED_MENU_ITEM_SELECTOR) as HTMLLIElement
             ?? customMenuItemTemplate
-        const container = referenceElement.closest('ol') ?? document.querySelector('[data-qa="header-current-user-pin"]').parentNode
+        const container = referenceElement.closest('ol') ?? document.querySelector('[data-qa="header-current-user-pin"]')?.parentNode
 
 
         const createMenuItem = (props: { href: string, textContent: string, subMenu?: () => Promise<SubMenuItem[]> }) => {
@@ -110,15 +110,15 @@ export default class MenuItemsPlugin {
             li.setAttribute('data-qa', 'extenssr__nav-item')
 
             const { href, textContent } = props
-            Object.assign(li.querySelector('a'), { href, textContent })
+            Object.assign(li.querySelector('a')!, { href, textContent })
 
             if (props.subMenu) {
-                const overflows = [container.parentNode, container.parentNode.parentNode] as HTMLDivElement[]
+                const overflows = [container?.parentNode, container?.parentNode?.parentNode] as HTMLDivElement[]
 
                 let controller: AbortController
                 li.addEventListener('mouseenter', () => {
                     controller = new AbortController()
-                    this.showMenu(li, props.subMenu, controller.signal)
+                    this.showMenu(li, props.subMenu!, controller.signal)
                     for (const el of overflows) {
                         el.style.overflow = 'visible'
                     }
@@ -164,8 +164,8 @@ export default class MenuItemsPlugin {
         if (referenceElement.tagName === 'LI') {
             container.append(mapMaker, likedMaps)
         } else {
-            container.insertBefore(likedMaps, document.querySelector('[data-qa="header-current-user-pin"]'))
-            container.insertBefore(mapMaker, likedMaps)
+            container?.insertBefore(likedMaps, document.querySelector('[data-qa="header-current-user-pin"]'))
+            container?.insertBefore(mapMaker, likedMaps)
         }
     }
 

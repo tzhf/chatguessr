@@ -31,9 +31,17 @@ function mainWindow() {
 	});
 
 	win.webContents.setWindowOpenHandler(({ url }) => {
-		shell.openExternal(url);
-		return { action: "deny" };
-	});
+		if (
+			url.startsWith('https://www.facebook.com') ||
+			url.startsWith('https://accounts.google.com') ||
+			url.startsWith('https://appleid.apple.com')
+		) {
+			return { action: "allow" };
+		} else {
+			shell.openExternal(url);
+			return { action: "deny" };
+		}
+	})
 
 	win.loadURL("https://www.geoguessr.com/maps");
 

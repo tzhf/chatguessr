@@ -178,7 +178,7 @@ async function getRandomCoordsInLand(bounds = null) {
     const lat = Math.random() * (lat_north - lat_south) + lat_south;
     const lng = Math.random() * (lng_east - lng_west) + lng_west;
     const localResults = countryIso(lat, lng, true);
-    if (!localResults.length) return await getRandomCoordsInLand();
+    if (!localResults.length) return await getRandomCoordsInLand(bounds);
     return { lat, lng };
 }
 

@@ -164,11 +164,19 @@ async function makeLink(accessToken, bot, streamer, map, mode, locations, gameRe
 
 /**
  * Returns random coordinates within land, no Antarctica
+ * @param {import("../types").Bounds} bounds Optional bounds to further restrict random coordinates
  * @return {Promise<LatLng>}
  */
-async function getRandomCoordsInLand() {
-    const lat = Math.random() * (85 + 60) - 60;
-    const lng = Math.random() * 360 - 180;
+async function getRandomCoordsInLand(bounds = null) {
+    var lat_north = 85, lat_south = -60, lng_west = -180, lng_east = 180;
+    if(bounds != null)  {
+        lat_north = bounds.max.lat;
+        lat_south = Math.max(bounds.min.lat, lat_south)
+        lng_east = bounds.max.lng;
+        lng_west = bounds.min.lng;
+    }
+    const lat = Math.random() * (lat_north - lat_south) + lat_south;
+    const lng = Math.random() * (lng_east - lng_west) + lng_west;
     const localResults = countryIso(lat, lng, true);
     if (!localResults.length) return await getRandomCoordsInLand();
     return { lat, lng };

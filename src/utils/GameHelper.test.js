@@ -94,3 +94,28 @@ describe('parseCoordinates', () => {
 		expect(GameHelper.parseCoordinates("30.12345, 190.54321")).toBeFalsy();
 	});
 });
+
+describe('randomPlonk', () => {
+	// Requires ~30ms/test
+	const repeats = 100;
+	it("Checks if randomplonk without bounds avoids antarctica", async () => {
+		// This takes about 30ms/test, so ...
+		for(var i = 0; i < repeats; i++) {
+			const {lat, lng} = await GameHelper.getRandomCoordsInLand();
+			expect(lat > -60).toBeTruthy();
+			expect(lat < 90).toBeTruthy();
+			expect(lng > -180).toBeTruthy();
+			expect(lng < 180).toBeTruthy();
+		}
+	});
+	it("Checks if randomplonk with bounds remains in bounds", async () => {
+		const inBounds = { min: { lat: 32, lng: -117 }, max: { lat: 33, lng: -116}};
+		for(var i = 0; i < repeats; i++) {
+			const {lat, lng} = await GameHelper.getRandomCoordsInLand(inBounds);
+			expect(lat > inBounds.min.lat).toBeTruthy();
+			expect(lat < inBounds.max.lat).toBeTruthy();
+			expect(lng > inBounds.min.lng).toBeTruthy();
+			expect(lng < inBounds.max.lng).toBeTruthy();
+		}
+	})
+})

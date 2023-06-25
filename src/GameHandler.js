@@ -543,7 +543,7 @@ class GameHandler {
         }
 
         if (message === settings.randomPlonkCmd) {
-            const { lat, lng } = await GameHelper.getRandomCoordsInLand();
+            const { lat, lng } = await GameHelper.getRandomCoordsInLand(this.#game.seed.bounds);
             const randomGuess = `!g ${lat}, ${lng}`;
             this.#handleGuess(userstate, randomGuess).catch((error) => {
                 console.error(error);

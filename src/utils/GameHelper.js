@@ -168,10 +168,13 @@ async function makeLink(accessToken, bot, streamer, map, mode, locations, gameRe
  * @return {Promise<LatLng>}
  */
 async function getRandomCoordsInLand(bounds = null) {
-    var lat_north = 85, lat_south = -60, lng_west = -180, lng_east = 180;
-    if(bounds != null)  {
+    let lat_north = 85,
+        lat_south = -60,
+        lng_west = -180,
+        lng_east = 180;
+    if (bounds != null) {
         lat_north = bounds.max.lat;
-        lat_south = Math.max(bounds.min.lat, lat_south)
+        lat_south = Math.max(bounds.min.lat, lat_south);
         lng_east = bounds.max.lng;
         lng_west = bounds.min.lng;
     }

@@ -1,6 +1,5 @@
-'use strict';
-
-const GameHelper = require("./GameHelper");
+import { describe, it, expect } from "vitest";
+import * as GameHelper from "./GameHelper";
 
 describe('getCountryCode', () => {
 	// These are not political opinions, but checks to ensure we match whatever decisions

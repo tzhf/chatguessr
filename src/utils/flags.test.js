@@ -1,6 +1,5 @@
-'use strict';
-
-const flags = require('./flags');
+import { describe, it, expect } from "vitest";
+import * as flags from "./flags";
 
 describe('getEmoji', () => {
     it("Check emoji for country flags", () => {

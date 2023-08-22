@@ -1,7 +1,6 @@
-"use strict";
-
-const { randomUUID } = require("crypto");
-const Database = require("./Database");
+import { beforeEach, describe, it, expect } from "vitest";
+import { randomUUID } from "node:crypto";
+import Database from "./Database";
 
 /** @type {Database} */
 let db;

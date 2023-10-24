@@ -136,6 +136,11 @@ export default class MenuItemsPlugin {
             return li
         }
 
+        const communityMaps = createMenuItem({
+            href: '/community/maps',
+            textContent: 'Community Maps'
+        })
+
         const mapMaker = createMenuItem({
             href: '/me/maps',
             textContent: 'My Maps',
@@ -162,10 +167,11 @@ export default class MenuItemsPlugin {
         })
 
         if (referenceElement.tagName === 'LI') {
-            container.append(mapMaker, likedMaps)
+            container.append(communityMaps, mapMaker, likedMaps)
         } else {
             container?.insertBefore(likedMaps, document.querySelector('[data-qa="header-current-user-pin"]'))
             container?.insertBefore(mapMaker, likedMaps)
+            container?.insertBefore(communityMaps, mapMaker)
         }
     }
 

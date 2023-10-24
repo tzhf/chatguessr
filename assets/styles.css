@@ -24,13 +24,29 @@
 .version4_sidebar__5CRI_ {
     display: none;
 }
+.version4_content__oaYfe {
+    max-width: 100% !important;
+}
+
+/* Hide community menu links */
+.community-navigation_tabsWrapper__Hvu0P a:not([href="/community/maps"]) {
+    display: none;
+}
+
+/* Hide Return to Home Top Left menu */
+.header_context__UqsBa > :nth-child(2),
+.header_context__UqsBa > :nth-child(3),
+.promo-deal-button_root__GX98M,
+.header_mainNavigation__5vZyq {
+    display: none !important;
+}
 
 /* New UI fix */
-.result-overlay_overlay__78Dlz,
+/* .result-overlay_overlay__78Dlz,
 .result-overlay_overlayContent__oe0KJ,
-.result-overlay_overlayXpBar__kB5pW,
-.standard-final-result_challengeFriendButton__VgXlv,
-.slanted-button_container__6JmyZ {
+.result-overlay_overlayXpBar__kB5pW, */
+.result-layout_adWrapper__Ktt54,
+.standard-final-result_challengeFriendButton__VgXlv {
     display: none !important;
 }
 /* removes game breakdown button */

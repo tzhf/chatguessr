@@ -8,7 +8,7 @@
     padding: 0.375rem 0;
     border-radius: 0.5rem;
     max-width: 300px;
-    background: var(--color-grey-80);
+    background: var(--ds-color-black-80);
     list-style-type: none;
 }
 
@@ -24,7 +24,7 @@
     box-sizing: border-box;
     display: inline-block;
     width: 100%;
-    padding: .25rem 1rem .25rem 1rem;
+    padding: 0.25rem 1rem 0.25rem 1rem;
     color: #fff;
     opacity: 0.6;
     overflow: hidden;

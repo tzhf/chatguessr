@@ -121,7 +121,7 @@ onMounted(async () => {
 });
 
 // Remove the game's own markers while on a results screen (where we draw our own)
-const markerRemover = useStyleTag('[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"], .result-map__line { display: none; }', {
+const markerRemover = useStyleTag('[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"], .coordinate-result-map_line__ZKXc5 { display: none; }', {
     id: 'cg-marker-remover',
     manual: true,
 });

@@ -43,7 +43,7 @@ function mainWindow() {
 		}
 	})
 
-	win.loadURL("https://www.geoguessr.com/maps");
+	win.loadURL("https://www.geoguessr.com/community/maps");
 
 	return win;
 }

@@ -30,9 +30,15 @@
 }
 
 /* Hide promo and daily challenge from menu  */
-[class^="header_context__"] > :nth-child(2),
+[class^="promo-deal-button_root__"] {
+    display: none !important;
+}
+
 [class^="header_context__"] > :nth-child(3) {
-    display: none;
+    display: none !important;
+}
+[class^="header_loginButton__"] {
+    display: block !important;
 }
 
 /* Hide Return to Home Top Left menu */

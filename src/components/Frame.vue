@@ -7,13 +7,16 @@
         <button class="cg-button" title="Show/Hide scoreboard" @click="toggleScoreboard" :hidden="gameState === 'none'">
             <span :class="['cg-icon', scoreboardVisibleSetting ? 'cg-icon--eyeOpen' : 'cg-icon--eyeClosed']"></span>
         </button>
-        <button class="cg-button" title="Center view" @click="centerSatelliteView" :hidden="satelliteModeEnabled.value !== 'enabled' || gameState !== 'in-round'">
+        <button class="cg-button" title="Center view" @click="centerSatelliteView"
+            :hidden="satelliteModeEnabled.value !== 'enabled' || gameState !== 'in-round'">
             <span class="cg-icon cg-icon--flag"></span>
         </button>
     </div>
 </template>
 <style scoped>
-[hidden] { display: none !important; }
+[hidden] {
+    display: none !important;
+}
 
 .cg-scoreboard-container {
     position: absolute;
@@ -48,21 +51,40 @@
     transition: 0.3s;
     cursor: pointer;
 }
+
 .cg-button:hover {
     background: rgba(0, 0, 0, 0.5);
 }
 
-.cg-button.disconnected { background: red; }
-.cg-button.connecting { background: blue; }
+.cg-button.disconnected {
+    background: red;
+}
+
+.cg-button.connecting {
+    background: blue;
+}
+
 .cg-icon {
     background-size: contain;
     width: 100%;
     height: 100%;
 }
-.cg-icon--gear { background-image: url(asset:icons/gear.svg); }
-.cg-icon--eyeOpen { background-image: url(asset:icons/opened_eye.svg); }
-.cg-icon--eyeClosed { background-image: url(asset:icons/closed_eye.svg); }
-.cg-icon--flag { background-image: url(asset:icons/startFlag.svg); }
+
+.cg-icon--gear {
+    background-image: url(asset:icons/gear.svg);
+}
+
+.cg-icon--eyeOpen {
+    background-image: url(asset:icons/opened_eye.svg);
+}
+
+.cg-icon--eyeClosed {
+    background-image: url(asset:icons/closed_eye.svg);
+}
+
+.cg-icon--flag {
+    background-image: url(asset:icons/startFlag.svg);
+}
 </style>
 <script lang="ts" setup>
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, computed } from "vue";
@@ -121,7 +143,7 @@ onMounted(async () => {
 });
 
 // Remove the game's own markers while on a results screen (where we draw our own)
-const markerRemover = useStyleTag('[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"], .coordinate-result-map_line__ZKXc5 { display: none; }', {
+const markerRemover = useStyleTag('[data-qa="result-view-top"] [data-qa="guess-marker"], [data-qa="result-view-top"] [data-qa="correct-location-marker"], [class^="coordinate-result-map_line__"] { display: none; }', {
     id: 'cg-marker-remover',
     manual: true,
 });
@@ -136,7 +158,7 @@ watch(removeMarkers, (load) => {
 }, { immediate: true });
 
 // Remove the game's controls when in satellite mode.
-const gameControlsRemover = useStyleTag(".styles_columnTwo___2qFL, .styles_controlGroup___ArrW, .compass, .game-layout__compass { display: none !important; }", {
+const gameControlsRemover = useStyleTag('[class^="styles_columnTwo__"], [class^="styles_controlGroup__"], [data-qa="compass"], [class^="panorama-compass_"] { display: none !important; }', {
     id: "cg-game-controls-remover",
     manual: true,
 });
@@ -157,6 +179,8 @@ onBeforeUnmount(chatguessrApi.onGameStarted((isMultiGuess, restoredGuesses, loca
 
     if (satelliteModeEnabled.value === "enabled") {
         rendererApi.showSatelliteMap(location);
+    } else {
+        rendererApi.hideSatelliteMap();
     }
 
     if (!scoreboard) {
@@ -231,7 +255,7 @@ onBeforeUnmount(chatguessrApi.onStartRound((isMultiGuess, location) => {
     console.log("onStartRound");
     gameState.value = "in-round";
     currentLocation.value = location;
-    
+
     rendererApi.clearMarkers();
     if (satelliteModeEnabled.value === "enabled") {
         rendererApi.showSatelliteMap(location);
@@ -250,7 +274,7 @@ onBeforeUnmount(chatguessrApi.onGuessesOpenChanged((open) => {
 }));
 
 /** Load and update twitch connection state. */
-function useTwitchConnectionState () {
+function useTwitchConnectionState() {
     const conn = ref<"connected" | 'connecting' | 'disconnected'>("disconnected");
 
     onMounted(async () => {
@@ -265,15 +289,15 @@ function useTwitchConnectionState () {
     return conn;
 }
 
-function openSettings () {
+function openSettings() {
     chatguessrApi.openSettings();
 }
 
-function toggleScoreboard () {
+function toggleScoreboard() {
     scoreboardVisibleSetting.value = !scoreboardVisibleSetting.value;
 }
 
-function centerSatelliteView () {
+function centerSatelliteView() {
     if (currentLocation.value) {
         rendererApi.centerSatelliteView(currentLocation.value);
     }

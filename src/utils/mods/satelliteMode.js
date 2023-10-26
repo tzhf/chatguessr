@@ -3,29 +3,29 @@ export function satelliteMode() {
     let boundsLimit = 10;
 
     const classicGameGuiHTML = `
-        <div class="section_sectionHeader__WQ7Xz section_sizeMedium__yPqLK">
-            <div class="bars_root___G89E bars_center__vAqnw">
-                <div class="bars_before__xAA7R bars_lengthLong__XyWLx"></div>
-                <span class="bars_content__UVGlL"><h3>Satellite Mode settings</h3></span>
-                <div class="bars_after__Z1Rxt bars_lengthLong__XyWLx"></div>
+        <div class="section_sectionHeader___QLJB section_sizeMedium__CuXRP">
+            <div class="bars_root__SJrvT bars_center__AoNIw">
+                <div class="bars_before__U7vM7 bars_lengthLong__MxBhh"></div>
+                <span class="bars_content__hFIqO"><h3>Satellite Mode settings</h3></span>
+                <div class="bars_after__zBDbp bars_lengthLong__MxBhh"></div>
             </div>
         </div>
 
-        <div class="start-standard-game_settings__x94PU">
+        <div class="start-standard-game_settings__e5G0o">
             <div style="display: flex; justify-content: space-between">
                 <div style="display: flex; align-items: center">
-                    <span class="game-options_optionLabel__dJ_Cy" style="margin: 0; padding-right: 6px">Enabled</span>
+                    <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px">Enabled</span>
                     <input
                         type="checkbox"
                         id="enableSatelliteMode"
                         onclick="toggleSatelliteMode(this)"
-                        class="toggle_toggle__hwnyw"
+                        class="toggle_toggle__qfXpL"
                     />
                 </div>
 
                 <div style="display: flex; align-items: center">
-                    <label class="game-options_option__eCz9o game-options_editableOption__Mpvar">
-                        <div class="game-options_optionLabel__dJ_Cy">Limit (in km)</div>
+                    <label class="game-options_option__xQZVa game-options_editableOption__0hL4c">
+                        <div class="game-options_optionLabel__Vk5xN">Limit (in km)</div>
                         <input
                             type="range"
                             class="custom-slider"
@@ -35,7 +35,7 @@ export function satelliteMode() {
                             id="boundsLimit"
                             oninput="changeBoundsLimit(this)"
                         />
-                        <div class="game-options_optionLabel__dJ_Cy" id="boundsLimitText"></div>
+                        <div class="game-options_optionLabel__Vk5xN" id="boundsLimitText"></div>
                     </label>
                 </div>
             </div>
@@ -77,10 +77,12 @@ export function satelliteMode() {
     const checkInsertGui = () => {
         // Play page for classic games
         if (
-            document.querySelector(".radio-box_root__ka_9S") &&
+            document.querySelector('[class^="radio-box_root__"]') &&
             document.querySelector("#enableSatelliteMode") === null
         ) {
-            document.querySelector(".section_sectionMedium__yXgE6").insertAdjacentHTML("beforeend", classicGameGuiHTML);
+            document
+                .querySelector('[class^="section_sectionMedium__"]')
+                .insertAdjacentHTML("beforeend", classicGameGuiHTML);
 
             if (localStorage.getItem("satelliteModeEnabled") === "enabled") {
                 document.querySelector("#enableSatelliteMode").checked = true;

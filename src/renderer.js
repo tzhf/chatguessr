@@ -125,7 +125,7 @@ function drawGameLocations(locations) {
 function drawPlayerResults(locations, result) {
     const map = globalMap;
     const infowindow = new google.maps.InfoWindow();
-    const color = result.color || '#fff';
+    const color = result.color || "#fff";
 
     clearMarkers(true);
 
@@ -212,7 +212,7 @@ function makeLocationMarker(location, icon, map, index = null) {
         url.searchParams.set("pitch", String(location.pitch));
         const fov = 180 / 2 ** location.zoom;
         url.searchParams.set("fov", String(fov));
-        window.open(url, "_blank");
+        window.open(url.href, "_blank");
     });
 
     return locationMarker;
@@ -366,7 +366,7 @@ async function showSatelliteMap(location) {
     const boundsLimit = parseInt(localStorage.getItem("satelliteModeBoundsLimit")) || 10;
 
     if (!document.body.contains(satelliteCanvas)) {
-        document.querySelector(".game-layout__canvas").append(satelliteCanvas);
+        document.querySelector('[data-qa="panorama"] [aria-label="Map"]').append(satelliteCanvas);
     }
     satelliteCanvas.style.display = "block";
 
@@ -392,7 +392,6 @@ async function showSatelliteMap(location) {
 /** @type {import('./types').RendererApi['hideSatelliteMap']} */
 async function hideSatelliteMap() {
     await mapReady;
-
     satelliteCanvas.style.display = "none";
 }
 

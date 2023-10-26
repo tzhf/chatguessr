@@ -13,47 +13,56 @@
 [data-qa="game-type-single-player"] {
     display: none !important;
 }
-.play_map__V7bDj {
+
+[class^="play_map__"] {
     height: 9rem !important;
 }
-.start-standard-game_body__tAIZs {
+[class^="start-standard-game_body__"] {
     margin-top: 0 !important;
 }
 
 /* Hides friends list bar */
-.version4_sidebar__5CRI_ {
+[class^="version4_sidebar__"] {
     display: none;
 }
-.version4_content__oaYfe {
+[class^="version4_content__"] {
     max-width: 100% !important;
 }
 
-/* Hide community menu links */
-.community-navigation_tabsWrapper__Hvu0P a:not([href="/community/maps"]) {
+/* Hide promo and daily challenge from menu  */
+[class^="header_context__"] > :nth-child(2),
+[class^="header_context__"] > :nth-child(3) {
     display: none;
 }
 
 /* Hide Return to Home Top Left menu */
-.header_context__UqsBa > :nth-child(2),
-.header_context__UqsBa > :nth-child(3),
-.promo-deal-button_root__GX98M,
-.header_mainNavigation__5vZyq {
+[class^="header_mainNavigation__"] {
     display: none !important;
 }
 
-/* New UI fix */
-.result-overlay_overlay__78Dlz,
-.result-overlay_overlayContent__oe0KJ,
-.result-overlay_overlayXpBar__kB5pW,
-.result-layout_adWrapper__Ktt54,
-.standard-final-result_challengeFriendButton__VgXlv {
-    display: none !important;
-}
-/* removes game breakdown button */
-.standard-final-result_newWrapper__moI82 > div:first-child {
+/* Hide community page menu links */
+[class^="community-navigation_tabsWrapper__"] a:not([href="/community/maps"]) {
     display: none;
 }
-.round-indicator_roundIndicator__ogZIY {
+
+/* Hide results overlay */
+[class^="result-overlay_overlay__"],
+[class^="result-overlay_overlayContent__"],
+[class^="result-overlay_overlayXpBar__"],
+[class^="result-layout_adWrapper__"],
+[class^="standard-final-result_challengeWrapper__"] {
+    display: none !important;
+}
+
+[class^="styles_friendChatButton__"] {
+    display: none;
+}
+
+/* removes game breakdown button */
+[class^="standard-final-result_wrapper__"] > div:first-child {
+    display: none;
+}
+[class^="round-indicator_roundIndicator__"] {
     width: 150px;
 }
 
@@ -522,6 +531,7 @@ input:checked + .switch:before {
 }
 
 #satelliteCanvas {
+    z-index: 9;
     display: none;
     z-index: 1;
     width: 100%;

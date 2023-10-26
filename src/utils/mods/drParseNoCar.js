@@ -1,22 +1,28 @@
 // @ts-nocheck
 export function drParseNoCar() {
     const classicGameGuiHTML = `
-    <div class="section_sectionHeader__WQ7Xz section_sizeMedium__yPqLK"><div class="bars_root___G89E bars_center__vAqnw"><div class="bars_before__xAA7R bars_lengthLong__XyWLx"></div><span class="bars_content__UVGlL"><h3>NCNC settings</h3></span><div class="bars_after__Z1Rxt bars_lengthLong__XyWLx"></div></div></div>
-    <div class="start-standard-game_settings__x94PU" style="margin-bottom: 20px;">
+    <div class="section_sectionHeader___QLJB section_sizeMedium__CuXRP">
+        <div class="bars_root__SJrvT bars_center__AoNIw">
+            <div class="bars_before__U7vM7 bars_lengthLong__MxBhh"></div>
+            <span class="bars_content__hFIqO"><h3>NCNC settings</h3></span>
+            <div class="bars_after__zBDbp bars_lengthLong__MxBhh"></div>
+        </div>
+    </div>
+    <div class="start-standard-game_settings__e5G0o" style="margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-around;">
             <div style="display: flex; align-items: center;">
-                <span class="game-options_optionLabel__dJ_Cy" style="margin: 0; padding-right: 6px;">No car</span>
-                <input type="checkbox" id="enableNoCar" onclick="toggleNoCarMode(this)" class="toggle_toggle__hwnyw">
+                <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">No car</span>
+                <input type="checkbox" id="enableNoCar" onclick="toggleNoCarMode(this)" class="toggle_toggle__qfXpL">
             </div>
             <div style="display: flex; align-items: center;">
-                <span class="game-options_optionLabel__dJ_Cy" style="margin: 0; padding-right: 6px;">No compass</span>
-                <input type="checkbox" id="enableNoCompass" onclick="toggleNoCompassMode(this)" class="toggle_toggle__hwnyw">
+                <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">No compass</span>
+                <input type="checkbox" id="enableNoCompass" onclick="toggleNoCompassMode(this)" class="toggle_toggle__qfXpL">
             </div>
         </div>
     </div>
     `;
 
-    const REMOVE_COMPASS_CSS = '.compass, .game-layout__compass, [class^="panorama-compass_"] { display: none; }';
+    const REMOVE_COMPASS_CSS = '[data-qa="compass"], [class^="panorama-compass_"] { display: none; }';
 
     const compassRemover = document.createElement("style");
     compassRemover.textContent = REMOVE_COMPASS_CSS;
@@ -38,10 +44,7 @@ export function drParseNoCar() {
     }
 
     window.toggleNoCarMode = (e) => {
-        localStorage.setItem(
-            "noCarEnabled",
-            e.checked ? "enabled" : "disabled"
-        );
+        localStorage.setItem("noCarEnabled", e.checked ? "enabled" : "disabled");
 
         if (document.querySelector("#enableNoCar")) {
             document.querySelector("#enableNoCar").checked = e.checked;
@@ -50,10 +53,7 @@ export function drParseNoCar() {
     };
 
     window.toggleNoCompassMode = (e) => {
-        localStorage.setItem(
-            "noCompassEnabled",
-            e.checked ? "enabled" : "disabled"
-        );
+        localStorage.setItem("noCompassEnabled", e.checked ? "enabled" : "disabled");
 
         if (document.querySelector("#enableNoCompass")) {
             document.querySelector("#enableNoCompass").checked = e.checked;
@@ -67,9 +67,9 @@ export function drParseNoCar() {
     };
 
     const checkInsertGui = () => {
-        if (document.querySelector(".radio-box_root__ka_9S") && document.querySelector("#enableNoCar") === null) {
+        if (document.querySelector('[class^="radio-box_root__"]') && document.querySelector("#enableNoCar") === null) {
             document
-                .querySelector(".section_sectionMedium__yXgE6")
+                .querySelector('[class^="section_sectionMedium__"]')
                 .insertAdjacentHTML("beforeend", classicGameGuiHTML);
 
             if (localStorage.getItem("noCarEnabled") === "enabled") {
@@ -167,11 +167,7 @@ function noCarScript() {
                 /** @type {WebGLRenderingContext | WebGL2RenderingContext} */
                 const ctx = g.apply(this, args);
                 // @ts-ignore TS2339
-                if (
-                    ctx &&
-                    ctx.shaderSource &&
-                    ctx.shaderSource.bestcity !== "bintulu"
-                ) {
+                if (ctx && ctx.shaderSource && ctx.shaderSource.bestcity !== "bintulu") {
                     installShaderSource(ctx);
                 }
                 return ctx;

@@ -12,9 +12,9 @@ function ipcRendererOn(event: string, callback: (...args: unknown[]) => void) {
 }
 
 export type ConnectionState =
-    | { state: 'disconnected' }
-    | { state: 'connecting' }
-    | { state: 'connected', botUsername: string, channelName: string }
+    | { state: "disconnected" }
+    | { state: "connecting" }
+    | { state: "connected"; botUsername: string; channelName: string };
 
 const chatguessrApi = {
     setGuessesOpen(open: boolean) {
@@ -36,6 +36,12 @@ const chatguessrApi = {
     getConnectionState(): Promise<ConnectionState> {
         return ipcRenderer.invoke("get-connection-state");
     },
+    appDataPathExists(subdir?: string): Promise<string | false> {
+        return ipcRenderer.invoke("app-data-path-exists", subdir);
+    },
+    importAudioFile() {
+        return ipcRenderer.invoke("import-audio-file");
+    },
 
     onGameStarted(callback: (isMultiGuess: boolean, restoredGuesses: Guess[], location: LatLng) => void) {
         return ipcRendererOn("game-started", callback);
@@ -49,7 +55,9 @@ const chatguessrApi = {
     onReceiveMultiGuesses(callback: (guesses: Guess[]) => void) {
         return ipcRendererOn("render-multiguess", callback);
     },
-    onShowRoundResults(callback: (round: number, location: Location, roundResults: RoundScore[], markerLimit: number) => void) {
+    onShowRoundResults(
+        callback: (round: number, location: Location, roundResults: RoundScore[], markerLimit: number) => void
+    ) {
         return ipcRendererOn("show-round-results", callback);
     },
     onShowGameResults(callback: (locations: Location[], gameResults: GameResult[]) => void) {
@@ -74,7 +82,7 @@ const chatguessrApi = {
     },
     onConnectionStateChange(callback: (state: ConnectionState) => void) {
         return ipcRendererOn("connection-state", callback);
-    }
+    },
 };
 
 export type ChatguessrApi = typeof chatguessrApi;

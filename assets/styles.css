@@ -1,5 +1,9 @@
 @import "./extenssr-styles.css";
 
+:root {
+    --main-color: #59f3b3;
+}
+
 @font-face {
     font-family: Montserrat;
     src: url(asset:fonts/montserrat-regular-webfont.woff2) format("woff2"),

@@ -152,7 +152,7 @@ class Scoreboard {
                         return data.value;
                     },
                 },
-                { 
+                {
                     data: "Score",
                     render: (data, type) => {
                         if (type === "display" || type === "filter") {
@@ -377,7 +377,7 @@ class Scoreboard {
                 },
                 Score: {
                     value: result.totalScore,
-                    display: `${result.totalScore} [${result.guesses.filter(Boolean).length}]`
+                    display: `${result.totalScore} [${result.guesses.filter(Boolean).length}]`,
                 },
             };
         });
@@ -496,6 +496,14 @@ class Scoreboard {
      */
     toMeter(distance) {
         return distance >= 1 ? distance.toFixed(1) + "km" : Math.floor(distance * 1000) + "m";
+    }
+
+    show() {
+        this.scoreboard.show();
+    }
+
+    hide() {
+        this.scoreboard.hide();
     }
 }
 

@@ -196,7 +196,7 @@ class GameHandler {
 
         this.#win.webContents.on("did-frame-finish-load", () => {
             if (!this.#game.isInGame) return;
-        
+
             this.#win.webContents.executeJavaScript(`
                 window.nextRoundBtn = document.querySelector('[data-qa="close-round-result"]');
                 window.playAgainBtn = document.querySelector('[data-qa="play-again-button"]');
@@ -242,7 +242,7 @@ class GameHandler {
         });
 
         ipcMain.on("close-guesses", () => {
-            this.closeGuesses();
+            if (this.#game.guessesOpen) this.closeGuesses();
         });
 
         ipcMain.on("save-global-settings", (_event, globalSettings) => {

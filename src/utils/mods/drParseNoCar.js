@@ -2,21 +2,21 @@
 export function drParseNoCar() {
     const classicGameGuiHTML = `
     <div class="section_sectionHeader___QLJB section_sizeMedium__CuXRP">
-        <div class="bars_root__SJrvT bars_center__AoNIw">
-            <div class="bars_before__U7vM7 bars_lengthLong__MxBhh"></div>
-            <span class="bars_content__hFIqO"><h3>NCNC settings</h3></span>
-            <div class="bars_after__zBDbp bars_lengthLong__MxBhh"></div>
+        <div class="bars_root___G89E bars_center__vAqnw">
+            <div class="bars_before__xAA7R bars_lengthLong__XyWLx"></div>
+            <span class="bars_content__UVGlL"><h3>NCNC settings</h3></span>
+            <div class="bars_after__Z1Rxt bars_lengthLong__XyWLx"></div>
         </div>
     </div>
-    <div class="start-standard-game_settings__e5G0o" style="margin-bottom: 20px;">
-        <div style="display: flex; justify-content: space-around;">
-            <div style="display: flex; align-items: center;">
-                <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">No car</span>
-                <input type="checkbox" id="enableNoCar" onclick="toggleNoCarMode(this)" class="toggle_toggle__qfXpL">
+    <div class="start-standard-game_settings__x94PU" style="margin-bottom: 1rem">
+        <div style="display: flex; justify-content: space-between">
+            <div style="display: flex; align-items: center">
+                <span class="game-options_optionLabel__dJ_Cy" style="margin: 0; padding-right: 6px;">No car</span>
+                <input type="checkbox" id="enableNoCar" onclick="toggleNoCarMode(this)" class="toggle_toggle__hwnyw">
             </div>
             <div style="display: flex; align-items: center;">
-                <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">No compass</span>
-                <input type="checkbox" id="enableNoCompass" onclick="toggleNoCompassMode(this)" class="toggle_toggle__qfXpL">
+                <span class="game-options_optionLabel__dJ_Cy" style="margin: 0; padding-right: 6px;">No compass</span>
+                <input type="checkbox" id="enableNoCompass" onclick="toggleNoCompassMode(this)" class="toggle_toggle__hwnyw">
             </div>
         </div>
     </div>

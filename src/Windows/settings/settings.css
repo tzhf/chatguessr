@@ -17,6 +17,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
+    font-size: 14px;
 }
 h2,
 h3 {
@@ -118,7 +119,7 @@ small {
 }
 .form__field {
     font-family: inherit;
-    font-size: 1rem;
+    /* font-size: 1rem; */
     border: 0;
     outline: 0;
     color: #fff;
@@ -132,11 +133,6 @@ small {
 textarea.form__field {
     width: 100%;
 }
-/* .form__field:placeholder-shown ~ .form__label {
-    font-size: 1rem;
-    cursor: text;
-    top: 10px;
-} */
 .form__label {
     font-weight: 700;
 }

@@ -123,8 +123,12 @@ export function blinkMode() {
     };
 
     let mapRoot = null;
+    function getMapRoot() {
+        return document.querySelector("[data-qa=panorama]");
+    }
+
     function hidePanorama() {
-        mapRoot = document.querySelector(".mapsConsumerUiSceneInternalCoreScene__root") || mapRoot;
+        mapRoot = getMapRoot() || mapRoot;
         hidePanoramaCached();
     }
 
@@ -133,7 +137,7 @@ export function blinkMode() {
     }
 
     function showPanorama() {
-        mapRoot = document.querySelector(".mapsConsumerUiSceneInternalCoreScene__root") || mapRoot;
+        mapRoot = getMapRoot() || mapRoot;
         showPanoramaCached();
     }
 

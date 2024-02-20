@@ -560,7 +560,8 @@ class GameHandler {
 
         if (message.startsWith("!spamguess")) {
             const max = parseInt(message.split(" ")[1] ?? "50", 10);
-            for (let i = 0; i < max; i += 1) {
+            let i = 0;
+            const interval = setInterval(async () => {
                 const { lat, lng } = await GameHelper.getRandomCoordsInLand();
                 await this.#handleGuess(
                     {
@@ -571,7 +572,11 @@ class GameHandler {
                     },
                     `!g ${lat},${lng}`
                 );
-            }
+                i++;
+                if (i === max) {
+                    clearInterval(interval);
+                }
+            }, 200);
         }
     }
 

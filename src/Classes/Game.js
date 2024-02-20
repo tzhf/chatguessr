@@ -2,7 +2,6 @@
 
 const pMap = require("p-map");
 const GameHelper = require("../utils/GameHelper");
-const store = require("../utils/sharedStore");
 
 /** @typedef {import('../types').LatLng} LatLng */
 /** @typedef {import('../types').Location} Location */

@@ -113,14 +113,18 @@
 .gm-ui-hover-effect {
     display: none !important;
 }
-.gm-style-iw-tc::after {
-    top: -4px !important;
-}
+
 .gm-style .gm-style-iw-c,
 .gm-style .gm-style-iw-tc::after {
     background: rgba(0, 0, 0, 0.5) !important;
 }
+.gm-style .gm-style-iw-c {
+    padding: 8px 10px !important;
+}
+
 .gm-style .gm-style-iw-d {
+    overflow: auto !important;
+    padding: 0 !important;
     color: #ffffff;
     text-align: center;
     font-weight: 700;

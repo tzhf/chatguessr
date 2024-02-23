@@ -179,10 +179,7 @@ class Game {
         await pMap(
             guesses,
             async (guess) => {
-                const correct = guess.country === this.#country;
-
-                this.#db.setGuessStreak(guess.id, correct ? guess.streak + 1 : 0, correct ? null : guess.streak);
-                if (correct) {
+                if (guess.country === this.#country) {
                     this.#db.addUserStreak(guess.userId, this.#roundId);
                 } else {
                     this.#db.resetUserStreak(guess.userId);
@@ -202,12 +199,12 @@ class Game {
         const dbUser = this.#db.getOrCreateUser("BROADCASTER", this.#settings.channelName);
 
         const guessedCountry = await GameHelper.getCountryCode(location);
-        /** @type {number|null} */
-        let lastStreak = null;
-        if (guessedCountry === this.#country) {
+        const lastStreak = this.#db.getUserStreak(dbUser.id);
+        const correct = guessedCountry === this.#country;
+        if (correct) {
             this.#db.addUserStreak(dbUser.id, this.#roundId);
         } else {
-            lastStreak = this.#db.resetUserStreak(dbUser.id);
+            this.#db.resetUserStreak(dbUser.id);
         }
 
         const distance = GameHelper.haversineDistance(location, this.location);
@@ -221,7 +218,7 @@ class Game {
             location,
             country: guessedCountry,
             streak: streak?.count ?? 0,
-            lastStreak,
+            lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
             distance,
             score,
         });
@@ -244,14 +241,17 @@ class Game {
             throw Object.assign(new Error("Same guess"), { code: "submittedPreviousGuess" });
         }
 
+        userstate.color = userstate.color || "#FFF";
+        const distance = GameHelper.haversineDistance(location, this.location);
+        const score = GameHelper.calculateScore(distance, this.mapScale);
+
         /** @type {string | null} */
         const guessedCountry = await GameHelper.getCountryCode(location);
-        let streak = this.#db.getUserStreak(dbUser.id);
-        /** @type {number | null} */
-        let lastStreak = null;
+        const correct = guessedCountry === this.#country;
+        const lastStreak = this.#db.getUserStreak(dbUser.id);
 
         // Reset streak if the player skipped a round
-        if (streak && this.lastLocation && !latLngEqual(streak.lastLocation, this.lastLocation)) {
+        if (lastStreak && this.lastLocation && !latLngEqual(lastStreak.lastLocation, this.lastLocation)) {
             this.#db.resetUserStreak(dbUser.id);
         }
 
@@ -261,41 +261,40 @@ class Game {
             if (guessedCountry === this.#country) {
                 this.#db.addUserStreak(dbUser.id, this.#roundId);
             } else {
-                lastStreak = this.#db.resetUserStreak(dbUser.id);
+                this.#db.resetUserStreak(dbUser.id);
             }
         }
 
-        streak = this.#db.getUserStreak(dbUser.id);
-        const distance = GameHelper.haversineDistance(location, this.location);
-        const score = GameHelper.calculateScore(distance, this.mapScale);
+        /** @type {{ id?: string, count: number, location?: string } | undefined} */
+        let streak = this.#db.getUserStreak(dbUser.id);
 
-        userstate.color = userstate.color || "#FFF";
+        // With this we no longer need to update guess streak in processMultiGuesses() which was slow
+        if (this.isMultiGuess) {
+            if (correct) {
+                streak ? streak.count++ : (streak = { count: 1 });
+            } else {
+                streak = null;
+            }
+        }
+
+        const guess = {
+            color: userstate.color,
+            flag: dbUser.flag,
+            location,
+            country: guessedCountry,
+            streak: streak?.count ?? 0,
+            lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
+            distance,
+            score,
+        };
 
         // Modify guess or push it
         let modified = false;
         if (this.isMultiGuess && existingGuess) {
-            this.#db.updateGuess(existingGuess.id, {
-                color: userstate.color,
-                flag: dbUser.flag,
-                location,
-                country: guessedCountry,
-                streak: streak?.count ?? 0,
-                lastStreak,
-                distance,
-                score,
-            });
+            this.#db.updateGuess(existingGuess.id, guess);
             modified = true;
         } else {
-            this.#db.createGuess(this.#roundId, dbUser.id, {
-                color: userstate.color,
-                flag: dbUser.flag,
-                location,
-                country: guessedCountry,
-                streak: streak?.count ?? 0,
-                lastStreak,
-                distance,
-                score,
-            });
+            this.#db.createGuess(this.#roundId, dbUser.id, guess);
         }
 
         // TODO save previous guess? No, fetch previous guess from the DB
@@ -309,7 +308,7 @@ class Game {
             flag: dbUser.flag,
             position: location,
             streak: streak?.count ?? 0,
-            lastStreak,
+            lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
             distance,
             score,
             modified,

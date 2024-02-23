@@ -392,25 +392,25 @@ class Database {
         });
     }
 
-    /**
-     *
-     * @param {string} guessId
-     * @param {number} streak
-     * @param {number|null} [lastStreak]
-     */
-    setGuessStreak(guessId, streak, lastStreak = null) {
-        const updateGuess = this.#db.prepare(`
-            UPDATE guesses
-            SET streak = :streak, last_streak = :lastStreak
-            WHERE id = :id
-        `);
+    // /**
+    //  *
+    //  * @param {string} guessId
+    //  * @param {number} streak
+    //  * @param {number|null} [lastStreak]
+    //  */
+    // setGuessStreak(guessId, streak, lastStreak = null) {
+    //     const updateGuess = this.#db.prepare(`
+    //         UPDATE guesses
+    //         SET streak = :streak, last_streak = :lastStreak
+    //         WHERE id = :id
+    //     `);
 
-        updateGuess.run({
-            id: guessId,
-            streak,
-            lastStreak,
-        });
-    }
+    //     updateGuess.run({
+    //         id: guessId,
+    //         streak,
+    //         lastStreak,
+    //     });
+    // }
 
     /**
      *
@@ -485,15 +485,16 @@ class Database {
 
     /**
      * @param {string} userId
-     * @returns {number|null} Previous streak, if any.
      */
     resetUserStreak(userId) {
-        const tx = this.#db.transaction(() => {
-            const streak = this.getUserStreak(userId);
-            this.#db.prepare("UPDATE users SET current_streak_id = NULL WHERE id = ?").run(userId);
-            return streak;
-        });
-        return tx()?.count ?? null;
+        // In handleUserGuess() we need to get lastLocation from the previous streak in order to reset the streak if the player skipped a round
+        // so we don't need to return last streak from here anymore, it also saves a query in processMultiGuesses() when streak is reseted
+        // const tx = this.#db.transaction(() => {
+        // const streak = this.getUserStreak(userId);
+        this.#db.prepare("UPDATE users SET current_streak_id = NULL WHERE id = ?").run(userId);
+        // return streak;
+        // });
+        // return tx()?.count ?? null;
     }
 
     /**

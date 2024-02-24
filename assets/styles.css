@@ -34,7 +34,7 @@
 }
 
 /* Hide promo and daily challenge from menu  */
-[class^="promo-deal-button_root__"] {
+[class^='header_promoDealButtonWrapper'] {
     display: none !important;
 }
 

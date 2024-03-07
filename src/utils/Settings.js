@@ -14,6 +14,8 @@ const store = require("./sharedStore");
  * @prop {string} getUserStatsCmd
  * @prop {string} getBestStatsCmd
  * @prop {string} clearUserStatsCmd
+ * @prop {string} mapCmd 
+ * @prop {number} mapCmdCooldown
  * @prop {string} randomPlonkCmd
  * @prop {boolean} showHasGuessed
  * @prop {boolean} showHasAlreadyGuessed
@@ -38,6 +40,8 @@ class Settings {
         getUserStatsCmd = "!me",
         getBestStatsCmd = "!best",
         clearUserStatsCmd = "!clear",
+        mapCmd = "!map",
+        mapCmdCooldown = 30,
         randomPlonkCmd = "!randomplonk",
         showHasGuessed = true,
         showHasAlreadyGuessed = true,
@@ -56,6 +60,8 @@ class Settings {
         this.getUserStatsCmd = getUserStatsCmd;
         this.getBestStatsCmd = getBestStatsCmd;
         this.clearUserStatsCmd = clearUserStatsCmd;
+        this.mapCmd = mapCmd;
+        this.mapCmdCooldown = mapCmdCooldown;
         this.randomPlonkCmd = randomPlonkCmd;
         this.showHasGuessed = showHasGuessed;
         this.showHasAlreadyGuessed = showHasAlreadyGuessed;
@@ -75,6 +81,8 @@ class Settings {
      * clearUserStatsCmd: string,
      * getUserStatsCmd: string,
      * getBestStatsCmd: string,
+     * mapCmd: string,
+     * mapCmdCooldown: number,
      * randomPlonkCmd: string,
      * showHasGuessed: boolean,
      * showHasAlreadyGuessed: boolean,
@@ -93,6 +101,8 @@ class Settings {
         this.getUserStatsCmd = globalSettings.getUserStatsCmd;
         this.getBestStatsCmd = globalSettings.getBestStatsCmd;
         this.clearUserStatsCmd = globalSettings.clearUserStatsCmd;
+        this.mapCmd = globalSettings.mapCmd;
+        this.mapCmdCooldown = globalSettings.mapCmdCooldown;
         this.randomPlonkCmd = globalSettings.randomPlonkCmd;
         this.showHasGuessed = globalSettings.showHasGuessed;
         this.showHasAlreadyGuessed = globalSettings.showHasAlreadyGuessed;
@@ -123,6 +133,8 @@ class Settings {
             getUserStatsCmd: this.getUserStatsCmd,
             getBestStatsCmd: this.getBestStatsCmd,
             clearUserStatsCmd: this.clearUserStatsCmd,
+            mapCmd: this.mapCmd,
+            mapCmdCooldown: this.mapCmdCooldown,
             randomPlonkCmd: this.randomPlonkCmd,
             showHasGuessed: this.showHasGuessed,
             showHasAlreadyGuessed: this.showHasAlreadyGuessed,

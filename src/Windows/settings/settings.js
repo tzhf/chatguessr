@@ -198,7 +198,7 @@ function saveGlobalSettings() {
         getBestStatsCmd: getBestStatsCmd.value,
         clearUserStatsCmd: clearUserStatsCmd.value,
         mapCmd: mapCmd.value,
-        mapCmdCooldown: mapCmd.Cooldownvalue,
+        mapCmdCooldown: mapCmdCooldown.value,
         randomPlonkCmd: randomPlonkCmd.value,
         showHasGuessed: showHasGuessed.checked,
         showHasAlreadyGuessed: showHasAlreadyGuessed.checked,

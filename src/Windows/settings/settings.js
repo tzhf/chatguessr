@@ -33,6 +33,10 @@ const clearUserStatsCmd = qs("#clearUserStatsCmd");
 /** @type {HTMLInputElement} */
 const randomPlonkCmd = qs("#randomPlonkCmd");
 /** @type {HTMLInputElement} */
+const mapCmd = qs("#mapCmd");
+/** @type {HTMLInputElement} */
+const mapCmdCooldown = qs("#mapCmdCooldown");
+/** @type {HTMLInputElement} */
 const showHasGuessed = qs("#showHasGuessed");
 /** @type {HTMLInputElement} */
 const showHasAlreadyGuessed = qs("#showHasAlreadyGuessed");
@@ -75,6 +79,8 @@ ipcRenderer.on("render-settings", (_event, settings, bannedUsers, connectionStat
     getUserStatsCmd.value = settings.getUserStatsCmd;
     getBestStatsCmd.value = settings.getBestStatsCmd;
     clearUserStatsCmd.value = settings.clearUserStatsCmd;
+    mapCmd.value = settings.mapCmd;
+    mapCmdCooldown.value = settings.mapCmdCooldown;
     randomPlonkCmd.value = settings.randomPlonkCmd;
     showHasGuessed.checked = settings.showHasGuessed;
     showHasAlreadyGuessed.checked = settings.showHasAlreadyGuessed;
@@ -191,6 +197,8 @@ function saveGlobalSettings() {
         getUserStatsCmd: getUserStatsCmd.value,
         getBestStatsCmd: getBestStatsCmd.value,
         clearUserStatsCmd: clearUserStatsCmd.value,
+        mapCmd: mapCmd.value,
+        mapCmdCooldown: mapCmd.Cooldownvalue,
         randomPlonkCmd: randomPlonkCmd.value,
         showHasGuessed: showHasGuessed.checked,
         showHasAlreadyGuessed: showHasAlreadyGuessed.checked,

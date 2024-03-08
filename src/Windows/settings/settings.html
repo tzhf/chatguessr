@@ -125,6 +125,13 @@
                                 <input class="form__field" type="text" id="clearUserStatsCmd" spellcheck="false" />
                             </div>
                         </div>
+
+                        <div class="form__group">
+                            <label class="form__label">Describe current map :</label>
+                            <div data-tip="Display information about the current map in chat (default: !map)">
+                                <input class="form__field" type="text" id="mapCmd" spellcheck="false" />
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col">
@@ -146,6 +153,13 @@
                             <label class="form__label">Random plonk :</label>
                             <div data-tip="Guess random coordinates (default: !randomplonk)">
                                 <input class="form__field" type="text" id="randomPlonkCmd" spellcheck="false" />
+                            </div>
+                        </div>
+
+                        <div class="form__group">
+                            <label class="form__label">Describe map cooldown (in sec) :</label>
+                            <div data-tip="Map description cooldown (default: 30)">
+                                <input class="form__field" type="number" min="0" max="1000" id="mapCmdCooldown" />
                             </div>
                         </div>
                     </div>

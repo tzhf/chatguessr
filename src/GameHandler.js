@@ -427,6 +427,11 @@ class GameHandler {
     #cgCooldown = false;
 
     /**
+     * @type {boolean}
+     */
+    #mapCooldown = false;
+
+    /**
      * @param {import("tmi.js").ChatUserstate} userstate
      * @param {string} message
      */
@@ -482,6 +487,26 @@ class GameHandler {
 
         if (message === settings.flagsCmd) {
             await this.#backend.sendMessage(settings.flagsCmdMsg);
+        }
+
+        if (message === settings.mapCmd) {
+            // We'll only have a map ID if we're 
+            if(!this.#game.isInGame || !this.#game.seed || !this.#game.seed.map) {
+                return;
+            } 
+
+			// Allow the broadcaster to circumvent the cooldown
+            if(this.#mapCooldown && userId !== "BROADCASTER") {
+				return;
+			}
+			this.#mapCooldown = true; 
+
+			const map = await GameHelper.fetchMap(this.#game.seed.map);
+			await this.#backend.sendMessage(`🌎 Now playing '${map.name}' by ${map.creator.nick}, played ${map.numFinishedGames} times with ${map.likes} likes: ${map.description}` );
+			
+			setTimeout(() => {
+				this.#mapCooldown = false;
+			}, settings.mapCmdCooldown * 1000);
         }
 
         if (message === settings.getUserStatsCmd) {

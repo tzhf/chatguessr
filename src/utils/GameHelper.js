@@ -18,6 +18,7 @@ const CG_PUBLIC_URL = process.env.CG_PUBLIC_URL ?? "chatguessr.com";
 /** @typedef {import('../types').LatLng} LatLng */
 /** @typedef {import('../types').GameResult} GameResult */
 /** @typedef {import('../types').Seed} Seed */
+/** @typedef {import("../types").GeoGuessrMap} GeoGuessrMap */
 
 /**
  * Checks if the URL is an in-game page.
@@ -69,6 +70,21 @@ async function fetchSeed(url) {
     }
 
     const { data } = await axios.get(`${GEOGUESSR_URL}/api/v3/games/${gameId}`, { headers: cookies });
+    return data;
+}
+
+/**
+ * Fetch the full map info from the current game, if one is active
+ * @param {string} mapToken The base16 map identifier
+ * @return {Promise<GeoGuessrMap | undefined>} Seed Promise
+ */
+async function fetchMap(mapToken) {
+    const cookies = await getCookies();
+    if (!cookies) {
+        return;
+    }
+
+    const { data } = await axios.get(`${GEOGUESSR_URL}/api/maps/${mapToken}`, { headers: cookies });
     return data;
 }
 
@@ -202,6 +218,7 @@ async function getRandomCoordsInLand(bounds = null) {
 }
 
 exports.isGameURL = isGameURL;
+exports.fetchMap = fetchMap;
 exports.fetchSeed = fetchSeed;
 exports.getCountryCode = getCountryCode;
 exports.parseCoordinates = parseCoordinates;

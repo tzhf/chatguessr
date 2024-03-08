@@ -1,4 +1,5 @@
 import { IpcRenderer } from "electron";
+import internal from "stream";
 
 export type LatLng = { lat: number; lng: number };
 export type Location = {
@@ -127,6 +128,30 @@ export type Seed = GameSettings & {
     player: GamePlayer;
     state: GameState;
     type: GameType;
+};
+
+export type GeoguessrUser = {
+    nick: string;
+    created: string;
+    isVerified: boolean;
+    isCreator: boolean;
+    countryCode: string;
+};
+
+export type GeoGuessrMap = {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    url: string;
+    playUrl: string;
+    bounds: Bounds;
+    creator: GeoguessrUser;
+    createdAt: Date;
+    numFinishedGames: number;
+    averageScore: number;
+    maxErrorDistance: number;
+    likes: number;
 };
 
 export interface RendererApi {

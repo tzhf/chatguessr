@@ -494,16 +494,19 @@ class GameHandler {
             if(!this.#game.isInGame || !this.#game.seed || !this.#game.seed.map) {
                 return;
             } 
-            if(!this.#mapCooldown) {
-                this.#mapCooldown = true; 
 
-                const map = await GameHelper.fetchMap(this.#game.seed.map);
-                await this.#backend.sendMessage(`🌎 Now playing '${map.name}' by ${map.creator.nick}, played ${map.numFinishedGames} times with ${map.likes} likes: ${map.description}` );
-                
-                setTimeout(() => {
-                    this.#mapCooldown = false;
-                }, settings.mapCmdCooldown * 1000);
-            }
+			// Allow the broadcaster to circumvent the cooldown
+            if(this.#mapCooldown && userId !== "BROADCASTER") {
+				return;
+			}
+			this.#mapCooldown = true; 
+
+			const map = await GameHelper.fetchMap(this.#game.seed.map);
+			await this.#backend.sendMessage(`🌎 Now playing '${map.name}' by ${map.creator.nick}, played ${map.numFinishedGames} times with ${map.likes} likes: ${map.description}` );
+			
+			setTimeout(() => {
+				this.#mapCooldown = false;
+			}, settings.mapCmdCooldown * 1000);
         }
 
         if (message === settings.getUserStatsCmd) {

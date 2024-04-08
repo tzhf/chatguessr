@@ -1,5 +1,6 @@
 node_modules
+.vite
+out
 dist
+*.log*
 .env
-.parcel-cache
-out/

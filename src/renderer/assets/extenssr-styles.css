@@ -1,0 +1,37 @@
+/* Adapted from https://gitlab.com/nonreviad/extenssr/-/blob/c795a07e0eb64cb5b32d60e6f3784b044becb1c1/css/styles.css */
+
+/* shortcut menu items */
+.extenssr__nav-submenu {
+  z-index: 55;
+  position: absolute;
+  top: 3rem;
+  padding: 0.375rem 0;
+  border-radius: 0.5rem;
+  max-width: 300px;
+  background: var(--ds-color-black-80);
+  list-style-type: none;
+}
+
+.extenssr__nav-submenu li {
+  box-sizing: border-box;
+  width: 100%;
+  white-space: nowrap;
+  padding: 0;
+  margin: 0;
+}
+
+.extenssr__nav-submenu a {
+  box-sizing: border-box;
+  display: inline-block;
+  width: 100%;
+  padding: 0.25rem 1rem 0.25rem 1rem;
+  color: #fff;
+  opacity: 0.6;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.extenssr__nav-submenu a:hover {
+  opacity: 1;
+  text-decoration: none;
+}

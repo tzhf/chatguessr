@@ -1,0 +1,56 @@
+:root {
+  --clr-primary: #59ffd8;
+  --clr-secondary: #a159ff;
+  --bg-color: #252525;
+}
+
+html {
+  background: var(--bg-color);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: #fff;
+  letter-spacing: 0.03rem;
+  -webkit-font-smoothing: antialiased;
+  font-weight: 300;
+}
+
+.container {
+  padding: 0.5rem;
+}
+
+.card {
+  background: rgba(180, 180, 180, 0.1);
+  border-radius: 5px;
+  box-shadow: 1px 0px 5px rgb(0, 0, 0, 0.15);
+  padding: 0.5rem;
+}
+
+.center {
+  text-align: center;
+}
+.btn {
+  font-family: inherit;
+  border: 0;
+  border-radius: 5px;
+  outline: 0;
+  position: relative;
+  padding: 10px;
+  font-weight: 700;
+  margin: 2px;
+  color: white;
+  cursor: pointer;
+  transition: transform 100ms ease-in-out;
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 12%),
+    0 1px 2px rgb(0 0 0 / 24%);
+}
+.btn:hover {
+  transform: translateY(1px);
+}
+.btn:active {
+  transform: translateY(2px);
+}
+
+.btn.twitch {
+  background: var(--clr-secondary);
+}

@@ -1,0 +1,271 @@
+@import './override-gg-styles.css';
+@import './extenssr-styles.css';
+@import './utilities.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  src: url(./fonts/montserrat-regular-webfont.woff2) format('woff2');
+}
+
+h2,
+h3 {
+  margin: 0.8rem 0;
+}
+
+hr {
+  width: 80%;
+  height: 1px;
+  margin: 0.5rem auto;
+  background-color: var(--primary);
+  border: none;
+}
+
+small {
+  font-size: 0.8rem;
+}
+
+#satelliteCanvas {
+  display: none;
+  width: 100%;
+  height: 100%;
+  z-index: 9;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.form__group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+  margin-bottom: 0.3rem;
+}
+
+.form__group input,
+.form__group select {
+  padding: 0;
+  height: 24px;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  text-align: center;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  outline: 0;
+  cursor: pointer;
+}
+
+.form__group input:hover,
+.form__group select:hover {
+  filter: brightness(120%);
+}
+
+.form__group input[type='color'] {
+  padding: 1px 2px;
+}
+
+.form__group input[type='text'],
+.form__group input[type='range'],
+.form__group select {
+  width: 150px;
+}
+
+.form__group input[type='text'],
+.form__group select {
+  border: unset;
+  border-bottom: 1px solid var(--primary);
+}
+
+.form__group input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+}
+
+.form__group input[type='range']::-webkit-slider-runnable-track {
+  background: rgb(209, 209, 209);
+  border-radius: 4px;
+  height: 0.5rem;
+}
+
+.form__group input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  width: 14px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background-color: var(--primary);
+}
+
+.form__group input[type='checkbox'] {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  color: var(--primary);
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1px solid var(--primary);
+  border-radius: 2px;
+  display: grid;
+  place-content: center;
+  outline: none;
+}
+
+.form__group input[type='checkbox']::before {
+  content: '';
+  width: 0.65rem;
+  height: 0.65rem;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0);
+  transform-origin: bottom left;
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em var(--primary);
+}
+
+.form__group input[type='checkbox']:checked::before {
+  transform: scale(1);
+}
+
+.form__group select option {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.form__group select::-webkit-scrollbar {
+  width: 10px;
+}
+
+.form__group select::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.form__group select::-webkit-scrollbar-thumb {
+  background: var(--primary);
+}
+
+textarea {
+  width: -webkit-fill-available;
+  resize: vertical;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  padding: 0.5rem;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  outline: 0;
+}
+textarea:focus {
+  border: 1px solid var(--primary);
+}
+
+.form__group .btn {
+  height: 24px;
+  padding: 0 0.5rem;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1;
+  padding: 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.btn:hover:not([disabled]) {
+  opacity: 0.9;
+}
+.btn:active:not([disabled]) {
+  opacity: 0.8;
+}
+.btn[disabled] {
+  cursor: not-allowed;
+  color: rgb(157, 157, 157);
+  background-color: rgb(91, 91, 91);
+}
+
+.flag-icon {
+  background-size: contain;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  position: relative;
+  display: inline-block;
+  width: 1.33333333em;
+}
+
+.flag-icon:before {
+  content: '\00a0';
+}
+
+/* These Scoreboard styles cannot be scoped in so we put em in here */
+.scoreboard_handle {
+  display: block !important;
+  background: none;
+  border: none;
+}
+.scoreboard_handle-tm,
+.scoreboard_handle-bm {
+  height: 12px;
+  width: 100%;
+  left: 0;
+  margin: 0;
+}
+.scoreboard_handle-ml,
+.scoreboard_handle-mr {
+  width: 12px;
+  height: 100%;
+  top: 0;
+  margin: 0;
+}
+.scoreboard_handle-tl,
+.scoreboard_handle-tr,
+.scoreboard_handle-bl,
+.scoreboard_handle-br {
+  width: 12px;
+  height: 12px;
+  z-index: 99;
+}
+
+/* GLOBAL MAP RENDERER */
+/* Small trick to select guess marker avatars cause we cannot add CSS class to google.maps.Marker */
+img[src$="#custom_marker"]{
+  border: 2px solid white !important;
+  border-radius: 50%;
+}
+
+.guess-marker-label {
+  background-color: white;
+  border-radius: 50%;
+  font-size: 10px !important;
+  font-weight: bold;
+  width: 13px;
+  height: 13px;
+}
+
+.username,
+.gm-style-iw-d .username {
+  padding: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 15px;
+  text-shadow:
+    rgb(0 0 0) 1px 1px 0px,
+    rgb(255 255 255) 1px 1px 3px;
+}
+.gm-style-iw-d .username {
+  font-size: 16px;
+  font-weight: bold;
+}

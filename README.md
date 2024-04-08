@@ -1,36 +1,56 @@
-# ChatGuessr
+<div align="center">
+  <img src="./build/icon.png" style="width:40px">
+  <h1>ChatGuessr</h1>
+</div>
 
-> Play GeoGuessr on Stream with Twitch Chat.
+<p align="center">
+  <a href="https://github.com/tzhf/chatguessr/releases">
+     <img alt="releases url" src="https://img.shields.io/github/v/release/tzhf/chatguessr?style=for-the-badge&labelColor=1C1E26&color=61ffca"/>
+  </a>
+  <a href="https://github.com/tzhf/chatguessr/blob/main/LICENSE">
+    <img alt="license url" src="https://img.shields.io/badge/license%20-MIT-1C1E26?style=for-the-badge&labelColor=1C1E26&color=61ffca"/>
+  </a>
+  <a href="https://paypal.me/chatguessr">
+    <img alt="paypal url" src="https://img.shields.io/badge/support%20on-paypal-1C1E26?style=for-the-badge&labelColor=1C1E26&color=B181F1"/>
+  </a>
+</p>
 
-This is the source code for the ChatGuessr application. Are you a streamers or player? Check [the website](https://chatguessr.com) instead.
+<p align=center>This is the source code for the ChatGuessr application. Are you a streamer or a player ? Check <a href="https://chatguessr.com">the website</a> instead.</span></p>
 
 ## Build
+
 Run the application in development mode:
+
 ```
-npm start
+npm run dev
 ```
 
 Run unit tests:
+
 ```
 npm test
 ```
 
-Typecheck JSDoc:
+Typecheck
+
 ```
 npm run typecheck
 ```
 
-Build the application for the current platform:
+Lint
+
 ```
-npm run package
+npm run lint
 ```
 
-Build an installer for the current platform:
+Format
+
 ```
-npm run make
+npm run format
 ```
 
 ## License
+
 The ChatGuessr source is available under the [MIT License](./LICENSE).
 
-The Montserrat and Comfortaa fonts are used under the [Open Font License](https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL).
+The Montserrat font is used under the [Open Font License](https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL).

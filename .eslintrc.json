@@ -1,0 +1,26 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "plugins": ["vue", "@typescript-eslint", "prettier"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+    "plugin:vue/vue3-recommended",
+    "@vue/eslint-config-typescript/recommended",
+    "@vue/eslint-config-prettier"
+  ],
+  "rules": {
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    "@typescript-eslint/no-empty-function": ["error", { "allow": ["arrowFunctions"] }],
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "vue/multi-word-component-names": "off",
+    "vue/no-v-html": "off"
+  }
+}

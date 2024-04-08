@@ -2,17 +2,24 @@ name: CI
 
 on: [push, pull_request]
 
+env:
+  VITE_CG_PUBLIC_URL: ${{secrets.VITE_CG_PUBLIC_URL}}
+  VITE_CG_API_URL: ${{secrets.VITE_CG_API_URL}}
+  VITE_SOCKET_SERVER_URL: ${{secrets.VITE_SOCKET_SERVER_URL}}
+  VITE_SUPABASE_URL: ${{secrets.VITE_SUPABASE_URL}}
+  VITE_SUPABASE_ANON_KEY: ${{secrets.VITE_SUPABASE_ANON_KEY}}
+
 jobs:
   types:
     name: Types
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
       - name: Install dependencies
         run: npm ci
       - name: Check types
@@ -22,18 +29,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
       - name: Install dependencies
         run: npm ci
       - name: Run tests
         run: npm test
   package:
     name: Package
-    needs: [test, types]
+    needs: [types, test]
     strategy:
       fail-fast: false
       matrix:
@@ -41,26 +48,24 @@ jobs:
     runs-on: ${{matrix.os}}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
       - name: Install dependencies
         run: npm ci
-      - name: Write .env
-        run: node create-env.js
-        env:
-          CG_PUBLIC_URL: ${{secrets.CG_PUBLIC_URL}}
-          CG_API_URL: ${{secrets.CG_API_URL}}
-          SOCKET_SERVER_URL: ${{secrets.SOCKET_SERVER_URL}}
-          SENTRY_DSN: ${{secrets.SENTRY_DSN}}
-          SUPABASE_URL: ${{secrets.SUPABASE_URL}}
-          SUPABASE_ANON_KEY: ${{secrets.SUPABASE_ANON_KEY}}
-          TWITCH_CLIENT_ID: ${{secrets.TWITCH_CLIENT_ID}}
+      # - name: Write .env
+      #   run: node create-env.js
+        # env:
+        #   VITE_CG_PUBLIC_URL: ${{secrets.VITE_CG_PUBLIC_URL}}
+        #   VITE_CG_API_URL: ${{secrets.VITE_CG_API_URL}}
+        #   VITE_SOCKET_SERVER_URL: ${{secrets.VITE_SOCKET_SERVER_URL}}
+        #   VITE_SUPABASE_URL: ${{secrets.VITE_SUPABASE_URL}}
+        #   VITE_SUPABASE_ANON_KEY: ${{secrets.VITE_SUPABASE_ANON_KEY}}
       - name: Package
         run: npm run package
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Chatguessr-${{runner.os}}
           path: out/*/

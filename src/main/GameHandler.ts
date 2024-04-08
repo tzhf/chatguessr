@@ -456,8 +456,8 @@ export default class GameHandler {
       const dbUser = this.#db.getOrCreateUser(
         userId,
         userstate['display-name'],
-        userstate.color,
-        userstate.avatar
+        userstate.avatar,
+        userstate.color
       )
       if (!dbUser) return
 

@@ -341,7 +341,7 @@ export default class Game {
   }
 
   get isFinished() {
-    return this.seed!.state === 'finished'
+    return this.seed && this.seed.state === 'finished'
   }
 
   get mapName() {

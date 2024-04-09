@@ -357,8 +357,8 @@ function scroller() {
       tBody.value.scrollBy({ top: 1 })
     } else {
       pause()
-      direction = 1
       setTimeout(() => {
+        direction = 1
         if (settings.autoScroll) resume()
       }, 2000)
     }
@@ -367,8 +367,8 @@ function scroller() {
       tBody.value.scrollBy({ top: -0.1 * tBody.value.scrollTop })
     } else {
       pause()
-      direction = 0
       setTimeout(() => {
+        direction = 0
         if (settings.autoScroll) resume()
       }, 3000)
     }
@@ -378,9 +378,9 @@ function scroller() {
 function scrollToTop() {
   pause()
   if (tBody.value) tBody.value.scrollTop = 0
-  direction = 0
   if (!settings.autoScroll) return
   setTimeout(() => {
+    direction = 0
     resume()
   }, 3000)
 }

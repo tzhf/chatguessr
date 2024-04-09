@@ -354,7 +354,7 @@ textarea {
   font-weight: 700;
   color: white;
   width: 870px;
-  min-height: 610px;
+  min-height: 655px;
   margin: 0 auto;
   border-radius: 5px;
   background-color: var(--bg-dark-transparent);

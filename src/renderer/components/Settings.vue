@@ -117,6 +117,10 @@
                     max="120"
                   />
                 </label>
+                <label class="form__group" data-tip="Get the last location">
+                  Get current map description :
+                  <input v-model.trim="settings.lastlocCmd" type="text" spellcheck="false" />
+                </label>
               </div>
             </div>
           </div>

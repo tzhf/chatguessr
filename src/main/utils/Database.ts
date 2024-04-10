@@ -265,7 +265,8 @@ class db {
         lng: round.lng,
         panoId: round.panoId,
         heading: round.heading,
-        pitch: round.pitch
+        pitch: round.pitch,
+        zoom: round.zoom
       }),
       createdAt: timestamp()
     })
@@ -850,15 +851,31 @@ class db {
       })
   }
 
-  getLastlocs(){
+  getLastlocs() {
     const lastlocsQuery = `
-    SELECT rounds.country, rounds.location, games.map_name 
-    FROM rounds
-    LEFT JOIN games ON rounds.game_id = games.id JOIN guesses on guesses.round_id = rounds.id 
-    WHERE guesses.user_id = 'BROADCASTER' ORDER BY
-    rounds.created_at DESC limit 5
-  `
-  return this.#db.prepare(lastlocsQuery).all() as {country: string, location: string, map_name: string}[]
+      SELECT
+        rounds.country,
+        rounds.location,
+        games.map_name
+      FROM rounds
+      LEFT JOIN games ON rounds.game_id = games.id
+      JOIN guesses on guesses.round_id = rounds.id
+      WHERE guesses.user_id = 'BROADCASTER'
+      ORDER BY rounds.created_at DESC
+      LIMIT 5
+    `
+
+    const records = this.#db.prepare(lastlocsQuery).all() as {
+      country: string
+      location: string
+      map_name: string
+    }[]
+
+    return records.map((record) => ({
+      country: record.country,
+      location: JSON.parse(record.location) as Location_,
+      map_name: record.map_name
+    }))
   }
 
   /**

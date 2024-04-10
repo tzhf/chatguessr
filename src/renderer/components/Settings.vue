@@ -103,6 +103,10 @@
                   Random plonk :
                   <input v-model.trim="settings.randomPlonkCmd" type="text" spellcheck="false" />
                 </label>
+                <label class="form__group" data-tip="Get the last location (default: !lastloc)">
+                  Get the last location :
+                  <input v-model.trim="settings.lastlocCmd" type="text" spellcheck="false" />
+                </label>
                 <label class="form__group" data-tip="Get current map description (default: !map)">
                   Get current map description :
                   <input v-model.trim="settings.mapCmd" type="text" spellcheck="false" />
@@ -116,10 +120,6 @@
                     step="5"
                     max="120"
                   />
-                </label>
-                <label class="form__group" data-tip="Get the last location">
-                  Get current map description :
-                  <input v-model.trim="settings.lastlocCmd" type="text" spellcheck="false" />
                 </label>
               </div>
             </div>
@@ -358,7 +358,7 @@ textarea {
   font-weight: 700;
   color: white;
   width: 870px;
-  min-height: 655px;
+  min-height: 682px;
   margin: 0 auto;
   border-radius: 5px;
   background-color: var(--bg-dark-transparent);

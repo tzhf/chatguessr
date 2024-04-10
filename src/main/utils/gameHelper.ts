@@ -10,6 +10,7 @@ import countryCodes from '../lib/countryCodes.json'
 const GEOGUESSR_URL = 'https://geoguessr.com'
 const CG_API_URL = import.meta.env.VITE_CG_API_URL ?? 'https://chatguessr.com/api'
 const CG_PUBLIC_URL = import.meta.env.VITE_CG_PUBLIC_URL ?? 'chatguessr.com'
+const URL_SHORTENER_API_KEY = import.meta.env.VITE_URL_SHORTENER_API_KEY
 
 /**
  * Checks if the URL is an in-game page.
@@ -125,7 +126,7 @@ export function calculateScore(distance: number, scale: number): number {
 /**
  * Upload scores to the Chatguessr API and return the game summary link
  */
-export async function makeLink(params: {
+export async function makeGameSummaryLink(params: {
   accessToken: string
   bot: string
   streamer: string
@@ -148,6 +149,34 @@ export async function makeLink(params: {
   )
 
   return `${CG_PUBLIC_URL}/game/${res.data.code}`
+}
+
+export async function makeShortGMapsLink(location: Location_): Promise<string | URL> {
+  const url = new URL('https://www.google.com/maps/@?api=1&map_action=pano')
+  if (location.panoId) url.searchParams.set('pano', location.panoId)
+  url.searchParams.set('viewpoint', `${location.lat},${location.lng}`)
+  url.searchParams.set('heading', String(location.heading))
+  url.searchParams.set('pitch', String(location.pitch))
+  if (location.zoom) {
+    const fov = 180 / 2 ** location.zoom
+    url.searchParams.set('fov', String(fov))
+  }
+
+  try {
+    const { data } = await axios.post(
+      'https://t.ly/api/v1/link/shorten',
+      { long_url: url },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${URL_SHORTENER_API_KEY}`
+        }
+      }
+    )
+    return data.short_url
+  } catch (e) {
+    return url
+  }
 }
 
 export async function fetchMap(mapToken: string): Promise<GeoGuessrMap | undefined> {

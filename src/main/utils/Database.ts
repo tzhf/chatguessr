@@ -850,6 +850,17 @@ class db {
       })
   }
 
+  getLastlocs(){
+    const lastlocsQuery = `
+    SELECT rounds.country, rounds.location, games.map_name 
+    FROM rounds
+    LEFT JOIN games ON rounds.game_id = games.id JOIN guesses on guesses.round_id = rounds.id 
+    WHERE guesses.user_id = 'BROADCASTER' ORDER BY
+    rounds.created_at DESC limit 5
+  `
+  return this.#db.prepare(lastlocsQuery).all() as {country: string, location: string, map_name: string}[]
+  }
+
   /**
    * Check if the database contains any data.
    */

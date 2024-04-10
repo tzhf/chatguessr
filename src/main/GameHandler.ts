@@ -483,6 +483,57 @@ export default class GameHandler {
       await this.#backend?.sendMessage('Available flags: chatguessr.com/flags')
       return
     }
+    // check if first word of message equals to settings.lastlocCmd
+    if (message.split(" ")[0] === settings.lastlocCmd) {
+
+      // check if second word is an integer
+      let second_word = message.split(' ')[1]
+      let location_number = 1
+      //check if second word is an int
+      if (second_word && !isNaN(parseInt(second_word))) {
+        location_number = parseInt(second_word)
+      }
+      location_number = location_number - 1
+      
+      const last_10_locations = this.#db.getLastlocs()
+      if (last_10_locations.length === 0) {
+        await this.#backend?.sendMessage('No locations saved yet.')
+        return
+      }
+      if (location_number < 0) {
+        await this.#backend?.sendMessage('Location number out of range. Must be 1 or more.')
+        return
+      }
+      if (location_number >= last_10_locations.length) {
+        await this.#backend?.sendMessage('Location number out of range. Must be 5 or less.')
+        return
+      }
+      const last_location = last_10_locations[location_number]
+      const last_location_country = last_location.country
+      const last_location_location = JSON.parse(last_location.location)
+      const last_location_map = last_location.map_name
+
+      let url = "https://www.google.com/maps/@?api=1&map_action=pano"
+      if (Object.keys(last_location_location).includes('lat') && Object.keys(last_location_location).includes('lng'))
+        url += `&viewpoint=${last_location_location.lat},${last_location_location.lng}`
+      if (Object.keys(last_location_location).includes('heading'))
+        url += `&heading=${last_location_location.heading}`
+      if (Object.keys(last_location_location).includes('pitch'))
+        url += `&pitch=${last_location_location.pitch}`
+
+      url = url.replaceAll(" ", "+").replaceAll(",", "%2C")
+      let return_number = ""
+      if (location_number === 0)
+        return_number = "The last location"
+      else if (location_number === 1)
+        return_number = "The 2nd to last location"
+      else if (location_number === 2)
+        return_number = "The 3rd to last location"
+      else 
+        return_number = `The ${location_number + 1}th to last location`
+      let return_message = `${return_number} was on the map ${last_location_map} in ${last_location_country}: ${url}`
+      await this.#backend?.sendMessage(return_message)
+    }
 
     if (message === settings.mapCmd) {
       // We'll only have a map ID if we're

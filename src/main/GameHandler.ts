@@ -7,7 +7,7 @@ import { settings, saveSettings } from './utils/useSettings'
 import {
   isGameURL,
   makeGameSummaryLink,
-  makeShortGMapsLink,
+  makeMapsUrl,
   fetchMap,
   parseCoordinates,
   getRandomCoordsInLand,
@@ -518,9 +518,10 @@ export default class GameHandler {
       else if (locationNumber === 2) returnNumber = 'The 3rd to last location'
       else returnNumber = `The ${locationNumber + 1}th to last location`
 
-      const url = await makeShortGMapsLink(lastLocation.location)
-      const returnMessage = `${returnNumber} was on the map ${lastLocation.map_name} in ${getEmoji(lastLocation.country)} : ${url}`
-      await this.#backend?.sendMessage(returnMessage)
+      const url = await makeMapsUrl(lastLocation.location)
+      await this.#backend?.sendMessage(
+        `${returnNumber} was on the map "${lastLocation.map_name}" in ${getEmoji(lastLocation.country)} ${lastLocation.country}: ${url}`
+      )
       return
     }
 

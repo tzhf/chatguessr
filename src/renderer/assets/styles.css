@@ -202,7 +202,9 @@ textarea:focus {
   background-repeat: no-repeat;
   position: relative;
   display: inline-block;
+  font-size: 1.2rem;
   width: 1.33333333em;
+  line-height: 1rem;
 }
 
 .flag-icon:before {
@@ -256,12 +258,12 @@ img[src$="#custom_marker"]{
 
 .username,
 .gm-style-iw-d .username {
-  padding: 3px;
+  padding: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 15px;
-  text-shadow: 1px 0 1px #fff;
+  text-shadow: 1px 1px 0px #000;
 }
 .gm-style-iw-d .username {
   font-size: 16px;

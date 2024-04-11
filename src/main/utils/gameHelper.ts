@@ -10,7 +10,6 @@ import countryCodes from '../lib/countryCodes.json'
 const GEOGUESSR_URL = 'https://geoguessr.com'
 const CG_API_URL = import.meta.env.VITE_CG_API_URL ?? 'https://chatguessr.com/api'
 const CG_PUBLIC_URL = import.meta.env.VITE_CG_PUBLIC_URL ?? 'chatguessr.com'
-const URL_SHORTENER_API_KEY = import.meta.env.VITE_URL_SHORTENER_API_KEY
 
 /**
  * Checks if the URL is an in-game page.
@@ -151,7 +150,10 @@ export async function makeGameSummaryLink(params: {
   return `${CG_PUBLIC_URL}/game/${res.data.code}`
 }
 
-export async function makeShortGMapsLink(location: Location_): Promise<string | URL> {
+/**
+ * Make GMaps URL from a Location object
+ */
+export async function makeMapsUrl(location: Location_): Promise<string> {
   const url = new URL('https://www.google.com/maps/@?api=1&map_action=pano')
   if (location.panoId) url.searchParams.set('pano', location.panoId)
   url.searchParams.set('viewpoint', `${location.lat},${location.lng}`)
@@ -162,21 +164,24 @@ export async function makeShortGMapsLink(location: Location_): Promise<string | 
     url.searchParams.set('fov', String(fov))
   }
 
+  const shortUrl = await shortenMapsUrl(url.href)
+  return shortUrl ?? url.href
+}
+
+async function shortenMapsUrl(url: string): Promise<string | undefined> {
+  const v = encodeURIComponent(url.replaceAll('!', '*21'))
   try {
-    const { data } = await axios.post(
-      'https://t.ly/api/v1/link/shorten',
-      { long_url: url },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${URL_SHORTENER_API_KEY}`
-        }
-      }
+    const { data } = await axios.get<string | undefined>(
+      `https://www.google.com/maps/rpc/shorturl?authuser=0&hl=en&pb=!1s${v}!2m1!7e81!6b1`
     )
-    return data.short_url
+    if (data) {
+      const [shortened]: string = JSON.parse(data.split('\n')[1])
+      return shortened
+    }
   } catch (e) {
-    return url
+    return undefined
   }
+  return undefined
 }
 
 export async function fetchMap(mapToken: string): Promise<GeoGuessrMap | undefined> {

@@ -6,7 +6,7 @@
     v-model:h="position.h"
     :draggable="isDraggable"
     :min-w="340"
-    :min-h="171"
+    :min-h="179"
     :parent="true"
     class="scoreboard"
     class-name-handle="scoreboard_handle"
@@ -559,7 +559,7 @@ thead {
   z-index: 2;
 }
 tr {
-  height: 28px;
+  height: 30px;
 }
 
 tbody tr:nth-child(odd) {
@@ -616,8 +616,8 @@ th.sortable:hover {
 
 .scoreboard-avatar {
   background-size: contain;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   flex-shrink: 0;
   border: 1px solid var(--primary);
@@ -629,7 +629,9 @@ th.sortable:hover {
   background-repeat: no-repeat;
   position: relative;
   display: inline-block;
+  font-size: 1.2rem;
   width: 1.33333333em;
+  line-height: 1rem;
   flex-shrink: 0;
 }
 .scoreboard-flag:before {

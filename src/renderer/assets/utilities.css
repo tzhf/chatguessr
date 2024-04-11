@@ -4,8 +4,6 @@
   --danger: #f0625d;
   --warning: #ffae00;
   --bg-dark-transparent: rgba(0, 0, 0, 0.4);
-  /* --danger-hover: #e05e59;
-  --danger-active: #d35854; */
 }
 .primary {
   color: var(--primary);
@@ -13,36 +11,18 @@
 .bg-primary {
   background: var(--primary);
 }
-/* .bg-primary:hover:not([disabled]) {
-  background: #56ca90;
-}
-.bg-primary:active:not([disabled]) {
-  background: #4eb883;
-} */
 .danger {
   color: var(--danger);
 }
 .bg-danger {
   background: var(--danger);
 }
-/* .bg-danger:hover::not([disabled]) {
-  background: var(--danger-hover);
-}
-.bg-danger:active:not([disabled]) {
-  background: var(--danger-active);
-} */
 .warning {
   color: var(--warning);
 }
 .bg-warning {
   background: var(--warning);
 }
-/* .bg-warning:hover:not([disabled]) {
-  background: #e49c00;
-}
-.bg-warning:active:not([disabled]) {
-  background: #c28400;
-} */
 
 /******** SPACING ********/
 .flex {

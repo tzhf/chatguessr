@@ -36,7 +36,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
   }
 
   const classicGameGuiHTML = `
-    <div class="section_sectionHeader___QLJB section_sizeMedium__CuXRP">
+    <div class="section_sizeMedium__yPqLK">
       <div class="bars_root__Z20mU bars_center__Kq6kA">
         <div class="bars_before__bo63I"></div>
         <span class="bars_content__F_LTP"><h3>NCNC settings</h3></span>

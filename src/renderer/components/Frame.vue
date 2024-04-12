@@ -194,7 +194,9 @@ onBeforeUnmount(
 
 onBeforeUnmount(
   chatguessrApi.onRefreshRound((location) => {
-    gameState.value = 'in-round'
+    // this condition prevents gameState to switch to 'in-round' if 'onRefreshRound' is triggered (happens sometimes) on round results screen
+    // this is because of "did-frame-finish-load" based logic, ideally we would want something else
+    if (gameState.value !== 'round-results') gameState.value = 'in-round'
     currentLocation.value = location
     if (satelliteMode.value.enabled) {
       rendererApi.showSatelliteMap(location)

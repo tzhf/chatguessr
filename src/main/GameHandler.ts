@@ -223,9 +223,6 @@ export default class GameHandler {
     })
 
     ipcMain.on('save-settings', (_event, settings_: Settings) => {
-      if (settings_.channelName != settings.channelName) {
-        this.#requestAuthentication()
-      }
       saveSettings(settings_)
     })
 

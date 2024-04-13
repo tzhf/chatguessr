@@ -215,7 +215,11 @@ export async function getRandomCoordsInLand(bounds: Bounds | null = null): Promi
   return { lat, lng }
 }
 
-export async function getStreamerAvatar(channel: string): Promise<{ avatar: string }> {
-  const { data } = await axios.get<{ avatar: string }>(`${CG_API_URL}/channel/${channel}`)
-  return data
+export async function getStreamerAvatar(channel: string): Promise<{ avatar: string | undefined }> {
+  try {
+    const { data } = await axios.get<{ avatar: string }>(`${CG_API_URL}/channel/${channel}`)
+    return data
+  } catch (e) {
+    return { avatar: undefined }
+  }
 }

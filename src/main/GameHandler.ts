@@ -295,6 +295,7 @@ export default class GameHandler {
     const { avatar } = await getStreamerAvatar(settings.channelName)
     if (avatar) {
       settings.avatar = avatar
+      saveSettings(settings)
     }
 
     const emitConnectionState = () => {

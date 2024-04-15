@@ -535,7 +535,7 @@ export default class GameHandler {
       const map = await fetchMap(this.#game.seed.map)
       if (map) {
         await this.#backend?.sendMessage(
-          `🌎 Now playing '${map.name}' by ${map.creator.nick}, played ${map.numFinishedGames} times with ${map.likes} likes: ${map.description}`
+          `🌎 Now playing '${map.name}' by ${map.creator.nick}, played ${map.numFinishedGames} times with ${map.likes} likes${map.description?`: ${map.description}`:''}`
         )
       }
 

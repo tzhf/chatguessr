@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
 import * as GameHelper from './gameHelper'
 
 describe('getCountryCode', () => {
@@ -116,5 +116,41 @@ describe('randomPlonk', () => {
       expect(lng > inBounds.min.lng).toBeTruthy()
       expect(lng < inBounds.max.lng).toBeTruthy()
     }
+  })
+})
+
+describe('parseUserDate', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('Handles undefined date as epoch=0', async () => {
+      expect(await GameHelper.parseUserDate(undefined)).toEqual({timeStamp: 0})
+  })
+
+  it('Handles empty date as epoch=0', async () => {
+    expect(await GameHelper.parseUserDate("")).toEqual({timeStamp: 0})
+})
+
+  it('Parses "day" correctly', async () => {
+    vi.setSystemTime(new Date("2000-01-17T16:01:23"))
+    const dateInfo = await GameHelper.parseUserDate("day")
+    expect(dateInfo.timeStamp).toEqual(GameHelper.dateToUnixTimestamp(new Date("2000-01-17T00:00:00")))
+  })
+
+  it('Parses "month" correctly', async () => {
+    vi.setSystemTime(new Date("2001-01-17T16:01:23"))
+    const dateInfo = await GameHelper.parseUserDate("month")
+    expect(dateInfo.timeStamp).toEqual(GameHelper.dateToUnixTimestamp(new Date("2001-01-01T00:00:00")))
+  })
+
+  it('Parses "year" correctly', async () => {
+    vi.setSystemTime(new Date("2002-04-17T16:01:23"))
+    const dateInfo = await GameHelper.parseUserDate("year")
+    expect(dateInfo.timeStamp).toEqual(GameHelper.dateToUnixTimestamp(new Date("2002-01-01T00:00:00")))
   })
 })

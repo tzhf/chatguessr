@@ -11,7 +11,8 @@ import {
   fetchMap,
   parseCoordinates,
   getRandomCoordsInLand,
-  getStreamerAvatar
+  getStreamerAvatar,
+  parseUserDate
 } from './utils/gameHelper'
 import { getEmoji, randomCountryFlag, selectFlag } from './lib/flags/flags'
 
@@ -545,13 +546,27 @@ export default class GameHandler {
       return
     }
 
-    if (message === settings.getUserStatsCmd) {
-      const userInfo = this.#db.getUserStats(userId)
+    if (message.split(' ')[0] === settings.getUserStatsCmd) {
+      const date = message.split(' ')[1]
+      const dateInfo = await parseUserDate(date)
+      if (dateInfo.timeStamp < 0) {
+        await this.#backend?.sendMessage(`${userstate['display-name']}: ${dateInfo.description}.`)
+        return
+      }
+      const userInfo = this.#db.getUserStats(userId, dateInfo.timeStamp)
       if (!userInfo) {
-        await this.#backend?.sendMessage(`${userstate['display-name']} you've never guessed yet.`)
+        if (dateInfo.timeStamp === 0) {
+          await this.#backend?.sendMessage(`${userstate['display-name']} you've never guessed yet.`)
+        } else {
+          await this.#backend?.sendMessage(`${userstate['display-name']} no guesses for this time period.`)
+        }
       } else {
-        await this.#backend?.sendMessage(`
-					${getEmoji(userInfo.flag)} ${userInfo.username} : Current streak: ${userInfo.streak}.
+        let msg = `${getEmoji(userInfo.flag)} ${userInfo.username}: `
+        if (dateInfo.description) {
+          msg += `Stats for ${dateInfo.description}: `
+        }
+        msg += `
+					Current streak: ${userInfo.streak}.
 					Best streak: ${userInfo.bestStreak}.
 					Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses}${
             userInfo.nbGuesses > 0
@@ -561,13 +576,20 @@ export default class GameHandler {
 					Avg. score: ${Math.round(userInfo.meanScore)}.
 					Victories: ${userInfo.victories}.
 					5ks: ${userInfo.perfects}.
-				`)
+				`
+        await this.#backend?.sendMessage(msg)
       }
       return
     }
 
-    if (message === settings.getBestStatsCmd) {
-      const { streak, victories, perfects } = this.#db.getGlobalStats()
+    if (message.split(' ')[0] === settings.getBestStatsCmd) {
+      const date = message.split(' ')[1]
+      const dateInfo = await parseUserDate(date)
+      if (dateInfo.timeStamp < 0) {
+        await this.#backend?.sendMessage(`${userstate['display-name']}: ${dateInfo.description}.`)
+        return
+      }
+      const { streak, victories, perfects } = this.#db.getGlobalStats(dateInfo.timeStamp)
       if (!streak && !victories && !perfects) {
         await this.#backend?.sendMessage('No stats available.')
       } else {
@@ -581,7 +603,12 @@ export default class GameHandler {
         if (perfects) {
           msg += `5ks: ${perfects.perfects} (${perfects.username}). `
         }
-        await this.#backend?.sendMessage(`Channels best: ${msg}`)
+        if (!dateInfo.description)
+        {
+          await this.#backend?.sendMessage(`Channels best: ${msg}`)
+        } else {
+          await this.#backend?.sendMessage(`Best ${dateInfo.description}: ${msg}`)
+        }
       }
       return
     }

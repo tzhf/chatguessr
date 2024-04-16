@@ -34,7 +34,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
   }
 
   const classicGameGuiHTML: string = `
-    <div class="section_sizeMedium__yPqLK">
+    <div class="section_sizeMedium__CuXRP">
       <div class="bars_root__tryg2 bars_center__kXp6T">
         <div class="bars_before__S32L5"></div>
         <span class="bars_content__Nw_TD"><h3>Blink Mode settings</h3></span>
@@ -45,12 +45,12 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
       <div class="game-options_optionGroup__qNKx1">
         <div style="display: flex; justify-content: space-between">
           <div style="display: flex; align-items: center">
-            <span class="game-options_optionLabel__dJ_Cy" style="margin: 0; padding-right: 6px">Enabled</span>
+            <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px">Enabled</span>
             <input type="checkbox" id="enableScript" onclick="toggleBlinkMode(this)" class="toggle_toggle__qfXpL" />
           </div>
           <div style="display: flex; align-items: center">
             <label class="game-options_option__eCz9o game-options_editableOption__Mpvar">
-              <div class="game-options_optionLabel__dJ_Cy">Time (Seconds)</div>
+              <div class="game-options_optionLabel__Vk5xN">Time</div>
               <input
                 type="range"
                 class="custom-slider"
@@ -60,12 +60,12 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
                 id="blinkTime"
                 oninput="changeBlinkTime(this)"
               />
-              <div class="game-options_optionLabel__dJ_Cy" id="blinkTimeText"></div>
+              <div class="game-options_optionLabel__Vk5xN" id="blinkTimeText"></div>
             </label>
           </div>
           <div style="display: flex; align-items: center">
             <label class="game-options_option__eCz9o game-options_editableOption__Mpvar">
-              <div class="game-options_optionLabel__dJ_Cy">Round delay (Seconds)</div>
+              <div class="game-options_optionLabel__Vk5xN">Round delay</div>
               <input
                 type="range"
                 class="custom-slider"
@@ -75,7 +75,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
                 id="delayTime"
                 oninput="changeDelayTime(this)"
               />
-              <div class="game-options_optionLabel__dJ_Cy" id="delayTimeText"></div>
+              <div class="game-options_optionLabel__Vk5xN" id="delayTimeText"></div>
             </label>
           </div>
         </div>

@@ -37,21 +37,21 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
 
   const classicGameGuiHTML = `
     <div class="section_sizeMedium__yPqLK">
-      <div class="bars_root__Z20mU bars_center__Kq6kA">
-        <div class="bars_before__bo63I"></div>
-        <span class="bars_content__F_LTP"><h3>NCNC settings</h3></span>
-        <div class="bars_after__VCYQM"></div>
+      <div class="bars_root__tryg2 bars_center__kXp6T">
+        <div class="bars_before__S32L5"></div>
+        <span class="bars_content__Nw_TD"><h3>NCNC settings</h3></span>
+        <div class="bars_after__50_BW"></div>
       </div>
     </div>
     <div class="start-standard-game_settings__x94PU">
       <div style="display: flex; justify-content: space-between">
         <div style="display: flex; align-items: center">
           <span class="game-options_optionLabel__dJ_Cy" style="margin: 0; padding-right: 6px;">No car</span>
-          <input type="checkbox" id="enableNoCar" onclick="toggleNoCarMode(this)" class="toggle_toggle__hwnyw">
+          <input type="checkbox" id="enableNoCar" onclick="toggleNoCarMode(this)" class="toggle_toggle__qfXpL">
         </div>
         <div style="display: flex; align-items: center;">
           <span class="game-options_optionLabel__dJ_Cy" style="margin: 0; padding-right: 6px;">No compass</span>
-          <input type="checkbox" id="enableNoCompass" onclick="toggleNoCompassMode(this)" class="toggle_toggle__hwnyw">
+          <input type="checkbox" id="enableNoCompass" onclick="toggleNoCompassMode(this)" class="toggle_toggle__qfXpL">
         </div>
       </div>
     </div>

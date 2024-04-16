@@ -35,10 +35,10 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
 
   const classicGameGuiHTML: string = `
     <div class="section_sizeMedium__yPqLK">
-      <div class="bars_root__Z20mU bars_center__Kq6kA">
-        <div class="bars_before__bo63I"></div>
-        <span class="bars_content__F_LTP"><h3>Blink Mode settings</h3></span>
-        <div class="bars_after__VCYQM"></div>
+      <div class="bars_root__tryg2 bars_center__kXp6T">
+        <div class="bars_before__S32L5"></div>
+        <span class="bars_content__Nw_TD"><h3>Blink Mode settings</h3></span>
+        <div class="bars_after__50_BW"></div>
       </div>
     </div>
     <div class="start-standard-game_settings__x94PU">
@@ -46,7 +46,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
         <div style="display: flex; justify-content: space-between">
           <div style="display: flex; align-items: center">
             <span class="game-options_optionLabel__dJ_Cy" style="margin: 0; padding-right: 6px">Enabled</span>
-            <input type="checkbox" id="enableScript" onclick="toggleBlinkMode(this)" class="toggle_toggle__hwnyw" />
+            <input type="checkbox" id="enableScript" onclick="toggleBlinkMode(this)" class="toggle_toggle__qfXpL" />
           </div>
           <div style="display: flex; align-items: center">
             <label class="game-options_option__eCz9o game-options_editableOption__Mpvar">
@@ -85,11 +85,11 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
 
   const checkInsertGui = () => {
     if (
-      document.querySelector('.radio-box_root__ka_9S') &&
+      document.querySelector('[class^="radio-box_root__"]') &&
       document.getElementById('enableScript') === null
     ) {
       document
-        .querySelector('.section_sectionMedium__yXgE6')
+        .querySelector('[class^="section_sectionMedium__"]')
         ?.insertAdjacentHTML('beforeend', classicGameGuiHTML)
 
       if (settings.enabled) {

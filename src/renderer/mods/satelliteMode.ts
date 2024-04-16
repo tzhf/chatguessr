@@ -20,10 +20,10 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
 
   const classicGameGuiHTML = `
     <div class="section_sizeMedium__yPqLK">
-      <div class="bars_root__Z20mU bars_center__Kq6kA">
-        <div class="bars_before__bo63I"></div>
-        <span class="bars_content__F_LTP"><h3>Satellite Mode settings</h3></span>
-        <div class="bars_after__VCYQM"></div>
+      <div class="bars_root__tryg2 bars_center__kXp6T">
+        <div class="bars_before__S32L5"></div>
+        <span class="bars_content__Nw_TD"><h3>Satellite Mode settings</h3></span>
+        <div class="bars_after__50_BW"></div>
       </div>
     </div>
     <div class="start-standard-game_settings__x94PU">
@@ -34,7 +34,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
                 type="checkbox"
                 id="enableSatelliteMode"
                 onclick="toggleSatelliteMode(this)"
-                class="toggle_toggle__hwnyw"
+                class="toggle_toggle__qfXpL"
             />
         </div>
         <div style="display: flex; align-items: center">

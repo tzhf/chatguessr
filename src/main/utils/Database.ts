@@ -748,24 +748,24 @@ class db {
     })
   }
 
-  getUserStats(userId: string) {
+  getUserStats(userId: string, sinceTimestamp: number = 0) {
     const stmt = this.#db.prepare(`
       SELECT
         username,
         flag,
         COALESCE(current_streak.count, 0) AS current_streak,
-        COALESCE((SELECT MAX(count) FROM streaks WHERE user_id = :id AND updated_at > users.reset_at), 0) AS best_streak,
-        (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND created_at > users.reset_at) AS total_guesses,
-        (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND streak > 0 AND created_at > users.reset_at) AS correct_guesses,
-        (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND score = 5000 AND created_at > users.reset_at) AS perfects,
-        (SELECT AVG(score) FROM guesses WHERE user_id = users.id AND created_at > users.reset_at) AS average,
-        (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id AND created_at > users.reset_at) AS victories
+        COALESCE((SELECT MAX(count) FROM streaks WHERE user_id = :id AND updated_at > users.reset_at AND updated_at > :since), 0) AS best_streak,
+        (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND created_at > users.reset_at AND created_at > :since) AS total_guesses,
+        (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND streak > 0 AND created_at > users.reset_at AND created_at > :since) AS correct_guesses,
+        (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND score = 5000 AND created_at > users.reset_at AND created_at > :since) AS perfects,
+        (SELECT AVG(score) FROM guesses WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since) AS average,
+        (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since) AS victories
       FROM users
       LEFT JOIN streaks current_streak ON current_streak.id = users.current_streak_id
       WHERE users.id = :id
     `)
 
-    const record = stmt.get({ id: userId }) as
+    const record = stmt.get({ id: userId, since: sinceTimestamp}) as
       | {
           username: string
           flag: string
@@ -794,13 +794,14 @@ class db {
       : undefined
   }
 
-  getGlobalStats() {
+  getGlobalStats(sinceTime: number = 0) {
     const streakQuery = this.#db.prepare(`
       SELECT users.id, users.username, MAX(streaks.count) AS streak
       FROM users, streaks
       WHERE NOT users.id = 'BROADCASTER'
         AND streaks.user_id = users.id
         AND streaks.created_at > users.reset_at
+        AND streaks.created_at > :since
       GROUP BY users.id
       ORDER BY streak DESC
     `)
@@ -811,6 +812,7 @@ class db {
       WHERE NOT users.id = 'BROADCASTER'
         AND users.id = game_winners.user_id
         AND game_winners.created_at > users.reset_at
+        AND game_winners.created_at > :since
       GROUP BY users.id
       ORDER BY victories DESC
     `)
@@ -818,20 +820,22 @@ class db {
     const perfectQuery = this.#db.prepare(`
       SELECT users.id, users.username, COUNT(guesses.id) AS perfects
       FROM users
-      LEFT JOIN guesses ON guesses.user_id = users.id AND guesses.created_at > users.reset_at
+      LEFT JOIN guesses ON guesses.user_id = users.id 
+        AND guesses.created_at > users.reset_at
+        AND guesses.created_at > :since
       WHERE NOT users.id = 'BROADCASTER'
         AND guesses.score = 5000
       GROUP BY users.id
       ORDER BY perfects DESC
     `)
 
-    const bestStreak = streakQuery.get() as
+    const bestStreak = streakQuery.get({ since: sinceTime }) as
       | { id: string; username: string; streak: number }
       | undefined
-    const mostVictories = victoriesQuery.get() as
+    const mostVictories = victoriesQuery.get({ since: sinceTime }) as
       | { id: string; username: string; victories: number }
       | undefined
-    const mostPerfects = perfectQuery.get() as
+    const mostPerfects = perfectQuery.get({ since: sinceTime }) as
       | { id: string; username: string; perfects: number }
       | undefined
 

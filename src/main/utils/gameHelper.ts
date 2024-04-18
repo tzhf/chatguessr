@@ -223,3 +223,40 @@ export async function getStreamerAvatar(channel: string): Promise<{ avatar: stri
     return { avatar: undefined }
   }
 }
+
+export function dateToUnixTimestamp(date: Date): number
+{
+  return Math.floor(date.getTime() / 1000)
+}
+
+/**
+ * Parses a user-defined string that represents a date into a Unix timestamp. Will set timestamp to > 0 on success
+ * or == 0 for an empty input, and -1 on unrecognized dates.
+ */
+export async function parseUserDate(userDateStr: string | undefined):  Promise<{ timeStamp: number, description: string | undefined}> {
+  let timeStamp = -1
+  let description: string | undefined = "Unsupported date (supported dates: 'day', 'week', 'month', 'year')."
+  if (!userDateStr) {
+    timeStamp = 0
+    description = undefined
+  }
+  if (userDateStr === "day" || userDateStr === "today") {
+    timeStamp = dateToUnixTimestamp(new Date(new Date().setHours(0,0,0,0)))
+    description = "today"
+  } else if(userDateStr === "week") {
+    const lastMidnight = new Date(new Date().setHours(0,0,0,0))
+    var day = lastMidnight.getDay() || 7; // Convert sunday to 7
+    lastMidnight.setHours(-24 * (day - 1)); 
+    timeStamp = dateToUnixTimestamp(lastMidnight)
+    description = "this week"
+  } else if(userDateStr === "month") {
+    const now = new Date()
+    timeStamp = dateToUnixTimestamp(new Date(now.getFullYear(), now.getMonth(), 1))
+    description = "this month"
+  } else if(userDateStr === "year") {
+    const now = new Date()
+    timeStamp = dateToUnixTimestamp(new Date(now.getFullYear(), 0, 1))
+    description = "this year"
+  }
+  return {timeStamp: timeStamp, description: description}
+}

@@ -235,7 +235,7 @@ export function dateToUnixTimestamp(date: Date): number
  */
 export async function parseUserDate(userDateStr: string | undefined):  Promise<{ timeStamp: number, description: string | undefined}> {
   let timeStamp = -1
-  let description: string | undefined = "Unsupported date (supported dates: 'day', 'month', 'year')."
+  let description: string | undefined = "Unsupported date (supported dates: 'day', 'week', 'month', 'year')."
   if (!userDateStr) {
     timeStamp = 0
     description = undefined
@@ -243,6 +243,12 @@ export async function parseUserDate(userDateStr: string | undefined):  Promise<{
   if (userDateStr === "day" || userDateStr === "today") {
     timeStamp = dateToUnixTimestamp(new Date(new Date().setHours(0,0,0,0)))
     description = "today"
+  } else if(userDateStr === "week") {
+    const lastMidnight = new Date(new Date().setHours(0,0,0,0))
+    var day = lastMidnight.getDay() || 7; // Convert sunday to 7
+    lastMidnight.setHours(-24 * (day - 1)); 
+    timeStamp = dateToUnixTimestamp(lastMidnight)
+    description = "this week"
   } else if(userDateStr === "month") {
     const now = new Date()
     timeStamp = dateToUnixTimestamp(new Date(now.getFullYear(), now.getMonth(), 1))

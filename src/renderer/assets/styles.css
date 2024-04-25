@@ -19,6 +19,9 @@ h2,
 h3 {
   margin: 0.8rem 0;
 }
+a {
+  cursor: pointer;
+}
 
 hr {
   width: 80%;
@@ -28,8 +31,28 @@ hr {
   border: none;
 }
 
-small {
-  font-size: 0.8rem;
+.avatar {
+  background-size: contain;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--primary);
+}
+
+.flag {
+  background-size: contain;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  position: relative;
+  display: inline-block;
+  font-size: 1.2rem;
+  width: 1.33333333em;
+  line-height: 1rem;
+  flex-shrink: 0;
+}
+.flag:before {
+  content: '\00a0';
 }
 
 #satelliteCanvas {

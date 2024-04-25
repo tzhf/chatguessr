@@ -54,7 +54,7 @@
       </div>
     </div>
     <div :class="['scoreboard-hint', { hidden: !isMultiGuess || gameState !== 'in-round' }]">
-      Ordered by guess time
+      Guess change allowed
     </div>
 
     <input
@@ -87,10 +87,13 @@
               <td v-for="col in activeCols" :key="col.value">
                 <div
                   v-if="col.value === 'player'"
-                  :class="['flex gap-02', { 'flex-center': activeCols.length <= 2 }]"
+                  :class="[
+                    'flex items-center gap-02',
+                    { 'justify-center': activeCols.length <= 2 }
+                  ]"
                 >
                   <span
-                    class="scoreboard-avatar"
+                    class="avatar"
                     :style="{
                       backgroundImage: `url(${row.player.avatar ?? 'asset:avatar-default.jpg'})`
                     }"
@@ -100,7 +103,7 @@
                   </span>
                   <span
                     v-if="row.player.flag"
-                    class="scoreboard-flag"
+                    class="flag"
                     :style="{
                       backgroundImage: `url('flag:${row.player.flag}')`
                     }"
@@ -539,9 +542,8 @@ input:checked + .switch:before {
 .table-container::-webkit-scrollbar {
   display: none !important;
 }
-/* the previous line used to work but now we need scrollbar-width even though it's for FF, weird */
+/* apparently we need scrollbar-width even though it's for FF */
 .table-container {
-  -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
 
@@ -550,7 +552,6 @@ table {
   border-collapse: collapse;
   table-layout: fixed;
   font-weight: bold;
-  line-height: 1em;
 }
 thead {
   top: 0;
@@ -612,35 +613,6 @@ th.sortable:hover {
   background: #63db85;
   cursor: pointer;
   border-radius: 5px;
-}
-
-.scoreboard-avatar {
-  background-size: contain;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  border: 1px solid var(--primary);
-}
-
-.scoreboard-flag {
-  background-size: contain;
-  background-position: 50%;
-  background-repeat: no-repeat;
-  position: relative;
-  display: inline-block;
-  font-size: 1.2rem;
-  width: 1.33333333em;
-  line-height: 1rem;
-  flex-shrink: 0;
-}
-.scoreboard-flag:before {
-  content: '\00a0';
-}
-
-.medal {
-  font-size: 20px;
-  line-height: 0;
 }
 
 /* ROWS ANIMATION */

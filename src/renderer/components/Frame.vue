@@ -20,11 +20,16 @@
   <div class="cg-menu">
     <button
       :class="['cg-button', twitchConnectionState.state]"
-      title="settings"
+      title="Settings"
       @click="settingsVisible = true"
     >
       <IconGear />
     </button>
+
+    <button class="cg-button" title="Show/Hide Leaderboard" @click="leaderboardVisible = true">
+      <IconLeaderboard />
+    </button>
+
     <button
       class="cg-button"
       title="Show/Hide timer"
@@ -34,15 +39,17 @@
       <IconTimerVisible v-if="widgetVisibility.timerVisible" />
       <IconTimerHidden v-else />
     </button>
+
     <button
       class="cg-button"
-      title="Show/Hide scoreboard"
+      title="Show/Hide Scoreboard"
       :hidden="gameState === 'none'"
       @click="widgetVisibility.scoreboardVisible = !widgetVisibility.scoreboardVisible"
     >
       <IconScoreboardVisible v-if="widgetVisibility.scoreboardVisible" />
       <IconScoreboardHidden v-else />
     </button>
+
     <button
       class="cg-button"
       title="Center view"
@@ -54,14 +61,15 @@
   </div>
 
   <Suspense>
-    <transition name="settings_modal">
-      <Settings
-        v-if="settingsVisible"
-        :socket-connection-state
-        :twitch-connection-state
-        @close="settingsVisible = false"
-      />
-    </transition>
+    <Modal :is-visible="settingsVisible" @close="settingsVisible = false">
+      <Settings :socket-connection-state :twitch-connection-state />
+    </Modal>
+  </Suspense>
+
+  <Suspense>
+    <Modal :is-visible="leaderboardVisible" @close="leaderboardVisible = false">
+      <Leaderboard />
+    </Modal>
   </Suspense>
 </template>
 
@@ -69,10 +77,15 @@
 import { shallowRef, reactive, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { useStyleTag } from '@vueuse/core'
 import { getLocalStorage, setLocalStorage } from '@/useLocalStorage'
+
 import Settings from './Settings.vue'
+import Modal from './ui/Modal.vue'
 import Scoreboard from './Scoreboard.vue'
+import Leaderboard from './Leaderboard/Leaderboard.vue'
 import Timer from './Timer.vue'
+
 import IconGear from '@/assets/icons/gear.svg'
+import IconLeaderboard from '@/assets/icons/leaderboard.svg'
 import IconTimerVisible from '@/assets/icons/timer_visible.svg'
 import IconScoreboardVisible from '@/assets/icons/scoreboard_visible.svg'
 import IconScoreboardHidden from '@/assets/icons/scoreboard_hidden.svg'
@@ -89,6 +102,7 @@ const { chatguessrApi } = window
 
 const scoreboard = shallowRef<InstanceType<typeof Scoreboard> | null>(null)
 const settingsVisible = shallowRef(false)
+const leaderboardVisible = shallowRef(false)
 
 const gameState = shallowRef<GameState>('none')
 const isMultiGuess = shallowRef<boolean>(false)
@@ -348,7 +362,7 @@ function useSocketConnectionState() {
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 50px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: 0.2s;
 }
 
 .cg-button:hover {

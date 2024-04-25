@@ -8,53 +8,65 @@
 .primary {
   color: var(--primary);
 }
-.bg-primary {
-  background: var(--primary);
-}
 .danger {
   color: var(--danger);
 }
-.bg-danger {
-  background: var(--danger);
-}
 .warning {
   color: var(--warning);
+}
+.bg-primary {
+  background: var(--primary);
+}
+.bg-danger {
+  background: var(--danger);
 }
 .bg-warning {
   background: var(--warning);
 }
 
 /******** SPACING ********/
+.relative {
+  position: relative;
+}
 .flex {
   display: flex;
-  align-items: center;
+  /* align-items: center; */
 }
 .flex-col {
   flex-direction: column;
 }
-.flex-center {
+.justify-center {
   justify-content: center;
+}
+.items-center {
+  align-items: center;
 }
 .flex-wrap {
   flex-wrap: wrap;
 }
+.flex-1 {
+  flex: 1;
+}
+.w-full {
+  width: 100%;
+}
+.h-full {
+  height: 100%;
+}
 .mt-1 {
   margin-top: 1rem;
-}
-.mx-1 {
-  margin: 1rem 0;
-}
-.mr-04 {
-  margin-right: 0.4rem;
 }
 .ml-05 {
   margin-left: 0.5rem;
 }
-.mb-05 {
-  margin-bottom: 0.5rem;
+.mb-03 {
+  margin-bottom: 0.3rem;
 }
 .mb-1 {
   margin-bottom: 1rem;
+}
+.my-1 {
+  margin: 1rem 0;
 }
 .gap-02 {
   gap: 0.2rem;
@@ -64,7 +76,4 @@
 }
 .gap-05 {
   gap: 0.5rem;
-}
-.gap-1 {
-  gap: 1rem;
 }

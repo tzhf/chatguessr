@@ -231,6 +231,22 @@ export default class GameHandler {
       this.#requestAuthentication()
     })
 
+    ipcMain.handle('get-global-stats', async (_event, sinceTime: StatisticsInterval) => {
+      const date = await parseUserDate(sinceTime)
+      return this.#db.getGlobalStats(date.timeStamp)
+    })
+
+    ipcMain.handle('clear-global-stats', async (_event, sinceTime: StatisticsInterval) => {
+      const date = await parseUserDate(sinceTime)
+      try {
+        await this.#db.deleteGlobalStats(date.timeStamp)
+        return true
+      } catch (e) {
+        console.log(e)
+        return false
+      }
+    })
+
     ipcMain.handle('get-banned-users', () => {
       return this.#db.getBannedUsers()
     })
@@ -241,11 +257,6 @@ export default class GameHandler {
 
     ipcMain.on('delete-banned-user', (_event, username: string) => {
       this.#db.deleteBannedUser(username)
-    })
-
-    ipcMain.on('clear-stats', async () => {
-      await this.#db.clear()
-      await this.#backend?.sendMessage('All stats cleared 🗑️', { system: true })
     })
   }
 
@@ -558,7 +569,9 @@ export default class GameHandler {
         if (dateInfo.timeStamp === 0) {
           await this.#backend?.sendMessage(`${userstate['display-name']} you've never guessed yet.`)
         } else {
-          await this.#backend?.sendMessage(`${userstate['display-name']} no guesses for this time period.`)
+          await this.#backend?.sendMessage(
+            `${userstate['display-name']} no guesses for this time period.`
+          )
         }
       } else {
         let msg = `${getEmoji(userInfo.flag)} ${userInfo.username}: `
@@ -589,7 +602,7 @@ export default class GameHandler {
         await this.#backend?.sendMessage(`${userstate['display-name']}: ${dateInfo.description}.`)
         return
       }
-      const { streak, victories, perfects } = this.#db.getGlobalStats(dateInfo.timeStamp)
+      const { streak, victories, perfects } = this.#db.getBestStats(dateInfo.timeStamp)
       if (!streak && !victories && !perfects) {
         await this.#backend?.sendMessage('No stats available.')
       } else {
@@ -603,8 +616,7 @@ export default class GameHandler {
         if (perfects) {
           msg += `5ks: ${perfects.perfects} (${perfects.username}). `
         }
-        if (!dateInfo.description)
-        {
+        if (!dateInfo.description) {
           await this.#backend?.sendMessage(`Channels best: ${msg}`)
         } else {
           await this.#backend?.sendMessage(`Best ${dateInfo.description}: ${msg}`)

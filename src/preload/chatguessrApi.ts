@@ -31,6 +31,14 @@ export const chatguessrApi = {
     ipcRenderer.send('save-settings', settings)
   },
 
+  getGlobalStats(sinceTime: StatisticsInterval): Promise<Statistics> {
+    return ipcRenderer.invoke('get-global-stats', sinceTime)
+  },
+
+  clearGlobalStats(sinceTime: StatisticsInterval): Promise<boolean> {
+    return ipcRenderer.invoke('clear-global-stats', sinceTime)
+  },
+
   getBannedUsers(): Promise<{ username: string }[]> {
     return ipcRenderer.invoke('get-banned-users')
   },
@@ -138,10 +146,6 @@ export const chatguessrApi = {
 
   onSocketDisconnected(callback: () => void) {
     return ipcRendererOn('socket-disconnected', callback)
-  },
-
-  clearStats(): void {
-    ipcRenderer.send('clear-stats')
   },
 
   getCurrentVersion(): Promise<string> {

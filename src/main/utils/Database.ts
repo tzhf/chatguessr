@@ -402,20 +402,6 @@ class db {
     })
   }
 
-  // setGuessStreak(guessId: string, streak: number, lastStreak: number | null = null) {
-  //   const updateGuess = this.#db.prepare(`
-  //     UPDATE guesses
-  //     SET streak = :streak, last_streak = :lastStreak
-  //     WHERE id = :id
-  //   `)
-
-  //   updateGuess.run({
-  //     id: guessId,
-  //     streak,
-  //     lastStreak
-  //   })
-  // }
-
   getUserStreak(userId: string): { id: string; count: number; lastLocation: LatLng } | undefined {
     const stmt = this.#db.prepare(`
       SELECT streaks.id, streaks.count, rounds.location
@@ -765,7 +751,7 @@ class db {
       WHERE users.id = :id
     `)
 
-    const record = stmt.get({ id: userId, since: sinceTimestamp}) as
+    const record = stmt.get({ id: userId, since: sinceTimestamp }) as
       | {
           username: string
           flag: string
@@ -794,40 +780,58 @@ class db {
       : undefined
   }
 
-  getGlobalStats(sinceTime: number = 0) {
+  resetUserStats(userId: string) {
+    this.#db
+      .prepare(`UPDATE users SET current_streak_id = NULL, reset_at = :resetAt WHERE id = :id`)
+      .run({
+        id: userId,
+        resetAt: timestamp()
+      })
+  }
+
+  statsQueries() {
     const streakQuery = this.#db.prepare(`
-      SELECT users.id, users.username, MAX(streaks.count) AS streak
-      FROM users, streaks
-      WHERE NOT users.id = 'BROADCASTER'
-        AND streaks.user_id = users.id
-        AND streaks.created_at > users.reset_at
-        AND streaks.created_at > :since
-      GROUP BY users.id
-      ORDER BY streak DESC
-    `)
+    SELECT users.id, users.username, users.avatar, users.color, users.flag, MAX(streaks.count) AS streak
+    FROM users, streaks
+    WHERE streaks.user_id = users.id
+      AND streaks.updated_at > users.reset_at
+      AND streaks.updated_at > :since
+    GROUP BY users.id
+    ORDER BY streak DESC
+    LIMIT 100
+  `)
 
     const victoriesQuery = this.#db.prepare(`
-      SELECT users.id, users.username, COUNT(*) AS victories
-      FROM game_winners, users
-      WHERE NOT users.id = 'BROADCASTER'
-        AND users.id = game_winners.user_id
-        AND game_winners.created_at > users.reset_at
-        AND game_winners.created_at > :since
-      GROUP BY users.id
-      ORDER BY victories DESC
-    `)
+    SELECT users.id, users.username, users.avatar, users.color, users.flag, COUNT(*) AS victories
+    FROM game_winners, users
+    WHERE users.id = game_winners.user_id
+      AND game_winners.created_at > users.reset_at
+      AND game_winners.created_at > :since
+    GROUP BY users.id
+    ORDER BY victories DESC
+    LIMIT 100
+  `)
 
     const perfectQuery = this.#db.prepare(`
-      SELECT users.id, users.username, COUNT(guesses.id) AS perfects
-      FROM users
-      LEFT JOIN guesses ON guesses.user_id = users.id 
-        AND guesses.created_at > users.reset_at
-        AND guesses.created_at > :since
-      WHERE NOT users.id = 'BROADCASTER'
-        AND guesses.score = 5000
-      GROUP BY users.id
-      ORDER BY perfects DESC
-    `)
+    SELECT users.id, users.username, users.avatar, users.color, users.flag, COUNT(guesses.id) AS perfects
+    FROM users
+    LEFT JOIN guesses ON guesses.user_id = users.id
+      AND guesses.created_at > users.reset_at
+      AND guesses.created_at > :since
+      WHERE guesses.score = 5000
+    GROUP BY users.id
+    ORDER BY perfects DESC
+    LIMIT 100
+  `)
+
+    return { streakQuery, victoriesQuery, perfectQuery }
+  }
+
+  /**
+   *   Get best stats for !best command
+   */
+  getBestStats(sinceTime: number = 0) {
+    const { streakQuery, victoriesQuery, perfectQuery } = this.statsQueries()
 
     const bestStreak = streakQuery.get({ since: sinceTime }) as
       | { id: string; username: string; streak: number }
@@ -846,13 +850,116 @@ class db {
     }
   }
 
-  resetUserStats(userId: string) {
+  /**
+   *  Get all sorted stats in given interval for Leaderboard
+   */
+  getGlobalStats(sinceTime: number = 0): Statistics {
+    const { streakQuery, victoriesQuery, perfectQuery } = this.statsQueries()
+
+    const streaksRecord = streakQuery.all({ since: sinceTime }) as {
+      id: string
+      username: string
+      avatar: string | null
+      color: string
+      flag: string | null
+      streak: number
+    }[]
+
+    const streaks = streaksRecord.map((record) => ({
+      player: {
+        userId: record.id,
+        username: record.username,
+        avatar: record.avatar,
+        color: record.color,
+        flag: record.flag
+      },
+      count: record.streak
+    }))
+
+    const victoriesRecord = victoriesQuery.all({ since: sinceTime }) as {
+      id: string
+      username: string
+      avatar: string | null
+      color: string
+      flag: string | null
+      victories: number
+    }[]
+
+    const victories = victoriesRecord.map((record) => ({
+      player: {
+        userId: record.id,
+        username: record.username,
+        avatar: record.avatar,
+        color: record.color,
+        flag: record.flag
+      },
+      count: record.victories
+    }))
+
+    const perfectsRecord = perfectQuery.all({ since: sinceTime }) as {
+      id: string
+      username: string
+      avatar: string | null
+      color: string
+      flag: string | null
+      perfects: number
+    }[]
+
+    const perfects = perfectsRecord.map((record) => ({
+      player: {
+        userId: record.id,
+        username: record.username,
+        avatar: record.avatar,
+        color: record.color,
+        flag: record.flag
+      },
+      count: record.perfects
+    }))
+
+    return {
+      streaks,
+      victories,
+      perfects
+    }
+  }
+
+  /**
+   *  Delete all records in given interval
+   */
+  async deleteGlobalStats(sinceTime: number = 0) {
+    if (!this.#db.memory) {
+      try {
+        await this.#db.backup(`${this.#db.name}.bak`)
+      } catch {}
+    }
+
+    // For now i'm commenting the transaction, with it there's a forein_key constraint error when deleting ROUNDS (even with foreign_keys = OFF),
+    // no idea where it comes from, maybe because of the game_winners VIEW ?
+    // Best would be DELETE IN CASCADE but i failed to add that migration
+    // const deleteEverything = this.#db.transaction(() => {
+    // Disable foreign key checking while we delete everything
+    this.#db.prepare('PRAGMA foreign_keys = OFF;').run()
     this.#db
-      .prepare(`UPDATE users SET current_streak_id = NULL, reset_at = :resetAt WHERE id = :id`)
-      .run({
-        id: userId,
-        resetAt: timestamp()
-      })
+      .prepare(
+        'UPDATE users SET current_streak_id = NULL WHERE current_streak_id IN (SELECT id FROM streaks WHERE updated_at > :since);'
+      )
+      .run({ since: sinceTime })
+    this.#db.prepare('DELETE FROM streaks WHERE updated_at > :since;').run({ since: sinceTime })
+    this.#db.prepare('DELETE FROM guesses WHERE created_at > :since;').run({ since: sinceTime })
+    // For ROUNDS and GAMES we keep the most recent record in case stats are cleared during a game
+    this.#db
+      .prepare(
+        'DELETE from rounds WHERE game_id IN (SELECT id FROM games WHERE created_at > :since AND created_at NOT IN (SELECT max (created_at) from games))'
+      )
+      .run({ since: sinceTime })
+    this.#db
+      .prepare(
+        'DELETE FROM games WHERE created_at > :since AND created_at NOT IN (SELECT max (created_at) from games);'
+      )
+      .run({ since: sinceTime })
+    this.#db.prepare('PRAGMA foreign_keys = ON;').run()
+    // })
+    // deleteEverything()
   }
 
   getLastlocs() {
@@ -882,36 +989,6 @@ class db {
     }))
   }
 
-  /**
-   * Check if the database contains any data.
-   */
-  isEmpty(): boolean {
-    const result = this.#db.prepare('SELECT COUNT(*) as count FROM users;').get() as
-      | { count: number }
-      | undefined
-    return !result || result.count === 0
-  }
-
-  async clear() {
-    if (!this.#db.memory) {
-      try {
-        await this.#db.backup(`${this.#db.name}.bak`)
-      } catch {}
-    }
-
-    const deleteEverything = this.#db.transaction(() => {
-      // Disable foreign key checking while we delete everything
-      this.#db.prepare('PRAGMA foreign_keys=0;').run()
-      this.#db.prepare('DELETE FROM guesses;').run()
-      this.#db.prepare('DELETE FROM streaks;').run()
-      this.#db.prepare('DELETE FROM rounds;').run()
-      this.#db.prepare('DELETE FROM games;').run()
-      this.#db.prepare('DELETE FROM users;').run()
-      this.#db.prepare('PRAGMA foreign_keys=1;').run()
-    })
-    deleteEverything()
-  }
-
   getBannedUsers() {
     const bannedUsers = this.#db.prepare(`SELECT username FROM banned_users`).all() as {
       username: string
@@ -939,6 +1016,16 @@ class db {
       `
       )
       .run({ username: username })
+  }
+
+  /**
+   * Check if the database contains any data.
+   */
+  isEmpty(): boolean {
+    const result = this.#db.prepare('SELECT COUNT(*) as count FROM users;').get() as
+      | { count: number }
+      | undefined
+    return !result || result.count === 0
   }
 
   /**

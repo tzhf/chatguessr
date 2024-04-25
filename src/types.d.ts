@@ -86,6 +86,23 @@ interface ScoreboardRow {
   totalDistance?: number
 }
 
+type StatisticsInterval = 'day' | 'week' | 'month' | 'year' | 'all'
+
+interface Statistics {
+  streaks: {
+    player: Player
+    count: number
+  }[]
+  victories: {
+    player: Player
+    count: number
+  }[]
+  perfects: {
+    player: Player
+    count: number
+  }[]
+}
+
 type GameType = 'standard' | 'streak'
 
 type GameStatus = 'started' | 'finished'

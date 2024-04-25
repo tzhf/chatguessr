@@ -129,39 +129,45 @@ describe('parseUserDate', () => {
   })
 
   it('Handles undefined date as epoch=0', async () => {
-      expect(await GameHelper.parseUserDate(undefined)).toEqual({timeStamp: 0})
+    expect(await GameHelper.parseUserDate(undefined)).toEqual({ timeStamp: 0 })
   })
 
   it('Handles empty date as epoch=0', async () => {
-    expect(await GameHelper.parseUserDate("")).toEqual({timeStamp: 0})
-})
+    expect(await GameHelper.parseUserDate('')).toEqual({ timeStamp: 0 })
+  })
 
   it('Parses "day" correctly', async () => {
-    vi.setSystemTime(new Date("2000-01-17T16:01:23"))
-    const dateInfo = await GameHelper.parseUserDate("day")
-    expect(dateInfo.timeStamp).toEqual(GameHelper.dateToUnixTimestamp(new Date("2000-01-17T00:00:00")))
+    vi.setSystemTime(new Date('2000-01-17T16:01:23'))
+    const dateInfo = await GameHelper.parseUserDate('day')
+    expect(dateInfo.timeStamp).toEqual(
+      GameHelper.dateToUnixTimestamp(new Date('2000-01-17T00:00:00'))
+    )
   })
 
   it('Parses "week" correctly', async () => {
-    const monday = "2024-04-15:01:23"
+    const monday = '2024-04-15:01:23'
     vi.setSystemTime(new Date(monday))
-    let dateInfo = await GameHelper.parseUserDate("week")
-    expect(dateInfo.timeStamp).toEqual(GameHelper.dateToUnixTimestamp(new Date("2024-04-15:00:00")))
-    const sunday = "2024-04-21:01:23"
+    let dateInfo = await GameHelper.parseUserDate('week')
+    expect(dateInfo.timeStamp).toEqual(GameHelper.dateToUnixTimestamp(new Date('2024-04-15:00:00')))
+    const sunday = '2024-04-21:01:23'
     vi.setSystemTime(new Date(sunday))
-    dateInfo = await GameHelper.parseUserDate("week")
-    expect(dateInfo.timeStamp).toEqual(GameHelper.dateToUnixTimestamp(new Date("2024-04-15:00:00")))
+    dateInfo = await GameHelper.parseUserDate('week')
+    expect(dateInfo.timeStamp).toEqual(GameHelper.dateToUnixTimestamp(new Date('2024-04-15:00:00')))
   })
 
   it('Parses "month" correctly', async () => {
-    vi.setSystemTime(new Date("2001-01-17T16:01:23"))
-    const dateInfo = await GameHelper.parseUserDate("month")
-    expect(dateInfo.timeStamp).toEqual(GameHelper.dateToUnixTimestamp(new Date("2001-01-01T00:00:00")))
+    vi.setSystemTime(new Date('2001-01-17T16:01:23'))
+    const dateInfo = await GameHelper.parseUserDate('month')
+    expect(dateInfo.timeStamp).toEqual(
+      GameHelper.dateToUnixTimestamp(new Date('2001-01-01T00:00:00'))
+    )
   })
 
   it('Parses "year" correctly', async () => {
-    vi.setSystemTime(new Date("2002-04-17T16:01:23"))
-    const dateInfo = await GameHelper.parseUserDate("year")
-    expect(dateInfo.timeStamp).toEqual(GameHelper.dateToUnixTimestamp(new Date("2002-01-01T00:00:00")))
+    vi.setSystemTime(new Date('2002-04-17T16:01:23'))
+    const dateInfo = await GameHelper.parseUserDate('year')
+    expect(dateInfo.timeStamp).toEqual(
+      GameHelper.dateToUnixTimestamp(new Date('2002-01-01T00:00:00'))
+    )
   })
 })

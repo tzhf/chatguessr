@@ -29,7 +29,7 @@
       </div>
 
       <div :class="iconsVisibility ? 'expanded' : 'collapsed'">
-        <div class="flex flex-center gap-05">
+        <div class="flex items-center justify-center gap-05">
           <IconStart v-if="!isStarted || isPaused" @click="start" />
           <IconPause v-else @click="pause" />
           <IconStop v-if="isStarted" @click="reset" />
@@ -89,7 +89,7 @@
         </label>
         <div class="form__group">
           <label>Load audio file :</label>
-          <div class="flex flex-center gap-05">
+          <div class="flex items-center justify-center gap-05">
             <button class="btn bg-primary" type="button" @click="handleImportAudioFile">
               Import
             </button>

@@ -6,7 +6,7 @@
         <Table :stats="stats.victories" text="Victories" />
       </div>
     </div>
-    <div class="flex flex-1 relative gap-05 h-full">
+    <div class="flex flex-1 relative gap-1 h-full">
       <div class="relative w-full">
         <h2>STREAKS</h2>
         <div class="table-container">

@@ -466,6 +466,7 @@ const handleImportAudioFile = async () => {
   font-size: 14px;
   color: #ffffff;
   background-color: var(--bg-dark-transparent);
+  backdrop-filter: blur(10px);
   box-shadow: rgb(0, 0, 0) 2px 2px 7px -2px;
   border-radius: 0.5rem;
 }

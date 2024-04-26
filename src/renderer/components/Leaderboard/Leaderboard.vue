@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="flex items-center justify-center gap-05 my-1">
+    <div class="flex items-center justify-center gap-05 mb-05">
       <IconCup />
       <h1>LEADERBOARD</h1>
       <IconCup />
@@ -109,7 +109,7 @@ const handleClearStatsClick = async (sinceTime: StatisticsInterval) => {
   width: 80vw;
   height: 84vh;
   text-align: center;
-  padding: 0 0.5rem 0.5rem 0.5rem;
+  padding: 1rem 1rem 0.5rem;
 }
 h1 {
   font-weight: 400;

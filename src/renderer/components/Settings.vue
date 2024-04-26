@@ -121,7 +121,8 @@
 
     <div v-show="currentTab === 'twitch-connect'" class="content">
       <div class="flex flex-col items-center justify-center gap-05 my-1">
-        <IconTwitch />
+        <IconTwitch class="mb-1" />
+        Your bot account :
         <span :class="[twitchConnectionState.state]"
           >{{
             twitchConnectionState.state === 'connected'
@@ -131,18 +132,33 @@
                 : twitchConnectionState.state
           }}
         </span>
-        <button
-          :class="['btn', twitchConnectionState.state]"
-          @click="chatguessrApi.replaceSession()"
-        >
-          {{
-            twitchConnectionState.state === 'disconnected'
-              ? 'Login'
-              : twitchConnectionState.state === 'connecting'
-                ? 'Connecting...'
-                : 'Change account'
-          }}
-        </button>
+        <div class="form__group">
+          <button
+            :class="['btn', twitchConnectionState.state]"
+            @click="chatguessrApi.replaceSession()"
+          >
+            {{
+              twitchConnectionState.state === 'disconnected'
+                ? 'Login'
+                : twitchConnectionState.state === 'connecting'
+                  ? 'Connecting...'
+                  : 'Change account'
+            }}
+          </button>
+        </div>
+        Your streaming channel :
+        <div class="form__group">
+          <div class="flex gap-02">
+            <input v-model="newChannelName" type="text" spellcheck="false" required />
+            <button
+              :disabled="newChannelName === settings.channelName"
+              class="btn bg-primary"
+              @click="onChannelNameUpdate()"
+            >
+              Update
+            </button>
+          </div>
+        </div>
       </div>
       <h2>Status :</h2>
       <div class="ml-05">
@@ -163,27 +179,6 @@
             </button>
           </span>
         </div>
-        <div class="form__group" data-tip="Your streamer account">
-          Your streaming channel :
-
-          <div class="flex gap-02">
-            <input
-              v-model="newChannelName"
-              type="text"
-              style="width: 240px"
-              spellcheck="false"
-              required
-            />
-            <button
-              :disabled="newChannelName === settings.channelName"
-              class="btn bg-primary"
-              style="width: 90px"
-              @click="onChannelNameUpdate()"
-            >
-              Update
-            </button>
-          </div>
-        </div>
         <div class="form__group">
           Your cg link :
           <div class="flex gap-02">
@@ -197,8 +192,8 @@
               style="width: 240px"
               disabled
             />
-            <button class="btn bg-primary" style="width: 90px" @click="copy(cgLink)">
-              {{ copied ? 'Copied ✔️' : ' Copy 🖊️' }}
+            <button class="btn bg-primary" style="width: 85px" @click="copy(cgLink)">
+              {{ copied ? '✔️ Copied' : '🖊️ Copy' }}
             </button>
           </div>
         </div>
@@ -206,17 +201,6 @@
     </div>
 
     <div v-show="currentTab === 'ban-list'" class="content">
-      <h3>Banned users :</h3>
-      <div class="flex flex-wrap gap-03 mb-1">
-        <span
-          v-for="(user, index) of bannedUsers"
-          :key="index"
-          class="badge bg-danger"
-          title="Unban user"
-          @click="removeBannedUser(index, user)"
-          >{{ user.username }}</span
-        >
-      </div>
       <div class="form__group">
         <div class="flex gap-03">
           <input
@@ -227,6 +211,17 @@
           />
           <button type="button" class="btn bg-danger" @click="addBannedUser()">Ban User</button>
         </div>
+      </div>
+      <h3>Banned users :</h3>
+      <div class="flex flex-wrap gap-03 mb-1">
+        <span
+          v-for="(user, index) of bannedUsers"
+          :key="index"
+          class="badge bg-danger"
+          title="Unban user"
+          @click="removeBannedUser(index, user)"
+          >{{ user.username }}</span
+        >
       </div>
     </div>
   </div>

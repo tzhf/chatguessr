@@ -48,12 +48,21 @@ async function getCookies() {
 export async function fetchSeed(url: string): Promise<Seed | undefined> {
   const cookies = await getCookies()
   const gameId = getGameId(url)
-  if (!gameId || !cookies) {
-    return
-  }
+  if (!gameId || !cookies) return
 
-  const { data } = await axios.get(`${GEOGUESSR_URL}/api/v3/games/${gameId}`, { headers: cookies })
-  return data
+  let retries = 0
+  const maxRetries = 3
+  while (retries < maxRetries) {
+    try {
+      const response = await axios.get(`${GEOGUESSR_URL}/api/v3/games/${gameId}`, {
+        headers: cookies
+      })
+      return response.data
+    } catch (error: any) {
+      retries++
+    }
+  }
+  throw new Error(`Failed to fetch seed`)
 }
 
 /**

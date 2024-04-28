@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed } from 'vue'
+import { shallowRef, reactive, watch, computed } from 'vue'
 import { getLocalStorage, setLocalStorage } from '@/useLocalStorage'
 import Tabs from '../ui/Tabs.vue'
 import Timeframe from './Timeframe.vue'
@@ -40,12 +40,14 @@ import IconCup from '@/assets/icons/winner_cup.svg'
 
 const { chatguessrApi } = window
 
-const currentTab = ref<StatisticsInterval>(getLocalStorage('cg_leaderboard__currentTab', 'all'))
+const currentTab = shallowRef<StatisticsInterval>(
+  getLocalStorage('cg_leaderboard__currentTab', 'all')
+)
 watch(currentTab, () => {
   setLocalStorage('cg_leaderboard__currentTab', currentTab.value)
 })
 
-const tabs = ref<{ name: StatisticsInterval; value: string }[]>([
+const tabs = shallowRef<{ name: StatisticsInterval; value: string }[]>([
   { name: 'day', value: 'Today' },
   { name: 'week', value: 'This week' },
   { name: 'month', value: 'This month' },
@@ -53,11 +55,11 @@ const tabs = ref<{ name: StatisticsInterval; value: string }[]>([
   { name: 'all', value: 'All time' }
 ])
 
-const dailyStats = ref<Statistics>(await chatguessrApi.getGlobalStats('day'))
-const weeklyStats = ref<Statistics>(await chatguessrApi.getGlobalStats('week'))
-const monthlyStats = ref<Statistics>(await chatguessrApi.getGlobalStats('month'))
-const yearlyStats = ref<Statistics>(await chatguessrApi.getGlobalStats('year'))
-const allTimeStats = ref<Statistics>(await chatguessrApi.getGlobalStats('all'))
+const dailyStats = shallowRef<Statistics>(await chatguessrApi.getGlobalStats('day'))
+const weeklyStats = shallowRef<Statistics>(await chatguessrApi.getGlobalStats('week'))
+const monthlyStats = shallowRef<Statistics>(await chatguessrApi.getGlobalStats('month'))
+const yearlyStats = shallowRef<Statistics>(await chatguessrApi.getGlobalStats('year'))
+const allTimeStats = shallowRef<Statistics>(await chatguessrApi.getGlobalStats('all'))
 
 const clearStats = reactive({
   state: 'default',
@@ -109,7 +111,7 @@ const handleClearStatsClick = async (sinceTime: StatisticsInterval) => {
   width: 80vw;
   height: 84vh;
   text-align: center;
-  padding: 1rem 1rem 0.5rem;
+  padding: 0.5rem 1rem;
 }
 h1 {
   font-weight: 400;

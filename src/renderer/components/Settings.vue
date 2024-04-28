@@ -228,7 +228,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { shallowRef, shallowReactive, reactive, watch } from 'vue'
 import { useClipboard } from '@vueuse/core'
 import Tabs from './ui/Tabs.vue'
 import IconTwitch from '@/assets/icons/twitch.svg'
@@ -241,10 +241,10 @@ const { socketConnectionState, twitchConnectionState } = defineProps<{
   socketConnectionState: SocketConnectionState
 }>()
 
-const currentTab = ref(
+const currentTab = shallowRef(
   twitchConnectionState.state === 'disconnected' ? 'twitch-connect' : 'game-settings'
 )
-const tabs = ref([
+const tabs = shallowRef([
   { name: 'game-settings', value: 'Game settings' },
   { name: 'twitch-connect', value: 'Twitch connect' },
   { name: 'ban-list', value: 'Ban list' }
@@ -255,20 +255,20 @@ watch(settings, () => {
   chatguessrApi.saveSettings({ ...settings })
 })
 
-const newChannelName = ref(settings.channelName)
+const newChannelName = shallowRef(settings.channelName)
 const onChannelNameUpdate = () => {
   settings.channelName = newChannelName.value
   chatguessrApi.reconnect()
 }
 
-const cgLink = ref(
+const cgLink = shallowRef(
   twitchConnectionState.state === 'connected'
     ? `chatguessr.com/map/${twitchConnectionState.botUsername}`
     : ''
 )
 
-const bannedUsers = reactive<{ username: string }[]>(await chatguessrApi.getBannedUsers())
-const newBannedUser = ref('')
+const bannedUsers = shallowReactive<{ username: string }[]>(await chatguessrApi.getBannedUsers())
+const newBannedUser = shallowRef('')
 const addBannedUser = () => {
   if (!newBannedUser.value) return
   bannedUsers.push({ username: newBannedUser.value })
@@ -281,7 +281,7 @@ const removeBannedUser = (index: number, user: { username: string }) => {
   bannedUsers.splice(index, 1)
 }
 
-const currentVerion = ref(await chatguessrApi.getCurrentVersion())
+const currentVerion = shallowRef(await chatguessrApi.getCurrentVersion())
 </script>
 
 <style scoped>

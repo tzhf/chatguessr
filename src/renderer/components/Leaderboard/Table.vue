@@ -10,7 +10,10 @@
     <tbody>
       <tr v-for="(stat, i) of stats" :key="stat.player.userId">
         <td>
-          {{ i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1 }}
+          <span v-if="i === 0" class="medal">🏆</span>
+          <span v-else-if="i === 1" class="medal">🥈</span>
+          <span v-else-if="i === 2" class="medal">🥉</span>
+          <span v-else>{{ i + 1 }}</span>
         </td>
         <td>
           <div class="flex items-center gap-02">
@@ -72,5 +75,8 @@ tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.3);
   transition: all 0.1s;
   transform: scale(1.01);
+}
+.medal {
+  font-size: 18px;
 }
 </style>

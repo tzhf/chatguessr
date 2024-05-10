@@ -2,7 +2,7 @@
   <div :class="['cg-frame-container', { hidden: gameState === 'none' }]">
     <transition name="scoreboard_modal">
       <Scoreboard
-        v-show="widgetVisibility.scoreboardVisible"
+        v-show="widgetVisibility.scoreboardAndGgInterfaceVisible"
         ref="scoreboard"
         :game-state
         :is-multi-guess
@@ -44,9 +44,9 @@
       class="cg-button"
       title="Show/Hide Scoreboard"
       :hidden="gameState === 'none'"
-      @click="widgetVisibility.scoreboardVisible = !widgetVisibility.scoreboardVisible"
+      @click="widgetVisibility.scoreboardAndGgInterfaceVisible = !widgetVisibility.scoreboardAndGgInterfaceVisible"
     >
-      <IconScoreboardVisible v-if="widgetVisibility.scoreboardVisible" />
+      <IconScoreboardVisible v-if="widgetVisibility.scoreboardAndGgInterfaceVisible" />
       <IconScoreboardHidden v-else />
     </button>
 
@@ -113,11 +113,24 @@ const gameResultLocations = shallowRef<Location_[] | null>(null)
 const widgetVisibility = reactive(
   getLocalStorage('cg_widget__visibility', {
     scoreboardVisible: true,
+    scoreboardAndGgInterfaceVisible: true,
     timerVisible: true
   })
 )
 watch(widgetVisibility, () => {
   setLocalStorage('cg_widget__visibility', widgetVisibility)
+  if(!widgetVisibility.scoreboardAndGgInterfaceVisible) {
+    gameStatusRemover.load()
+  }
+  else {
+    gameStatusRemover.unload()
+  }
+})
+
+// removing game status element and map
+const gameStatusRemover = useStyleTag('[class^="game_status"], [class^="game_guessMap"] { display: none; }', {
+  id: 'cg-game-status-remover',
+  manual: true
 })
 
 const satelliteMode = {

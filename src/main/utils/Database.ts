@@ -233,6 +233,32 @@ class db {
     })
   }
 
+  userGuessedOnOngoingRound(userId): boolean {
+    const lastRoundId = this.#db
+      .prepare(
+        `
+        WITH users_guessed_on_last_round AS (
+          SELECT user_id from guesses
+          WHERE guesses.round_id in (SELECT id
+            FROM rounds
+            ORDER BY created_at DESC
+            LIMIT 1
+          )
+        )
+        SELECT CASE WHEN EXISTS (
+          SELECT * FROM users_guessed_on_last_round
+          WHERE ? in users_guessed_on_last_round and 
+          'BROADCASTER' not in users_guessed_on_last_round
+        )
+        THEN CAST(1 AS BIT)
+        ELSE CAST(0 AS BIT) END;
+        `
+      )
+      .pluck(true)
+
+    return lastRoundId.get(userId) == '1'
+  }
+
   getCurrentRound(gameId: string): string | undefined {
     const findRoundId = this.#db
       .prepare(

@@ -26,6 +26,52 @@ function createGame() {
   return token
 }
 
+describe('userGuessedOnOngoingRound', () => {
+  it('returnsTrueWhenUserHasGuessed', () => {
+    const broadcaster = db.getOrCreateUser('BROADCASTER', 'BROADCASTER', undefined, undefined)
+    const user = db.getOrCreateUser('1234567', 'libjanosgeo', undefined, undefined)
+    const secondUser = db.getOrCreateUser('2345678', 'secondUser', undefined, undefined)
+
+    const token = createGame()
+    const firstRoundId = db.createRound(token, {
+      lat: 0,
+      lng: 0,
+      panoId: null,
+      heading: 0,
+      pitch: 0,
+      zoom: 0
+    })
+
+    expect(db.userGuessedOnOngoingRound(user!.id)).toEqual(false)
+    expect(db.userGuessedOnOngoingRound(secondUser!.id)).toEqual(false)
+    
+    db.createGuess(firstRoundId, user!.id, {
+      location: { lat: 0, lng: 0 },
+      country: null,
+      streak: 1,
+      lastStreak: null,
+      distance: 0,
+      score: 5000
+    })
+
+    expect(db.userGuessedOnOngoingRound(user!.id)).toEqual(true)
+    expect(db.userGuessedOnOngoingRound(secondUser!.id)).toEqual(false)
+
+    // When broadcaster has guessed, round ends
+    db.createGuess(firstRoundId, broadcaster!.id, {
+      location: { lat: 0, lng: 0 },
+      country: null,
+      streak: 1,
+      lastStreak: null,
+      distance: 0,
+      score: 2500
+    })
+    expect(db.userGuessedOnOngoingRound(user!.id)).toEqual(false)
+    expect(db.userGuessedOnOngoingRound(secondUser!.id)).toEqual(false)
+
+  })
+})
+
 describe('getUserStats', () => {
   it('counts victories', () => {
     const user = db.getOrCreateUser('1234567', 'libreanna', undefined, undefined)

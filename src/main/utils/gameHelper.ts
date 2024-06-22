@@ -2,10 +2,10 @@ import axios from 'axios'
 import countryIso from 'coordinate_to_country'
 import { session } from 'electron'
 /**
- * Country code mapping for 2-character ISO codes that should be considered
- * part of another country for GeoGuessr streak purposes.
+ * Streak code mapping for 2-character ISO codes that should be considered
+ * the same for GeoGuessr streak purposes.
  */
-import countryCodes from '../lib/countryCodes.json'
+import streakCodes from '../lib/streakCodes.json'
 
 const GEOGUESSR_URL = 'https://geoguessr.com'
 const CG_API_URL = import.meta.env.VITE_CG_API_URL ?? 'https://chatguessr.com/api'
@@ -73,14 +73,15 @@ export function latLngEqual(a: LatLng, b: LatLng) {
 }
 
 /**
- * Get the country code for a coordinate.
+ * Get the streak code for a coordinate. Streak codes are opaque identifiers and should only
+ * be used in comparisons with other streak codes, not for display.
  */
-export async function getCountryCode(location: LatLng): Promise<string | undefined> {
+export async function getStreakCode(location: LatLng): Promise<string | undefined> {
   const localResults = countryIso(location.lat, location.lng, true)
   const localIso = localResults.length > 0 ? localResults[0] : undefined
   if (!localIso) return
 
-  return countryCodes[localIso]
+  return streakCodes[localIso]
 }
 
 /**

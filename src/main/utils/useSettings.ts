@@ -25,6 +25,10 @@ const defaultSettings = {
   showGuessChanged: true,
   showSubmittedPreviousGuess: true,
   isMultiGuess: false,
+  isGiftingPointsRound: false,
+  roundPointGift: 0,
+  isGiftingPointsGame: false,
+  gamePointGift: 0,
   guessMarkersLimit: 30
 }
 

@@ -43,6 +43,11 @@ export default class Game {
 
   isMultiGuess = false
 
+  isGiftingPointsRound = false
+  roundPointGift = 0
+  isGiftingPointsGame = false
+  gamePointGift = 0
+
   constructor(db: Database, settings: Settings) {
     this.#db = db
     this.#settings = settings
@@ -50,6 +55,12 @@ export default class Game {
   }
 
   async start(url: string, isMultiGuess: boolean) {
+    
+    this.isGiftingPointsGame = this.#settings.isGiftingPointsGame
+    this.gamePointGift = this.#settings.gamePointGift
+    this.isGiftingPointsRound = this.#settings.isGiftingPointsRound
+    this.roundPointGift = this.#settings.roundPointGift
+
     this.isInGame = true
     this.isMultiGuess = isMultiGuess
     if (this.#url === url) {

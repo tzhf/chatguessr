@@ -114,6 +114,43 @@
       </div>
 
       <hr />
+
+
+      <h2>Gift Points Settings</h2>
+      <div class="ml-05">
+        <label
+          class="form__group"
+          data-tip="Gift points per Round"
+        >
+          Gift Points Round
+          <input v-model="settings.isGiftingPointsRound" type="checkbox" />
+        </label>
+      </div>
+      
+      <label class="form__group" data-tip="Points gifted per Round">
+              Gift points per Round:
+              <input v-model.trim="settings.roundPointGift" type="number" spellcheck="false" />
+            </label>
+      
+      <div class="ml-05">
+        <label
+          class="form__group"
+          data-tip="Gift points per Round"
+        >
+          Gift Points Game
+          <input v-model="settings.isGiftingPointsGame" type="checkbox" />
+        </label>
+      </div>
+      
+      <label class="form__group" data-tip="Points gifted per Game">
+              Points gifted per Game :
+              <input v-model.trim="settings.gamePointGift" type="number" spellcheck="false" />
+            </label>
+
+
+
+
+
       <div class="flex items-center flex-col gap-05 mt-1">
         <small>ChatGuessr version {{ currentVerion }}</small>
       </div>

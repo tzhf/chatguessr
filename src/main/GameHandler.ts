@@ -92,6 +92,15 @@ export default class GameHandler {
       } !`,
       { system: true }
     )
+    ////ABC TODO
+    if(this.#game.isGiftingPointsRound && this.#game.roundPointGift > 0 )
+    this.#backend?.sendMessage(
+      `!givepoints ${
+        roundResults[0].player.username
+      } ${this.#game.roundPointGift}`,
+      { system: false }
+    )
+
   }
 
   async #showGameResults() {
@@ -120,6 +129,15 @@ export default class GameHandler {
         link != undefined ? `Game summary: ${link}` : ''
       }`,
       { system: true }
+    )
+
+    if(this.#game.isGiftingPointsGame && this.#game.gamePointGift > 0 )
+   
+    this.#backend?.sendMessage(
+      `!givepoints ${
+        gameResults[0].player.username
+      } ${this.#game.gamePointGift}`,
+      { system: false }
     )
   }
 

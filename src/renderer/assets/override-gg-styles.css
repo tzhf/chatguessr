@@ -67,6 +67,10 @@
   position: relative;
   z-index: 999;
 }
+/* onhover change opacity of correct-location-marker to 0.2 */
+[data-qa="correct-location-marker"]:hover {
+  opacity: 0.2;
+}
 
 .gm-style .gm-style-iw-c,
 .gm-style .gm-style-iw-tc::after {

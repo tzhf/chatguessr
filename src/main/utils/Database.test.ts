@@ -41,7 +41,7 @@ describe('getUserStats', () => {
       })
       db.createGuess(roundId, user!.id, {
         location: { lat: 0, lng: 0 },
-        country: null,
+        streakCode: null,
         streak: 0,
         lastStreak: null,
         distance: 0,
@@ -81,7 +81,7 @@ describe('getRoundResults', () => {
 
     db.createGuess(roundId, user2!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 1234,
@@ -89,7 +89,7 @@ describe('getRoundResults', () => {
     })
     db.createGuess(roundId, user!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 1000,
@@ -97,7 +97,7 @@ describe('getRoundResults', () => {
     })
     db.createGuess(roundId, user3!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 998,
@@ -125,7 +125,7 @@ describe('getRoundResults', () => {
 
     db.createGuess(roundId, user!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 12,
@@ -133,7 +133,7 @@ describe('getRoundResults', () => {
     })
     db.createGuess(roundId, user3!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 998,
@@ -141,7 +141,7 @@ describe('getRoundResults', () => {
     })
     const second5k = db.createGuess(roundId, user2!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 8,
@@ -176,7 +176,7 @@ describe('getRoundResults', () => {
 
     const non5k = db.createGuess(roundId, user!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 988,
@@ -192,7 +192,7 @@ describe('getRoundResults', () => {
 
     db.createGuess(roundId, user2!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 8,
@@ -200,7 +200,7 @@ describe('getRoundResults', () => {
     })
     db.updateGuess(non5k, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 12,

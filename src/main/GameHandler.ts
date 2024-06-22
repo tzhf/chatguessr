@@ -530,7 +530,7 @@ export default class GameHandler {
 
       const url = await makeMapsUrl(lastLocation.location)
       await this.#backend?.sendMessage(
-        `${returnNumber} was on the map "${lastLocation.map_name}" in ${getEmoji(lastLocation.country)} ${lastLocation.country}: ${url}`
+        `${returnNumber} was on the map "${lastLocation.map_name}": ${url}`
       )
       return
     }

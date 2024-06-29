@@ -118,6 +118,12 @@
 
       <h2>Gift Points Settings</h2>
       <div class="ml-05">
+
+        <label class="form__group" data-tip="<command> <username> <amount>">
+              Command for the gift of points:
+              <input v-model.trim="settings.pointGiftCommand" type="text" spellcheck="false" />
+            </label>
+
         <label
           class="form__group"
           data-tip="Gift points per Round"

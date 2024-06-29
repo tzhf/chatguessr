@@ -47,6 +47,7 @@ export default class Game {
   roundPointGift = 0
   isGiftingPointsGame = false
   gamePointGift = 0
+  pointGiftCommand = "!givepoints"
 
   constructor(db: Database, settings: Settings) {
     this.#db = db
@@ -60,6 +61,7 @@ export default class Game {
     this.gamePointGift = this.#settings.gamePointGift
     this.isGiftingPointsRound = this.#settings.isGiftingPointsRound
     this.roundPointGift = this.#settings.roundPointGift
+    this.pointGiftCommand = this.#settings.pointGiftCommand
 
     this.isInGame = true
     this.isMultiGuess = isMultiGuess

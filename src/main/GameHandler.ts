@@ -93,9 +93,9 @@ export default class GameHandler {
       { system: true }
     )
     ////ABC TODO
-    if(this.#game.isGiftingPointsRound && this.#game.roundPointGift > 0 )
+    if(this.#game.isGiftingPointsRound && this.#game.roundPointGift > 0 && this.#game.pointGiftCommand !== "")
     this.#backend?.sendMessage(
-      `!givepoints ${
+      `${this.#game.pointGiftCommand} ${
         roundResults[0].player.username
       } ${this.#game.roundPointGift}`,
       { system: false }
@@ -131,10 +131,10 @@ export default class GameHandler {
       { system: true }
     )
 
-    if(this.#game.isGiftingPointsGame && this.#game.gamePointGift > 0 )
+    if(this.#game.isGiftingPointsGame && this.#game.gamePointGift > 0  && this.#game.pointGiftCommand !== "")
    
     this.#backend?.sendMessage(
-      `!givepoints ${
+      `${this.#game.pointGiftCommand} ${
         gameResults[0].player.username
       } ${this.#game.gamePointGift}`,
       { system: false }

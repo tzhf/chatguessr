@@ -27,6 +27,7 @@ const defaultSettings = {
   isMultiGuess: false,
   isGiftingPointsRound: false,
   roundPointGift: 0,
+  pointGiftCommand: "!givepoints",
   isGiftingPointsGame: false,
   gamePointGift: 0,
   guessMarkersLimit: 30

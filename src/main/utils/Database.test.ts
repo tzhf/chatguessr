@@ -213,7 +213,8 @@ describe('getRoundResults', () => {
       streak: 0,
       lastStreak: null,
       distance: 12,
-      score: 5000
+      score: 5000,
+      isRandomPlonk: 0
     })
 
     const leaderboard = db.getRoundResults(roundId).map((score) => score.player.username)

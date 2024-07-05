@@ -380,7 +380,8 @@ class db {
       streak: number
       lastStreak: number | null
       distance: number
-      score: number
+      score: number,
+      isRandomPlonk: number | null
     }
   ) {
     const updateGuess = this.#db.prepare(`
@@ -403,6 +404,7 @@ class db {
       country: guess.country,
       streak: guess.streak,
       lastStreak: guess.lastStreak,
+      isRandomPlonk: guess.isRandomPlonk,
       distance: guess.distance,
       score: guess.score,
       updatedAt: timestamp()

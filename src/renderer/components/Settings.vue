@@ -91,6 +91,10 @@
               Random plonk :
               <input v-model.trim="settings.randomPlonkCmd" type="text" spellcheck="false" />
             </label>
+            <label class="form__group" data-tip="Guess random coordinates in Water (default: !randomplonkwater)">
+              Random plonk in international waters:
+              <input v-model.trim="settings.randomPlonkWaterCmd" type="text" spellcheck="false" />
+            </label>
             <label class="form__group" data-tip="Get the last location (default: !lastloc)">
               Get the last location :
               <input v-model.trim="settings.lastlocCmd" type="text" spellcheck="false" />
@@ -156,6 +160,50 @@
 
 
 
+
+      <div class="flex items-center flex-col gap-05 mt-1">
+        <small>ChatGuessr version {{ currentVerion }}</small>
+      </div>
+    </div>
+
+    
+    <div v-show="currentTab === 'mode-settings'" class="content">
+  
+      <h2>Mode Settings</h2>
+      <div class="ml-05">
+
+        <label
+          class="form__group"
+          data-tip="Closest in wrong country mode"
+        >
+          Closest in wrong country mode
+          <input v-model="settings.isClosestInWrongCountryModeActivated" type="checkbox" />
+        </label>
+
+        
+      <label
+          class="form__group"
+          data-tip="Invert scoring (furthest plonk wins)"
+        >
+
+  Invert scoring (furthest plonk wins)
+          <input v-model="settings.invertScoring" type="checkbox" />
+        </label>
+
+        <label class="form__group" data-tip="0 Points for Plonks on Land">
+        <input type="radio" v-model="settings.waterPlonkMode" value="mandatory" />
+        Only Ocean Plonk mode
+      </label>
+      <label class="form__group" data-tip="Standard Mode">
+        <input type="radio" v-model="settings.waterPlonkMode" value="normal" />
+        Normal Ocean Plonk mode
+      </label>
+      <label class="form__group" data-tip="0 Points for Polonks in international Waters">
+        <input type="radio" v-model="settings.waterPlonkMode" value="illegal" />
+        Ocean Plonks Illegal mode
+      </label>
+
+      </div>
 
       <div class="flex items-center flex-col gap-05 mt-1">
         <small>ChatGuessr version {{ currentVerion }}</small>
@@ -288,7 +336,8 @@ const currentTab = shallowRef(
   twitchConnectionState.state === 'disconnected' ? 'twitch-connect' : 'game-settings'
 )
 const tabs = shallowRef([
-  { name: 'game-settings', value: 'Game settings' },
+{ name: 'game-settings', value: 'Game settings' },
+{ name: 'mode-settings', value: 'Mode settings' },
   { name: 'twitch-connect', value: 'Twitch connect' },
   { name: 'ban-list', value: 'Ban list' }
 ])

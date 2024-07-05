@@ -20,6 +20,7 @@ const defaultSettings = {
   getBestStatsCmd: '!best',
   clearUserStatsCmd: '!clear',
   randomPlonkCmd: '!randomplonk',
+  randomPlonkWaterCmd: '!randomplonkwater',
   showHasGuessed: true,
   showHasAlreadyGuessed: true,
   showGuessChanged: true,
@@ -30,7 +31,10 @@ const defaultSettings = {
   pointGiftCommand: "!givepoints",
   isGiftingPointsGame: false,
   gamePointGift: 0,
-  guessMarkersLimit: 30
+  guessMarkersLimit: 30,
+  isClosestInWrongCountryModeActivated: false,
+  waterPlonkMode: "normal",
+  invertScoring: false,
 }
 
 const settings = Object.assign({}, defaultSettings, storedSettings)

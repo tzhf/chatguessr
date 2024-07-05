@@ -6,7 +6,8 @@ import {
   fetchSeed,
   getCountryCode,
   haversineDistance,
-  calculateScore
+  calculateScore,
+  isCoordsInLand
 } from './utils/gameHelper'
 
 export default class Game {
@@ -43,11 +44,20 @@ export default class Game {
 
   isMultiGuess = false
 
+  // points-gifting
+
   isGiftingPointsRound = false
   roundPointGift = 0
   isGiftingPointsGame = false
   gamePointGift = 0
   pointGiftCommand = "!givepoints"
+
+  // modes
+
+  isClosestInWrongCountryModeActivated = false
+  waterPlonkMode = "normal"
+  invertScoring = false
+
 
   constructor(db: Database, settings: Settings) {
     this.#db = db
@@ -62,6 +72,10 @@ export default class Game {
     this.isGiftingPointsRound = this.#settings.isGiftingPointsRound
     this.roundPointGift = this.#settings.roundPointGift
     this.pointGiftCommand = this.#settings.pointGiftCommand
+    this.isClosestInWrongCountryModeActivated = this.#settings.isClosestInWrongCountryModeActivated
+    this.waterPlonkMode = this.#settings.waterPlonkMode
+    this.invertScoring = this.#settings.invertScoring
+
 
     this.isInGame = true
     this.isMultiGuess = isMultiGuess
@@ -199,7 +213,7 @@ export default class Game {
     }
 
     const distance = haversineDistance(location, this.location!)
-    const score = streamerGuess.timedOut ? 0 : calculateScore(distance, this.mapScale!)
+    const score = streamerGuess.timedOut ? 0 : calculateScore(distance, this.mapScale!, await getCountryCode(location) === this.#country, this.isClosestInWrongCountryModeActivated, this.waterPlonkMode, await isCoordsInLand(location), this.invertScoring)
 
     const streak = this.#db.getUserStreak(dbUser.id)
 
@@ -209,11 +223,12 @@ export default class Game {
       streak: streak?.count ?? 0,
       lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
       distance,
-      score
+      score,
+      isRandomPlonk: 0
     })
   }
 
-  async handleUserGuess(userstate: UserData, location: LatLng): Promise<Guess> {
+  async handleUserGuess(userstate: UserData, location: LatLng, isRandomPlonk: boolean = false): Promise<Guess> {
     const dbUser = this.#db.getOrCreateUser(
       userstate['user-id'],
       userstate['display-name'],
@@ -233,7 +248,7 @@ export default class Game {
     }
 
     const distance = haversineDistance(location, this.location!)
-    const score = calculateScore(distance, this.mapScale!)
+    const score = calculateScore(distance, this.mapScale!, await getCountryCode(location) === this.#country, this.isClosestInWrongCountryModeActivated, this.waterPlonkMode, await isCoordsInLand(location), this.invertScoring)
 
     const guessedCountry = await getCountryCode(location)
     const correct = guessedCountry === this.#country
@@ -274,7 +289,8 @@ export default class Game {
       streak: streak?.count ?? 0,
       lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
       distance,
-      score
+      score,
+      isRandomPlonk: isRandomPlonk ? 1 : 0
     }
 
     // Modify guess or push it

@@ -11,6 +11,7 @@ import {
   fetchMap,
   parseCoordinates,
   getRandomCoordsInLand,
+  getRandomCoordsNotInLand,
   getStreamerAvatar,
   parseUserDate
 } from './utils/gameHelper'
@@ -92,7 +93,6 @@ export default class GameHandler {
       } !`,
       { system: true }
     )
-    ////ABC TODO
     if(this.#game.isGiftingPointsRound && this.#game.roundPointGift > 0 && this.#game.pointGiftCommand !== "")
     this.#backend?.sendMessage(
       `${this.#game.pointGiftCommand} ${
@@ -403,10 +403,10 @@ export default class GameHandler {
     await once(this.#socket, 'connect')
   }
 
-  async #handleGuess(userstate: UserData, message: string) {
+  async #handleGuess(userstate: UserData, message: string, isRandomPlonk: boolean = false) {
     if (!message.startsWith('!g') || !this.#game.guessesOpen) return
     // Ignore guesses made by the broadcaster with the CG map: prevents seemingly duplicate guesses
-    if (userstate.username?.toLowerCase() === settings.channelName.toLowerCase()) return
+    //if (userstate.username?.toLowerCase() === settings.channelName.toLowerCase()) return
     // Check if user is banned
     if (this.isUserBanned(userstate.username!)) return
 
@@ -414,7 +414,7 @@ export default class GameHandler {
     if (!location) return
 
     try {
-      const guess = await this.#game.handleUserGuess(userstate, location)
+      const guess = await this.#game.handleUserGuess(userstate, location, isRandomPlonk)
 
       if (!this.#game.isMultiGuess) {
         this.#win.webContents.send('render-guess', guess)
@@ -454,6 +454,11 @@ export default class GameHandler {
       } else {
         console.error(err)
       }
+    }
+    if (userstate.username?.toLowerCase() === settings.channelName.toLowerCase()){
+      this.#game.getRoundResults()
+  
+      return;
     }
   }
 
@@ -607,6 +612,7 @@ export default class GameHandler {
 					Avg. score: ${Math.round(userInfo.meanScore)}.
 					Victories: ${userInfo.victories}.
 					5ks: ${userInfo.perfects}.
+          Best Random Plonk: ${userInfo.bestRandomPlonk}.
 				`
         await this.#backend?.sendMessage(msg)
       }
@@ -620,7 +626,7 @@ export default class GameHandler {
         await this.#backend?.sendMessage(`${userstate['display-name']}: ${dateInfo.description}.`)
         return
       }
-      const { streak, victories, perfects } = this.#db.getBestStats(dateInfo.timeStamp)
+      const { streak, victories, perfects, bestRandomPlonk } = this.#db.getBestStats(dateInfo.timeStamp)
       if (!streak && !victories && !perfects) {
         await this.#backend?.sendMessage('No stats available.')
       } else {
@@ -634,6 +640,9 @@ export default class GameHandler {
         if (perfects) {
           msg += `5ks: ${perfects.perfects} (${perfects.username}). `
         }
+        if (bestRandomPlonk) {
+          msg += `Best Random Plonk: ${bestRandomPlonk.bestRandomPlonk} (${bestRandomPlonk.username}). `
+        }
         if (!dateInfo.description) {
           await this.#backend?.sendMessage(`Channels best: ${msg}`)
         } else {
@@ -642,6 +651,9 @@ export default class GameHandler {
       }
       return
     }
+
+    
+    
 
     if (message === settings.clearUserStatsCmd) {
       const dbUser = this.#db.getUser(userId)
@@ -659,9 +671,32 @@ export default class GameHandler {
     if (message === settings.randomPlonkCmd) {
       if (!this.#game.isInGame) return
 
-      const { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds)
+      var { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds);
+      if (this.#game.waterPlonkMode === "mandatory") {
+        const newCoords = await getRandomCoordsNotInLand(this.#game.seed!.bounds);
+        lat = newCoords.lat;
+        lng = newCoords.lng;
+      }
+      
       const randomGuess = `!g ${lat}, ${lng}`
-      this.#handleGuess(userstate, randomGuess).catch((err) => {
+      this.#handleGuess(userstate, randomGuess, true).catch((err) => {
+        console.error(err)
+      })
+      return
+    }
+    
+    if (message === settings.randomPlonkWaterCmd || message === "!taquitoplonk") {
+      if (!this.#game.isInGame) return
+
+      var { lat, lng } = await getRandomCoordsNotInLand(this.#game.seed!.bounds);
+      if (this.#game.waterPlonkMode === "illegal") {
+        const newCoords = await getRandomCoordsInLand(this.#game.seed!.bounds);
+        lat = newCoords.lat;
+        lng = newCoords.lng;
+      }
+      
+      const randomGuess = `!g ${lat}, ${lng}`
+      this.#handleGuess(userstate, randomGuess, true).catch((err) => {
         console.error(err)
       })
       return

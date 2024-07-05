@@ -126,9 +126,39 @@ export function haversineDistance(mk1: LatLng, mk2: LatLng): number {
 /**
  * Returns score based on distance and scale
  */
-export function calculateScore(distance: number, scale: number): number {
-  if (distance * 1000 < 25) return 5000
-  return Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale))
+export function calculateScore(distance: number, scale: number, isCorrectCountry: boolean, isClosestInWrongCountryModeActivated: boolean,  waterPlonkMode: string, isPlonkOnLand: boolean, invertScores: boolean)  {
+  if (isCorrectCountry && isClosestInWrongCountryModeActivated) return 0
+  if (waterPlonkMode == "illegal" && !isPlonkOnLand) return 0
+  if (waterPlonkMode == "mandatory" && isPlonkOnLand) return 0
+  if (!invertScores){
+    if (distance * 1000 < 25) return 5000
+    return Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale))
+  }
+  else{
+    if (distance > 19869)
+      return 5000
+    if (distance > 15000){
+      return 4999 - Math.round(Math.round(19869 - distance)*0.2052)
+    }
+    
+    if (distance > 7500){
+      return 4000 - Math.round(Math.round(15000  - distance)*0.4)
+    }
+    
+    if (distance > 5000){
+      return 1000 - Math.round(Math.round(7500  - distance)*0.2)
+    }
+    
+    if (distance > 2500){
+      return 500 - Math.round(Math.round(5000  - distance)*0.1)
+    }
+  }
+  
+  if (distance > 100){
+    return 250 - Math.round(Math.round(2500  - distance)*0.1)
+  }
+  return 0
+  
 }
 
 /**
@@ -222,6 +252,28 @@ export async function getRandomCoordsInLand(bounds: Bounds | null = null): Promi
   const localResults = countryIso(lat, lng, true)
   if (!localResults.length) return await getRandomCoordsInLand(bounds)
   return { lat, lng }
+}
+export async function getRandomCoordsNotInLand(bounds: Bounds | null = null): Promise<LatLng> {
+  let lat_north = 85,
+    lat_south = -60,
+    lng_west = -180,
+    lng_east = 180
+  if (bounds != null) {
+    lat_north = bounds.max.lat
+    lat_south = Math.max(bounds.min.lat, lat_south)
+    lng_east = bounds.max.lng
+    lng_west = bounds.min.lng
+  }
+  const lat = Math.random() * (lat_north - lat_south) + lat_south
+  const lng = Math.random() * (lng_east - lng_west) + lng_west
+  const localResults = countryIso(lat, lng, true)
+  if (localResults.length) return await getRandomCoordsNotInLand(bounds)
+  return { lat, lng }
+}
+
+export async function isCoordsInLand(location: LatLng): Promise<boolean> {
+  const localResults = countryIso(location.lat, location.lng, true)
+  return localResults.length > 0
 }
 
 export async function getStreamerAvatar(channel: string): Promise<{ avatar: string | undefined }> {

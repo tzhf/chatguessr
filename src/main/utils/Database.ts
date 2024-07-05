@@ -69,6 +69,7 @@ const migrations: ((db: SQLite.Database) => void)[] = [
             distance INT NOT NULL,
             score INT NOT NULL,
             created_at INT NOT NULL,
+            is_random_plonk INT DEFAULT NULL,
 
             FOREIGN KEY(user_id) REFERENCES users(id),
             FOREIGN KEY(round_id) REFERENCES rounds(id)
@@ -182,6 +183,9 @@ const migrations: ((db: SQLite.Database) => void)[] = [
   },
   function removeUsersLastLocationField(db) {
     db.prepare(`ALTER TABLE users DROP COLUMN last_location`).run()
+  },
+  function createIsRandomPlonk(db) {
+    db.prepare(`ALTER TABLE guesses ADD COLUMN is_random_plonk INTEGER DEFAULT NULL`).run()
   }
 ]
 
@@ -298,13 +302,14 @@ class db {
       streak: number
       lastStreak: number | null
       distance: number
-      score: number
+      score: number,
+      isRandomPlonk: number | null
     }
   ) {
     const id = randomUUID()
     const insertGuess = this.#db.prepare(`
-      INSERT INTO guesses(id, round_id, user_id, location, country, streak, last_streak, distance, score, created_at)
-      VALUES (:id, :roundId, :userId, :location, :country, :streak, :lastStreak, :distance, :score, :createdAt)
+      INSERT INTO guesses(id, round_id, user_id, location, country, streak, last_streak, distance, score, created_at, is_random_plonk)
+      VALUES (:id, :roundId, :userId, :location, :country, :streak, :lastStreak, :distance, :score, :createdAt, :isRandomPlonk)
     `)
 
     insertGuess.run({
@@ -317,7 +322,8 @@ class db {
       lastStreak: guess.lastStreak,
       distance: guess.distance,
       score: guess.score,
-      createdAt: timestamp()
+      createdAt: timestamp(),
+      isRandomPlonk: guess.isRandomPlonk
     })
 
     return id
@@ -334,6 +340,7 @@ class db {
         guesses.country,
         guesses.streak,
         guesses.last_streak AS lastStreak,
+        guesses.is_random_plonk AS isRandomPlonk,
         guesses.distance,
         guesses.score
       FROM guesses
@@ -384,6 +391,7 @@ class db {
         country = :country,
         streak = :streak,
         last_streak = :lastStreak,
+        is_random_plonk = :isRandomPlonk,
         distance = :distance,
         score = :score,
         created_at = :updatedAt
@@ -516,6 +524,7 @@ class db {
 				guesses.streak,
         guesses.country,
 				guesses.last_streak,
+				guesses.is_random_plonk,
 				guesses.distance,
 				guesses.score,
 				guesses.created_at - rounds.created_at AS time,
@@ -540,6 +549,7 @@ class db {
       streak: number
       country: string | null
       last_streak: number | null
+      is_random_plonk: number | null
       distance: number
       score: number
       time: number
@@ -557,6 +567,7 @@ class db {
       streak: record.streak,
       country: record.country,
       lastStreak: record.last_streak,
+      isRandomPlonk: record.is_random_plonk,
       distance: record.distance,
       score: record.score,
       time: record.time,
@@ -745,8 +756,9 @@ class db {
         (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND streak > 0 AND created_at > users.reset_at AND created_at > :since) AS correct_guesses,
         (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND score = 5000 AND created_at > users.reset_at AND created_at > :since) AS perfects,
         (SELECT AVG(score) FROM guesses WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since) AS average,
-        (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since) AS victories
-      FROM users
+        (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since) AS victories,
+        (SELECT MAX(score) FROM guesses WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since AND is_random_plonk = 1) AS bestRandomPlonk
+        FROM users
       LEFT JOIN streaks current_streak ON current_streak.id = users.current_streak_id
       WHERE users.id = :id
     `)
@@ -762,6 +774,7 @@ class db {
           perfects: number
           average: number
           victories: number
+          bestRandomPlonk: number
         }
       | undefined
 
@@ -775,7 +788,8 @@ class db {
           correctGuesses: record.correct_guesses,
           meanScore: record.average,
           perfects: record.perfects,
-          victories: record.victories
+          victories: record.victories,
+          bestRandomPlonk: record.bestRandomPlonk
         }
       : undefined
   }
@@ -812,7 +826,7 @@ class db {
     LIMIT 100
   `)
 
-    const perfectQuery = this.#db.prepare(`
+  const perfectQuery = this.#db.prepare(`
     SELECT users.id, users.username, users.avatar, users.color, users.flag, COUNT(guesses.id) AS perfects
     FROM users
     LEFT JOIN guesses ON guesses.user_id = users.id
@@ -823,15 +837,25 @@ class db {
     ORDER BY perfects DESC
     LIMIT 100
   `)
+  const randomQuery = this.#db.prepare(`
+  SELECT users.id, users.username, users.avatar, users.color, users.flag, max(guesses.score) AS bestRandomPlonk
+  FROM users
+  LEFT JOIN guesses ON guesses.user_id = users.id
+    AND guesses.created_at > users.reset_at
+    AND guesses.created_at > :since
+    WHERE guesses.is_random_plonk = 1
+  GROUP BY users.id
+  LIMIT 100
+`)
 
-    return { streakQuery, victoriesQuery, perfectQuery }
+    return { streakQuery, victoriesQuery, perfectQuery, randomQuery }
   }
 
   /**
    *   Get best stats for !best command
    */
   getBestStats(sinceTime: number = 0) {
-    const { streakQuery, victoriesQuery, perfectQuery } = this.statsQueries()
+    const { streakQuery, victoriesQuery, perfectQuery, randomQuery } = this.statsQueries()
 
     const bestStreak = streakQuery.get({ since: sinceTime }) as
       | { id: string; username: string; streak: number }
@@ -839,16 +863,22 @@ class db {
     const mostVictories = victoriesQuery.get({ since: sinceTime }) as
       | { id: string; username: string; victories: number }
       | undefined
-    const mostPerfects = perfectQuery.get({ since: sinceTime }) as
-      | { id: string; username: string; perfects: number }
-      | undefined
+      const mostPerfects = perfectQuery.get({ since: sinceTime }) as
+        | { id: string; username: string; perfects: number }
+        | undefined
 
+      const bestRandom = randomQuery.get({ since: sinceTime }) as
+      | { id: string; username: string; bestRandomPlonk: number }
+      | undefined
+  
     return {
       streak: bestStreak,
       victories: mostVictories,
-      perfects: mostPerfects
+      perfects: mostPerfects,
+      bestRandomPlonk: bestRandom
     }
   }
+  
 
   /**
    *  Get all sorted stats in given interval for Leaderboard

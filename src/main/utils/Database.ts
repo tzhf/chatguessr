@@ -69,7 +69,6 @@ const migrations: ((db: SQLite.Database) => void)[] = [
             distance INT NOT NULL,
             score INT NOT NULL,
             created_at INT NOT NULL,
-            is_random_plonk INT DEFAULT NULL,
 
             FOREIGN KEY(user_id) REFERENCES users(id),
             FOREIGN KEY(round_id) REFERENCES rounds(id)

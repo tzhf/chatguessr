@@ -103,6 +103,10 @@
               Get current map description :
               <input v-model.trim="settings.mapCmd" type="text" spellcheck="false" />
             </label>
+            <label class="form__group" data-tip="Get current mode description (default: !mode)">
+              Get current mode description :
+              <input v-model.trim="settings.modeCmd" type="text" spellcheck="false" />
+            </label>
             <label class="form__group" data-tip="Map description cooldown  (default: 30)">
               Map description cooldown ({{ settings.mapCmdCooldown }} sec) :
               <input

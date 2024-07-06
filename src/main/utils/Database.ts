@@ -185,6 +185,9 @@ const migrations: ((db: SQLite.Database) => void)[] = [
   },
   function createIsRandomPlonk(db) {
     db.prepare(`ALTER TABLE guesses ADD COLUMN is_random_plonk INTEGER DEFAULT NULL`).run()
+  },
+  function createRoundMode(db) {
+    db.prepare(`ALTER TABLE rounds ADD COLUMN isInvertedScoring INTEGER DEFAULT NULL`).run()
   }
 ]
 
@@ -252,10 +255,10 @@ class db {
     return findRoundId.get(gameId) as string | undefined
   }
 
-  createRound(gameId: string, round: Location_) {
+  createRound(gameId: string, round: Location_, isInvertedScoring: number = 0) {
     const insertRound = this.#db.prepare(`
-      INSERT INTO rounds(id, game_id, location, created_at)
-      VALUES (:id, :gameId, :location, :createdAt)
+      INSERT INTO rounds(id, game_id, location, created_at, isInvertedScoring)
+      VALUES (:id, :gameId, :location, :createdAt, :isInvertedScoring)
     `)
 
     const id = randomUUID()
@@ -271,7 +274,8 @@ class db {
         pitch: round.pitch,
         zoom: round.zoom
       }),
-      createdAt: timestamp()
+      createdAt: timestamp(),
+      isInvertedScoring: isInvertedScoring
     })
 
     return id
@@ -758,7 +762,7 @@ class db {
         (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND score = 5000 AND created_at > users.reset_at AND created_at > :since) AS perfects,
         (SELECT AVG(score) FROM guesses WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since) AS average,
         (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since) AS victories,
-        (SELECT MAX(score) FROM guesses WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since AND is_random_plonk = 1) AS bestRandomPlonk
+        (SELECT MAX(score) FROM guesses join rounds on guesses.round_id = rounds.id WHERE rounds.isInvertedScoring = 0 AND user_id = :id AND guesses.created_at > users.reset_at AND guesses.created_at > :since AND is_random_plonk = 1) AS bestRandomPlonk
         FROM users
       LEFT JOIN streaks current_streak ON current_streak.id = users.current_streak_id
       WHERE users.id = :id
@@ -839,14 +843,16 @@ class db {
     LIMIT 100
   `)
   const randomQuery = this.#db.prepare(`
-  SELECT users.id, users.username, users.avatar, users.color, users.flag, max(guesses.score) AS bestRandomPlonk
+  SELECT users.id, users.username, users.avatar, users.color, users.flag, guesses.score AS bestRandomPlonk, guesses.distance
   FROM users
   LEFT JOIN guesses ON guesses.user_id = users.id
+  join rounds on guesses.round_id = rounds.id 
     AND guesses.created_at > users.reset_at
     AND guesses.created_at > :since
     WHERE guesses.is_random_plonk = 1
-  GROUP BY users.id
-  LIMIT 100
+    AND rounds.isInvertedScoring = 0
+    ORDER BY guesses.distance ASC
+  LIMIT 1
 `)
 
     return { streakQuery, victoriesQuery, perfectQuery, randomQuery }
@@ -869,7 +875,7 @@ class db {
         | undefined
 
       const bestRandom = randomQuery.get({ since: sinceTime }) as
-      | { id: string; username: string; bestRandomPlonk: number }
+      | { id: string; username: string; bestRandomPlonk: number; distance: number}
       | undefined
   
     return {

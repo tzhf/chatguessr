@@ -59,6 +59,7 @@ export default class Game {
   invertScoring = false
 
 
+
   constructor(db: Database, settings: Settings) {
     this.#db = db
     this.#settings = settings
@@ -90,7 +91,7 @@ export default class Game {
 
       try {
         this.#db.createGame(this.seed)
-        this.#roundId = this.#db.createRound(this.seed.token, this.seed.rounds[0])
+        this.#roundId = this.#db.createRound(this.seed.token, this.seed.rounds[0], this.invertScoring?1:0)
       } catch (err) {
         // In this case we are restoring an existing game.
         if (err instanceof Error && err.message.includes('UNIQUE constraint failed: games.id')) {
@@ -132,7 +133,7 @@ export default class Game {
       const roundResults = this.getRoundResults()
 
       if (this.seed!.state !== 'finished') {
-        this.#roundId = this.#db.createRound(this.seed!.token, this.seed.rounds.at(-1)!)
+        this.#roundId = this.#db.createRound(this.seed!.token, this.seed.rounds.at(-1)!, this.invertScoring?1:0)
         this.#getCountry()
       } else {
         this.#roundId = undefined
@@ -142,7 +143,7 @@ export default class Game {
       // Else, if only the loc has changed, the location was skipped, replace current loc
     } else if (newSeed && this.#locHasChanged(newSeed)) {
       this.seed = newSeed
-      this.#roundId = this.#db.createRound(this.seed!.token, this.seed.rounds.at(-1)!)
+      this.#roundId = this.#db.createRound(this.seed!.token, this.seed.rounds.at(-1)!, this.invertScoring?1:0)
 
       this.#getCountry()
 

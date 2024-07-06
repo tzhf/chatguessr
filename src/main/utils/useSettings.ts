@@ -14,6 +14,7 @@ const defaultSettings = {
   cgMsg: `Two ways to play: Link your Twitch account, guess and plonk with spacebar | or paste the command into chat without editing: <your cg link>`,
   lastlocCmd: '!lastloc',
   mapCmd: '!map',
+  modeCmd: '!mode',
   mapCmdCooldown: 30,
   flagsCmd: '!flags',
   getUserStatsCmd: '!me',

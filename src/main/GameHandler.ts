@@ -557,6 +557,16 @@ export default class GameHandler {
       )
       return
     }
+    
+    if(message === settings.modeCmd){
+      if (!this.#game.isInGame || !this.#game.seed || !this.#game.seed.map) {
+        return
+      }
+      let send_msg = `closestInWrongCountry: ${settings.isClosestInWrongCountryModeActivated? "on" : "off"} | waterPlonk: ${settings.waterPlonkMode} | invertScoring: ${settings.invertScoring ? "on" : "off"}`
+      await this.#backend?.sendMessage(
+        send_msg
+      )
+    }
 
     if (message === settings.mapCmd) {
       // We'll only have a map ID if we're
@@ -612,7 +622,7 @@ export default class GameHandler {
 					Avg. score: ${Math.round(userInfo.meanScore)}.
 					Victories: ${userInfo.victories}.
 					5ks: ${userInfo.perfects}.
-          Best Random Plonk: ${userInfo.bestRandomPlonk}.
+          ${!userInfo.bestRandomPlonk ? '' : `Best Random Plonk: ${userInfo.bestRandomPlonk}.`}
 				`
         await this.#backend?.sendMessage(msg)
       }
@@ -640,8 +650,19 @@ export default class GameHandler {
         if (perfects) {
           msg += `5ks: ${perfects.perfects} (${perfects.username}). `
         }
+        console.log(bestRandomPlonk)
         if (bestRandomPlonk) {
-          msg += `Best Random Plonk: ${bestRandomPlonk.bestRandomPlonk} (${bestRandomPlonk.username}). `
+          let distance = bestRandomPlonk.distance
+          let unit = 'km'
+          let distanceNumber = "0"
+          if (distance < 1) {
+            distanceNumber = (distance * 1000).toFixed(2)
+            unit = 'm'
+          }
+          else {
+            distanceNumber = distance.toFixed(2)
+          }
+          msg += `Best Random Plonk: ${bestRandomPlonk.bestRandomPlonk} (${distanceNumber} ${unit}}) by ${bestRandomPlonk.username}. `
         }
         if (!dateInfo.description) {
           await this.#backend?.sendMessage(`Channels best: ${msg}`)

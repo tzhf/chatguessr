@@ -710,7 +710,7 @@ export default class GameHandler {
       if (!this.#game.isInGame) return
 
       var { lat, lng } = await getRandomCoordsNotInLand(this.#game.seed!.bounds);
-      if (this.#game.waterPlonkMode === "illegal") {
+      if (this.#game.waterPlonkMode === "illegal" && message !== "!taquitoplonk") {
         const newCoords = await getRandomCoordsInLand(this.#game.seed!.bounds);
         lat = newCoords.lat;
         lng = newCoords.lng;

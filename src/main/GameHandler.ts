@@ -662,7 +662,7 @@ export default class GameHandler {
           else {
             distanceNumber = distance.toFixed(2)
           }
-          msg += `Best Random Plonk: ${bestRandomPlonk.bestRandomPlonk} (${distanceNumber} ${unit}}) by ${bestRandomPlonk.username}. `
+          msg += `Best Random Plonk: ${bestRandomPlonk.bestRandomPlonk} (${distanceNumber} ${unit}) by ${bestRandomPlonk.username}. `
         }
         if (!dateInfo.description) {
           await this.#backend?.sendMessage(`Channels best: ${msg}`)

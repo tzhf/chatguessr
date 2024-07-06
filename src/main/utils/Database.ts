@@ -851,7 +851,7 @@ class db {
     AND guesses.created_at > :since
     WHERE guesses.is_random_plonk = 1
     AND rounds.isInvertedScoring = 0
-    ORDER BY guesses.distance ASC
+    ORDER BY guesses.score DESC
   LIMIT 1
 `)
 

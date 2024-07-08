@@ -236,7 +236,7 @@ export async function fetchMap(mapToken: string): Promise<GeoGuessrMap | undefin
 /**
  * Returns random coordinates within land, no Antarctica
  */
-export async function getRandomCoordsInLand(bounds: Bounds | null = null): Promise<LatLng> {
+export async function getRandomCoordsInLand(bounds: Bounds | null = null, i: number = 0): Promise<LatLng> {
   let lat_north = 85,
     lat_south = -60,
     lng_west = -180,
@@ -250,10 +250,10 @@ export async function getRandomCoordsInLand(bounds: Bounds | null = null): Promi
   const lat = Math.random() * (lat_north - lat_south) + lat_south
   const lng = Math.random() * (lng_east - lng_west) + lng_west
   const localResults = countryIso(lat, lng, true)
-  if (!localResults.length) return await getRandomCoordsInLand(bounds)
+  if (!localResults.length && i < 50) return await getRandomCoordsInLand(bounds, i + 1)
   return { lat, lng }
 }
-export async function getRandomCoordsNotInLand(bounds: Bounds | null = null): Promise<LatLng> {
+export async function getRandomCoordsNotInLand(bounds: Bounds | null = null, i: number = 0): Promise<LatLng> {
   let lat_north = 85,
     lat_south = -60,
     lng_west = -180,
@@ -267,7 +267,7 @@ export async function getRandomCoordsNotInLand(bounds: Bounds | null = null): Pr
   const lat = Math.random() * (lat_north - lat_south) + lat_south
   const lng = Math.random() * (lng_east - lng_west) + lng_west
   const localResults = countryIso(lat, lng, true)
-  if (localResults.length) return await getRandomCoordsNotInLand(bounds)
+  if (localResults.length && i < 50) return await getRandomCoordsNotInLand(bounds, i + 1)
   return { lat, lng }
 }
 

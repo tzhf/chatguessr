@@ -52,22 +52,25 @@ export default class GameHandler {
   openGuesses() {
     this.#game.openGuesses()
     this.#win.webContents.send('switch-on')
-    this.#backend?.sendMessage('Guesses are open...', { system: true })
+    if(settings.showGuessesAreOpen)
+      this.#backend?.sendMessage('Guesses are open...', { system: true })
   }
 
   closeGuesses() {
     this.#game.closeGuesses()
     this.#win.webContents.send('switch-off')
+    if(settings.showGuessesAreClosed)
     this.#backend?.sendMessage('Guesses are closed.', { system: true })
   }
 
-  nextRound() {
+  nextRound(isRestartClick: boolean = false) {
     if (this.#game.isFinished) {
       this.#game.finishGame()
       this.#showGameResults()
     } else {
       this.#win.webContents.send('next-round', this.#game.isMultiGuess, this.#game.getLocation())
-      this.#backend?.sendMessage(`🌎 Round ${this.#game.round} has started`, { system: true })
+      if(settings.showRoundStarted && !isRestartClick)
+        this.#backend?.sendMessage(`🌎 Round ${this.#game.round} has started`, { system: true })
       this.openGuesses()
     }
   }
@@ -87,6 +90,7 @@ export default class GameHandler {
       roundResults,
       settings.guessMarkersLimit
     )
+    if(settings.showRoundFinished)
     this.#backend?.sendMessage(
       `🌎 Round ${round} has finished. Congrats ${getEmoji(roundResults[0].player.flag)} ${
         roundResults[0].player.username
@@ -124,12 +128,13 @@ export default class GameHandler {
     } catch (err) {
       console.error('could not upload summary', err)
     }
-    await this.#backend?.sendMessage(
-      `🌎 Game finished. Congrats ${getEmoji(gameResults[0].player.flag)} ${gameResults[0].player.username} 🏆! ${
-        link != undefined ? `Game summary: ${link}` : ''
-      }`,
-      { system: true }
-    )
+    if(settings.showGameFinished)
+      await this.#backend?.sendMessage(
+        `🌎 Game finished. Congrats ${getEmoji(gameResults[0].player.flag)} ${gameResults[0].player.username} 🏆! ${
+          link != undefined ? `Game summary: ${link}` : ''
+        }`,
+        { system: true }
+      )
 
     if(this.#game.isGiftingPointsGame && this.#game.gamePointGift > 0  && this.#game.pointGiftCommand !== "")
    
@@ -165,11 +170,13 @@ export default class GameHandler {
               this.#backend?.sendMessage(`🌎 Round ${this.#game.round} has resumed`, {
                 system: true
               })
-            } else if (this.#game.round === 1) {
-              this.#backend?.sendMessage(`🌎 A new seed of ${this.#game.mapName} has started`, {
-                system: true
-              })
+            } else if (this.#game.round === 1 ) {
+              if(settings.showNewSeedStarted)
+                this.#backend?.sendMessage(`🌎 A new seed of ${this.#game.mapName} has started`, {
+                  system: true
+                })
             } else {
+              if (settings.showRoundStarted)
               this.#backend?.sendMessage(`🌎 Round ${this.#game.round} has started`, {
                 system: true
               })
@@ -196,7 +203,7 @@ export default class GameHandler {
           if (window.nextRoundBtn) {
               nextRoundBtn.addEventListener("click", () => {
                   nextRoundBtn.setAttribute('disabled', 'disabled');
-                  chatguessrApi.startNextRound();
+                  chatguessrApi.startNextRound(true);
               });
           }
 

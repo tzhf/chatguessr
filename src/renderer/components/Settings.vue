@@ -30,22 +30,54 @@
 
       <h2>Twitch notifications</h2>
       <div class="ml-05">
-        <label class="form__group" data-tip="Display &lt;User&gt; has guessed">
-          <i>&lt;User&gt; has guessed</i>
-          <input v-model="settings!.showHasGuessed" type="checkbox" />
-        </label>
-        <label class="form__group" data-tip="Display &lt;User&gt; has already guessed">
-          <i>&lt;User&gt; has already guessed</i>
-          <input v-model="settings.showHasAlreadyGuessed" type="checkbox" />
-        </label>
-        <label class="form__group" data-tip="Display &lt;User&gt; guess changed">
-          <i>&lt;User&gt; guess changed</i>
-          <input v-model="settings.showGuessChanged" type="checkbox" />
-        </label>
-        <label class="form__group" data-tip="Display &lt;User&gt; submitted previous guess">
-          <i>&lt;User&gt; submitted previous guess</i>
-          <input v-model="settings.showSubmittedPreviousGuess" type="checkbox" />
-        </label>
+        <div class="grid-col">
+          <div>
+            <label class="form__group" data-tip="Display &lt;User&gt; has guessed">
+              <i>&lt;User&gt; has guessed</i>
+              <input v-model="settings!.showHasGuessed" type="checkbox" />
+            </label>
+            <label class="form__group" data-tip="Display &lt;User&gt; has already guessed">
+              <i>&lt;User&gt; has already guessed</i>
+              <input v-model="settings.showHasAlreadyGuessed" type="checkbox" />
+            </label>
+            <label class="form__group" data-tip="Display &lt;User&gt; guess changed">
+              <i>&lt;User&gt; guess changed</i>
+              <input v-model="settings.showGuessChanged" type="checkbox" />
+            </label>
+            <label class="form__group" data-tip="Display &lt;User&gt; submitted previous guess">
+              <i>&lt;User&gt; submitted previous guess</i>
+              <input v-model="settings.showSubmittedPreviousGuess" type="checkbox" />
+            </label>
+            <label class="form__group" data-tip="Display A new seed of &lt;Map&gt; has started.">
+              <i>A new seed of &lt;Map&gt; has started</i>
+              <input v-model="settings.showNewSeedStarted" type="checkbox" />
+            </label>
+          </div>
+          <div>
+            <label class="form__group" data-tip="Show Guesses are open.">
+              <i>Show Guesses are open</i>
+              <input v-model="settings.showGuessesAreOpen" type="checkbox" />
+            </label>
+            <label class="form__group" data-tip="Show Guesses are closed.">
+              <i>Show Guesses are closed</i>
+              <input v-model="settings.showGuessesAreClosed" type="checkbox" />
+            </label>
+            <label class="form__group" data-tip="Show Round has started.">
+              <i>Show Round has started.</i>
+              <input v-model="settings.showRoundStarted" type="checkbox" />
+            </label>
+            <label class="form__group" data-tip="Show Round has finished.">
+              <i>Show Round has finished.</i>
+              <input v-model="settings.showRoundFinished" type="checkbox" />
+            </label>
+            <label class="form__group" data-tip="Show Game finished.">
+              <i>Show Game finished.</i>
+              <input v-model="settings.showGameFinished" type="checkbox" />
+            </label>
+          </div>
+        </div>
+        
+
       </div>
       <hr />
 

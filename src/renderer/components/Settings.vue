@@ -210,6 +210,14 @@
 
         <label
           class="form__group"
+          data-tip="Game of Chicken 🐔"
+        >
+          Game of Chicken (Closest Plonk gets 0 Points next round)
+          <input v-model="settings.isGameOfChickenModeActivated" type="checkbox" />
+        </label>        
+        
+        <label
+          class="form__group"
           data-tip="Closest in wrong country mode"
         >
           Closest in wrong country mode
@@ -234,7 +242,7 @@
         <input type="radio" v-model="settings.waterPlonkMode" value="normal" />
         Normal Ocean Plonk mode
       </label>
-      <label class="form__group" data-tip="0 Points for Polonks in international Waters">
+      <label class="form__group" data-tip="0 Points for Plonks in international Waters">
         <input type="radio" v-model="settings.waterPlonkMode" value="illegal" />
         Ocean Plonks Illegal mode
       </label>

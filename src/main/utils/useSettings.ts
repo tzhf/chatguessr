@@ -40,6 +40,7 @@ const defaultSettings = {
   gamePointGift: 0,
   guessMarkersLimit: 30,
   isClosestInWrongCountryModeActivated: false,
+  isGameOfChickenModeActivated: false,
   waterPlonkMode: "normal",
   invertScoring: false,
 }

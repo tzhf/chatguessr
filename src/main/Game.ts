@@ -57,6 +57,7 @@ export default class Game {
   isClosestInWrongCountryModeActivated = false
   waterPlonkMode = "normal"
   invertScoring = false
+  isGameOfChickenModeActivated = false
 
 
 
@@ -74,6 +75,7 @@ export default class Game {
     this.roundPointGift = this.#settings.roundPointGift
     this.pointGiftCommand = this.#settings.pointGiftCommand
     this.isClosestInWrongCountryModeActivated = this.#settings.isClosestInWrongCountryModeActivated
+    this.isGameOfChickenModeActivated = this.#settings.isGameOfChickenModeActivated
     this.waterPlonkMode = this.#settings.waterPlonkMode
     this.invertScoring = this.#settings.invertScoring
 
@@ -214,8 +216,14 @@ export default class Game {
     }
 
     const distance = haversineDistance(location, this.location!)
-    const score = streamerGuess.timedOut ? 0 : calculateScore(distance, this.mapScale!, await getCountryCode(location) === this.#country, this.isClosestInWrongCountryModeActivated, this.waterPlonkMode, await isCoordsInLand(location), this.invertScoring)
-
+    var score = streamerGuess.timedOut ? 0 : calculateScore(distance, this.mapScale!, await getCountryCode(location) === this.#country, this.isClosestInWrongCountryModeActivated, this.waterPlonkMode, await isCoordsInLand(location), this.invertScoring)
+    if(this.#db.getNumberOfGamesInRoundFromRoundId(this.#roundId!) !== 1 && this.isGameOfChickenModeActivated){
+      const didUserWinLastRound = this.#db.didUserWinLastRound('BROADCASTER', this.#roundId!, this.invertScoring)
+      if(didUserWinLastRound){
+        score = 0
+      }
+      
+    }
     const streak = this.#db.getUserStreak(dbUser.id)
 
     this.#db.createGuess(this.#roundId!, dbUser.id, {
@@ -249,7 +257,14 @@ export default class Game {
     }
 
     const distance = haversineDistance(location, this.location!)
-    const score = calculateScore(distance, this.mapScale!, await getCountryCode(location) === this.#country, this.isClosestInWrongCountryModeActivated, this.waterPlonkMode, await isCoordsInLand(location), this.invertScoring)
+    var score = calculateScore(distance, this.mapScale!, await getCountryCode(location) === this.#country, this.isClosestInWrongCountryModeActivated, this.waterPlonkMode, await isCoordsInLand(location), this.invertScoring)
+    if(this.#db.getNumberOfGamesInRoundFromRoundId(this.#roundId!) !== 1 && this.isGameOfChickenModeActivated){
+
+      const didUserWinLastRound = this.#db.didUserWinLastRound(dbUser.id, this.#roundId!, this.invertScoring)
+      if(didUserWinLastRound){
+        score = 0
+      }
+    }
 
     const guessedCountry = await getCountryCode(location)
     const correct = guessedCountry === this.#country

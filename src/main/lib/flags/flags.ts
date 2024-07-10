@@ -37,6 +37,24 @@ export async function loadCustomFlags() {
   } catch {
     // it's OK if it doesn't exist
   }
+  try{
+    var img_path = path.join(customFlagsDir)
+    var files = await fs.readdir(img_path);
+    files.map(x=>{
+      if(x.includes('.svg')|| x.includes('.png') || x.includes('.jpg') || x.includes('.jpeg') || x.includes('.webp') || x.includes('.gif') || x.includes('.apng')){
+        customFlags.push({
+          code: x.split('.')[0],
+          names: x.split('.')[0],
+          emoji: ''
+        })
+      }
+    })
+
+  }
+  catch (error) {
+    console.log("error when checking flag assets")
+    console.log(error)
+  }
 }
 
 export function setCustomFlags(flags: Flag[]) {
@@ -44,7 +62,22 @@ export function setCustomFlags(flags: Flag[]) {
 }
 
 export async function findFlagFile(id: string): Promise<Electron.ProtocolResponse> {
-  const customFlagPaths = [path.join(customFlagsDir, `${id}.svg`)]
+  //try to find the flag in the custom flags directory with extension .svg, .png, .jpg, .jpeg, .webp, .gif, .apng
+
+  const extensions = ['.svg', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.apng']
+  const customFlagPaths = extensions.map((ext) => path.join(customFlagsDir, `${id}${ext}`))
+
+  // Check if the flag exists in the custom flags directory.
+
+  for (const customFlagPath of customFlagPaths) {
+    try {
+      await fs.access(customFlagPath)
+      return { path: customFlagPath }
+    } catch {
+      // Flag file doesn't exist. Try the next, or fall back to builtin flags.
+    }
+  }
+
 
   for (const customFlagPath of customFlagPaths) {
     try {

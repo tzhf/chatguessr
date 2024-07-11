@@ -23,13 +23,13 @@ Only Windows right now. Mac build process is currently not working. Sorry about 
 
 ### Mode Settings
 
-- Wrong Country only mode.
+- Wrong Country only mode:
 If you plonk in the right Country you get 0 points. Be aware that Borders are not always mapped 100% right. Guessing right on the border can be dangerous. Do you dare to plonk one of your 50/50? Which side of the right country are you plonking?
 
-- Invert scoring
+- Invert scoring:
 You know where it is? Plonk the antipode. Furthest Plonk wins. Best played with difficult Maps like Pain and Suffering or Random Pan and Zoom World.
 
-- Make Waterplonks Mandatory/Illegal
+- Make Waterplonks Mandatory/Illegal:
 Tired of the Water Hedges? Tired of always plonking on Land? Switch it up. Mandatory Waterplonks means only plonking in international Waters. Coast does not count. (Hint: use OpenStreetMap)
 
 ### Game Settings

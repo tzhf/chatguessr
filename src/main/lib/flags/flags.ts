@@ -30,6 +30,13 @@ export function getAvailableFlags() {
 }
 
 export async function loadCustomFlags() {
+  // check if the custom flags directory exists else create it
+  try {
+    await fs.access(customFlagsDir)
+  } catch {
+    await fs.mkdir(customFlagsDir)
+  }
+
   try {
     customFlags = JSON.parse(
       await fs.readFile(path.join(customFlagsDir, 'customFlags.json'), 'utf8')

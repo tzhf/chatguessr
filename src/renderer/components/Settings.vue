@@ -208,13 +208,13 @@
       <h2>Mode Settings</h2>
       <div class="ml-05">
 
-        <label
+        <!--label
           class="form__group"
           data-tip="Game of Chicken 🐔"
         >
           Game of Chicken (Closest Plonk gets 0 Points next round)
           <input v-model="settings.isGameOfChickenModeActivated" type="checkbox" />
-        </label>        
+        </label-->        
         
         <label
           class="form__group"

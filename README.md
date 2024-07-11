@@ -41,6 +41,7 @@ Tired of the Water Hedges? Tired of always plonking on Land? Switch it up. Manda
 ### Other
 
 - Reduce Opacity when hovering over the Flag on Results Screen to be better able to read City Names.
+- Hide Info Box (the purple thing on top right with Map Name, Round & Score) and Map when hiding Scoreboard.
 - Fix Bug that causes repeating "Guesses are opened", "Round Started" when clicking "Play Again" after a game.
 - add custom Flags in the `\AppData\Roaming\ChatGuessr\flags` directory. If image file is called test.jpg command would be "!flag test". Allowed files are: .svg, .png, .jpg, .jpeg, .webp, .gif, .apng
 

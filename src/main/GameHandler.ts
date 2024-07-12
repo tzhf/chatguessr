@@ -175,6 +175,11 @@ export default class GameHandler {
                 this.#backend?.sendMessage(`🌎 A new seed of ${this.#game.mapName} has started`, {
                   system: true
                 })
+              if(settings.autoShowMode)
+                this.#backend?.sendMessage(
+                  this.generateModeString(),
+                  { system: true }
+                )
             } else {
               if (settings.showRoundStarted)
               this.#backend?.sendMessage(`🌎 Round ${this.#game.round} has started`, {
@@ -468,6 +473,9 @@ export default class GameHandler {
       return;
     }
   }
+  generateModeString(): string{
+    return `wrongCountryOnly: ${settings.isClosestInWrongCountryModeActivated? "on" : "off"} | waterPlonk: ${settings.waterPlonkMode} | invertScoring: ${settings.invertScoring ? "on" : "off"} | gameOfChicken: ${settings.isGameOfChickenModeActivated ? "on" : "off"}`
+  }
 
   #cgCooldown: boolean = false
   #mapCooldown: boolean = false
@@ -569,9 +577,9 @@ export default class GameHandler {
       if (!this.#game.isInGame || !this.#game.seed || !this.#game.seed.map) {
         return
       }
-      let send_msg = `closestInWrongCountry: ${settings.isClosestInWrongCountryModeActivated? "on" : "off"} | waterPlonk: ${settings.waterPlonkMode} | invertScoring: ${settings.invertScoring ? "on" : "off"}`
+      
       await this.#backend?.sendMessage(
-        send_msg
+        this.generateModeString()
       )
     }
 

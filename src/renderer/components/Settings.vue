@@ -74,6 +74,10 @@
               <i>Show Game finished.</i>
               <input v-model="settings.showGameFinished" type="checkbox" />
             </label>
+            <label class="form__group" data-tip="Auto Show Mode at start of Seed.">
+              <i>Show Mode Message at start of seed.</i>
+              <input v-model="settings.autoShowMode" type="checkbox" />
+            </label>
           </div>
         </div>
         

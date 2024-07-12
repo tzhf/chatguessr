@@ -32,6 +32,7 @@ const defaultSettings = {
   showRoundStarted: true,
   showRoundFinished: true,
   showGameFinished: true,
+  autoShowMode: true,
   isMultiGuess: false,
   isGiftingPointsRound: false,
   roundPointGift: 0,

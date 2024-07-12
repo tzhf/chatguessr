@@ -41,13 +41,13 @@ const config: ForgeConfig = {
           entry: 'src/main/main.ts',
           config: 'vite.main.config.ts'
         },
-        { entry: 'src/preload/preload.ts' },
+        { entry: 'src/preload/preload.ts', config: 'vite.empty.config.ts' },
         {
           entry: 'src/renderer/renderer.ts',
           config: 'vite.renderer.config.ts'
         },
-        { entry: 'src/auth/auth_preload.ts' },
-        { entry: 'src/auth/auth_impl.ts' }
+        { entry: 'src/auth/auth_preload.ts', config: 'vite.empty.config.ts' },
+        { entry: 'src/auth/auth_impl.ts', config: 'vite.empty.config.ts' }
       ],
       // Usually renderer goes here but in our case we need the compiled JS
       // so we can inject it into GeoGuessr instead of running a vite dev server

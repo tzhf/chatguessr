@@ -109,9 +109,17 @@ export default class GameHandler {
 
   async #showGameResults() {
     const gameResults = this.#game.getGameResults()
+    if(settings.isDartsMode){
+      gameResults.sort((a, b) => {
+        if(b.guesses.filter(Boolean).length < 5) return -1
+        let diff_a = Math.abs(a.totalScore - settings.dartsTargetScore)
+        let diff_b = Math.abs(b.totalScore - settings.dartsTargetScore)
+        return diff_a - diff_b
+      })
+    }
     const locations = this.#game.getLocations()
 
-    this.#win.webContents.send('show-game-results', locations, gameResults)
+    this.#win.webContents.send('show-game-results', locations, gameResults, settings.isDartsMode, settings.dartsTargetScore)
 
     let link: string | undefined
 
@@ -665,7 +673,6 @@ export default class GameHandler {
         if (perfects) {
           msg += `5ks: ${perfects.perfects} (${perfects.username}). `
         }
-        console.log(bestRandomPlonk)
         if (bestRandomPlonk) {
           let distance = bestRandomPlonk.distance
           let unit = 'km'

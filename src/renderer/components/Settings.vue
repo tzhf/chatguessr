@@ -238,7 +238,25 @@
           <input v-model="settings.invertScoring" type="checkbox" />
         </label>
 
-        <label class="form__group" data-tip="0 Points for Plonks on Land">
+        <hr />
+        <h2>Darts Settings</h2>
+
+        <label
+          class="form__group"
+          data-tip="Darts mode"
+        >
+          Darts Mode
+          <input v-model="settings.isDartsMode" type="checkbox" />
+        </label>
+            <label class="form__group" data-tip="Target Score">
+              Darts Target Score :
+              <input v-model.trim="settings.dartsTargetScore" type="text" spellcheck="false" />
+            </label>
+
+        
+      <hr />
+      <h2>Ocean Plonk Settings</h2>
+      <label class="form__group" data-tip="0 Points for Plonks on Land">
         <input type="radio" v-model="settings.waterPlonkMode" value="mandatory" />
         Only Ocean Plonk mode
       </label>

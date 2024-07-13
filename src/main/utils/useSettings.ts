@@ -44,6 +44,8 @@ const defaultSettings = {
   isGameOfChickenModeActivated: false,
   waterPlonkMode: "normal",
   invertScoring: false,
+  dartsTargetScore: 25000,
+  isDartsMode: false
 }
 
 const settings = Object.assign({}, defaultSettings, storedSettings)

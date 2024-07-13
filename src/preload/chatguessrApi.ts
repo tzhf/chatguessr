@@ -63,7 +63,9 @@ export const chatguessrApi = {
     callback: (
       isMultiGuess: boolean,
       restoredGuesses: RoundResult[] | Player[],
-      location: Location_
+      location: Location_,
+      isDartsMode: boolean,
+      dartsModeTarget: number,
     ) => void
   ) {
     return ipcRendererOn('game-started', callback)
@@ -92,7 +94,7 @@ export const chatguessrApi = {
     return ipcRendererOn('show-round-results', callback)
   },
 
-  onShowGameResults(callback: (locations: Location_[], gameResults: GameResult[]) => void) {
+  onShowGameResults(callback: (locations: Location_[], gameResults: GameResult[], isDartsMode: boolean, dartsModeTarget: number) => void) {
     return ipcRendererOn('show-game-results', callback)
   },
 

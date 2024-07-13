@@ -105,6 +105,7 @@ const settingsVisible = shallowRef(false)
 const leaderboardVisible = shallowRef(false)
 
 const gameState = shallowRef<GameState>('none')
+
 const isMultiGuess = shallowRef<boolean>(false)
 const guessMarkersLimit = shallowRef<number | null>(null)
 const currentLocation = shallowRef<LatLng | null>(null)
@@ -263,12 +264,12 @@ onBeforeUnmount(
 )
 
 onBeforeUnmount(
-  chatguessrApi.onShowGameResults((locations, gameResults) => {
+  chatguessrApi.onShowGameResults((locations, gameResults,  isDartsMode, dartsModeTarget) => {
     gameState.value = 'game-results'
     gameResultLocations.value = locations
 
     rendererApi.drawPlayerResults(locations, gameResults[0])
-    scoreboard.value!.showGameResults(gameResults)
+    scoreboard.value!.showGameResults(gameResults, isDartsMode, dartsModeTarget)
   })
 )
 

@@ -107,23 +107,38 @@ export default class GameHandler {
 
   }
 
+  dartsSort(a,b){
+    let diff_a = Math.abs(a.totalScore - settings.dartsTargetScore)
+    let diff_b = Math.abs(b.totalScore - settings.dartsTargetScore)
+    return diff_a - diff_b
+  }
   async #showGameResults() {
     var gameResults = this.#game.getGameResults()
     if(settings.isDartsMode){
-      let results_with_5_guesses = gameResults.filter((result) => result.guesses.filter(Boolean).length === 5)
-      let results_without_5_guesses = gameResults.filter((result) => result.guesses.filter(Boolean).length !== 5)
-      results_with_5_guesses.sort((a, b) => {
-        let diff_a = Math.abs(a.totalScore - settings.dartsTargetScore)
-        let diff_b = Math.abs(b.totalScore - settings.dartsTargetScore)
-        return diff_a - diff_b
-      })
-      results_without_5_guesses.sort((a, b) => {
-        let diff_a = Math.abs(a.totalScore - settings.dartsTargetScore)
-        let diff_b = Math.abs(b.totalScore - settings.dartsTargetScore)
-        return diff_a - diff_b
-      })
+      if(settings.isDartsModeBust){
+        let results_with_5_guesses_and_not_busted = gameResults.filter(
+          (result) => result.guesses.filter(Boolean).length === 5 && result.totalScore <= settings.dartsTargetScore
+        )
+        let results_with_5_guesses_and_busted = gameResults.filter(
+          (result) => result.guesses.filter(Boolean).length === 5 && result.totalScore > settings.dartsTargetScore
+        )
+        let results_without_5_guesses = gameResults.filter(
+          (result) => result.guesses.filter(Boolean).length !== 5
+        )
+        results_with_5_guesses_and_not_busted.sort((a, b) => this.dartsSort(a,b))
+        results_with_5_guesses_and_busted.sort((a, b) => this.dartsSort(a,b))
+        results_without_5_guesses.sort((a, b) => this.dartsSort(a,b))
+        gameResults = results_with_5_guesses_and_not_busted.concat(results_with_5_guesses_and_busted, results_without_5_guesses)
 
-      gameResults = results_with_5_guesses.concat(results_without_5_guesses)
+      }else{
+        let results_with_5_guesses = gameResults.filter((result) => result.guesses.filter(Boolean).length === 5)
+        let results_without_5_guesses = gameResults.filter((result) => result.guesses.filter(Boolean).length !== 5)
+        results_with_5_guesses.sort((a, b) => this.dartsSort(a,b))
+        results_without_5_guesses.sort((a, b) => this.dartsSort(a,b))
+        gameResults = results_with_5_guesses.concat(results_without_5_guesses)
+
+      }
+
     }
     const locations = this.#game.getLocations()
 

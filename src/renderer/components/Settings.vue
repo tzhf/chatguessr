@@ -248,6 +248,13 @@
           Darts Mode
           <input v-model="settings.isDartsMode" type="checkbox" />
         </label>
+        <label
+          class="form__group"
+          data-tip="Darts mode Bust"
+        >
+          Activate Bust
+          <input v-model="settings.isDartsModeBust" type="checkbox" />
+        </label>
             <label class="form__group" data-tip="Target Score">
               Darts Target Score :
               <input v-model.trim="settings.dartsTargetScore" type="text" spellcheck="false" />

@@ -45,7 +45,8 @@ const defaultSettings = {
   waterPlonkMode: "normal",
   invertScoring: false,
   dartsTargetScore: 25000,
-  isDartsMode: false
+  isDartsMode: false,
+  isDartsModeBust: false
 }
 
 const settings = Object.assign({}, defaultSettings, storedSettings)

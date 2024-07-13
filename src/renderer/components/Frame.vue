@@ -105,7 +105,6 @@ const settingsVisible = shallowRef(false)
 const leaderboardVisible = shallowRef(false)
 
 const gameState = shallowRef<GameState>('none')
-
 const isMultiGuess = shallowRef<boolean>(false)
 const guessMarkersLimit = shallowRef<number | null>(null)
 const currentLocation = shallowRef<LatLng | null>(null)

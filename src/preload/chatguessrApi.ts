@@ -63,9 +63,7 @@ export const chatguessrApi = {
     callback: (
       isMultiGuess: boolean,
       restoredGuesses: RoundResult[] | Player[],
-      location: Location_,
-      isDartsMode: boolean,
-      dartsModeTarget: number,
+      location: Location_
     ) => void
   ) {
     return ipcRendererOn('game-started', callback)

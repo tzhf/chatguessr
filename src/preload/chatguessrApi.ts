@@ -94,7 +94,7 @@ export const chatguessrApi = {
     return ipcRendererOn('show-round-results', callback)
   },
 
-  onShowGameResults(callback: (locations: Location_[], gameResults: GameResult[], isDartsMode: boolean, dartsModeTarget: number) => void) {
+  onShowGameResults(callback: (locations: Location_[], gameResults: GameResult[]) => void) {
     return ipcRendererOn('show-game-results', callback)
   },
 

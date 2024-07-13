@@ -108,18 +108,26 @@ export default class GameHandler {
   }
 
   async #showGameResults() {
-    const gameResults = this.#game.getGameResults()
+    var gameResults = this.#game.getGameResults()
     if(settings.isDartsMode){
-      gameResults.sort((a, b) => {
-        if(b.guesses.filter(Boolean).length < 5) return -1
+      let results_with_5_guesses = gameResults.filter((result) => result.guesses.filter(Boolean).length === 5)
+      let results_without_5_guesses = gameResults.filter((result) => result.guesses.filter(Boolean).length !== 5)
+      results_with_5_guesses.sort((a, b) => {
         let diff_a = Math.abs(a.totalScore - settings.dartsTargetScore)
         let diff_b = Math.abs(b.totalScore - settings.dartsTargetScore)
         return diff_a - diff_b
       })
+      results_without_5_guesses.sort((a, b) => {
+        let diff_a = Math.abs(a.totalScore - settings.dartsTargetScore)
+        let diff_b = Math.abs(b.totalScore - settings.dartsTargetScore)
+        return diff_a - diff_b
+      })
+
+      gameResults = results_with_5_guesses.concat(results_without_5_guesses)
     }
     const locations = this.#game.getLocations()
 
-    this.#win.webContents.send('show-game-results', locations, gameResults, settings.isDartsMode, settings.dartsTargetScore)
+    this.#win.webContents.send('show-game-results', locations, gameResults)
 
     let link: string | undefined
 

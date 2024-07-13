@@ -287,14 +287,8 @@ function showRoundResults(round: number, roundResults: RoundResult[]) {
   scrollToTop()
 }
 
-function showGameResults(gameResults: GameResult[], isDartsMode, dartsModeTarget) {
-  if(isDartsMode){
-    gameResults.sort((a, b) => {
-      let diff_a = Math.abs(a.totalScore - dartsModeTarget)
-      let diff_b = Math.abs(b.totalScore - dartsModeTarget)
-      return diff_a - diff_b
-    })
-  }
+function showGameResults(gameResults: GameResult[]) {
+
   const formatedRows = gameResults.map((result, i) => {
     return {
       index: {

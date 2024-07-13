@@ -264,12 +264,12 @@ onBeforeUnmount(
 )
 
 onBeforeUnmount(
-  chatguessrApi.onShowGameResults((locations, gameResults,  isDartsMode, dartsModeTarget) => {
+  chatguessrApi.onShowGameResults((locations, gameResults) => {
     gameState.value = 'game-results'
     gameResultLocations.value = locations
 
     rendererApi.drawPlayerResults(locations, gameResults[0])
-    scoreboard.value!.showGameResults(gameResults, isDartsMode, dartsModeTarget)
+    scoreboard.value!.showGameResults(gameResults)
   })
 )
 

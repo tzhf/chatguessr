@@ -474,7 +474,7 @@ export default class GameHandler {
     }
   }
   generateModeString(): string{
-    return `wrongCountryOnly: ${settings.isClosestInWrongCountryModeActivated? "on" : "off"} | waterPlonk: ${settings.waterPlonkMode} | invertScoring: ${settings.invertScoring ? "on" : "off"} | gameOfChicken: ${settings.isGameOfChickenModeActivated ? "on" : "off"}`
+    return `wrongCountryOnly: ${settings.isClosestInWrongCountryModeActivated? "on" : "off"} | oceanPlonk: ${settings.waterPlonkMode} | invertScoring: ${settings.invertScoring ? "on" : "off"} | gameOfChicken: ${settings.isGameOfChickenModeActivated ? "on" : "off"}`
   }
 
   #cgCooldown: boolean = false

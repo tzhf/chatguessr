@@ -753,7 +753,6 @@ class db {
   getNumberOfGamesInRoundFromRoundId(roundId: string): number {
     const stmt = this.#db.prepare(`select COUNT(*) AS rowCount from rounds where game_id = (select game_id from rounds where id = :id);`)
     const record = stmt.get({ id: roundId }) as { rowCount: number } | undefined
-    console.log(record)
     return record ? record.rowCount : 0
   }
   didUserWinLastRound(userId: string, roundId: string, isInvertedScoring: boolean): boolean {

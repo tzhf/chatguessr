@@ -258,6 +258,7 @@ function restoreMultiGuesses(players: Player[]) {
 }
 
 function showRoundResults(round: number, roundResults: RoundResult[]) {
+  console.log(roundResults)
   const formatedRows = roundResults.map((result, i) => {
     return {
       index: { value: i + 1, display: i + 1 },

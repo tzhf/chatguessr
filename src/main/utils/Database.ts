@@ -584,7 +584,7 @@ ORDER BY
       streak: record.streak,
       country: record.country,
       lastStreak: record.last_streak,
-      isRandomPlonk: record.is_random_plonk,
+      isRandomPlonk: record.is_random_plonk?.valueOf() === 1,
       distance: record.distance,
       score: record.score,
       totalScore: record.total_score,

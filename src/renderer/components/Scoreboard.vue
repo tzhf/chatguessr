@@ -27,21 +27,21 @@
             :disabled="isMultiGuess"
             @click="settings.streak = !settings.streak"
           >
-            {{ columns[2].name }}
+            {{ round_columns[2].name }}
           </button>
           <button
             :class="['btn', { active: settings.distance }]"
             :disabled="isMultiGuess"
             @click="settings.distance = !settings.distance"
           >
-            {{ columns[3].name }}
+            {{ round_columns[3].name }}
           </button>
           <button
             :class="['btn', { active: settings.score }]"
             :disabled="isMultiGuess"
             @click="settings.score = !settings.score"
           >
-            {{ columns[4].name }}
+            {{ round_columns[4].name }}
           </button>
         </div>
       </div>
@@ -172,7 +172,8 @@ type Column = {
   width: string
   sortable: boolean
 }
-const columns: Column[] = [
+
+const round_columns: Column[] = [
   { name: '#', value: 'index', width: '25px', sortable: true },
   { name: 'Player', value: 'player', width: '100%', sortable: false },
   { name: 'Streak', value: 'streak', width: '48px', sortable: true },
@@ -180,14 +181,33 @@ const columns: Column[] = [
   { name: 'Score', value: 'score', width: '65px', sortable: true },
   { name: 'Total', value: 'totalScore', width: '65px', sortable: true }
 ]
-const activeCols = computed(() =>
+const end_columns: Column[] = [
+  { name: '#', value: 'index', width: '25px', sortable: true },
+  { name: 'Player', value: 'player', width: '100%', sortable: false },
+  { name: 'Streak', value: 'streak', width: '48px', sortable: true },
+  { name: 'Distance', value: 'distance', width: '80px', sortable: true },
+  { name: 'Score', value: 'score', width: '65px', sortable: true }
+]
+const activeRoundCols = computed(() =>
   props.gameState === 'in-round'
     ? props.isMultiGuess
-      ? [columns[1]]
-      : columns.filter(
+      ? [round_columns[1]]
+      : round_columns.filter(
           (f) => f.value === 'index' || f.value === 'player' || settings[f.value] === true
         )
-    : columns
+    : round_columns
+)
+const activeEndCols = computed(() =>
+  props.gameState === 'in-round'
+    ? props.isMultiGuess
+      ? [end_columns[1]]
+      : end_columns.filter(
+          (f) => f.value === 'index' || f.value === 'player' || settings[f.value] === true
+        )
+    : end_columns
+)
+const activeCols = computed(() =>
+  props.gameState === 'game-results' ? activeEndCols.value : activeRoundCols.value
 )
 
 const rows = shallowReactive<ScoreboardRow[]>([])

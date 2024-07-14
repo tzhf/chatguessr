@@ -46,7 +46,8 @@ const defaultSettings = {
   invertScoring: false,
   dartsTargetScore: 25000,
   isDartsMode: false,
-  isDartsModeBust: false
+  isDartsModeBust: false,
+  showBestRandomplonkRound: false
 }
 
 const settings = Object.assign({}, defaultSettings, storedSettings)

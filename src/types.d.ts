@@ -40,8 +40,9 @@ interface RoundResult {
   streak: number
   lastStreak: number | null
   distance: number
-  score: number,
-  totalScore: number,
+  score: number
+  totalScore: number
+  isRandomPlonk: boolean
   time: number
   position: LatLng
 }

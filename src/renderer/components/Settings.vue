@@ -52,6 +52,10 @@
               <i>A new seed of &lt;Map&gt; has started</i>
               <input v-model="settings.showNewSeedStarted" type="checkbox" />
             </label>
+            <label class="form__group" data-tip="Display best Randomplonk after Round">
+              <i>Display best Randomplonk after Round</i>
+              <input v-model="settings.showBestRandomplonkRound" type="checkbox" />
+            </label>
           </div>
           <div>
             <label class="form__group" data-tip="Show Guesses are open.">

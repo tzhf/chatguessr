@@ -97,6 +97,26 @@ export default class GameHandler {
       } !`,
       { system: true }
     )
+    if(settings.showBestRandomplonkRound){
+      let randomResults = roundResults.filter(result=>result.isRandomPlonk)
+      if(randomResults.length){
+        let bestRandomPlonk = randomResults[0]
+        if (bestRandomPlonk) {
+          let distance = bestRandomPlonk.distance
+          let unit = 'km'
+          let distanceNumber = "0"
+          if (distance < 1) {
+            distanceNumber = (distance * 1000).toFixed(2)
+            unit = 'm'
+          }
+          else {
+            distanceNumber = distance.toFixed(2)
+          }
+          let msg = `Best Random Plonk: ${bestRandomPlonk.score} points (${distanceNumber} ${unit}) by ${bestRandomPlonk.player.username}. `
+          this.#backend?.sendMessage(msg, { system: true })
+        }
+      }      
+    }
     if(this.#game.isGiftingPointsRound && this.#game.roundPointGift > 0 && this.#game.pointGiftCommand !== "")
     this.#backend?.sendMessage(
       `${this.#game.pointGiftCommand} ${

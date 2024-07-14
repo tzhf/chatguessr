@@ -509,14 +509,18 @@ export default class GameHandler {
     if (settings.isClosestInWrongCountryModeActivated) 
       returnString += `wrongCountryOnly: on | `
     if (settings.waterPlonkMode === "mandatory")
-      returnString += `oceanPlonk: on | `
+      returnString += `oceanPlonk: mandatory | `
+    if (settings.waterPlonkMode === "illegal")
+      returnString += `oceanPlonk: illegal | `
     if (settings.invertScoring)
       returnString += `invertScoring: on | `
     if (settings.isGameOfChickenModeActivated)
       returnString += `gameOfChicken: on | `
     if (settings.isDartsMode)
-      returnString += `dartsMode: ${settings.dartsTargetScore} ${settings.isDartsModeBust?"bust":""} |`
-    return returnString[returnString.length-1] === "|" ? returnString.slice(0, -2) : returnString
+      returnString += `dartsMode: ${settings.dartsTargetScore} ${settings.isDartsModeBust?"bust":""} | `
+    if (returnString === "")
+      returnString = "No special modes activated"
+    return returnString[returnString.length-2] === "|" ? returnString.slice(0, -2) : returnString
   }
 
   #cgCooldown: boolean = false

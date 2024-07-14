@@ -518,32 +518,43 @@ class db {
    */
   getRoundResults(roundId: string) {
     const stmt = this.#db.prepare(`
-			SELECT
-				guesses.id,
-				guesses.user_id,
-				users.username,
-				users.avatar,
-				users.color,
-				users.flag,
-				guesses.location,
-				guesses.streak,
-        guesses.country,
-				guesses.last_streak,
-				guesses.is_random_plonk,
-				guesses.distance,
-				guesses.score,
-				guesses.created_at - rounds.created_at AS time,
-				IIF(guesses.score = 5000, guesses.created_at - rounds.created_at, NULL) AS time_to_5k
-			FROM rounds, guesses, users
-			WHERE rounds.id = ?
-        AND guesses.round_id = rounds.id
-        AND users.id = guesses.user_id
-			ORDER BY guesses.score DESC,
-        time_to_5k ASC,
-        guesses.distance ASC
+SELECT 
+    guesses.id, 
+    guesses.user_id, 
+    users.username, 
+    users.avatar, 
+    users.color, 
+    users.flag, 
+    guesses.location, 
+    guesses.streak, 
+    guesses.country, 
+    guesses.last_streak, 
+    guesses.is_random_plonk, 
+    guesses.distance, 
+    guesses.score, 
+    guesses.created_at - rounds.created_at AS time, 
+    IIF(guesses.score = 5000, guesses.created_at - rounds.created_at, NULL) AS time_to_5k,
+    total_scores.total_score
+FROM 
+    rounds
+JOIN 
+    guesses ON guesses.round_id = rounds.id
+JOIN 
+    users ON users.id = guesses.user_id
+JOIN 
+    (SELECT user_id, SUM(score) AS total_score 
+     FROM guesses 
+     WHERE round_id IN (SELECT id FROM rounds WHERE game_id = (SELECT game_id FROM rounds WHERE id = ?))
+     GROUP BY user_id) AS total_scores ON total_scores.user_id = guesses.user_id
+WHERE 
+    rounds.id = ?
+ORDER BY 
+    guesses.score DESC, 
+    time_to_5k ASC, 
+    guesses.distance ASC;
 		`)
 
-    const records = stmt.all(roundId) as {
+    const records = stmt.all(roundId, roundId) as {
       id: string
       user_id: string
       username: string
@@ -558,6 +569,7 @@ class db {
       distance: number
       score: number
       time: number
+      total_score: number
     }[]
 
     return records.map((record) => ({
@@ -575,6 +587,7 @@ class db {
       isRandomPlonk: record.is_random_plonk,
       distance: record.distance,
       score: record.score,
+      totalScore: record.total_score,
       time: record.time,
       position: JSON.parse(record.location) as LatLng
     })) as RoundResult[]

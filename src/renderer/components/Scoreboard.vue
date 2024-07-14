@@ -177,7 +177,8 @@ const columns: Column[] = [
   { name: 'Player', value: 'player', width: '100%', sortable: false },
   { name: 'Streak', value: 'streak', width: '48px', sortable: true },
   { name: 'Distance', value: 'distance', width: '80px', sortable: true },
-  { name: 'Score', value: 'score', width: '65px', sortable: true }
+  { name: 'Score', value: 'score', width: '65px', sortable: true },
+  { name: 'Total', value: 'totalScore', width: '65px', sortable: true }
 ]
 const activeCols = computed(() =>
   props.gameState === 'in-round'
@@ -277,6 +278,10 @@ function showRoundResults(round: number, roundResults: RoundResult[]) {
       score: {
         value: result.score,
         display: result.score
+      },
+      totalScore:{
+        value: result.totalScore,
+        display: result.totalScore
       },
       position: result.position
     }

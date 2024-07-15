@@ -213,78 +213,130 @@
     
     <div v-show="currentTab === 'mode-settings'" class="content">
   
+  <h2>Mode Settings</h2>
+  <div class="ml-05">
+
+    <label
+      class="form__group"
+      data-tip="Game of Chicken 🐔"
+    >
+      Game of Chicken (Closest Plonk gets 0 Points on next round)
+      <input v-model="settings.isGameOfChickenModeActivated" type="checkbox" />
+    </label>        
+    
+    <label
+      class="form__group"
+      data-tip="Closest in wrong country mode"
+    >
+      Closest in wrong country mode
+      <input v-model="settings.isClosestInWrongCountryModeActivated" type="checkbox" />
+    </label>
+
+    
+  <label
+      class="form__group"
+      data-tip="Invert scoring (furthest plonk wins)"
+    >
+
+Invert scoring (furthest plonk wins)
+      <input v-model="settings.invertScoring" type="checkbox" />
+    </label>
+
+    <hr />
+    <h2>Darts Settings</h2>
+
+    <label
+      class="form__group"
+      data-tip="Darts mode"
+    >
+      Darts Mode
+      <input v-model="settings.isDartsMode" type="checkbox" />
+    </label>
+    <label
+      class="form__group"
+      data-tip="Darts mode Bust"
+    >
+      Activate Bust
+      <input v-model="settings.isDartsModeBust" type="checkbox" />
+    </label>
+        <label class="form__group" data-tip="Target Score">
+          Darts Target Score :
+          <input v-model.trim="settings.dartsTargetScore" type="text" spellcheck="false" />
+        </label>
+
+    
+  <hr />
+  <h2>Ocean Plonk Settings</h2>
+  <label class="form__group" data-tip="0 Points for Plonks on Land">
+    <input type="radio" v-model="settings.waterPlonkMode" value="mandatory" />
+    Only Ocean Plonk mode
+  </label>
+  <label class="form__group" data-tip="Standard Mode">
+    <input type="radio" v-model="settings.waterPlonkMode" value="normal" />
+    Normal Ocean Plonk mode
+  </label>
+  <label class="form__group" data-tip="0 Points for Plonks in international Waters">
+    <input type="radio" v-model="settings.waterPlonkMode" value="illegal" />
+    Ocean Plonks Illegal mode
+  </label>
+
+  </div>
+
+  <div class="flex items-center flex-col gap-05 mt-1">
+    <small>ChatGuessr version {{ currentVerion }}</small>
+  </div>
+</div>
+
+    <div v-show="currentTab === 'messages'" class="content">
+  
       <h2>Mode Settings</h2>
       <div class="ml-05">
+        <label class="form__group long" data-tip="Display &lt;emoji&gt; &lt;user&gt; has guessed">
+          &lt;emoji&gt; &lt;user&gt; has guessed
+          <input v-model="settings.messageHasGuessed" spellcheck="false" />
 
-        <label
-          class="form__group"
-          data-tip="Game of Chicken 🐔"
-        >
-          Game of Chicken (Closest Plonk gets 0 Points on next round)
-          <input v-model="settings.isGameOfChickenModeActivated" type="checkbox" />
-        </label>        
-        
-        <label
-          class="form__group"
-          data-tip="Closest in wrong country mode"
-        >
-          Closest in wrong country mode
-          <input v-model="settings.isClosestInWrongCountryModeActivated" type="checkbox" />
-        </label>
-
-        
-      <label
-          class="form__group"
-          data-tip="Invert scoring (furthest plonk wins)"
-        >
-
-  Invert scoring (furthest plonk wins)
-          <input v-model="settings.invertScoring" type="checkbox" />
-        </label>
-
-        <hr />
-        <h2>Darts Settings</h2>
-
-        <label
-          class="form__group"
-          data-tip="Darts mode"
-        >
-          Darts Mode
-          <input v-model="settings.isDartsMode" type="checkbox" />
-        </label>
-        <label
-          class="form__group"
-          data-tip="Darts mode Bust"
-        >
-          Activate Bust
-          <input v-model="settings.isDartsModeBust" type="checkbox" />
-        </label>
-            <label class="form__group" data-tip="Target Score">
-              Darts Target Score :
-              <input v-model.trim="settings.dartsTargetScore" type="text" spellcheck="false" />
             </label>
+        <label class="form__group long" data-tip="Display &lt;user&gt; has already guessed">
+          &lt;user&gt; has already guessed
+          <input v-model="settings.messageHasAlreadyGuessed" spellcheck="false" />
 
-        
-      <hr />
-      <h2>Ocean Plonk Settings</h2>
-      <label class="form__group" data-tip="0 Points for Plonks on Land">
-        <input type="radio" v-model="settings.waterPlonkMode" value="mandatory" />
-        Only Ocean Plonk mode
-      </label>
-      <label class="form__group" data-tip="Standard Mode">
-        <input type="radio" v-model="settings.waterPlonkMode" value="normal" />
-        Normal Ocean Plonk mode
-      </label>
-      <label class="form__group" data-tip="0 Points for Plonks in international Waters">
-        <input type="radio" v-model="settings.waterPlonkMode" value="illegal" />
-        Ocean Plonks Illegal mode
-      </label>
+            </label>
+        <label class="form__group long" data-tip="Display &lt;emoji&gt; &lt;user&gt; guess changed">
+          &lt;emoji&gt; &lt;user&gt; guess changed
+          <input v-model="settings.messageGuessChanged" spellcheck="false" />
 
+            </label>
+        <label class="form__group long" data-tip="Display &lt;user&gt; submitted their previous guess">
+          &lt;user&gt; submitted their previous guess!
+          <input v-model="settings.messageSubmittedPreviousGuess" spellcheck="false" />
+
+            </label>
+        <label class="form__group long" data-tip="Display 🌎 A new seed of &lt;map&gt; has started ">
+          🌎 A new seed of &lt;map&gt; has started
+          <input v-model="settings.messageNewSeedStarted" spellcheck="false" />
+        </label>
+        <label class="form__group long" data-tip="Display Guesses are open...">
+          Guesses are open...
+          <input v-model="settings.messageGuessesAreOpen" spellcheck="false" />
+        </label>
+        <label class="form__group long" data-tip="Guesses are closed.">
+          Guesses are closed.
+          <input v-model="settings.messageGuessesAreClosed" spellcheck="false" />
+        </label>
+        <label class="form__group long" data-tip="🌎 Round <round> has started">
+          🌎 Round &lt;round&gt; has started
+          <input v-model="settings.messageRoundStarted" spellcheck="false" />
+        </label>
+        <label class="form__group long" data-tip="🌎 Round <round> has finished. Congrats <emoji> <username>!">
+          🌎 Round &lt;round&gt; has finished. Congrats &lt;emoji&gt; &lt;username&gt;!
+          <input v-model="settings.messageRoundFinished" spellcheck="false" />
+        </label>
+        <label class="form__group long" data-tip="🌎 Game finished. Congrats <emoji> <username>! 🏆 Game Summary: <link>">
+          🌎 Game finished. Congrats &lt;emoji&gt; &lt;username&gt;! 🏆<br/> Game Summary: &lt;link&gt;
+          <input v-model="settings.messageGameFinished" spellcheck="false" />
+        </label>
       </div>
 
-      <div class="flex items-center flex-col gap-05 mt-1">
-        <small>ChatGuessr version {{ currentVerion }}</small>
-      </div>
     </div>
 
     <div v-show="currentTab === 'twitch-connect'" class="content">
@@ -416,7 +468,8 @@ const tabs = shallowRef([
 { name: 'game-settings', value: 'Game settings' },
 { name: 'mode-settings', value: 'Mode settings' },
   { name: 'twitch-connect', value: 'Twitch connect' },
-  { name: 'ban-list', value: 'Ban list' }
+  { name: 'ban-list', value: 'Ban list' },
+  { name: 'messages', value: 'Messages' }
 ])
 
 const settings = reactive<Settings>(await chatguessrApi.getSettings())

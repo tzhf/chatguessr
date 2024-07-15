@@ -102,12 +102,21 @@ hr {
 .form__group select {
   width: 150px;
 }
+.form__group.long input{
+  width: 400px!important;
+  text-align: left!important;
+  padding: 0 0.5rem!important;
+
+}
+
+
 
 .form__group input[type='text'],
 .form__group select {
   border: unset;
   border-bottom: 1px solid var(--primary);
 }
+
 
 .form__group input[type='range'] {
   -webkit-appearance: none;

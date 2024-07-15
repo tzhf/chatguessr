@@ -53,14 +53,14 @@ export default class GameHandler {
     this.#game.openGuesses()
     this.#win.webContents.send('switch-on')
     if(settings.showGuessesAreOpen)
-      this.#backend?.sendMessage('Guesses are open...', { system: true })
+      this.#backend?.sendMessage(settings.messageGuessesAreOpen, { system: true })
   }
 
   closeGuesses() {
     this.#game.closeGuesses()
     this.#win.webContents.send('switch-off')
     if(settings.showGuessesAreClosed)
-    this.#backend?.sendMessage('Guesses are closed.', { system: true })
+    this.#backend?.sendMessage(settings.messageGuessesAreClosed, { system: true })
   }
 
   nextRound(isRestartClick: boolean = false) {
@@ -70,7 +70,7 @@ export default class GameHandler {
     } else {
       this.#win.webContents.send('next-round', this.#game.isMultiGuess, this.#game.getLocation())
       if(settings.showRoundStarted && !isRestartClick)
-        this.#backend?.sendMessage(`🌎 Round ${this.#game.round} has started`, { system: true })
+        this.#backend?.sendMessage(settings.messageRoundStarted.replace("<round>", this.#game.round.toString()), { system: true })
       this.openGuesses()
     }
   }
@@ -92,9 +92,7 @@ export default class GameHandler {
     )
     if(settings.showRoundFinished)
     this.#backend?.sendMessage(
-      `🌎 Round ${round} has finished. Congrats ${getEmoji(roundResults[0].player.flag)} ${
-        roundResults[0].player.username
-      } !`,
+      settings.messageRoundFinished.replace('<emoji>', getEmoji(roundResults[0].player.flag)).replace('<username>', roundResults[0].player.username).replace("<round>", round.toString()),
       { system: true }
     )
     if(settings.showBestRandomplonkRound){
@@ -181,9 +179,7 @@ export default class GameHandler {
     }
     if(settings.showGameFinished)
       await this.#backend?.sendMessage(
-        `🌎 Game finished. Congrats ${getEmoji(gameResults[0].player.flag)} ${gameResults[0].player.username} 🏆! ${
-          link != undefined ? `Game summary: ${link}` : ''
-        }`,
+        settings.messageGameFinished.replace('<emoji>', getEmoji(gameResults[0].player.flag)).replace('<username>', gameResults[0].player.username).replace('<link>',link != undefined ? `${link}` : ''),
         { system: true }
       )
 
@@ -223,7 +219,8 @@ export default class GameHandler {
               })
             } else if (this.#game.round === 1 ) {
               if(settings.showNewSeedStarted)
-                this.#backend?.sendMessage(`🌎 A new seed of ${this.#game.mapName} has started`, {
+                this.#backend?.sendMessage(
+                  settings.messageNewSeedStarted.replace('<map>', this.#game.mapName), {
                   system: true
                 })
               if(settings.autoShowMode)
@@ -483,7 +480,7 @@ export default class GameHandler {
         this.#win.webContents.send('render-guess', guess)
         if (settings.showHasGuessed) {
           await this.#backend?.sendMessage(
-            `${getEmoji(guess.player.flag)} ${guess.player.username} has guessed`
+            settings.messageHasGuessed.replace('<emoji>', getEmoji(guess.player.flag)).replace('<username>', guess.player.username)
           )
         }
       } else {
@@ -492,13 +489,13 @@ export default class GameHandler {
         if (!guess.modified) {
           if (settings.showHasGuessed) {
             await this.#backend?.sendMessage(
-              `${getEmoji(guess.player.flag)} ${guess.player.username} has guessed`
+              settings.messageHasGuessed.replace('<emoji>', getEmoji(guess.player.flag)).replace('<username>', guess.player.username)
             )
           }
         } else {
           if (settings.showGuessChanged) {
             await this.#backend?.sendMessage(
-              `${getEmoji(guess.player.flag)} ${guess.player.username} guess changed`
+              settings.messageGuessChanged.replace('<emoji>', getEmoji(guess.player.flag)).replace('<username>', guess.player.username)
             )
           }
         }
@@ -506,12 +503,14 @@ export default class GameHandler {
     } catch (err: any) {
       if (err.code === 'alreadyGuessed') {
         if (settings.showHasAlreadyGuessed) {
-          await this.#backend?.sendMessage(`${userstate['display-name']} you already guessed`)
+          await this.#backend?.sendMessage(
+            settings.messageHasAlreadyGuessed.replace('<username>', userstate['display-name'])
+          )
         }
       } else if (err.code === 'submittedPreviousGuess') {
         if (settings.showSubmittedPreviousGuess) {
           await this.#backend?.sendMessage(
-            `${userstate['display-name']} you submitted your previous guess`
+            settings.messageSubmittedPreviousGuess.replace('<username>', userstate['display-name'])
           )
         }
       } else {

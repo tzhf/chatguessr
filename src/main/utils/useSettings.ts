@@ -7,6 +7,18 @@ declare global {
 }
 
 const defaultSettings = {
+  messageHasGuessed: '<emoji> <username> has guessed!',
+  messageHasAlreadyGuessed: '<username> already guessed!',
+  messageGuessChanged: '<emoji> <username> guess changed',
+  messageSubmittedPreviousGuess: '<username> submitted their previous guess!',
+  messageNewSeedStarted: '🌎 A new seed of <map> has started',
+  messageGuessesAreOpen: 'Guesses are open...',
+  messageGuessesAreClosed: 'Guesses are closed.',
+  messageRoundStarted: '🌎 Round <round> has started',
+  messageRoundFinished: '🌎 Round <round> has finished. Congrats <emoji> <username>!',
+  messageGameFinished: '🌎 Game finished. Congrats <emoji> <username>! 🏆 Game Summary: <link>',
+
+
   channelName: '',
   avatar: '',
   cgCmd: '!cg',
@@ -53,6 +65,7 @@ const defaultSettings = {
 const settings = Object.assign({}, defaultSettings, storedSettings)
 
 const saveSettings = (settings_: Settings): void => {
+  console.log(settings_)
   Object.assign(settings, settings_)
   store.set('settings', settings)
 }

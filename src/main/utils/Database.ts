@@ -300,11 +300,11 @@ class db {
     return id
   }
 
-  setRoundCountry(roundId: string, country: string | null) {
-    const stmt = this.#db.prepare(`UPDATE rounds SET country = :country WHERE id = :id`)
+  setRoundStreakCode(roundId: string, streakCode: string | null) {
+    const stmt = this.#db.prepare(`UPDATE rounds SET country = :streakCode WHERE id = :id`)
     stmt.run({
       id: roundId,
-      country
+      streakCode
     })
   }
 
@@ -320,7 +320,7 @@ class db {
     userId: string,
     guess: {
       location: LatLng
-      country: string | null
+      streakCode: string | null
       streak: number
       lastStreak: number | null
       distance: number
@@ -330,7 +330,7 @@ class db {
     const id = randomUUID()
     const insertGuess = this.#db.prepare(`
       INSERT INTO guesses(id, round_id, user_id, location, country, streak, last_streak, distance, score, created_at)
-      VALUES (:id, :roundId, :userId, :location, :country, :streak, :lastStreak, :distance, :score, :createdAt)
+      VALUES (:id, :roundId, :userId, :location, :streakCode, :streak, :lastStreak, :distance, :score, :createdAt)
     `)
 
     insertGuess.run({
@@ -338,7 +338,7 @@ class db {
       roundId,
       userId,
       location: JSON.stringify(guess.location),
-      country: guess.country,
+      streakCode: guess.streakCode,
       streak: guess.streak,
       lastStreak: guess.lastStreak,
       distance: guess.distance,
@@ -357,7 +357,7 @@ class db {
         users.color,
         users.flag,
         guesses.location,
-        guesses.country,
+        guesses.country AS streakCode,
         guesses.streak,
         guesses.last_streak AS lastStreak,
         guesses.distance,
@@ -374,7 +374,7 @@ class db {
           color: string
           flag: string | null
           location: string
-          country: string | null
+          streakCode: string | null
           streak: number
           lastStreak: number | null
           distance: number
@@ -396,7 +396,7 @@ class db {
     guessId: string,
     guess: {
       location: LatLng
-      country: string | null
+      streakCode: string | null
       streak: number
       lastStreak: number | null
       distance: number
@@ -407,7 +407,7 @@ class db {
       UPDATE guesses
       SET
         location = :location,
-        country = :country,
+        country = :streakCode,
         streak = :streak,
         last_streak = :lastStreak,
         distance = :distance,
@@ -419,7 +419,7 @@ class db {
     updateGuess.run({
       id: guessId,
       location: JSON.stringify(guess.location),
-      country: guess.country,
+      streakCode: guess.streakCode,
       streak: guess.streak,
       lastStreak: guess.lastStreak,
       distance: guess.distance,
@@ -540,7 +540,7 @@ class db {
 				users.flag,
 				guesses.location,
 				guesses.streak,
-        guesses.country,
+        guesses.country as streakCode,
 				guesses.last_streak,
 				guesses.distance,
 				guesses.score,
@@ -564,7 +564,7 @@ class db {
       flag: string | null
       location: string
       streak: number
-      country: string | null
+      streakCode: string | null
       last_streak: number | null
       distance: number
       score: number
@@ -581,7 +581,7 @@ class db {
         flag: record.flag
       },
       streak: record.streak,
-      country: record.country,
+      streakCode: record.streakCode,
       lastStreak: record.last_streak,
       distance: record.distance,
       score: record.score,
@@ -599,7 +599,7 @@ class db {
         guesses.id,
         guesses.user_id,
         guesses.streak,
-        guesses.country
+        guesses.country AS streakCode
       FROM guesses, rounds
       WHERE rounds.id = ?
         AND guesses.round_id = rounds.id
@@ -609,7 +609,7 @@ class db {
       id: string
       user_id: string
       streak: number
-      country: string | null
+      streakCode: string | null
     }[]
 
     return records.map((record) => ({
@@ -618,7 +618,7 @@ class db {
         userId: record.user_id
       },
       streak: record.streak,
-      country: record.country
+      streakCode: record.streakCode
     }))
   }
 
@@ -991,7 +991,7 @@ class db {
   getLastlocs() {
     const lastlocsQuery = `
       SELECT
-        rounds.country,
+        rounds.country AS streakCode,
         rounds.location,
         games.map_name
       FROM rounds
@@ -1003,13 +1003,13 @@ class db {
     `
 
     const records = this.#db.prepare(lastlocsQuery).all() as {
-      country: string
+      streakCode: string
       location: string
       map_name: string
     }[]
 
     return records.map((record) => ({
-      country: record.country,
+      streakCode: record.streakCode,
       location: JSON.parse(record.location) as Location_,
       map_name: record.map_name
     }))

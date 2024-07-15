@@ -4,7 +4,7 @@ import {
   latLngEqual,
   calculateScale,
   fetchSeed,
-  getCountryCode,
+  getStreakCode,
   haversineDistance,
   calculateScore
 } from './utils/gameHelper'
@@ -25,9 +25,9 @@ export default class Game {
   #roundId: string | undefined
 
   /**
-   * Country code for the current round's location.
+   * Streak code for the current round's location.
    */
-  #country: string | undefined
+  #streakCode: string | undefined
 
   seed: Seed | undefined
 
@@ -74,7 +74,7 @@ export default class Game {
       }
 
       this.mapScale = calculateScale(this.seed.bounds)
-      this.#getCountry()
+      this.#assignStreakCode()
     }
   }
 
@@ -106,7 +106,7 @@ export default class Game {
 
       if (this.seed!.state !== 'finished') {
         this.#roundId = this.#db.createRound(this.seed!.token, this.seed.rounds.at(-1)!)
-        this.#getCountry()
+        this.#assignStreakCode()
       } else {
         this.#roundId = undefined
       }
@@ -117,7 +117,7 @@ export default class Game {
       this.seed = newSeed
       this.#roundId = this.#db.createRound(this.seed!.token, this.seed.rounds.at(-1)!)
 
-      this.#getCountry()
+      this.#assignStreakCode()
 
       return false
     }
@@ -127,11 +127,11 @@ export default class Game {
     return this.#url ? await fetchSeed(this.#url) : undefined
   }
 
-  async #getCountry() {
+  async #assignStreakCode() {
     this.location = this.getLocation()
-    this.#country = await getCountryCode(this.location)
+    this.#streakCode = await getStreakCode(this.location)
 
-    this.#db.setRoundCountry(this.#roundId!, this.#country ?? null)
+    this.#db.setRoundStreakCode(this.#roundId!, this.#streakCode ?? null)
   }
 
   async #makeGuess() {
@@ -153,7 +153,7 @@ export default class Game {
     await pMap(
       guesses,
       async (guess) => {
-        if (guess.country === this.#country) {
+        if (guess.streakCode === this.#streakCode) {
           this.#db.addUserStreak(guess.player.userId, this.#roundId!)
         } else {
           this.#db.resetUserStreak(guess.player.userId)
@@ -176,9 +176,9 @@ export default class Game {
     )
     if (!dbUser) return
 
-    const guessedCountry = await getCountryCode(location)
+    const streakCode = await getStreakCode(location)
     const lastStreak = this.#db.getUserStreak(dbUser.id)
-    const correct = guessedCountry === this.#country
+    const correct = streakCode === this.#streakCode
     if (correct) {
       this.#db.addUserStreak(dbUser.id, this.#roundId!)
     } else {
@@ -192,7 +192,7 @@ export default class Game {
 
     this.#db.createGuess(this.#roundId!, dbUser.id, {
       location,
-      country: guessedCountry ?? null,
+      streakCode: streakCode ?? null,
       streak: streak?.count ?? 0,
       lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
       distance,
@@ -222,8 +222,8 @@ export default class Game {
     const distance = haversineDistance(location, this.location!)
     const score = calculateScore(distance, this.mapScale!)
 
-    const guessedCountry = await getCountryCode(location)
-    const correct = guessedCountry === this.#country
+    const streakCode = await getStreakCode(location)
+    const correct = streakCode === this.#streakCode
     const lastStreak = this.#db.getUserStreak(dbUser.id)
 
     // Reset streak if the player skipped a round
@@ -257,7 +257,7 @@ export default class Game {
 
     const guess = {
       location,
-      country: guessedCountry ?? null,
+      streakCode: streakCode ?? null,
       streak: streak?.count ?? 0,
       lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
       distance,

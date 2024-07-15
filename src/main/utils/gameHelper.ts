@@ -186,7 +186,7 @@ export async function makeGameSummaryLink(params: {
     { headers: { access_token: params.accessToken } }
   )
 
-  return `${CG_PUBLIC_URL}/game/${res.data.code}`
+  return `${CG_PUBLIC_URL}/game/${res.data.code} `
 }
 
 /**

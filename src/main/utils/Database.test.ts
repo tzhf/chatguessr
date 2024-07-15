@@ -47,7 +47,7 @@ describe('userGuessedOnOngoingRound', () => {
     
     db.createGuess(firstRoundId, user!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 1,
       lastStreak: null,
       distance: 0,
@@ -60,7 +60,7 @@ describe('userGuessedOnOngoingRound', () => {
     // When broadcaster has guessed, round ends
     db.createGuess(firstRoundId, broadcaster!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 1,
       lastStreak: null,
       distance: 0,

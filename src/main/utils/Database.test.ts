@@ -44,7 +44,7 @@ describe('userGuessedOnOngoingRound', () => {
 
     expect(db.userGuessedOnOngoingRound(user!.id)).toEqual(false)
     expect(db.userGuessedOnOngoingRound(secondUser!.id)).toEqual(false)
-    
+
     db.createGuess(firstRoundId, user!.id, {
       location: { lat: 0, lng: 0 },
       streakCode: null,
@@ -68,7 +68,6 @@ describe('userGuessedOnOngoingRound', () => {
     })
     expect(db.userGuessedOnOngoingRound(user!.id)).toEqual(false)
     expect(db.userGuessedOnOngoingRound(secondUser!.id)).toEqual(false)
-
   })
 })
 

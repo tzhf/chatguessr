@@ -566,7 +566,9 @@ export default class GameHandler {
       }
       const hasGuessedOnOngoingRound = this.#db.userGuessedOnOngoingRound(userId)
       if (hasGuessedOnOngoingRound) {
-        await this.#backend?.sendMessage(`${userstate['display-name']}: ${settings.getUserStatsCmd} cannot be used after guessing during an ongoing round.`)
+        await this.#backend?.sendMessage(
+          `${userstate['display-name']}: ${settings.getUserStatsCmd} cannot be used after guessing during an ongoing round.`
+        )
         return
       }
       const userInfo = this.#db.getUserStats(userId, dateInfo.timeStamp)

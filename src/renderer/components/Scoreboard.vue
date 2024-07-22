@@ -5,9 +5,9 @@
     v-model:w="position.w"
     v-model:h="position.h"
     :draggable="isDraggable"
-    :min-w="340"
-    :min-h="179"
-    :parent="true"
+    :minW="340"
+    :minH="179"
+    :parent="false"
     class="scoreboard"
     class-name-handle="scoreboard_handle"
     @drag-end="savePosition"
@@ -120,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { shallowRef, shallowReactive, reactive, onMounted, toRef, watch, computed } from 'vue'
+import { shallowRef, shallowReactive, reactive, onMounted, toRef, watch, computed, nextTick } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import formatDuration from 'format-duration'
 import { getLocalStorage, setLocalStorage } from '@/useLocalStorage'
@@ -141,11 +141,15 @@ const isColumnVisibilityOpen = shallowRef(false)
 const title = shallowRef('GUESSES')
 const switchState = shallowRef(true)
 
-const position = shallowReactive({ x: 20, y: 50, w: 340, h: 390 })
+const defaultPosition = { x: 20, y: 50, w: 340, h: 390 }
+const position = shallowReactive(defaultPosition)
+
 onMounted(async () => {
+  await nextTick(); // Waits until the component is actually rendered, preventing potential null values
+
   Object.assign(
     position,
-    getLocalStorage('cg_scoreboard__position', { x: 20, y: 50, w: 340, h: 390 })
+    getLocalStorage('cg_scoreboard__position', defaultPosition)
   )
 })
 

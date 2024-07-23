@@ -73,6 +73,11 @@ hr {
   margin-bottom: 0.3rem;
 }
 
+.form__group__disabled
+{
+  color: #aaa
+}
+
 .form__group input,
 .form__group select {
   padding: 0;

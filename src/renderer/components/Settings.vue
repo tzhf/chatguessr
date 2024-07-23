@@ -222,7 +222,27 @@
     >
       Game of Chicken (Closest Plonk gets 0 Points on next round)
       <input v-model="settings.isGameOfChickenModeActivated" type="checkbox" />
-    </label>        
+    </label>
+
+    <div class="ml-10">
+          <label
+          class="form__group"
+          :class="{ 'form__group__disabled' : settings.isGameOfChickenModeActivated === false}"
+          data-tip="5k bypasses loss of score"
+        >
+          Getting a 5k bypasses the loss of score next round
+          <input v-model="settings.chickenModeSurvivesWith5k" type="checkbox"/>
+        </label>
+
+        <label
+          class="form__group"
+          :class="{ 'form__group__disabled' : settings.isGameOfChickenModeActivated === false}"
+          data-tip="5k always gives points"
+        >
+          Getting a 5k always give points
+          <input v-model="settings.chickenMode5kGivesPoints" type="checkbox"/>
+        </label>
+        </div>
     
     <label
       class="form__group"

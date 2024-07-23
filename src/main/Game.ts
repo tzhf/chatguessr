@@ -58,6 +58,8 @@ export default class Game {
   waterPlonkMode = "normal"
   invertScoring = false
   isGameOfChickenModeActivated = false
+  chickenModeSurvivesWith5k = false
+  chickenMode5kGivesPoints = false
 
 
 
@@ -76,6 +78,8 @@ export default class Game {
     this.pointGiftCommand = this.#settings.pointGiftCommand
     this.isClosestInWrongCountryModeActivated = this.#settings.isClosestInWrongCountryModeActivated
     this.isGameOfChickenModeActivated = this.#settings.isGameOfChickenModeActivated
+    this.chickenModeSurvivesWith5k = this.#settings.chickenModeSurvivesWith5k
+    this.chickenMode5kGivesPoints = this.#settings.chickenMode5kGivesPoints
     this.waterPlonkMode = this.#settings.waterPlonkMode
     this.invertScoring = this.#settings.invertScoring
 
@@ -218,11 +222,11 @@ export default class Game {
     const distance = haversineDistance(location, this.location!)
     var score = streamerGuess.timedOut ? 0 : calculateScore(distance, this.mapScale!, await getCountryCode(location) === this.#country, this.isClosestInWrongCountryModeActivated, this.waterPlonkMode, await isCoordsInLand(location), this.invertScoring)
     if(this.#db.getNumberOfGamesInRoundFromRoundId(this.#roundId!) !== 1 && this.isGameOfChickenModeActivated){
-      const didUserWinLastRound = this.#db.didUserWinLastRound('BROADCASTER', this.#roundId!, this.invertScoring)
+      const didUserWinLastRound = this.#db.didUserWinLastRound('BROADCASTER', this.#roundId!, this.invertScoring, this.chickenModeSurvivesWith5k)
       if(didUserWinLastRound){
-        score = 0
+        if (!(this.chickenMode5kGivesPoints && score == 5000))
+          score = 0
       }
-      
     }
     const streak = this.#db.getUserStreak(dbUser.id)
 
@@ -260,9 +264,10 @@ export default class Game {
     var score = calculateScore(distance, this.mapScale!, await getCountryCode(location) === this.#country, this.isClosestInWrongCountryModeActivated, this.waterPlonkMode, await isCoordsInLand(location), this.invertScoring)
     if(this.#db.getNumberOfGamesInRoundFromRoundId(this.#roundId!) !== 1 && this.isGameOfChickenModeActivated){
 
-      const didUserWinLastRound = this.#db.didUserWinLastRound(dbUser.id, this.#roundId!, this.invertScoring)
+      const didUserWinLastRound = this.#db.didUserWinLastRound(dbUser.id, this.#roundId!, this.invertScoring, this.chickenModeSurvivesWith5k)
       if(didUserWinLastRound){
-        score = 0
+        if (!(this.chickenMode5kGivesPoints && score == 5000))
+          score = 0
       }
     }
 

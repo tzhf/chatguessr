@@ -167,6 +167,29 @@ watch(settings, () => {
 })
 
 function savePosition() {
+
+  // Setting scoreboard bounds manually because native draggable doesn't work
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
+  const edgeBuffer = 64;
+
+  const xMin = -edgeBuffer;
+  const xMax = windowWidth - position.w + edgeBuffer;
+  const yMin = -edgeBuffer;
+  const yMax = windowHeight - position.h + edgeBuffer;
+
+  if (position.x < xMin) { // Past left side
+    position.x = xMin;
+  } else if (position.x > xMax) { // Past right side
+    position.x = xMax;
+  }
+
+  if (position.y < yMin) { // Past top
+    position.y = yMin;
+  } else if (position.y > yMax) { // Past bottom
+    position.y = yMax;
+  }
+
   setLocalStorage('cg_scoreboard__position', position)
 }
 

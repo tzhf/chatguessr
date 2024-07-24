@@ -365,6 +365,31 @@ export default class Game {
     this.guessesOpen = false
   }
 
+  getModeHelp(): string {
+    var parts: string[] = []
+    if (this.#settings.invertScoring)
+    {
+      parts.push("Inverted scoring")
+    }
+
+    if (this.#settings.isClosestInWrongCountryModeActivated)
+    {
+      parts.push("Wrong country only")
+    }
+
+    if (this.#settings.isGameOfChickenModeActivated)
+    {
+      parts.push("Game of chicken 🐔")
+    }
+
+    if (this.#settings.isDartsMode)
+    {
+      const bustSign = this.#settings.isDartsModeBust ? '≤': ''
+      parts.push(`Darts 🎯(${bustSign}${this.#settings.dartsTargetScore})`)
+    }
+    return parts.join(", ")
+  }
+
   /**
    * Get the participants for the current round, sorted by who guessed first.
    */

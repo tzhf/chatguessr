@@ -56,6 +56,9 @@
     <div :class="['scoreboard-hint', { hidden: !isMultiGuess || gameState !== 'in-round' }]">
       Guess change allowed
     </div>
+    <div :class="['mode-hint', { hidden: props.modeHelp === '' || gameState !== 'in-round' }]">
+      {{props.modeHelp}}
+    </div>
 
     <input
       v-model.number="settings.scrollSpeed"
@@ -131,6 +134,7 @@ const { chatguessrApi } = window
 const props = defineProps<{
   gameState: GameState
   isMultiGuess: boolean
+  modeHelp: string
   onRoundResultRowClick: (index: number, position: LatLng) => void
   onGameResultRowClick: (row: GameResultDisplay) => void
 }>()
@@ -503,6 +507,11 @@ defineExpose({
 }
 
 .scoreboard-hint {
+  font-size: 11px;
+}
+
+.mode-hint {
+  padding-top: 4px;
   font-size: 11px;
 }
 

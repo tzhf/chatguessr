@@ -6,6 +6,7 @@
         ref="scoreboard"
         :game-state
         :is-multi-guess
+        :mode-help
         :on-round-result-row-click
         :on-game-result-row-click
       />
@@ -106,6 +107,7 @@ const leaderboardVisible = shallowRef(false)
 
 const gameState = shallowRef<GameState>('none')
 const isMultiGuess = shallowRef<boolean>(false)
+const modeHelp = shallowRef<string>('')
 const guessMarkersLimit = shallowRef<number | null>(null)
 const currentLocation = shallowRef<LatLng | null>(null)
 const gameResultLocations = shallowRef<Location_[] | null>(null)
@@ -190,8 +192,9 @@ watch(
 )
 
 onBeforeUnmount(
-  chatguessrApi.onGameStarted((_isMultiGuess, restoredGuesses, location) => {
+  chatguessrApi.onGameStarted((_isMultiGuess, _modeHelp, restoredGuesses, location) => {
     isMultiGuess.value = _isMultiGuess
+    modeHelp.value = _modeHelp
     gameState.value = 'in-round'
 
     currentLocation.value = location

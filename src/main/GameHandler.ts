@@ -209,6 +209,7 @@ export default class GameHandler {
             this.#win.webContents.send(
               'game-started',
               this.#game.isMultiGuess,
+              this.#game.getModeHelp(),
               restoredGuesses,
               this.#game.getLocation()
             )

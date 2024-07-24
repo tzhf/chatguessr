@@ -160,6 +160,10 @@ hr {
   outline: none;
 }
 
+.form__group input[type='checkbox'][disabled] {
+  opacity: 0.25;
+}
+
 .form__group input[type='checkbox']::before {
   content: '';
   width: 0.65rem;

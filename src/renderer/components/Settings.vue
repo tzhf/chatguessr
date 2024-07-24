@@ -228,19 +228,19 @@
           <label
           class="form__group"
           :class="{ 'form__group__disabled' : settings.isGameOfChickenModeActivated === false}"
-          data-tip="5k bypasses loss of score"
+          data-tip="5k bypasses loss of score, meaning that the player closest without a 5k is the one penalized next round"
         >
           Getting a 5k bypasses the loss of score next round
-          <input v-model="settings.chickenModeSurvivesWith5k" type="checkbox"/>
+          <input v-model="settings.chickenModeSurvivesWith5k" type="checkbox" :disabled="!settings.isGameOfChickenModeActivated"/>
         </label>
 
         <label
           class="form__group"
           :class="{ 'form__group__disabled' : settings.isGameOfChickenModeActivated === false}"
-          data-tip="5k always gives points"
+          data-tip="5k always gives points, even if the player was closest last round"
         >
           Getting a 5k always give points
-          <input v-model="settings.chickenMode5kGivesPoints" type="checkbox"/>
+          <input v-model="settings.chickenMode5kGivesPoints" type="checkbox" :disabled="!settings.isGameOfChickenModeActivated"/>
         </label>
         </div>
     

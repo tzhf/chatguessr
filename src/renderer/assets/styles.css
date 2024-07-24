@@ -73,6 +73,11 @@ hr {
   margin-bottom: 0.3rem;
 }
 
+.form__group__disabled
+{
+  color: #aaa
+}
+
 .form__group input,
 .form__group select {
   padding: 0;
@@ -153,6 +158,10 @@ hr {
   display: grid;
   place-content: center;
   outline: none;
+}
+
+.form__group input[type='checkbox'][disabled] {
+  opacity: 0.25;
 }
 
 .form__group input[type='checkbox']::before {

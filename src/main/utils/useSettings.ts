@@ -54,6 +54,8 @@ const defaultSettings = {
   guessMarkersLimit: 30,
   isClosestInWrongCountryModeActivated: false,
   isGameOfChickenModeActivated: false,
+  chickenModeSurvivesWith5k: false,
+  chickenMode5kGivesPoints: false,
   waterPlonkMode: "normal",
   invertScoring: false,
   dartsTargetScore: 25000,

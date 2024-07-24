@@ -768,15 +768,17 @@ ORDER BY
     const record = stmt.get({ id: roundId }) as { rowCount: number } | undefined
     return record ? record.rowCount : 0
   }
-  didUserWinLastRound(userId: string, roundId: string, isInvertedScoring: boolean): boolean {
-    var stmt = this.#db.prepare(`select user_id from guesses where round_id = (select id from rounds where game_id = (select game_id from rounds where id = :id)
+  didUserWinLastRound(userId: string, roundId: string, isInvertedScoring: boolean, surviveIf5k: boolean): boolean {
+    var query = `select user_id from guesses where round_id = (select id from rounds where game_id = (select game_id from rounds where id = :id)
 	order by created_at desc
-    LIMIT 1 OFFSET 1) order by distance asc, score desc limit 1;`)
-    if(isInvertedScoring){
-      stmt = this.#db.prepare(`select user_id from guesses where round_id = (select id from rounds where game_id = (select game_id from rounds where id = :id)
-	order by created_at desc
-    LIMIT 1 OFFSET 1) order by distance, score desc limit 1;`)
+    LIMIT 1 OFFSET 1) `
+    if (surviveIf5k)
+    {
+      query += `and score < 5000 `
     }
+    const order = isInvertedScoring ? 'desc': 'asc'
+    query += `order by distance ${order}, score desc limit 1;`
+    var stmt = this.#db.prepare(query)
     const record = stmt.get({id: roundId }) as { user_id: string } | undefined
     return record ? record.user_id === userId : false
   }

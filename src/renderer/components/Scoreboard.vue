@@ -43,6 +43,12 @@
           >
             {{ round_columns[4].name }}
           </button>
+          <button
+            :class="['btn', { active: settings.totalScore }]"
+            @click="settings.totalScore = !settings.totalScore"
+          >
+            {{ round_columns[5].name }}
+          </button>
         </div>
       </div>
       <div class="scoreboard-title">{{ title }} ({{ rows.length }})</div>
@@ -163,7 +169,8 @@ const settings = reactive(
     scrollSpeed: 15,
     streak: true,
     distance: true,
-    score: true
+    score: true,
+    totalScore: true
   })
 )
 watch(settings, () => {
@@ -226,7 +233,9 @@ const activeRoundCols = computed(() =>
       : round_columns.filter(
           (f) => f.value === 'index' || f.value === 'player' || settings[f.value] === true
         )
-    : round_columns
+    : round_columns.filter(
+          (f) => f.value !== 'totalScore' || settings['totalScore'] === true
+        )
 )
 const activeEndCols = computed(() =>
   props.gameState === 'in-round'

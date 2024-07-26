@@ -338,7 +338,8 @@ export default class Game {
       lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
       distance,
       score,
-      modified
+      modified,
+      isRandomPlonk
     }
   }
 

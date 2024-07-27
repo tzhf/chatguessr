@@ -191,12 +191,19 @@ const migrations: ((db: SQLite.Database) => void)[] = [
   }
 ]
 
+// Custom migrations for the fork. These are kept and versioned separately to avoid patching conflicts
+// for users that move between versions.
+// NEVER modify existing migrations, ONLY add new ones.
+const customMigrations: ((db: SQLite.Database) => void)[] = [
+]
+
 class db {
   #db: SQLite.Database
 
   constructor(file: string) {
     this.#db = new SQLite(file)
     this.#migrate()
+    this.#customMigrate()
   }
 
   #migrateUp() {
@@ -217,6 +224,51 @@ class db {
     let moreMigrations = true
     while (moreMigrations) {
       moreMigrations = this.#migrateUp()
+    }
+  }
+
+  #createMigrationTableIfNotExist()
+  {
+    const tableExists = this.#db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='custom_cg_info';`).get()
+    if (!tableExists)
+    {
+      this.#db.prepare(
+        `CREATE TABLE "custom_cg_info" (
+          "index"	INTEGER UNIQUE,
+          "version"	INTEGER NOT NULL,
+          PRIMARY KEY("index")
+        );
+      `).run()
+
+      this.#db.prepare(
+        `INSERT INTO custom_cg_info("index", "version")
+        VALUES (:index, :version);
+      `).run({index: 0, version: 0})
+    }
+  }
+
+  #customMigrateUp() {
+    const row = this.#db
+    .prepare(`SELECT version from custom_cg_info DESC LIMIT 1`)
+    .get() as {version: number} | undefined
+    if (row && typeof row.version === 'number' && row.version < customMigrations.length) {
+      const up = this.#db.transaction(() => {
+        customMigrations[row.version](this.#db)
+        this.#db.prepare(`
+          UPDATE custom_cg_info SET version = version + 1 WHERE "index" = 0;`).run()
+      })
+      up()
+
+      return true
+    }
+    return false
+  }
+
+  #customMigrate() {
+    this.#createMigrationTableIfNotExist()
+    let moreMigrations = true
+    while (moreMigrations) {
+      moreMigrations = this.#customMigrateUp()
     }
   }
 

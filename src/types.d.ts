@@ -32,6 +32,7 @@ interface Guess {
   distance: number
   score: number
   modified?: boolean
+  isRandomPlonk?: boolean
 }
 
 interface RoundResult {
@@ -80,6 +81,7 @@ interface ScoreboardRow {
     display: number | string
   }
   modified?: boolean
+  isRandomPlonk?: boolean
   position?: LatLng
   guesses?: (LatLng | null)[]
   distances?: (number | null)[]

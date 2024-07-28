@@ -111,6 +111,13 @@
                       backgroundImage: `url('flag:${row.player.flag}')`
                     }"
                   ></span>
+                  <span
+                  v-if="row.isRandomPlonk"
+                  :style="{
+                      paddingLeft: '2px'
+                    }">
+                  🎲
+                </span>
                 </div>
                 <div v-else>{{ row[col.value].display }}</div>
               </td>
@@ -247,7 +254,7 @@ function onStartRound() {
   rows.length = 0
   title.value = 'GUESSES'
 }
-
+ 
 function renderGuess(guess: Guess) {
   const formatedRow = {
     index: { value: 0, display: '' },
@@ -257,7 +264,8 @@ function renderGuess(guess: Guess) {
       display: guess.lastStreak ? guess.streak + ` [` + guess.lastStreak + `]` : guess.streak
     },
     distance: { value: guess.distance, display: toMeter(guess.distance) },
-    score: { value: guess.score, display: guess.score }
+    score: { value: guess.score, display: guess.score },
+    isRandomPlonk: guess.isRandomPlonk
   }
   rows.push(formatedRow)
 
@@ -270,7 +278,8 @@ function renderGuess(guess: Guess) {
 function renderMultiGuess(guess: Guess) {
   const formatedRow = {
     player: guess.player,
-    modified: guess.modified
+    modified: guess.modified,
+    isRandomPlonk: guess.isRandomPlonk
   }
 
   if (guess.modified) {
@@ -296,7 +305,8 @@ function restoreGuesses(restoredGuesses: RoundResult[]) {
         display: guess.lastStreak ? guess.streak + ` [` + guess.lastStreak + `]` : guess.streak
       },
       distance: { value: guess.distance, display: toMeter(guess.distance) },
-      score: { value: guess.score, display: guess.score }
+      score: { value: guess.score, display: guess.score },
+      isRandomPlonk: guess.isRandomPlonk
     }
   })
   Object.assign(rows, formatedRows)
@@ -334,7 +344,8 @@ function showRoundResults(round: number, roundResults: RoundResult[]) {
         value: result.totalScore,
         display: result.totalScore
       },
-      position: result.position
+      position: result.position,
+      isRandomPlonk: result.isRandomPlonk
     }
   })
   Object.assign(rows, formatedRows)

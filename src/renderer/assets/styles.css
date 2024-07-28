@@ -114,14 +114,15 @@ hr {
 
 }
 
-
-
 .form__group input[type='text'],
 .form__group select {
   border: unset;
   border-bottom: 1px solid var(--primary);
 }
 
+.form__group input[type='text'][disabled] {
+  opacity: 0.25;
+}
 
 .form__group input[type='range'] {
   -webkit-appearance: none;

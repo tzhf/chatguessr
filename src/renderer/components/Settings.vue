@@ -215,6 +215,24 @@
   
   <h2>Mode Settings</h2>
   <div class="ml-05">
+    <label
+      class="form__group"
+      data-tip="Closest in wrong country mode"
+    >
+      Closest in wrong country mode
+      <input v-model="settings.isClosestInWrongCountryModeActivated" type="checkbox" />
+    </label>
+    
+  <label
+      class="form__group"
+      data-tip="Invert scoring (furthest plonk wins)"
+    >
+    Invert scoring (furthest plonk wins)
+      <input v-model="settings.invertScoring" type="checkbox" />
+    </label>
+
+    <hr />
+    <h2>Game of Chicken Settings</h2>
 
     <label
       class="form__group"
@@ -224,44 +242,24 @@
       <input v-model="settings.isGameOfChickenModeActivated" type="checkbox" />
     </label>
 
-    <div class="ml-10">
-          <label
-          class="form__group"
-          :class="{ 'form__group__disabled' : settings.isGameOfChickenModeActivated === false}"
-          data-tip="5k bypasses loss of score, meaning that the player closest without a 5k is the one penalized next round"
-        >
-          Getting a 5k bypasses the loss of score next round
-          <input v-model="settings.chickenModeSurvivesWith5k" type="checkbox" :disabled="!settings.isGameOfChickenModeActivated"/>
-        </label>
-
-        <label
-          class="form__group"
-          :class="{ 'form__group__disabled' : settings.isGameOfChickenModeActivated === false}"
-          data-tip="5k always gives points, even if the player was closest last round"
-        >
-          Getting a 5k always give points
-          <input v-model="settings.chickenMode5kGivesPoints" type="checkbox" :disabled="!settings.isGameOfChickenModeActivated"/>
-        </label>
-        </div>
-    
     <label
       class="form__group"
-      data-tip="Closest in wrong country mode"
+      :class="{ 'form__group__disabled' : settings.isGameOfChickenModeActivated === false}"
+      data-tip="5k bypasses loss of score, meaning that the player closest without a 5k is the one penalized next round"
     >
-      Closest in wrong country mode
-      <input v-model="settings.isClosestInWrongCountryModeActivated" type="checkbox" />
+      Getting a 5k bypasses the loss of score next round
+      <input v-model="settings.chickenModeSurvivesWith5k" type="checkbox" :disabled="!settings.isGameOfChickenModeActivated"/>
     </label>
 
-    
-  <label
+    <label
       class="form__group"
-      data-tip="Invert scoring (furthest plonk wins)"
+      :class="{ 'form__group__disabled' : settings.isGameOfChickenModeActivated === false}"
+      data-tip="5k always gives points, even if the player was closest last round"
     >
-
-Invert scoring (furthest plonk wins)
-      <input v-model="settings.invertScoring" type="checkbox" />
+      Getting a 5k always give points
+      <input v-model="settings.chickenMode5kGivesPoints" type="checkbox" :disabled="!settings.isGameOfChickenModeActivated"/>
     </label>
-
+    
     <hr />
     <h2>Darts Settings</h2>
 
@@ -274,15 +272,20 @@ Invert scoring (furthest plonk wins)
     </label>
     <label
       class="form__group"
+      :class="{ 'form__group__disabled' : settings.isDartsMode === false}"
       data-tip="Darts mode Bust"
     >
       Activate Bust
-      <input v-model="settings.isDartsModeBust" type="checkbox" />
+      <input v-model="settings.isDartsModeBust" type="checkbox" :disabled="!settings.isDartsMode"/>
     </label>
-        <label class="form__group" data-tip="Target Score">
-          Darts Target Score :
-          <input v-model.trim="settings.dartsTargetScore" type="text" spellcheck="false" />
-        </label>
+    
+    <label 
+      class="form__group"
+      :class="{ 'form__group__disabled' : settings.isDartsMode === false}" 
+      data-tip="Target Score">
+      Darts Target Score :
+      <input v-model.trim="settings.dartsTargetScore" type="text" spellcheck="false" :disabled="!settings.isDartsMode"/>
+    </label>
 
     
   <hr />

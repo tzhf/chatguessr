@@ -62,8 +62,8 @@
     <div :class="['scoreboard-hint', { hidden: !isMultiGuess || gameState !== 'in-round' }]">
       Guess change allowed
     </div>
-    <div :class="['mode-hint', { hidden: props.modeHelp === '' || gameState !== 'in-round' }]">
-      {{props.modeHelp}}
+    <div :class="['mode-hint', { hidden: props.modeHelp.length === 0 || gameState !== 'in-round' }]">
+      <p v-for="mode in props.modeHelp" :key="mode">{{ mode }}</p>
     </div>
 
     <input
@@ -147,7 +147,7 @@ const { chatguessrApi } = window
 const props = defineProps<{
   gameState: GameState
   isMultiGuess: boolean
-  modeHelp: string
+  modeHelp: string[]
   onRoundResultRowClick: (index: number, position: LatLng) => void
   onGameResultRowClick: (row: GameResultDisplay) => void
 }>()
@@ -329,7 +329,6 @@ function restoreMultiGuesses(players: Player[]) {
 }
 
 function showRoundResults(round: number, roundResults: RoundResult[]) {
-  console.log(roundResults)
   const formatedRows = roundResults.map((result, i) => {
     return {
       index: { value: i + 1, display: i + 1 },

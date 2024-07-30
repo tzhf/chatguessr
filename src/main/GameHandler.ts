@@ -534,8 +534,16 @@ export default class GameHandler {
       returnString += `oceanPlonk: illegal | `
     if (settings.invertScoring)
       returnString += `invertScoring: on | `
-    if (settings.isGameOfChickenModeActivated)
+    if (settings.isGameOfChickenModeActivated){
       returnString += `gameOfChicken: on | `
+      if (settings.chickenMode5kGivesPoints){
+        returnString += `Chicken can 5k: on | `
+      }
+      if (settings.chickenModeSurvivesWith5k){
+        returnString += `5k avoids chicken: on | `
+      }
+    }
+      
     if (settings.isDartsMode)
       returnString += `dartsMode: ${settings.dartsTargetScore} ${settings.isDartsModeBust?"bust":""} | `
     if (returnString === "")

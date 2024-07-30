@@ -67,7 +67,6 @@ const defaultSettings = {
 const settings = Object.assign({}, defaultSettings, storedSettings)
 
 const saveSettings = (settings_: Settings): void => {
-  console.log(settings_)
   Object.assign(settings, settings_)
   store.set('settings', settings)
 }

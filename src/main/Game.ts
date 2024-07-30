@@ -366,7 +366,7 @@ export default class Game {
     this.guessesOpen = false
   }
 
-  getModeHelp(): string {
+  getModeHelp(): string[] {
     var parts: string[] = []
     if (this.#settings.invertScoring)
     {
@@ -383,12 +383,21 @@ export default class Game {
       parts.push("Game of chicken 🐔")
     }
 
+    if (this.#settings.waterPlonkMode !== "normal"){
+      if(this.#settings.waterPlonkMode === "illegal"){
+        parts.push("🌊❌")
+      }
+      if(this.#settings.waterPlonkMode === "mandatory"){
+        parts.push("🌊❗")
+      }
+    }
+
     if (this.#settings.isDartsMode)
     {
       const bustSign = this.#settings.isDartsModeBust ? '≤': ''
       parts.push(`Darts 🎯(${bustSign}${this.#settings.dartsTargetScore})`)
     }
-    return parts.join(", ")
+    return parts
   }
 
   /**

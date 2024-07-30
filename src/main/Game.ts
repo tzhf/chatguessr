@@ -242,12 +242,17 @@ export default class Game {
   }
 
   async handleUserGuess(userstate: UserData, location: LatLng, isRandomPlonk: boolean = false): Promise<Guess> {
-    const dbUser = this.#db.getOrCreateUser(
-      userstate['user-id'],
-      userstate['display-name'],
-      userstate.avatar,
-      userstate.color
-    )
+    var dbUser = this.#db.getUser(userstate['user-id'])
+    if (!dbUser || !isRandomPlonk) {
+      dbUser = this.#db.getOrCreateUser(
+        userstate['user-id'],
+        userstate['display-name'],
+        userstate.avatar,
+        userstate.color
+      )
+    }
+    
+
 
     if (!dbUser) throw Object.assign(new Error('Something went wrong creating dbUser'))
 

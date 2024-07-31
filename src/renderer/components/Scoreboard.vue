@@ -238,7 +238,7 @@ const activeRoundCols = computed(() =>
     ? props.isMultiGuess
       ? [round_columns[1]]
       : round_columns.filter(
-          (f) => f.value === 'index' || f.value === 'player' || settings[f.value] === true
+          (f) => f.value === 'index' || f.value === 'player' || ( settings[f.value] === true && f.value !== 'totalScore' )
         )
     : round_columns.filter(
           (f) => f.value !== 'totalScore' || settings['totalScore'] === true

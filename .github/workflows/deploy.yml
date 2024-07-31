@@ -18,9 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # There's an issue with github actions build only arm64 build,
-        # for now the workaround is roll back actions/upload-artifact to v3 and to build on macos-13 is x86_64 (so we get builds for both architectures)
-        os: [windows-latest, macos-14, ubuntu-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
     steps:
       - name: Checkout sources

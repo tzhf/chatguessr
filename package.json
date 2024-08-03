@@ -1,8 +1,8 @@
 {
   "name": "chatguessr",
   "version": "3.0.3",
-  "description": "ChatGuessr",
-  "repository": "https://github.com/tzhf/chatguessr",
+  "description": "CustomChatGuessr",
+  "repository": "https://github.com/vinz3210/chatguessr",
   "homepage": "https://chatguessr.com",
   "main": ".vite/build/main.js",
   "author": {

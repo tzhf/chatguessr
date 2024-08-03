@@ -287,20 +287,33 @@
       <input v-model.trim="settings.dartsTargetScore" type="text" spellcheck="false" :disabled="!settings.isDartsMode"/>
     </label>
 
-    
+    <hr />
+  <h2>Countdown /-up Settings</h2>
+  <label class="form__group" data-tip="Countdown">
+    <input type="radio" v-model="settings.countdownMode" value="countdown" />
+    Countdown
+  </label>
+  <label class="form__group" data-tip="Standard Mode">
+    <input type="radio" v-model="settings.countdownMode" value="normal" />
+    Standard Mode
+  </label>
+  <label class="form__group" data-tip="Countup">
+    <input type="radio" v-model="settings.countdownMode" value="countup" />
+    Countup
+  </label>
   <hr />
   <h2>Ocean Plonk Settings</h2>
   <label class="form__group" data-tip="0 Points for Plonks on Land">
     <input type="radio" v-model="settings.waterPlonkMode" value="mandatory" />
-    Only Ocean Plonk mode
+    Only Ocean Plonk Mode
   </label>
   <label class="form__group" data-tip="Standard Mode">
     <input type="radio" v-model="settings.waterPlonkMode" value="normal" />
-    Normal Ocean Plonk mode
+    Normal Ocean Plonk Mode
   </label>
   <label class="form__group" data-tip="0 Points for Plonks in international Waters">
     <input type="radio" v-model="settings.waterPlonkMode" value="illegal" />
-    Ocean Plonks Illegal mode
+    Ocean Plonks Illegal Mode
   </label>
 
   </div>
@@ -312,7 +325,7 @@
 
     <div v-show="currentTab === 'messages'" class="content">
   
-      <h2>Mode Settings</h2>
+      <h2>Message Settings</h2>
       <div class="ml-05">
         <label class="form__group long" data-tip="Display &lt;emoji&gt; &lt;user&gt; has guessed">
           &lt;emoji&gt; &lt;user&gt; has guessed

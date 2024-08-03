@@ -56,6 +56,7 @@ interface GameResult {
   distances: (number | null)[]
   totalScore: number
   totalDistance: number
+  isCountdownDisqualified: boolean
 }
 
 interface GameResultDisplay {

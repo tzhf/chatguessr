@@ -4,6 +4,8 @@ import { io } from 'socket.io-client'
 import Game from './Game'
 import TwitchBackend from './utils/useTwitchJS'
 import { settings, saveSettings } from './utils/useSettings'
+import countryIso from 'coordinate_to_country'
+
 import {
   isGameURL,
   makeGameSummaryLink,
@@ -16,6 +18,8 @@ import {
   parseUserDate
 } from './utils/gameHelper'
 import { getEmoji, randomCountryFlag, selectFlag } from './lib/flags/flags'
+import countryCodes from './lib/countryCodes.json'
+import countryCodeCountdown from './lib/countryCodeCountdown.json'
 
 const SOCKET_SERVER_URL =
   import.meta.env.VITE_SOCKET_SERVER_URL ?? 'https://chatguessr-server.herokuapp.com'
@@ -130,8 +134,88 @@ export default class GameHandler {
     let diff_b = Math.abs(b.totalScore - settings.dartsTargetScore)
     return diff_a - diff_b
   }
+
+  async getCountryNameLenght(countryCode:string): Promise<number | boolean> {
+
+    let country = countryCodes[countryCode].toLowerCase()
+    if (country === undefined) {
+      return false
+    }
+    let countryName = countryCodeCountdown.find(x=>x.code === country)?.names
+    if (countryName === undefined) {
+      return false
+    }
+    return countryName.length
+    
+  }
+
   async #showGameResults() {
     var gameResults = this.#game.getGameResults()
+
+    if(settings.countdownMode !== "normal"){
+      gameResults.forEach(gameResult=>{
+        let countdownDisqualified = false
+        let countdownLength: number[] = []
+        gameResult.guesses.every((guess)=>{
+          if(countdownDisqualified)
+            return false;
+          let lat = guess?.lat
+          let lng = guess?.lng
+          if(lat === undefined || lng === undefined){
+            lat = 0
+            lng = 0
+          }
+          let countryIsos = countryIso(lat, lng, true)
+          console.log(countryIsos)
+          if(countryIsos.length === 0){
+            countdownDisqualified = true
+            return false;
+          }
+          let countryName = countryCodeCountdown.find(x=>x.code == countryCodes[countryIsos[0]].toLowerCase())
+          console.log(countryName, countryIsos[0], countryCodes[countryIsos[0]].toLowerCase())
+          if (countryName === undefined) {
+            countdownDisqualified = true
+            return false;
+          }
+          let countryNameLenght = countryName.names.replaceAll(" ", "").length
+
+          console.log(gameResult.player.username, countryIsos, countryName, countryNameLenght)
+          countdownLength.push(countryNameLenght)
+          return true;
+        })
+        if(countdownDisqualified){
+          gameResult.isCountdownDisqualified = true
+        }
+        if(settings.countdownMode === "countdown"){
+          // check if the coundownLength is in descending order
+          let isSorted = countdownLength.every((val, i, arr) => !i || val < arr[i - 1]);
+          console.log(countdownLength, isSorted)
+          if(!isSorted){
+            gameResult.isCountdownDisqualified = true
+          }
+        }
+        if(settings.countdownMode === "countup"){
+          // check if the coundownLength is in ascending order
+          let isSorted = countdownLength.every((val, i, arr) => !i || val > arr[i - 1]);
+          if(!isSorted){
+            gameResult.isCountdownDisqualified = true
+          }
+        }
+      })
+      let qualifiedResults = gameResults.filter((result) => !result.isCountdownDisqualified).map(gameResult=>{
+        gameResult.player.username = "✅" + gameResult.player.username 
+        return gameResult
+      })
+      let disqualifiedResults = gameResults.filter((result) => result.isCountdownDisqualified).map(gameResult=>{
+        gameResult.player.username = "❌" + gameResult.player.username
+        return gameResult
+      })
+      gameResults = qualifiedResults.concat(disqualifiedResults)
+
+    }
+
+
+
     if(settings.isDartsMode){
       if(settings.isDartsModeBust){
         let results_with_5_guesses_and_not_busted = gameResults.filter(
@@ -542,6 +626,13 @@ export default class GameHandler {
       if (settings.chickenModeSurvivesWith5k){
         returnString += `5k avoids chicken: on | `
       }
+    }
+    
+    if (settings.countdownMode !== "normal"){
+      if(settings.countdownMode === "countdown")
+        returnString += `Countdown | `
+      if(settings.countdownMode === "countup")
+        returnString += `Countup | `
     }
       
     if (settings.isDartsMode)

@@ -57,6 +57,7 @@ const defaultSettings = {
   chickenModeSurvivesWith5k: false,
   chickenMode5kGivesPoints: false,
   waterPlonkMode: "normal",
+  countdownMode: "normal",
   invertScoring: false,
   dartsTargetScore: 25000,
   isDartsMode: false,

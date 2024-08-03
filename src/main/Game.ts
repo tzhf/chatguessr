@@ -403,6 +403,16 @@ export default class Game {
         parts.push("🌊❗")
       }
     }
+    if (this.#settings.countdownMode !== "normal"){
+      if(this.#settings.countdownMode === "countdown"){
+        parts.push("Countdown")
+      }
+      
+      if(this.#settings.countdownMode === "countup"){
+        parts.push("Countup")
+      }
+      
+    }
     return parts
   }
 

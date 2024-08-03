@@ -359,6 +359,20 @@
           <input v-model="settings.messageGameFinished" spellcheck="false" />
         </label>
       </div>
+      <hr/>
+      <h2>Best Message Setting</h2>
+      <div class="ml-05">
+        <label
+          class="form__group"
+          data-tip="Include Streamer Data in !best command"
+        >
+        Include Streamer Data in !best command
+          <input v-model="settings.includeBroadcasterDataInBest" type="checkbox" />
+        </label>
+      </div>
+
+
+
 
     </div>
 

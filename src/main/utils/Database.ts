@@ -841,13 +841,14 @@ ORDER BY
       })
   }
 
-  statsQueries() {
+  statsQueries(excludeBroadcaster = false) {
     const streakQuery = this.#db.prepare(`
     SELECT users.id, users.username, users.avatar, users.color, users.flag, MAX(streaks.count) AS streak
     FROM users, streaks
     WHERE streaks.user_id = users.id
       AND streaks.updated_at > users.reset_at
       AND streaks.updated_at > :since
+      ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
     GROUP BY users.id
     ORDER BY streak DESC
     LIMIT 100
@@ -859,6 +860,7 @@ ORDER BY
     WHERE users.id = game_winners.user_id
       AND game_winners.created_at > users.reset_at
       AND game_winners.created_at > :since
+      ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
     GROUP BY users.id
     ORDER BY victories DESC
     LIMIT 100
@@ -871,6 +873,7 @@ ORDER BY
       AND guesses.created_at > users.reset_at
       AND guesses.created_at > :since
       WHERE guesses.score = 5000
+      ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
     GROUP BY users.id
     ORDER BY perfects DESC
     LIMIT 100
@@ -884,6 +887,7 @@ ORDER BY
     AND guesses.created_at > :since
     WHERE guesses.is_random_plonk = 1
     AND rounds.isInvertedScoring = 0
+    ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
     ORDER BY guesses.score DESC
   LIMIT 1
 `)
@@ -894,9 +898,8 @@ ORDER BY
   /**
    *   Get best stats for !best command
    */
-  getBestStats(sinceTime: number = 0) {
-    const { streakQuery, victoriesQuery, perfectQuery, randomQuery } = this.statsQueries()
-
+  getBestStats(sinceTime: number = 0, excludeBroadcaster = false) {
+    const { streakQuery, victoriesQuery, perfectQuery, randomQuery } = this.statsQueries(excludeBroadcaster)
     const bestStreak = streakQuery.get({ since: sinceTime }) as
       | { id: string; username: string; streak: number }
       | undefined

@@ -725,8 +725,8 @@ export default class GameHandler {
         await this.#backend?.sendMessage(`${userstate['display-name']}: ${dateInfo.description}.`)
         return
       }
-      const { streak, victories, perfects, bestRandomPlonk } = this.#db.getBestStats(dateInfo.timeStamp)
-      if (!streak && !victories && !perfects) {
+      const { streak, victories, perfects, bestRandomPlonk } = this.#db.getBestStats(dateInfo.timeStamp, !settings.includeBroadcasterDataInBest)
+      if (!streak && !victories && !perfects && !bestRandomPlonk) {
         await this.#backend?.sendMessage('No stats available.')
       } else {
         let msg = ''
@@ -776,8 +776,8 @@ export default class GameHandler {
       }
       return
     }
-
-    if (message === settings.randomPlonkCmd) {
+    // if first chars of message are equal to settings of randomplonkcmd check if it is randomplonkcmd
+    if(message.startsWith(settings.randomPlonkCmd)){
       if (!this.#game.isInGame) return
 
       var { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds);
@@ -794,7 +794,7 @@ export default class GameHandler {
       return
     }
     
-    if (message === settings.randomPlonkWaterCmd || message === "!taquitoplonk") {
+    if (message.startsWith(settings.randomPlonkWaterCmd) || message.startsWith("!taquitoplonk")) {
       if (!this.#game.isInGame) return
 
       var { lat, lng } = await getRandomCoordsNotInLand(this.#game.seed!.bounds);

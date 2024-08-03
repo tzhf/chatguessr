@@ -388,6 +388,13 @@ export default class Game {
       parts.push("Game of chicken 🐔")
     }
 
+
+
+    if (this.#settings.isDartsMode)
+    {
+      const bustSign = this.#settings.isDartsModeBust ? '≤': ''
+      parts.push(`Darts 🎯(${bustSign}${this.#settings.dartsTargetScore})`)
+    }
     if (this.#settings.waterPlonkMode !== "normal"){
       if(this.#settings.waterPlonkMode === "illegal"){
         parts.push("🌊❌")
@@ -395,12 +402,6 @@ export default class Game {
       if(this.#settings.waterPlonkMode === "mandatory"){
         parts.push("🌊❗")
       }
-    }
-
-    if (this.#settings.isDartsMode)
-    {
-      const bustSign = this.#settings.isDartsModeBust ? '≤': ''
-      parts.push(`Darts 🎯(${bustSign}${this.#settings.dartsTargetScore})`)
     }
     return parts
   }

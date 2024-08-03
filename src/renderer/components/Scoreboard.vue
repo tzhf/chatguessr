@@ -63,7 +63,17 @@
       Guess change allowed
     </div>
     <div :class="['mode-hint', { hidden: props.modeHelp.length === 0 || gameState !== 'in-round' }]">
-      <p v-for="mode in props.modeHelp" :key="mode">{{ mode }}</p>
+      <p v-for="mode in props.modeHelp" :key="mode">
+        <template v-if="mode === '🌊❗'">
+          <OceanPlonkMandatory style="width: 24px;" />
+        </template>
+        <template v-else-if="mode === '🌊❌'">
+          <OceanPlonkIllegal style="width: 24px;"  />
+        </template>
+        <template v-else>
+          {{ mode }}
+        </template>
+      </p>
     </div>
 
     <input
@@ -142,6 +152,8 @@ import formatDuration from 'format-duration'
 import { getLocalStorage, setLocalStorage } from '@/useLocalStorage'
 import IconAutoScroll from '@/assets/icons/auto_scroll.svg'
 import IconGear from '@/assets/icons/gear.svg'
+import OceanPlonkIllegal from '@/assets/icons/oceanPlonkIllegal.svg'
+import OceanPlonkMandatory from '@/assets/icons/oceanPlonkMandatory.svg'
 
 const { chatguessrApi } = window
 const props = defineProps<{

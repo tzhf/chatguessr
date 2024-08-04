@@ -62,7 +62,7 @@
     <div :class="['scoreboard-hint', { hidden: !isMultiGuess || gameState !== 'in-round' }]">
       Guess change allowed
     </div>
-    <div :class="['mode-hint', { hidden: props.modeHelp.length === 0 || gameState !== 'in-round' }]">
+    <div :class="['mode-hint', { hidden: props.modeHelp.length === 0 }]">
       <p v-for="mode in props.modeHelp" :key="mode">
         <template v-if="mode === '🌊❗'">
           <OceanPlonkMandatory style="width: 24px;" />

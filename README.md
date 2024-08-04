@@ -61,6 +61,7 @@ Countup mode: The current round you guess has to have more letters than the prev
 - add custom Flags in the `\AppData\Roaming\ChatGuessr\flags` directory. If image file is called test.jpg command would be "!flag test". Allowed files are: .svg, .png, .jpg, .jpeg, .webp, .gif, .apng
 - add possibility to change Twitch messages to display different text.
 - fixed random plonk issue (no avatar, players who changed their name were able to double plonk)
+- exclude streamer data from !best commands
 
 ## License
 

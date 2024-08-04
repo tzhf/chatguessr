@@ -386,6 +386,13 @@ export default class Game {
     if (this.#settings.isGameOfChickenModeActivated)
     {
       parts.push("Game of chicken 🐔")
+
+      if (this.#settings.chickenMode5kGivesPoints){
+        parts.push(`Chicken can 5k`)
+      }
+      if (this.#settings.chickenModeSurvivesWith5k){
+        parts.push(`5k avoids chicken`)
+      }
     }
 
 

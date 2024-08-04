@@ -108,9 +108,6 @@
                 max="120"
               />
             </label>
-          </div>
-
-          <div>
             <label class="form__group" data-tip="Get user stats in chat  (default: !me)">
               Get user stats :
               <input v-model.trim="settings.getUserStatsCmd" type="text" spellcheck="false" />
@@ -123,6 +120,9 @@
               Get channel best stats :
               <input v-model.trim="settings.getBestStatsCmd" type="text" spellcheck="false" />
             </label>
+          </div>
+
+          <div>
             <label class="form__group" data-tip="Get flags list  (default: !flags)">
               Get flags list :
               <input v-model.trim="settings.flagsCmd" type="text" spellcheck="false" />

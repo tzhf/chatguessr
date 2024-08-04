@@ -416,7 +416,7 @@ export default class Game {
       }
       
       if(this.#settings.countdownMode === "countup"){
-        parts.push("Countup")
+        parts.push("ountup")
       }
       
     }

@@ -149,6 +149,18 @@ export default class GameHandler {
     
   }
 
+  convertLatLngToCountdownName(lat: number, lng: number): string | boolean {
+    let countryIsos = countryIso(lat, lng, true)
+    if(countryIsos.length === 0){
+      return false
+    }
+    let countryName = countryCodeCountdown.find(x=>x.code == countryCodes[countryIsos[0]].toLowerCase())
+    if (countryName === undefined) {
+      return false
+    }
+    return countryName.names
+  }
+
   async #showGameResults() {
     var gameResults = this.#game.getGameResults()
 
@@ -156,6 +168,20 @@ export default class GameHandler {
       gameResults.forEach(gameResult=>{
         let countdownDisqualified = false
         let countdownLength: number[] = []
+        let countdownCountries: (string | boolean)[] = []
+        gameResult.guesses.every((guess)=>{
+          let lat = guess?.lat
+          let lng = guess?.lng
+          if(lat === undefined || lng === undefined){
+            lat = 0
+            lng = 0
+          }
+          let countryName = this.convertLatLngToCountdownName(lat, lng)
+
+          countdownCountries.push(countryName)
+          return true;
+        })
+
         gameResult.guesses.every((guess)=>{
           if(countdownDisqualified)
             return false;
@@ -165,31 +191,34 @@ export default class GameHandler {
             lat = 0
             lng = 0
           }
-          let countryIsos = countryIso(lat, lng, true)
-          console.log(countryIsos)
-          if(countryIsos.length === 0){
+          let countryName = this.convertLatLngToCountdownName(lat, lng)
+          if(countryName === false){
             countdownDisqualified = true
             return false;
           }
-          let countryName = countryCodeCountdown.find(x=>x.code == countryCodes[countryIsos[0]].toLowerCase())
-          console.log(countryName, countryIsos[0], countryCodes[countryIsos[0]].toLowerCase())
-          if (countryName === undefined) {
-            countdownDisqualified = true
-            return false;
+          else{
+            //this wont happen because the convertLatLngToCountdownName function will always return a false or string
+            countryName = countryName as string
           }
-          let countryNameLenght = countryName.names.replaceAll(" ", "").length
+          let countryNameLenght = countryName.replaceAll(" ", "").length
 
-          console.log(gameResult.player.username, countryIsos, countryName, countryNameLenght)
           countdownLength.push(countryNameLenght)
           return true;
         })
+        gameResult.countdownCountries = countdownCountries.map(x=>{
+          if(x === false || x === true){
+            return "Invalid"
+          }
+          else{
+            return `${x.replaceAll(" ", "")} (${x.replaceAll(" ", "").length})` 
+          }
+        }).join(" => ")
         if(countdownDisqualified){
           gameResult.isCountdownDisqualified = true
         }
         if(settings.countdownMode === "countdown"){
           // check if the coundownLength is in descending order
           let isSorted = countdownLength.every((val, i, arr) => !i || val < arr[i - 1]);
-          console.log(countdownLength, isSorted)
           if(!isSorted){
             gameResult.isCountdownDisqualified = true
           }

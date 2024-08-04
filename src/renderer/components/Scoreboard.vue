@@ -102,7 +102,7 @@
         </thead>
         <tbody>
           <TransitionGroup name="scoreboard_rows">
-            <tr v-for="row in rows" :key="row.player.username" @click="onRowClick(row)">
+<tr v-for="row in rows" :key="row.player.username" @click="onRowClick(row)" :title="row.countdownCountries ? row.countdownCountries : ''">
               <td v-for="col in activeCols" :key="col.value">
                 <div
                   v-if="col.value === 'player'"
@@ -375,7 +375,6 @@ function showRoundResults(round: number, roundResults: RoundResult[]) {
 }
 
 function showGameResults(gameResults: GameResult[]) {
-
   const formatedRows = gameResults.map((result, i) => {
     return {
       index: {
@@ -399,7 +398,8 @@ function showGameResults(gameResults: GameResult[]) {
       scores: result.scores,
       distances: result.distances,
       totalScore: result.totalScore,
-      totalDistance: result.totalDistance
+      totalDistance: result.totalDistance,
+      countdownCountries: result.countdownCountries,
     }
   })
   Object.assign(rows, formatedRows)

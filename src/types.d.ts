@@ -57,6 +57,7 @@ interface GameResult {
   totalScore: number
   totalDistance: number
   isCountdownDisqualified: boolean
+  countdownCountries: string | null
 }
 
 interface GameResultDisplay {
@@ -89,6 +90,7 @@ interface ScoreboardRow {
   scores?: (number | null)[]
   totalScore?: number
   totalDistance?: number
+  countdownCountries?: string | null
 }
 
 type StatisticsInterval = 'day' | 'week' | 'month' | 'year' | 'all'

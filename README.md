@@ -13,7 +13,7 @@ It is created with the support and input from the amazing ChatGuessr Community o
 
 ## Support
 
-Do you want to support the project? Go to <a href="https://chatguessr.com">the ChatGuessr.com website</a>. You can find a dono link at the bottom.
+Do you want to support the project? Go to <a href="https://chatguessr.com">the official ChatGuessr.com website</a>. You can find a dono link at the bottom.
 
 ## Platform Support
 
@@ -22,6 +22,13 @@ Only Windows right now. Mac build process is currently not working. Sorry about 
 ## Differences
 
 ### Mode Settings
+
+- Chicken Mode:
+Closest guess doesn't get any any points next round. So last round is free.
+Additional Chicken Modes: 
+- Getting a 5k bypasses you for getting 0 points next round. This means that 0 points will be given to the first
+  non-5k guess in rounds 1-4.
+- Getting a 5k always gives you points even if you were first the previous round.
 
 - Wrong Country only mode:
 If you plonk in the right Country you get 0 points. Be aware that Borders are not always mapped 100% right. Guessing right on the border can be dangerous. Do you dare to plonk one of your 50/50? Which side of the right country are you plonking?
@@ -34,7 +41,7 @@ Tired of the Water Hedges? Tired of always plonking on Land? Switch it up. Manda
 
 ### Game Settings
 
-- Customize Twitch notifications. Activate or deactivate every Type of Message.
+- Activate or deactivate every Type of Message.
 - Additional Commands: !randomplonkwater (in international Waters only), !mode (shows Game Mode)
 - !addpoints to gift Points (Nightbot or Stream Elements) to Viewers for winning Rounds or Games. Command can be customized.
 
@@ -44,8 +51,8 @@ Tired of the Water Hedges? Tired of always plonking on Land? Switch it up. Manda
 - Hide Info Box (the purple thing on top right with Map Name, Round & Score) and Map when hiding Scoreboard.
 - Fix Bug that causes repeating "Guesses are opened", "Round Started" when clicking "Play Again" after a game.
 - add custom Flags in the `\AppData\Roaming\ChatGuessr\flags` directory. If image file is called test.jpg command would be "!flag test". Allowed files are: .svg, .png, .jpg, .jpeg, .webp, .gif, .apng
-
-
+- add possibility to change Twitch messages to display different text.
+- fixed random plonk issue (no avatar, players who changed their name were able to double plonk)
 
 ## License
 

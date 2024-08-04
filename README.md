@@ -25,10 +25,11 @@ Only Windows right now. Mac build process is currently not working. Sorry about 
 
 - Chicken Mode:
 Closest guess doesn't get any any points next round. So last round is free.
+
 Additional Chicken Modes: 
-- Getting a 5k bypasses you for getting 0 points next round. This means that 0 points will be given to the first
-  non-5k guess in rounds 1-4.
-- Getting a 5k always gives you points even if you were first the previous round.
+
+  - Getting a 5k bypasses you for getting 0 points next round. This means that 0 points will be given to the first non-5k guess in rounds 1-4.
+  - Getting a 5k always gives you points even if you were first the previous round.
 
 - Wrong Country only mode:
 If you plonk in the right Country you get 0 points. Be aware that Borders are not always mapped 100% right. Guessing right on the border can be dangerous. Do you dare to plonk one of your 50/50? Which side of the right country are you plonking?

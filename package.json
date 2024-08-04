@@ -16,8 +16,9 @@
     "typecheck:node": "tsc -p tsconfig.node.json",
     "typecheck:web": "vue-tsc -p tsconfig.web.json",
     "lint": "eslint . --ext .js,.cjs,.mjs,.ts,.vue --fix",
-    "format": "prettier 'src/**/*.{ts,vue,json}' --write",
     "package": "electron-forge package",
+    "package-mac": "electron-forge package --arch=universal --platform=darwin",
+    "format": "prettier 'src/**/*.{ts,vue,json}' --write",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "test": "vitest run"

@@ -24,6 +24,7 @@ jobs:
         run: npm ci
       - name: Check types
         run: npm run typecheck
+
   test:
     name: Tests
     runs-on: ubuntu-latest
@@ -38,13 +39,14 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
+
   package:
     name: Package
     needs: [types, test]
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest-large, ubuntu-latest]
+        os: [windows-latest, macos-13, ubuntu-latest]
     runs-on: ${{matrix.os}}
     steps:
       - name: Checkout sources
@@ -57,14 +59,21 @@ jobs:
         run: npm ci
       # - name: Write .env
       #   run: node create-env.js
-        # env:
-        #   VITE_CG_PUBLIC_URL: ${{secrets.VITE_CG_PUBLIC_URL}}
-        #   VITE_CG_API_URL: ${{secrets.VITE_CG_API_URL}}
-        #   VITE_SOCKET_SERVER_URL: ${{secrets.VITE_SOCKET_SERVER_URL}}
-        #   VITE_SUPABASE_URL: ${{secrets.VITE_SUPABASE_URL}}
-        #   VITE_SUPABASE_ANON_KEY: ${{secrets.VITE_SUPABASE_ANON_KEY}}
-      - name: Package
+      # env:
+      #   VITE_CG_PUBLIC_URL: ${{secrets.VITE_CG_PUBLIC_URL}}
+      #   VITE_CG_API_URL: ${{secrets.VITE_CG_API_URL}}
+      #   VITE_SOCKET_SERVER_URL: ${{secrets.VITE_SOCKET_SERVER_URL}}
+      #   VITE_SUPABASE_URL: ${{secrets.VITE_SUPABASE_URL}}
+      #   VITE_SUPABASE_ANON_KEY: ${{secrets.VITE_SUPABASE_ANON_KEY}}
+
+      - name: Package for macOS
+        if: runner.os == 'macOS'
+        run: npm run package-mac
+
+      - name: Package for other OSes
+        if: runner.os != 'macOS'
         run: npm run package
+
       - uses: actions/upload-artifact@v4
         with:
           name: Chatguessr-${{runner.os}}

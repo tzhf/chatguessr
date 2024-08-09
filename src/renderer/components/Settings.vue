@@ -161,47 +161,6 @@
         </div>
       </div>
 
-      <hr />
-
-
-      <h2>Gift Points Settings</h2>
-      <div class="ml-05">
-
-        <label class="form__group" data-tip="<command> <username> <amount>">
-              Command for the gift of points:
-              <input v-model.trim="settings.pointGiftCommand" type="text" spellcheck="false" />
-            </label>
-
-        <label
-          class="form__group"
-          data-tip="Gift points per Round"
-        >
-          Gift Points Round
-          <input v-model="settings.isGiftingPointsRound" type="checkbox" />
-        </label>
-      </div>
-      
-      <label class="form__group" data-tip="Points gifted per Round">
-              Gift points per Round:
-              <input v-model.trim="settings.roundPointGift" type="number" spellcheck="false" />
-            </label>
-      
-      <div class="ml-05">
-        <label
-          class="form__group"
-          data-tip="Gift points per Round"
-        >
-          Gift Points Game
-          <input v-model="settings.isGiftingPointsGame" type="checkbox" />
-        </label>
-      </div>
-      
-      <label class="form__group" data-tip="Points gifted per Game">
-              Points gifted per Game :
-              <input v-model.trim="settings.gamePointGift" type="number" spellcheck="false" />
-            </label>
-
-
 
 
 
@@ -288,33 +247,53 @@
     </label>
 
     <hr />
-  <h2>Countdown /-up Settings</h2>
+  <h2>Countdown /-up / ABC / Alphabet Settings</h2>
   <label class="form__group" data-tip="Countdown">
-    <input type="radio" v-model="settings.countdownMode" value="countdown" />
     Countdown
+    <input type="radio" v-model="settings.countdownMode" value="countdown" />
   </label>
   <label class="form__group" data-tip="Standard Mode">
-    <input type="radio" v-model="settings.countdownMode" value="normal" />
     Standard Mode
+    <input type="radio" v-model="settings.countdownMode" value="normal" />
   </label>
   <label class="form__group" data-tip="Countup">
-    <input type="radio" v-model="settings.countdownMode" value="countup" />
     Countup
+    <input type="radio" v-model="settings.countdownMode" value="countup" />
   </label>
+  <label class="form__group" data-tip="Alphabetical A=>Z">
+    Alphabetical A=>Z
+    <input type="radio" v-model="settings.countdownMode" value="alphabeticalAZ" />
+  </label>
+  <label class="form__group" data-tip="Alphabetical Z=>A">
+    Alphabetical Z=>A
+    <input type="radio" v-model="settings.countdownMode" value="alphabeticalZA" />
+  </label>
+  <label class="form__group" data-tip="ABC">
+    ABC
+    <input type="radio" v-model="settings.countdownMode" value="abc" />
+  </label>
+              
+  <label class="form__group" data-tip="Letters for ABC Mode">
+        Letters for ABC Mode:
+        <input v-model.trim="settings.ABCModeLetters" v-on:keypress="isLetter($event)"type="text" spellcheck="false" :disabled="settings.countdownMode!='abc'" />
+      </label>
+
   <hr />
+  
   <h2>Ocean Plonk Settings</h2>
   <label class="form__group" data-tip="0 Points for Plonks on Land">
-    <input type="radio" v-model="settings.waterPlonkMode" value="mandatory" />
     Only Ocean Plonk Mode
+    <input type="radio" v-model="settings.waterPlonkMode" value="mandatory" />
   </label>
   <label class="form__group" data-tip="Standard Mode">
-    <input type="radio" v-model="settings.waterPlonkMode" value="normal" />
     Normal Ocean Plonk Mode
+    <input type="radio" v-model="settings.waterPlonkMode" value="normal" />
   </label>
   <label class="form__group" data-tip="0 Points for Plonks in international Waters">
-    <input type="radio" v-model="settings.waterPlonkMode" value="illegal" />
     Ocean Plonks Illegal Mode
+    <input type="radio" v-model="settings.waterPlonkMode" value="illegal" />
   </label>
+
 
   </div>
 
@@ -383,6 +362,60 @@
           <input v-model="settings.includeBroadcasterDataInBest" type="checkbox" />
         </label>
       </div>
+      
+      <hr />
+
+
+      <h2>Gift Points Settings</h2>
+      <div class="ml-05">
+
+        <label class="form__group" data-tip="<command> <username> <amount>">
+              Command for the gift of points:
+              <input v-model.trim="settings.pointGiftCommand" type="text" spellcheck="false" />
+            </label>
+
+        <label
+          class="form__group"
+          data-tip="Gift points per Round"
+        >
+          Gift Points Round
+          <input v-model="settings.isGiftingPointsRound" type="checkbox" />
+        </label>
+      </div>
+      
+      <label class="form__group" data-tip="Points gifted per Round">
+              Gift points per Round:
+              <input v-model.trim="settings.roundPointGift" type="number" spellcheck="false" />
+            </label>
+      
+      <div class="ml-05">
+        <label
+          class="form__group"
+          data-tip="Gift points per Round"
+        >
+          Gift Points Game
+          <input v-model="settings.isGiftingPointsGame" type="checkbox" />
+        </label>
+      </div>
+      
+      <label class="form__group" data-tip="Points gifted per Game">
+        Points gifted per Game:
+        <input v-model.trim="settings.gamePointGift" type="number" spellcheck="false" />
+      </label>
+      <hr />
+      <h2>Bot Random Plonk</h2>
+
+            
+      <label class="form__group" data-tip="Send Message at start of Round">
+        Send Message at start of Round (if connected to Bot Account, Bot needs Mod Rights):
+        <input v-model="settings.isStartOfRoundCommandActive" type="checkbox" />
+      </label>
+            
+      <label class="form__group" data-tip="Message at start of Round">
+        Message at start of Round:
+        <input v-model.trim="settings.startOfRoundCommand" type="text" spellcheck="false" />
+      </label>
+
 
 
 
@@ -511,6 +544,13 @@ const { socketConnectionState, twitchConnectionState } = defineProps<{
   socketConnectionState: SocketConnectionState
 }>()
 
+function isLetter(e) {
+  let char = String.fromCharCode(e.keyCode); // Get the character
+  if(/^[A-Za-z]+$/.test(char)) return true; // Match with regex 
+  else e.preventDefault(); // If not match, don't add to input text
+  return false;
+}
+
 const currentTab = shallowRef(
   twitchConnectionState.state === 'disconnected' ? 'twitch-connect' : 'game-settings'
 )
@@ -571,6 +611,10 @@ h2 small {
 
 .content {
   padding: 0.5rem 1rem;
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 24px;
 }
 
 .grid-col {

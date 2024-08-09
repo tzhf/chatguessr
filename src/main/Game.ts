@@ -416,7 +416,19 @@ export default class Game {
       }
       
       if(this.#settings.countdownMode === "countup"){
-        parts.push("ountup")
+        parts.push("Countup")
+      }
+      
+      if(this.#settings.countdownMode === "alphabeticalAZ"){
+        parts.push("Alphabetical A=>Z")
+      }
+      
+      if(this.#settings.countdownMode === "alphabeticalZA"){
+        parts.push("Alphabetical Z=>A")
+      }
+      
+      if(this.#settings.countdownMode === "abc"){
+        parts.push("ABC-Mode: " + this.#settings.ABCModeLetters.split("").join("").toUpperCase())
       }
       
     }

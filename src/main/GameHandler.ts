@@ -54,10 +54,18 @@ export default class GameHandler {
   }
 
   openGuesses() {
+    console.log("opening the guesses")
     this.#game.openGuesses()
     this.#win.webContents.send('switch-on')
     if(settings.showGuessesAreOpen)
       this.#backend?.sendMessage(settings.messageGuessesAreOpen, { system: true })
+
+    if(settings.isStartOfRoundCommandActive){
+      this.#backend?.sendMessage(
+        settings.startOfRoundCommand,
+        { system: false }
+      )
+    }
   }
 
   closeGuesses() {
@@ -66,6 +74,7 @@ export default class GameHandler {
     if(settings.showGuessesAreClosed)
     this.#backend?.sendMessage(settings.messageGuessesAreClosed, { system: true })
   }
+
 
   nextRound(isRestartClick: boolean = false) {
     if (this.#game.isFinished) {
@@ -165,82 +174,183 @@ export default class GameHandler {
     var gameResults = this.#game.getGameResults()
 
     if(settings.countdownMode !== "normal"){
-      gameResults.forEach(gameResult=>{
-        let countdownDisqualified = false
-        let countdownLength: number[] = []
-        let countdownCountries: (string | boolean)[] = []
-        gameResult.guesses.every((guess)=>{
-          let lat = guess?.lat
-          let lng = guess?.lng
-          if(lat === undefined || lng === undefined){
-            lat = 0
-            lng = 0
-          }
-          let countryName = this.convertLatLngToCountdownName(lat, lng)
 
-          countdownCountries.push(countryName)
-          return true;
+      if(settings.countdownMode === "abc"){
+        let allowed_start_characters = settings.ABCModeLetters.toLowerCase().split("")
+        // check if allowed_start_characters only contains characters and remove other chars
+        allowed_start_characters = allowed_start_characters.filter(x=>x.match(/[a-z]/))
+        
+        
+        gameResults.forEach(gameResult=>{
+          let countdownCountries: (string | boolean)[] = []
+          gameResult.guesses.every((guess)=>{
+
+            let lat = guess?.lat
+            let lng = guess?.lng
+            if(lat === undefined || lng === undefined){
+              lat = 0
+              lng = 0
+            }
+            let countryName = this.convertLatLngToCountdownName(lat, lng)
+            countdownCountries.push(countryName)
+            return true;
+          })
+
+          gameResult.disqualifiedMessage = countdownCountries.map(x=>x === false ? "Invalid" : x).join(" => ")
+          if(countdownCountries.includes(false)){
+            gameResult.isDisqualified = true
+          }
+          if(countdownCountries.length > 0){
+            countdownCountries.every((countryName)=>{
+              if(countryName === false){
+                gameResult.isDisqualified = true
+                return false
+              }
+              else{
+                if(!allowed_start_characters.includes((countryName as string).toLowerCase()[0])){
+                  gameResult.isDisqualified = true
+                  return false
+                }
+                return true
+              }
+            })
+            
+          }
         })
-
-        gameResult.guesses.every((guess)=>{
-          if(countdownDisqualified)
-            return false;
-          let lat = guess?.lat
-          let lng = guess?.lng
-          if(lat === undefined || lng === undefined){
-            lat = 0
-            lng = 0
-          }
-          let countryName = this.convertLatLngToCountdownName(lat, lng)
-          if(countryName === false){
-            countdownDisqualified = true
-            return false;
-          }
-          else{
-            //this wont happen because the convertLatLngToCountdownName function will always return a false or string
-            countryName = countryName as string
-          }
-          let countryNameLenght = countryName.replaceAll(" ", "").length
-
-          countdownLength.push(countryNameLenght)
-          return true;
+        let qualifiedResults = gameResults.filter((result) => !result.isDisqualified).map(gameResult=>{
+          gameResult.player.username = "✅" + gameResult.player.username 
+          return gameResult
         })
-        gameResult.countdownCountries = countdownCountries.map(x=>{
-          if(x === false || x === true){
-            return "Invalid"
-          }
-          else{
-            return `${x.replaceAll(" ", "")} (${x.replaceAll(" ", "").length})` 
-          }
-        }).join(" => ")
-        if(countdownDisqualified){
-          gameResult.isCountdownDisqualified = true
-        }
-        if(settings.countdownMode === "countdown"){
-          // check if the coundownLength is in descending order
-          let isSorted = countdownLength.every((val, i, arr) => !i || val < arr[i - 1]);
-          if(!isSorted){
-            gameResult.isCountdownDisqualified = true
-          }
-        }
-        if(settings.countdownMode === "countup"){
-          // check if the coundownLength is in ascending order
-          let isSorted = countdownLength.every((val, i, arr) => !i || val > arr[i - 1]);
-          if(!isSorted){
-            gameResult.isCountdownDisqualified = true
-          }
-        }
-      })
-      let qualifiedResults = gameResults.filter((result) => !result.isCountdownDisqualified).map(gameResult=>{
-        gameResult.player.username = "✅" + gameResult.player.username 
-        return gameResult
-      })
-      let disqualifiedResults = gameResults.filter((result) => result.isCountdownDisqualified).map(gameResult=>{
-        gameResult.player.username = "❌" + gameResult.player.username
-        return gameResult
-      })
-      gameResults = qualifiedResults.concat(disqualifiedResults)
+        let disqualifiedResults = gameResults.filter((result) => result.isDisqualified).map(gameResult=>{
+          gameResult.player.username = "❌" + gameResult.player.username
+          return gameResult
+        })
+        gameResults = qualifiedResults.concat(disqualifiedResults)
+      }
 
+      if(settings.countdownMode === "alphabeticalAZ" || settings.countdownMode === "alphabeticalZA"){
+        gameResults.forEach(gameResult=>{
+          let countdownCountries: (string | boolean)[] = []
+          gameResult.guesses.every((guess)=>{
+            let lat = guess?.lat
+            let lng = guess?.lng
+            if(lat === undefined || lng === undefined){
+              lat = 0
+              lng = 0
+            }
+            let countryName = this.convertLatLngToCountdownName(lat, lng)
+            countdownCountries.push(countryName)
+            return true;
+          })
+
+          gameResult.disqualifiedMessage = countdownCountries.map(x=>x === false ? "Invalid" : x).join(" => ")
+          if(countdownCountries.includes(false)){
+            gameResult.isDisqualified = true
+          }
+          if(settings.countdownMode === "alphabeticalAZ"){
+            // check if the coundownCountries is in ascending order
+            let isSorted = countdownCountries.map(x=>x?(x as string).toLowerCase():false).every((val, i, arr) => !i || val > arr[i - 1]);
+            if(!isSorted){
+              gameResult.isDisqualified = true
+            }
+          }
+          if(settings.countdownMode === "alphabeticalZA"){
+            // check if the coundownCountries is in descending order
+            let isSorted = countdownCountries.map(x=>x?(x as string).toLowerCase():false).every((val, i, arr) => !i || val < arr[i - 1]);
+            if(!isSorted){
+              gameResult.isDisqualified = true
+            }
+          }
+        })
+        let qualifiedResults = gameResults.filter((result) => !result.isDisqualified).map(gameResult=>{
+          gameResult.player.username = "✅" + gameResult.player.username 
+          return gameResult
+        })
+        let disqualifiedResults = gameResults.filter((result) => result.isDisqualified).map(gameResult=>{
+          gameResult.player.username = "❌" + gameResult.player.username
+          return gameResult
+        })
+        gameResults = qualifiedResults.concat(disqualifiedResults)
+
+      }
+
+      if(settings.countdownMode === "countdown" || settings.countdownMode === "countup"){
+        gameResults.forEach(gameResult=>{
+          let countdownDisqualified = false
+          let countdownLength: number[] = []
+          let countdownCountries: (string | boolean)[] = []
+          gameResult.guesses.every((guess)=>{
+            let lat = guess?.lat
+            let lng = guess?.lng
+            if(lat === undefined || lng === undefined){
+              lat = 0
+              lng = 0
+            }
+            let countryName = this.convertLatLngToCountdownName(lat, lng)
+
+            countdownCountries.push(countryName)
+            return true;
+          })
+
+          gameResult.guesses.every((guess)=>{
+            if(countdownDisqualified)
+              return false;
+            let lat = guess?.lat
+            let lng = guess?.lng
+            if(lat === undefined || lng === undefined){
+              lat = 0
+              lng = 0
+            }
+            let countryName = this.convertLatLngToCountdownName(lat, lng)
+            if(countryName === false){
+              countdownDisqualified = true
+              return false;
+            }
+            else{
+              //this wont happen because the convertLatLngToCountdownName function will always return a false or string
+              countryName = countryName as string
+            }
+            let countryNameLenght = countryName.replaceAll(" ", "").length
+
+            countdownLength.push(countryNameLenght)
+            return true;
+          })
+          gameResult.disqualifiedMessage = countdownCountries.map(x=>{
+            if(x === false || x === true){
+              return "Invalid"
+            }
+            else{
+              return `${x.replaceAll(" ", "")} (${x.replaceAll(" ", "").length})` 
+            }
+          }).join(" => ")
+          if(countdownDisqualified){
+            gameResult.isDisqualified = true
+          }
+          if(settings.countdownMode === "countdown"){
+            // check if the coundownLength is in descending order
+            let isSorted = countdownLength.every((val, i, arr) => !i || val < arr[i - 1]);
+            if(!isSorted){
+              gameResult.isDisqualified = true
+            }
+          }
+          if(settings.countdownMode === "countup"){
+            // check if the coundownLength is in ascending order
+            let isSorted = countdownLength.every((val, i, arr) => !i || val > arr[i - 1]);
+            if(!isSorted){
+              gameResult.isDisqualified = true
+            }
+          }
+        })
+        let qualifiedResults = gameResults.filter((result) => !result.isDisqualified).map(gameResult=>{
+          gameResult.player.username = "✅" + gameResult.player.username 
+          return gameResult
+        })
+        let disqualifiedResults = gameResults.filter((result) => result.isDisqualified).map(gameResult=>{
+          gameResult.player.username = "❌" + gameResult.player.username
+          return gameResult
+        })
+        gameResults = qualifiedResults.concat(disqualifiedResults)
+      }
     }
 
 
@@ -662,6 +772,12 @@ export default class GameHandler {
         returnString += `Countdown | `
       if(settings.countdownMode === "countup")
         returnString += `Countup | `
+      if(settings.countdownMode === "alphabeticalAZ")
+        returnString += `Alphabetical A=>Z | `
+      if(settings.countdownMode === "alphabeticalZA")
+        returnString += `Alphabetical Z=>A | `
+      if(settings.countdownMode === "abc")
+        returnString += `ABC-Mode: ${settings.ABCModeLetters.split("").join("").toUpperCase()} | `
     }
       
     if (settings.isDartsMode)

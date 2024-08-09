@@ -63,7 +63,10 @@ const defaultSettings = {
   isDartsMode: false,
   isDartsModeBust: false,
   showBestRandomplonkRound: false,
-  includeBroadcasterDataInBest: true
+  includeBroadcasterDataInBest: true,
+  isStartOfRoundCommandActive: false,
+  startOfRoundCommand: "!botrandomplonk",
+  ABCModeLetters: "ABCDE"
 }
 
 const settings = Object.assign({}, defaultSettings, storedSettings)

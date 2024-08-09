@@ -102,7 +102,7 @@
         </thead>
         <tbody>
           <TransitionGroup name="scoreboard_rows">
-<tr v-for="row in rows" :key="row.player.username" @click="onRowClick(row)" :title="row.countdownCountries ? row.countdownCountries : ''">
+<tr v-for="row in rows" :key="row.player.username" @click="onRowClick(row)" :title="row.disqualifiedMessage ? row.disqualifiedMessage : ''">
               <td v-for="col in activeCols" :key="col.value">
                 <div
                   v-if="col.value === 'player'"
@@ -399,7 +399,7 @@ function showGameResults(gameResults: GameResult[]) {
       distances: result.distances,
       totalScore: result.totalScore,
       totalDistance: result.totalDistance,
-      countdownCountries: result.countdownCountries,
+      disqualifiedMessage: result.disqualifiedMessage,
     }
   })
   Object.assign(rows, formatedRows)

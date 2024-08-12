@@ -145,7 +145,7 @@ export default class GameHandler {
   }
 
   async getCountryNameLenght(countryCode:string): Promise<number | boolean> {
-
+    console.log(countryCodes, countryCode)
     let country = countryCodes[countryCode].toLowerCase()
     if (country === undefined) {
       return false
@@ -160,14 +160,20 @@ export default class GameHandler {
 
   convertLatLngToCountdownName(lat: number, lng: number): string | boolean {
     let countryIsos = countryIso(lat, lng, true)
-    if(countryIsos.length === 0){
+    try{
+      if(countryIsos.length === 0){
+        return false
+      }
+      let countryName = countryCodeCountdown.find(x=>x.code == countryCodes[countryIsos[0]].toLowerCase())
+      if (countryName === undefined) {
+        return false
+      }
+      return countryName.names}
+    catch{
+      console.log("Error in convertLatLngToCountdownName")
+      console.log(countryIsos)
       return false
     }
-    let countryName = countryCodeCountdown.find(x=>x.code == countryCodes[countryIsos[0]].toLowerCase())
-    if (countryName === undefined) {
-      return false
-    }
-    return countryName.names
   }
 
   async #showGameResults() {
@@ -207,11 +213,22 @@ export default class GameHandler {
                 return false
               }
               else{
+                try{
+                  
                 if(!allowed_start_characters.includes((countryName as string).toLowerCase()[0])){
                   gameResult.isDisqualified = true
                   return false
                 }
                 return true
+                }
+                catch{
+                  console.log("Error in ABC mode")
+                  console.log(countryName)
+                  console.log("gameResult.guesses:")
+                  console.log(gameResult.guesses)
+                  gameResult.isDisqualified = true
+                  return false
+                }
               }
             })
             

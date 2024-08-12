@@ -248,14 +248,15 @@
 
     <hr />
   <h2>Countdown /-up / ABC / Alphabet Settings</h2>
-  <label class="form__group" data-tip="Countdown">
-    Countdown
-    <input type="radio" v-model="settings.countdownMode" value="countdown" />
-  </label>
   <label class="form__group" data-tip="Standard Mode">
     Standard Mode
     <input type="radio" v-model="settings.countdownMode" value="normal" />
   </label>
+  <label class="form__group" data-tip="Countdown">
+    Countdown
+    <input type="radio" v-model="settings.countdownMode" value="countdown" />
+  </label>
+
   <label class="form__group" data-tip="Countup">
     Countup
     <input type="radio" v-model="settings.countdownMode" value="countup" />

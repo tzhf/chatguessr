@@ -538,12 +538,12 @@ defineExpose({
 }
 
 .scoreboard-hint {
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .mode-hint {
   padding-top: 4px;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .switch-container {

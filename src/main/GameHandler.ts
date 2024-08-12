@@ -164,7 +164,7 @@ export default class GameHandler {
       if(countryIsos.length === 0){
         return false
       }
-      let countryName = countryCodeCountdown.find(x=>x.code == countryCodes[countryIsos[0]].toLowerCase())
+      let countryName = countryCodeCountdown.find(x=>x.code == countryCodes[countryIsos[0]]?.toLowerCase())
       if (countryName === undefined) {
         return false
       }

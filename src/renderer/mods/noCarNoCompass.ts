@@ -4,16 +4,21 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
 ;(function noCarNoCompass() {
   const settings = getLocalStorage('cg_ncnc__settings', {
     noCar: false,
-    noCompass: false
+    noCompass: false,
+    water: false,
+    scramble: false,
+    pixelate: false,
+    pixelScale: 100,
+    greyscale: false,
+    toon: false,
+    toonScale:7,
+    crt: false,
+    min: false
   })
 
   const compassRemover = document.createElement('style')
   const REMOVE_COMPASS_CSS = '[data-qa="compass"], [class^="panorama-compass_"] { display: none; }'
   compassRemover.textContent = REMOVE_COMPASS_CSS
-
-  if (settings.noCar) {
-    noCarScript()
-  }
 
   if (settings.noCompass) {
     document.head.append(compassRemover)
@@ -22,7 +27,27 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
   window.toggleNoCarMode = (el) => {
     settings.noCar = el.checked
     setLocalStorage('cg_ncnc__settings', settings)
-    location.reload()
+    if (window.ppController) {
+      window.pp.hideCar = settings.noCar
+      window.ppController.updateState(window.pp)
+    }
+  }
+  window.toggleScrambleMode = (el) => {
+    settings.scramble = el.checked
+    setLocalStorage('cg_ncnc__settings', settings)
+    if (window.ppController) {
+      window.pp.scramble = settings.scramble
+      window.ppController.updateState(window.pp)
+    }
+  }
+  window.togglePixelateMode = (el) => {
+    settings.pixelate = el.checked
+    setLocalStorage('cg_ncnc__settings', settings)
+    if (window.ppController) {
+      window.pp.pixelate = settings.pixelate
+      window.pp.pixelScale = 100
+      window.ppController.updateState(window.pp)
+    }
   }
 
   window.toggleNoCompassMode = (el) => {
@@ -34,7 +59,48 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
       compassRemover.remove()
     }
   }
-
+  window.toggleGreyscale = (el) => {
+    settings.greyscale = el.checked
+    setLocalStorage('cg_ncnc__settings', settings)
+    if (el.checked) {
+      document.body.style.filter = 'grayscale(100%)'
+    } else {
+      document.body.style.filter = 'none'
+    }
+  }
+  window.toggleWaterMode = (el) => {
+    settings.water = el.checked
+    setLocalStorage('cg_ncnc__settings', settings)
+    if (window.ppController) {
+      window.pp.water = settings.water
+      window.ppController.updateState(window.pp)
+    }
+  }
+  window.toggleMinMode = (el) => {
+    settings.min = el.checked
+    setLocalStorage('cg_ncnc__settings', settings)
+    if (window.ppController) {
+      window.pp.min = settings.min
+      window.ppController.updateState(window.pp)
+    }
+  }
+  window.toggleCrtMode = (el) => {
+    settings.crt = el.checked
+    setLocalStorage('cg_ncnc__settings', settings)
+    if (window.ppController) {
+      window.pp.crt = settings.crt
+      window.ppController.updateState(window.pp)
+    }
+  }
+  window.toggleToonMode = (el) => {
+    settings.toon = el.checked
+    setLocalStorage('cg_ncnc__settings', settings)
+    if (window.ppController) {
+      window.pp.toon = settings.toon
+      window.pp.toonScale = 7
+      window.ppController.updateState(window.pp)
+    }
+  }
   const classicGameGuiHTML = `
     <div class="section_sizeMedium__CuXRP">
       <div class="bars_root__tryg2 bars_center__kXp6T">
@@ -52,6 +118,38 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
         <div style="display: flex; align-items: center;">
           <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">No compass</span>
           <input type="checkbox" id="enableNoCompass" onclick="toggleNoCompassMode(this)" class="toggle_toggle__qfXpL">
+        </div>
+        <div style="display: flex; align-items: center;">
+          <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">Water Filter</span>
+          <input type="checkbox" id="enableWaterMode" onclick="toggleWaterMode(this)" class="toggle_toggle__qfXpL">
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between">
+        <div style="display: flex; align-items: center;">
+          <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">Greyscale</span>
+          <input type="checkbox" id="enableGreyscale" onclick="toggleGreyscale(this)" class="toggle_toggle__qfXpL">
+        </div>
+        <div style="display: flex; align-items: center;">
+          <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">Scramble</span>
+          <input type="checkbox" id="enableScrambleMode" onclick="toggleScrambleMode(this)" class="toggle_toggle__qfXpL">
+        </div>
+        <div style="display: flex; align-items: center;">
+          <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">Pixelate</span>
+          <input type="checkbox" id="enablePixelateMode" onclick="togglePixelateMode(this)" class="toggle_toggle__qfXpL">
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between">
+        <div style="display: flex; align-items: center;">
+          <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">Crt</span>
+          <input type="checkbox" id="enableCrt" onclick="toggleCrtMode(this)" class="toggle_toggle__qfXpL">
+        </div>
+        <div style="display: flex; align-items: center;">
+          <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">Min</span>
+          <input type="checkbox" id="enableMinMode" onclick="toggleMinMode(this)" class="toggle_toggle__qfXpL">
+        </div>
+        <div style="display: flex; align-items: center;">
+          <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">Toon</span>
+          <input type="checkbox" id="enableToonMode" onclick="toggleToonMode(this)" class="toggle_toggle__qfXpL">
         </div>
       </div>
     </div>
@@ -73,6 +171,27 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
       if (settings.noCompass) {
         ;(document.querySelector('#enableNoCompass') as HTMLInputElement).checked = true
       }
+      if (settings.water) {
+        ;(document.querySelector('#enableWaterMode') as HTMLInputElement).checked = true
+      }
+      if (settings.scramble) {
+        ;(document.querySelector('#enableScrambleMode') as HTMLInputElement).checked = true
+      }
+      if (settings.pixelate) {
+        ;(document.querySelector('#enablePixelateMode') as HTMLInputElement).checked = true
+      }
+      if (settings.greyscale) {
+        ;(document.querySelector('#enablePixelateMode') as HTMLInputElement).checked = true
+      }
+      if (settings.toon) {
+        ;(document.querySelector('#enableToonMode') as HTMLInputElement).checked = true
+      }
+      if (settings.min) {
+        ;(document.querySelector('#enableMinMode') as HTMLInputElement).checked = true
+      }
+      if (settings.crt) {
+        ;(document.querySelector('#enableCrtMode') as HTMLInputElement).checked = true
+      }
     }
   }
 
@@ -85,88 +204,3 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
     childList: true
   })
 })()
-
-function noCarScript() {
-  const OPTIONS = { colorR: 0.5, colorG: 0.5, colorB: 0.5 }
-  const vertexOld =
-    'const float f=3.1415926;varying vec3 a;uniform vec4 b;attribute vec3 c;attribute vec2 d;uniform mat4 e;void main(){vec4 g=vec4(c,1);gl_Position=e*g;a=vec3(d.xy*b.xy+b.zw,1);a*=length(c);}'
-  const fragOld =
-    'precision highp float;const float h=3.1415926;varying vec3 a;uniform vec4 b;uniform float f;uniform sampler2D g;void main(){vec4 i=vec4(texture2DProj(g,a).rgb,f);gl_FragColor=i;}'
-  const vertexNew = `
-            const float f=3.1415926;
-            varying vec3 a;
-            varying vec3 potato;
-            uniform vec4 b;
-            attribute vec3 c;
-            attribute vec2 d;
-            uniform mat4 e;
-            void main(){
-                vec4 g=vec4(c,1);
-                gl_Position=e*g;
-                a = vec3(d.xy * b.xy + b.zw,1);
-                a *= length(c);
-                potato = vec3(d.xy, 1.0) * length(c);
-            }
-        `
-  const fragNew = `
-            precision highp float;
-            const float h=3.1415926;
-            varying vec3 a;
-            varying vec3 potato;
-            uniform vec4 b;
-            uniform float f;
-            uniform sampler2D g;
-            void main(){
-                vec2 aD = potato.xy / a.z;
-                float thetaD = aD.y;
-                float thresholdD1 = 0.6;
-                float thresholdD2 = 0.7;
-                float x = aD.x;
-                float y = abs(4.0*x - 2.0);
-                float phiD = smoothstep(0.0, 1.0, y > 1.0 ? 2.0 - y : y);
-                vec4 i = vec4(thetaD > mix(thresholdD1, thresholdD2, phiD)
-                ? vec3(float(${OPTIONS.colorR}), float(${OPTIONS.colorG}), float(${OPTIONS.colorB})) // texture2DProj(g,a).rgb * 0.25
-                : texture2DProj(g,a).rgb,f);
-                gl_FragColor=i;
-            }
-        `
-
-  function installShaderSource(ctx: WebGLRenderingContext | WebGL2RenderingContext) {
-    const g = ctx.shaderSource
-    function shaderSource(...args: WebGLRenderingContext['shaderSource'][]) {
-      if (typeof args[1] === 'string') {
-        let glsl: string = args[1]
-        if (glsl === vertexOld) glsl = vertexNew
-        else if (glsl === fragOld) glsl = fragNew
-        return g.call(this, args[0], glsl)
-      }
-      return g.apply(this, args)
-    }
-    shaderSource.bestcity = 'bintulu'
-    ctx.shaderSource = shaderSource
-  }
-
-  function installGetContext(el: HTMLCanvasElement) {
-    const g = el.getContext
-    el.getContext = function (...args) {
-      if (args[0] === 'webgl' || args[0] === 'webgl2') {
-        const ctx: WebGLRenderingContext | WebGL2RenderingContext = g.apply(this, args)
-        if (ctx && ctx.shaderSource && ctx.shaderSource.bestcity !== 'bintulu') {
-          installShaderSource(ctx)
-        }
-        return ctx
-      }
-      return g.apply(this, args)
-    }
-  }
-
-  const createElement = document.createElement.bind(document)
-  document.createElement = function (tagName: string, options?: ElementCreationOptions) {
-    if (tagName === 'canvas' || tagName === 'CANVAS') {
-      const el = createElement('canvas')
-      installGetContext(el)
-      return el
-    }
-    return createElement(tagName, options)
-  }
-}

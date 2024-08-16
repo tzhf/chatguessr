@@ -3,6 +3,7 @@ import Vue3DraggableResizable from 'vue3-draggable-resizable'
 import Frame from './components/Frame.vue'
 import './assets/styles.css'
 
+import './mods/extenssrPostProcessing'
 import './mods/extenssrMenuItemsPlugin'
 import './mods/noCarNoCompass'
 import './mods/blinkMode'

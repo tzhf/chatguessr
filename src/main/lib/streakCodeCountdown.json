@@ -30,7 +30,7 @@
     { "code": "bo", "names": "Bolivia" },
     { "code": "bq", "names": "Bonaire" },
     { "code": "br", "names": "Brazil" },
-    { "code": "bs", "names": "TheBahamas" },
+    { "code": "bs", "names": "The Bahamas" },
     { "code": "bt", "names": "Bhutan" },
     { "code": "bv", "names": "Bouvet Island" },
     { "code": "bw", "names": "Botswana" },
@@ -255,4 +255,3 @@
     { "code": "zw", "names": "Zimbabwe" },
     { "code": "xk", "names": "Kosovo" }
   ]
-  

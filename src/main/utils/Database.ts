@@ -239,6 +239,32 @@ class db {
     })
   }
 
+  userGuessedOnOngoingRound(userId): boolean {
+    const lastRoundId = this.#db
+      .prepare(
+        `
+        WITH users_guessed_on_last_round AS (
+          SELECT user_id from guesses
+          WHERE guesses.round_id in (SELECT id
+            FROM rounds
+            ORDER BY created_at DESC
+            LIMIT 1
+          )
+        )
+        SELECT CASE WHEN EXISTS (
+          SELECT * FROM users_guessed_on_last_round
+          WHERE ? in users_guessed_on_last_round and
+          'BROADCASTER' not in users_guessed_on_last_round
+        )
+        THEN CAST(1 AS BIT)
+        ELSE CAST(0 AS BIT) END;
+        `
+      )
+      .pluck(true)
+
+    return lastRoundId.get(userId) == '1'
+  }
+
   getCurrentRound(gameId: string): string | undefined {
     const findRoundId = this.#db
       .prepare(
@@ -281,11 +307,11 @@ class db {
     return id
   }
 
-  setRoundCountry(roundId: string, country: string | null) {
-    const stmt = this.#db.prepare(`UPDATE rounds SET country = :country WHERE id = :id`)
+  setRoundStreakCode(roundId: string, streakCode: string | null) {
+    const stmt = this.#db.prepare(`UPDATE rounds SET country = :streakCode WHERE id = :id`)
     stmt.run({
       id: roundId,
-      country
+      streakCode
     })
   }
 
@@ -301,7 +327,7 @@ class db {
     userId: string,
     guess: {
       location: LatLng
-      country: string | null
+      streakCode: string | null
       streak: number
       lastStreak: number | null
       distance: number
@@ -312,7 +338,7 @@ class db {
     const id = randomUUID()
     const insertGuess = this.#db.prepare(`
       INSERT INTO guesses(id, round_id, user_id, location, country, streak, last_streak, distance, score, created_at, is_random_plonk)
-      VALUES (:id, :roundId, :userId, :location, :country, :streak, :lastStreak, :distance, :score, :createdAt, :isRandomPlonk)
+      VALUES (:id, :roundId, :userId, :location, :streakCode, :streak, :lastStreak, :distance, :score, :createdAt, :isRandomPlonk)
     `)
 
     insertGuess.run({
@@ -320,7 +346,7 @@ class db {
       roundId,
       userId,
       location: JSON.stringify(guess.location),
-      country: guess.country,
+      streakCode: guess.streakCode,
       streak: guess.streak,
       lastStreak: guess.lastStreak,
       distance: guess.distance,
@@ -340,7 +366,7 @@ class db {
         users.color,
         users.flag,
         guesses.location,
-        guesses.country,
+        guesses.country AS streakCode,
         guesses.streak,
         guesses.last_streak AS lastStreak,
         guesses.is_random_plonk AS isRandomPlonk,
@@ -358,7 +384,7 @@ class db {
           color: string
           flag: string | null
           location: string
-          country: string | null
+          streakCode: string | null
           streak: number
           lastStreak: number | null
           distance: number
@@ -380,7 +406,7 @@ class db {
     guessId: string,
     guess: {
       location: LatLng
-      country: string | null
+      streakCode: string | null
       streak: number
       lastStreak: number | null
       distance: number
@@ -392,7 +418,7 @@ class db {
       UPDATE guesses
       SET
         location = :location,
-        country = :country,
+        country = :streakCode,
         streak = :streak,
         last_streak = :lastStreak,
         is_random_plonk = :isRandomPlonk,
@@ -405,7 +431,7 @@ class db {
     updateGuess.run({
       id: guessId,
       location: JSON.stringify(guess.location),
-      country: guess.country,
+      streakCode: guess.streakCode,
       streak: guess.streak,
       lastStreak: guess.lastStreak,
       isRandomPlonk: guess.isRandomPlonk,
@@ -518,39 +544,39 @@ class db {
    */
   getRoundResults(roundId: string) {
     const stmt = this.#db.prepare(`
-SELECT 
-    guesses.id, 
-    guesses.user_id, 
-    users.username, 
-    users.avatar, 
-    users.color, 
-    users.flag, 
-    guesses.location, 
-    guesses.streak, 
-    guesses.country, 
-    guesses.last_streak, 
-    guesses.is_random_plonk, 
-    guesses.distance, 
-    guesses.score, 
-    guesses.created_at - rounds.created_at AS time, 
+SELECT
+    guesses.id,
+    guesses.user_id,
+    users.username,
+    users.avatar,
+    users.color,
+    users.flag,
+    guesses.location,
+    guesses.streak,
+    guesses.country as streakCode,
+    guesses.last_streak,
+    guesses.is_random_plonk,
+    guesses.distance,
+    guesses.score,
+    guesses.created_at - rounds.created_at AS time,
     IIF(guesses.score = 5000, guesses.created_at - rounds.created_at, NULL) AS time_to_5k,
     total_scores.total_score
-FROM 
+FROM
     rounds
-JOIN 
+JOIN
     guesses ON guesses.round_id = rounds.id
-JOIN 
+JOIN
     users ON users.id = guesses.user_id
-JOIN 
-    (SELECT user_id, SUM(score) AS total_score 
-     FROM guesses 
+JOIN
+    (SELECT user_id, SUM(score) AS total_score
+     FROM guesses
      WHERE round_id IN (SELECT id FROM rounds WHERE game_id = (SELECT game_id FROM rounds WHERE id = ?))
      GROUP BY user_id) AS total_scores ON total_scores.user_id = guesses.user_id
-WHERE 
+WHERE
     rounds.id = ?
-ORDER BY 
-    guesses.score DESC, 
-    time_to_5k ASC, 
+ORDER BY
+    guesses.score DESC,
+    time_to_5k ASC,
     guesses.distance ASC;
 		`)
 
@@ -563,7 +589,7 @@ ORDER BY
       flag: string | null
       location: string
       streak: number
-      country: string | null
+      streakCode: string | null
       last_streak: number | null
       is_random_plonk: number | null
       distance: number
@@ -582,7 +608,7 @@ ORDER BY
         flag: record.flag
       },
       streak: record.streak,
-      country: record.country,
+      streakCode: record.streakCode,
       lastStreak: record.last_streak,
       isRandomPlonk: record.is_random_plonk?.valueOf() === 1,
       distance: record.distance,
@@ -602,7 +628,7 @@ ORDER BY
         guesses.id,
         guesses.user_id,
         guesses.streak,
-        guesses.country
+        guesses.country AS streakCode
       FROM guesses, rounds
       WHERE rounds.id = ?
         AND guesses.round_id = rounds.id
@@ -612,7 +638,7 @@ ORDER BY
       id: string
       user_id: string
       streak: number
-      country: string | null
+      streakCode: string | null
     }[]
 
     return records.map((record) => ({
@@ -621,7 +647,7 @@ ORDER BY
         userId: record.user_id
       },
       streak: record.streak,
-      country: record.country
+      streakCode: record.streakCode
     }))
   }
 
@@ -885,7 +911,7 @@ ORDER BY
   SELECT users.id, users.username, users.avatar, users.color, users.flag, guesses.score AS bestRandomPlonk, guesses.distance
   FROM users
   LEFT JOIN guesses ON guesses.user_id = users.id
-  join rounds on guesses.round_id = rounds.id 
+  join rounds on guesses.round_id = rounds.id
     AND guesses.created_at > users.reset_at
     AND guesses.created_at > :since
     ${endTimestamp ? `AND guesses.created_at < ${endTimestamp}` : ''}
@@ -917,7 +943,7 @@ ORDER BY
       const bestRandom = randomQuery.get({ since: sinceTime }) as
       | { id: string; username: string; bestRandomPlonk: number; distance: number}
       | undefined
-  
+
     return {
       streak: bestStreak,
       victories: mostVictories,
@@ -925,7 +951,7 @@ ORDER BY
       bestRandomPlonk: bestRandom
     }
   }
-  
+
 
   /**
    *  Get all sorted stats in given interval for Leaderboard
@@ -1042,7 +1068,7 @@ ORDER BY
   getLastlocs() {
     const lastlocsQuery = `
       SELECT
-        rounds.country,
+        rounds.country AS streakCode,
         rounds.location,
         games.map_name
       FROM rounds
@@ -1054,13 +1080,13 @@ ORDER BY
     `
 
     const records = this.#db.prepare(lastlocsQuery).all() as {
-      country: string
+      streakCode: string
       location: string
       map_name: string
     }[]
 
     return records.map((record) => ({
-      country: record.country,
+      streakCode: record.streakCode,
       location: JSON.parse(record.location) as Location_,
       map_name: record.map_name
     }))

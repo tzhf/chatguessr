@@ -4,7 +4,7 @@ import { app } from 'electron'
 import { matchSorter } from 'match-sorter'
 
 import builtinFlags from './builtinFlags.json'
-import countryCodesNames from '../countryCodesNames.json'
+import streakCodesNames from '../streakCodesNames.json'
 
 // The fallback to `/tmp/` is so this module can be used in tests outside electron.
 const appDataDir = app?.getPath('userData') ?? '/tmp/'
@@ -13,7 +13,7 @@ const customFlagsDir = path.join(appDataDir, 'flags')
 /**
  * Country flags included in Chatguessr by default.
  */
-const countryFlags: Flag[] = countryCodesNames.map(({ code, names }) => ({
+const countryFlags: Flag[] = streakCodesNames.map(({ code, names }) => ({
   code,
   names,
   emoji: getCountryEmoji(code)
@@ -117,7 +117,7 @@ export function selectFlag(input: string): string | undefined {
  * Select a random country code.
  */
 export function randomCountryFlag(): string {
-  return countryCodesNames[Math.floor(Math.random() * countryCodesNames.length)].code
+  return streakCodesNames[Math.floor(Math.random() * streakCodesNames.length)].code
 }
 
 /**

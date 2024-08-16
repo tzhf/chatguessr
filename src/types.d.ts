@@ -37,7 +37,7 @@ interface Guess {
 
 interface RoundResult {
   player: Player
-  country: string | null
+  streakCode: string | null
   streak: number
   lastStreak: number | null
   distance: number
@@ -168,7 +168,7 @@ type GeoguessrUser = {
   created: string
   isVerified: boolean
   isCreator: boolean
-  countryCode: string
+  streakCode: string
 }
 
 type GeoGuessrMap = {

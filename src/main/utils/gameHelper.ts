@@ -298,7 +298,7 @@ export async function parseUserDate(
 ): Promise<{ timeStamp: number; description: string | undefined }> {
   let timeStamp = -1
   let description: string | undefined =
-    "Unsupported date (supported dates: 'day', 'week', 'month', 'year')"
+    "Unsupported date (supported dates: 'day', 'week', 'month', 'year', 'YYYYMMDD')"
   if (!userDateStr || userDateStr === 'all') {
     timeStamp = 0
     description = undefined
@@ -320,6 +320,19 @@ export async function parseUserDate(
     const now = new Date()
     timeStamp = dateToUnixTimestamp(new Date(now.getFullYear(), 0, 1))
     description = 'this year'
+  }
+  if (userDateStr?.match(/^\d{8}$/)) {
+    const year = parseInt(userDateStr.slice(0, 4))
+    const month = parseInt(userDateStr.slice(4, 6))
+    const day = parseInt(userDateStr.slice(6, 8))
+    if (year >= 2000 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      timeStamp = dateToUnixTimestamp(new Date(year, month - 1, day))
+      let monthString = "0"+month.toString()
+      let dayString = "0"+day.toString()
+      monthString = monthString.substring(monthString.length-2)
+      dayString = dayString.substring(dayString.length-2)
+      description = `${year}-${monthString}-${dayString}`
+    }
   }
   return { timeStamp: timeStamp, description: description }
 }

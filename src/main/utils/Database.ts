@@ -841,13 +841,14 @@ ORDER BY
       })
   }
 
-  statsQueries(excludeBroadcaster = false) {
+  statsQueries(excludeBroadcaster = false, endTimestamp = 0) {
     const streakQuery = this.#db.prepare(`
     SELECT users.id, users.username, users.avatar, users.color, users.flag, MAX(streaks.count) AS streak
     FROM users, streaks
     WHERE streaks.user_id = users.id
       AND streaks.updated_at > users.reset_at
       AND streaks.updated_at > :since
+      ${endTimestamp ? `AND streaks.updated_at < ${endTimestamp}` : ''}
       ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
     GROUP BY users.id
     ORDER BY streak DESC
@@ -860,6 +861,7 @@ ORDER BY
     WHERE users.id = game_winners.user_id
       AND game_winners.created_at > users.reset_at
       AND game_winners.created_at > :since
+      ${endTimestamp ? `AND game_winners.created_at < ${endTimestamp}` : ''}
       ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
     GROUP BY users.id
     ORDER BY victories DESC
@@ -872,6 +874,7 @@ ORDER BY
     LEFT JOIN guesses ON guesses.user_id = users.id
       AND guesses.created_at > users.reset_at
       AND guesses.created_at > :since
+      ${endTimestamp ? `AND guesses.created_at < ${endTimestamp}` : ''}
       WHERE guesses.score = 5000
       ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
     GROUP BY users.id
@@ -885,6 +888,7 @@ ORDER BY
   join rounds on guesses.round_id = rounds.id 
     AND guesses.created_at > users.reset_at
     AND guesses.created_at > :since
+    ${endTimestamp ? `AND guesses.created_at < ${endTimestamp}` : ''}
     WHERE guesses.is_random_plonk = 1
     AND rounds.isInvertedScoring = 0
     ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
@@ -898,8 +902,8 @@ ORDER BY
   /**
    *   Get best stats for !best command
    */
-  getBestStats(sinceTime: number = 0, excludeBroadcaster = false) {
-    const { streakQuery, victoriesQuery, perfectQuery, randomQuery } = this.statsQueries(excludeBroadcaster)
+  getBestStats(sinceTime: number = 0, excludeBroadcaster = false, endTimestamp = 0) {
+    const { streakQuery, victoriesQuery, perfectQuery, randomQuery } = this.statsQueries(excludeBroadcaster, endTimestamp)
     const bestStreak = streakQuery.get({ since: sinceTime }) as
       | { id: string; username: string; streak: number }
       | undefined

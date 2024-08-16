@@ -987,7 +987,11 @@ export default class GameHandler {
         await this.#backend?.sendMessage(`${userstate['display-name']}: ${dateInfo.description}.`)
         return
       }
-      const { streak, victories, perfects, bestRandomPlonk } = this.#db.getBestStats(dateInfo.timeStamp, !settings.includeBroadcasterDataInBest)
+      let endTimestamp = 0
+      if (date?.match(/^\d{8}$/)) {
+        endTimestamp = dateInfo.timeStamp + 86400
+      }
+      const { streak, victories, perfects, bestRandomPlonk } = this.#db.getBestStats(dateInfo.timeStamp, !settings.includeBroadcasterDataInBest, endTimestamp)
       if (!streak && !victories && !perfects && !bestRandomPlonk) {
         await this.#backend?.sendMessage('No stats available.')
       } else {

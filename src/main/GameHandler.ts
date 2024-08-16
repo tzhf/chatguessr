@@ -96,6 +96,14 @@ export default class GameHandler {
   #showRoundResults(location: Location_, roundResults: RoundResult[]) {
     const round = this.#game.isFinished ? this.#game.round : this.#game.round - 1
 
+    if(settings.countdownMode === "countdown" || settings.countdownMode === "countup"){
+      roundResults = roundResults.map((result) => {
+        let countryLength = countryCodeCountdown.find(x=>result.country && x.code === countryCodes[result.country]?.toLowerCase())?.names.length
+        let countryLengthString = countryLength ? countryLength.toString() : "X"
+        result.player.username = `(${countryLengthString}) ${result.player.username}`
+        return result
+      })
+    }
     this.#win.webContents.send(
       'show-round-results',
       round,
@@ -103,6 +111,7 @@ export default class GameHandler {
       roundResults,
       settings.guessMarkersLimit
     )
+
     if(settings.showRoundFinished)
     this.#backend?.sendMessage(
       settings.messageRoundFinished.replace('<emoji>', getEmoji(roundResults[0].player.flag)).replace('<username>', roundResults[0].player.username).replace("<round>", round.toString()),

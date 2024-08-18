@@ -30,6 +30,10 @@
       <IconLeaderboard />
     </button>
 
+    <button class="cg-button" title="Extenssr Filters" @click="extenssrFiltersVisible = true">
+      <IconExtenssrFilters />
+    </button>
+
     <button
       class="cg-button"
       title="Show/Hide timer"
@@ -61,16 +65,20 @@
   </div>
 
   <Suspense>
-    <Modal :is-visible="settingsVisible" @close="settingsVisible = false">
+    <Modal mode="v-if" :is-visible="settingsVisible" @close="settingsVisible = false">
       <Settings :socket-connection-state :twitch-connection-state />
     </Modal>
   </Suspense>
 
   <Suspense>
-    <Modal :is-visible="leaderboardVisible" @close="leaderboardVisible = false">
+    <Modal mode="v-if" :is-visible="leaderboardVisible" @close="leaderboardVisible = false">
       <Leaderboard />
     </Modal>
   </Suspense>
+
+  <Modal mode="v-show" :is-visible="extenssrFiltersVisible" @close="extenssrFiltersVisible = false">
+    <ExtenssrFilters />
+  </Modal>
 </template>
 
 <script lang="ts" setup>
@@ -83,6 +91,7 @@ import Modal from './ui/Modal.vue'
 import Scoreboard from './Scoreboard.vue'
 import Leaderboard from './Leaderboard/Leaderboard.vue'
 import Timer from './Timer.vue'
+import ExtenssrFilters from './Mods/ExtenssrFilters.vue'
 
 import IconGear from '@/assets/icons/gear.svg'
 import IconLeaderboard from '@/assets/icons/leaderboard.svg'
@@ -91,6 +100,7 @@ import IconScoreboardVisible from '@/assets/icons/scoreboard_visible.svg'
 import IconScoreboardHidden from '@/assets/icons/scoreboard_hidden.svg'
 import IconTimerHidden from '@/assets/icons/timer_hidden.svg'
 import IconStartFlag from '@/assets/icons/start_flag.svg'
+import IconExtenssrFilters from '@/assets/icons/extenssr_filters.svg'
 
 import { rendererApi } from '../rendererApi'
 const { chatguessrApi } = window
@@ -103,6 +113,7 @@ const { chatguessrApi } = window
 const scoreboard = shallowRef<InstanceType<typeof Scoreboard> | null>(null)
 const settingsVisible = shallowRef(false)
 const leaderboardVisible = shallowRef(false)
+const extenssrFiltersVisible = shallowRef(false)
 
 const gameState = shallowRef<GameState>('none')
 const isMultiGuess = shallowRef<boolean>(false)

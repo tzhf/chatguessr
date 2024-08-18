@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import ExtenssrFilters from './ExtenssrFilters.vue'
 import SatelliteMode from './SatelliteMode.vue'
 import BlinkMode from './BlinkMode.vue'
 </script>
 
 <template>
-  <ExtenssrFilters />
   <BlinkMode />
   <SatelliteMode />
 </template>
@@ -140,5 +138,8 @@ import BlinkMode from './BlinkMode.vue'
   border-radius: 50%;
   background: #7950e5;
   cursor: pointer;
+}
+.custom-slider.reverse {
+  direction: rtl;
 }
 </style>

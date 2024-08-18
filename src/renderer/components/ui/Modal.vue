@@ -1,18 +1,30 @@
 <template>
-  <transition name="modal">
-    <div v-if="isVisible" class="modal-wrapper">
-      <div ref="target" class="modal-container">
-        <slot />
+  <div v-if="mode === 'v-if'">
+    <transition name="modal">
+      <div v-if="isVisible" class="modal-wrapper">
+        <div ref="target" class="modal-container">
+          <slot />
+        </div>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </div>
+  <div v-else-if="mode === 'v-show'">
+    <transition name="modal">
+      <div v-show="isVisible" class="modal-wrapper">
+        <div ref="target" class="modal-container">
+          <slot />
+        </div>
+      </div>
+    </transition>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 
-const { isVisible } = defineProps<{
+defineProps<{
+  mode: 'v-show' | 'v-if'
   isVisible: boolean
 }>()
 

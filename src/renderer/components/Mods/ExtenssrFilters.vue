@@ -59,6 +59,13 @@ const toggleToonMode = () => {
   }
 }
 
+const onToonScaleChange = () => {
+  if (window.ppController) {
+    window.pp.toonScale = settings.toonScale
+    window.ppController.updateState(window.pp)
+  }
+}
+
 const togglePixelateMode = () => {
   if (window.ppController) {
     window.pp.pixelate = settings.pixelate
@@ -66,102 +73,45 @@ const togglePixelateMode = () => {
     window.ppController.updateState(window.pp)
   }
 }
+
+const onPixelScaleChange = () => {
+  if (window.ppController) {
+    window.pp.pixelScale = settings.pixelScale
+    window.ppController.updateState(window.pp)
+  }
+}
 </script>
 
 <template>
-  <div class="section_sizeMedium mb-1">
+  <div class="section_sizeMedium">
     <div class="bars_root bars_center">
       <div class="bars_before"></div>
       <span class="bars_content"><h3>Extenssr filters</h3></span>
       <div class="bars_after"></div>
     </div>
 
-    <div style="display: flex; justify-content: space-between">
-      <div class="flex flex-col gap-05">
-        <div class="flex items-center gap-05">
-          <input
-            v-model="settings.hideCar"
-            type="checkbox"
-            class="toggle_toggle"
-            @change="toggleMode('hideCar')"
-          />
-          <label class="game-options_optionLabel">No car</label>
-        </div>
-
-        <div class="flex items-center gap-05">
-          <input
-            v-model="settings.noCompass"
-            type="checkbox"
-            class="toggle_toggle"
-            @change="toggleNoCompassMode"
-          />
-          <label class="game-options_optionLabel">No compass</label>
-        </div>
-
-        <div class="flex items-center gap-05">
-          <input
-            v-model="settings.water"
-            type="checkbox"
-            class="toggle_toggle"
-            @change="toggleMode('water')"
-          />
-          <label class="game-options_optionLabel">Water Filter</label>
-        </div>
+    <div class="flex flex-col gap-03">
+      <div class="flex items-center gap-05">
+        <input
+          v-model="settings.hideCar"
+          type="checkbox"
+          class="toggle_toggle"
+          @change="toggleMode('hideCar')"
+        />
+        <label class="game-options_optionLabel">No car</label>
       </div>
 
-      <div class="flex flex-col gap-05">
-        <div class="flex items-center gap-05">
-          <input
-            v-model="settings.grayscale"
-            type="checkbox"
-            class="toggle_toggle"
-            @change="toggleGrayscaleMode"
-          />
-          <label class="game-options_optionLabel">Grayscale</label>
-        </div>
-
-        <div class="flex items-center gap-05">
-          <input
-            v-model="settings.scramble"
-            type="checkbox"
-            class="toggle_toggle"
-            @change="toggleMode('scramble')"
-          />
-          <label class="game-options_optionLabel">Scramble</label>
-        </div>
-
-        <div class="flex items-center gap-05">
-          <input
-            v-model="settings.pixelate"
-            type="checkbox"
-            class="toggle_toggle"
-            @change="togglePixelateMode"
-          />
-          <label class="game-options_optionLabel">Pixelate</label>
-        </div>
+      <div class="flex items-center gap-05">
+        <input
+          v-model="settings.noCompass"
+          type="checkbox"
+          class="toggle_toggle"
+          @change="toggleNoCompassMode()"
+        />
+        <label class="game-options_optionLabel">No compass</label>
       </div>
 
-      <div class="flex flex-col gap-05">
-        <div class="flex items-center gap-05">
-          <input
-            v-model="settings.crt"
-            type="checkbox"
-            class="toggle_toggle"
-            @change="toggleMode('crt')"
-          />
-          <label class="game-options_optionLabel">Crt</label>
-        </div>
-
-        <div class="flex items-center gap-05">
-          <input
-            v-model="settings.min"
-            type="checkbox"
-            class="toggle_toggle"
-            @change="toggleMode('min')"
-          />
-          <label class="game-options_optionLabel">Min</label>
-        </div>
-
+      <div class="flex items-center" style="justify-content: space-between">
         <div class="flex items-center gap-05">
           <input
             v-model="settings.toon"
@@ -171,7 +121,100 @@ const togglePixelateMode = () => {
           />
           <label class="game-options_optionLabel">Toon</label>
         </div>
+
+        <input
+          v-model.number="settings.toonScale"
+          type="range"
+          class="custom-slider reverse"
+          min="1"
+          max="20"
+          step="0.1"
+          @input="onToonScaleChange()"
+        />
+      </div>
+
+      <div class="flex items-center" style="justify-content: space-between">
+        <div class="flex items-center gap-05">
+          <input
+            v-model="settings.pixelate"
+            type="checkbox"
+            class="toggle_toggle"
+            @change="togglePixelateMode()"
+          />
+          <label class="game-options_optionLabel">Pixelate</label>
+        </div>
+
+        <input
+          v-model.number="settings.pixelScale"
+          type="range"
+          class="custom-slider reverse"
+          min="1"
+          max="500"
+          step="1"
+          @input="onPixelScaleChange()"
+        />
+      </div>
+
+      <div class="flex items-center gap-05">
+        <input
+          v-model="settings.water"
+          type="checkbox"
+          class="toggle_toggle"
+          @change="toggleMode('water')"
+        />
+        <label class="game-options_optionLabel">Water Filter</label>
+      </div>
+
+      <div class="flex items-center gap-05">
+        <input
+          v-model="settings.grayscale"
+          type="checkbox"
+          class="toggle_toggle"
+          @change="toggleGrayscaleMode"
+        />
+        <label class="game-options_optionLabel">Grayscale</label>
+      </div>
+
+      <div class="flex items-center gap-05">
+        <input
+          v-model="settings.scramble"
+          type="checkbox"
+          class="toggle_toggle"
+          @change="toggleMode('scramble')"
+        />
+        <label class="game-options_optionLabel">Scramble</label>
+      </div>
+
+      <div class="flex items-center gap-05">
+        <input
+          v-model="settings.crt"
+          type="checkbox"
+          class="toggle_toggle"
+          @change="toggleMode('crt')"
+        />
+        <label class="game-options_optionLabel">Crt</label>
+      </div>
+
+      <div class="flex items-center gap-05">
+        <input
+          v-model="settings.min"
+          type="checkbox"
+          class="toggle_toggle"
+          @change="toggleMode('min')"
+        />
+        <label class="game-options_optionLabel">Min</label>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.section_sizeMedium {
+  width: 400px;
+  padding: 0 1rem 1rem 1rem;
+}
+.section_sizeMedium .custom-slider {
+  margin: 0;
+  width: 150px;
+}
+</style>

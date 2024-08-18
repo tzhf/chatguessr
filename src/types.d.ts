@@ -58,6 +58,7 @@ interface GameResult {
   totalDistance: number
   isDisqualified: boolean
   disqualifiedMessage: string | null
+  isAllRandomPlonk: boolean
 }
 
 interface GameResultDisplay {
@@ -91,6 +92,7 @@ interface ScoreboardRow {
   totalScore?: number
   totalDistance?: number
   disqualifiedMessage?: string | null
+  isAllRandomPlonk?: boolean
 }
 
 type StatisticsInterval = 'day' | 'week' | 'month' | 'year' | 'all'

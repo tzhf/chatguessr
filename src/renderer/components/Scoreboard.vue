@@ -128,7 +128,7 @@
                     }"
                   ></span>
                   <span
-                  v-if="row.isRandomPlonk"
+                  v-if="row.isRandomPlonk || row.isAllRandomPlonk"
                   :style="{
                       paddingLeft: '2px'
                     }">
@@ -400,6 +400,7 @@ function showGameResults(gameResults: GameResult[]) {
       totalScore: result.totalScore,
       totalDistance: result.totalDistance,
       disqualifiedMessage: result.disqualifiedMessage,
+      isAllRandomPlonk: result.isAllRandomPlonk
     }
   })
   Object.assign(rows, formatedRows)

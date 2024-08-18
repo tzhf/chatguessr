@@ -660,7 +660,11 @@ ORDER BY
 						AND ig.user_id = users.id
 					ORDER BY ig.created_at DESC
 					LIMIT 1
-				) AS streak
+				) AS streak,
+    CASE
+        WHEN SUM(guesses.is_random_plonk) = COUNT(guesses.id) THEN 1
+        ELSE 0
+    END AS is_random_plonk_matches
 			FROM rounds
 			JOIN users ON users.id IN (
 				SELECT DISTINCT g.user_id
@@ -685,6 +689,7 @@ ORDER BY
       distances: string
       total_score: number
       total_distance: number
+      is_random_plonk_matches: number
     }[]
 
     return records.map((record) => ({
@@ -699,7 +704,8 @@ ORDER BY
       scores: JSON.parse(record.scores),
       distances: JSON.parse(record.distances),
       totalScore: record.total_score,
-      totalDistance: record.total_distance
+      totalDistance: record.total_distance,
+      isAllRandomPlonk: record.is_random_plonk_matches === 1
     })) as GameResult[]
   }
 

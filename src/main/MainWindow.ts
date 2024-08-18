@@ -22,6 +22,15 @@ export default function createWindow() {
   win.setMenuBarVisibility(false)
   win.loadURL('https://www.geoguessr.com/community/maps')
 
+  // Adapt all calls for api/v3/search/any to api/v3/search/map
+  win.webContents.session.webRequest.onBeforeRequest(
+    { urls: ['https://www.geoguessr.com/api/v3/search/any*'] },
+    ({ url }, callback) => {
+      callback({ redirectURL: url.replace('any', 'map') })
+    }
+  )
+   
+
   // Open links in default OS browser
   // Allow GeoGuessr socials login to open a new window
   win.webContents.setWindowOpenHandler(({ url }) => {

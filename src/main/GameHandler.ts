@@ -1060,6 +1060,24 @@ export default class GameHandler {
       return
     }
 
+        // KEEP THIS AT THE END, BECAUSE OTHERWISE IT MIGHT CONFLICT WITH OTHER COMMANDS LIKE RANDOMPLONKWATER
+    // if first chars of message are equal to settings of randomplonkcmd check if it is randomplonkcmd
+    if(message.startsWith(settings.randomPlonkCmd)){
+      if (!this.#game.isInGame) return
+
+      var { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds);
+      if (this.#game.waterPlonkMode === "mandatory") {
+        const newCoords = await getRandomCoordsNotInLand(this.#game.seed!.bounds);
+        lat = newCoords.lat;
+        lng = newCoords.lng;
+      }
+      
+      const randomGuess = `!g ${lat}, ${lng}`
+      this.#handleGuess(userstate, randomGuess, true).catch((err) => {
+        console.error(err)
+      })
+      return
+    }
     // streamer commands
     if (process.env.NODE_ENV !== 'development' || userstate.badges?.broadcaster !== '1') return
 
@@ -1087,24 +1105,7 @@ export default class GameHandler {
         }
       }, 200)
     }
-    // KEEP THIS AT THE END, BECAUSE OTHERWISE IT MIGHT CONFLICT WITH OTHER COMMANDS LIKE RANDOMPLONKWATER
-    // if first chars of message are equal to settings of randomplonkcmd check if it is randomplonkcmd
-    if(message.startsWith(settings.randomPlonkCmd)){
-      if (!this.#game.isInGame) return
 
-      var { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds);
-      if (this.#game.waterPlonkMode === "mandatory") {
-        const newCoords = await getRandomCoordsNotInLand(this.#game.seed!.bounds);
-        lat = newCoords.lat;
-        lng = newCoords.lng;
-      }
-      
-      const randomGuess = `!g ${lat}, ${lng}`
-      this.#handleGuess(userstate, randomGuess, true).catch((err) => {
-        console.error(err)
-      })
-      return
-    }
   }
 
   isUserBanned(username: string) {

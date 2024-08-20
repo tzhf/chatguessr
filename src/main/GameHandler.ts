@@ -931,7 +931,7 @@ export default class GameHandler {
       const map = await fetchMap(this.#game.seed.map)
       if (map) {
         await this.#backend?.sendMessage(
-          `🌎 Now playing '${map.name}' ${map.creator? `by ${map.creator.nick},`:""} played ${map.numFinishedGames} times with ${map.likes} likes${map.description ? `: ${map.description}` : ''}`
+          `🌎 Now playing '${map.name}' ${map.creator? `by ${map.creator.nick},`:""} https://geoguessr.com/maps/${map.id} played ${map.numFinishedGames} times with ${map.likes} likes${map.description ? `: ${map.description}` : ''}`
         )
       }
 

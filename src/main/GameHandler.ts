@@ -97,10 +97,7 @@ export default class GameHandler {
 
     if(settings.countdownMode === "countdown" || settings.countdownMode === "countup"){
       roundResults = roundResults.map((result) => {
-        console.log("-----------------")
-        console.log(result)
-
-        let countryLength = streakCodeCountdown.find(x=>result.streakCode && x.code === streakCodes[result.streakCode]?.toLowerCase())?.names.length
+        let countryLength = streakCodeCountdown.find(x=>result.streakCode && x.code === streakCodes[result.country]?.toLowerCase())?.names.replaceAll(" ","").replaceAll("-","").length
         let countryLengthString = countryLength ? countryLength.toString() : "X"
         result.player.username = `(${countryLengthString}) ${result.player.username}`
         return result
@@ -932,7 +929,7 @@ export default class GameHandler {
       const map = await fetchMap(this.#game.seed.map)
       if (map) {
         await this.#backend?.sendMessage(
-          `🌎 Now playing '${map.name}' ${map.creator? `by ${map.creator.nick},`:""} played ${map.numFinishedGames} times with ${map.likes} likes${map.description ? `: ${map.description}` : ''}`
+          `🌎 Now playing '${map.name}' ${map.creator? `by ${map.creator.nick},`:""} https://geoguessr.com/maps/${map.id} played ${map.numFinishedGames} times with ${map.likes} likes${map.description ? `: ${map.description}` : ''}`
         )
       }
 
@@ -1037,7 +1034,6 @@ export default class GameHandler {
 
 
 
-
     if (message === settings.clearUserStatsCmd) {
       const dbUser = this.#db.getUser(userId)
       if (dbUser) {
@@ -1050,13 +1046,13 @@ export default class GameHandler {
       }
       return
     }
-    // if first chars of message are equal to settings of randomplonkcmd check if it is randomplonkcmd
-    if(message.startsWith(settings.randomPlonkCmd)){
+
+    if (message.startsWith(settings.randomPlonkWaterCmd) || message.startsWith("!taquitoplonk")) {
       if (!this.#game.isInGame) return
 
-      var { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds);
-      if (this.#game.waterPlonkMode === "mandatory") {
-        const newCoords = await getRandomCoordsNotInLand(this.#game.seed!.bounds);
+      var { lat, lng } = await getRandomCoordsNotInLand(this.#game.seed!.bounds);
+      if (this.#game.waterPlonkMode === "illegal" && message !== "!taquitoplonk") {
+        const newCoords = await getRandomCoordsInLand(this.#game.seed!.bounds);
         lat = newCoords.lat;
         lng = newCoords.lng;
       }
@@ -1068,12 +1064,14 @@ export default class GameHandler {
       return
     }
 
-    if (message.startsWith(settings.randomPlonkWaterCmd) || message.startsWith("!taquitoplonk")) {
+        // KEEP THIS AT THE END, BECAUSE OTHERWISE IT MIGHT CONFLICT WITH OTHER COMMANDS LIKE RANDOMPLONKWATER
+    // if first chars of message are equal to settings of randomplonkcmd check if it is randomplonkcmd
+    if(message.startsWith(settings.randomPlonkCmd)){
       if (!this.#game.isInGame) return
 
-      var { lat, lng } = await getRandomCoordsNotInLand(this.#game.seed!.bounds);
-      if (this.#game.waterPlonkMode === "illegal" && message !== "!taquitoplonk") {
-        const newCoords = await getRandomCoordsInLand(this.#game.seed!.bounds);
+      var { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds);
+      if (this.#game.waterPlonkMode === "mandatory") {
+        const newCoords = await getRandomCoordsNotInLand(this.#game.seed!.bounds);
         lat = newCoords.lat;
         lng = newCoords.lng;
       }

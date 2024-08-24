@@ -66,40 +66,41 @@ const toggleNoCompassMode = () => {
 const toggleMode = (property: keyof typeof settings) => {
   if (window.ppController) {
     window.pp[property] = settings[property]
-    window.ppController.updateState(window.pp)
+    try {
+      window.ppController.updateState(window.pp)
+    } catch(e) {
+      console.log('Whoops, try to get back to a sane state')
+      window.pp = defaultPP()
+      for (let key of Object.keys(window.pp)) {
+        settings[key] = window.pp[key]
+      }
+      window.ppController.updateState(window.pp)
+      return;
+    }
+    // Fixup after updating the state; some settings are mutually exclusive
+    for (let key of Object.keys(settings)) {
+      if (key !== property && settings[key] !== window.pp[key]) {
+        settings[key] = window.pp[key]
+      }
+    }
   }
 }
 const toggleGrayscaleMode = () => {
   document.body.style.filter = settings.grayscale ? 'grayscale(100%)' : 'none'
 }
 
-const toggleToonMode = () => {
-  if (window.ppController) {
-    window.pp.toon = settings.toon
-    window.pp.toonScale = settings.toonScale
-    window.ppController.updateState(window.pp)
-  }
-}
 
 const onToonScaleChange = () => {
   if (window.ppController) {
     window.pp.toonScale = settings.toonScale
-    window.ppController.updateState(window.pp)
-  }
-}
-
-const togglePixelateMode = () => {
-  if (window.ppController) {
-    window.pp.pixelate = settings.pixelate
-    window.pp.pixelScale = settings.pixelScale
-    window.ppController.updateState(window.pp)
+    toggleMode('toon')
   }
 }
 
 const onPixelScaleChange = () => {
   if (window.ppController) {
     window.pp.pixelScale = settings.pixelScale
-    window.ppController.updateState(window.pp)
+    toggleMode('toon')
   }
 }
 </script>
@@ -139,7 +140,7 @@ const onPixelScaleChange = () => {
             v-model="settings.toon"
             type="checkbox"
             class="toggle_toggle"
-            @change="toggleToonMode()"
+            @change="toggleMode('toon')"
           />
           <label class="game-options_optionLabel">Toon</label>
         </div>
@@ -161,7 +162,7 @@ const onPixelScaleChange = () => {
             v-model="settings.pixelate"
             type="checkbox"
             class="toggle_toggle"
-            @change="togglePixelateMode()"
+            @change="toggleMode('pixelate')"
           />
           <label class="game-options_optionLabel">Pixelate</label>
         </div>

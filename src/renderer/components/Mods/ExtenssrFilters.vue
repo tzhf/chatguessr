@@ -100,7 +100,7 @@ const onToonScaleChange = () => {
 const onPixelScaleChange = () => {
   if (window.ppController) {
     window.pp.pixelScale = settings.pixelScale
-    toggleMode('toon')
+    toggleMode('pixelate')
   }
 }
 </script>

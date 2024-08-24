@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import { getLocalStorage, setLocalStorage } from '../../useLocalStorage'
+import { defaultPP } from '@/mods/extenssr/post_processing_controller'
 
 const settings = reactive(
   getLocalStorage('cg_filters__settings', {
@@ -17,6 +18,27 @@ const settings = reactive(
     min: false
   })
 )
+// Set initial post processing values
+if (window.pp) {
+  const ppKeys = Object.keys(window.pp)
+  for (let key of Object.keys(settings)) {
+    if (ppKeys.includes(key)) {
+      window.pp[key] = settings[key]
+    }
+  }
+  if (window.ppController) {
+    try {
+      window.ppController.updateState(window.pp)
+    }catch(e) {
+      window.pp = defaultPP()
+      for(let key of Object.keys(window.pp)) {
+        settings[key] = window.pp[key]
+      }
+      window.ppController.updateState(window.pp)
+    }
+  }
+}
+
 watch(settings, () => {
   setLocalStorage('cg_filters__settings', settings)
 })

@@ -8,7 +8,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
     water: false,
     scramble: false,
     pixelate: false,
-    pixelScale: 100,
+    pixelScale: 120,
     greyscale: false,
     toon: false,
     toonScale:7,
@@ -45,7 +45,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
     setLocalStorage('cg_ncnc__settings', settings)
     if (window.ppController) {
       window.pp.pixelate = settings.pixelate
-      window.pp.pixelScale = 100
+      window.pp.pixelScale = 120
       window.ppController.updateState(window.pp)
     }
   }

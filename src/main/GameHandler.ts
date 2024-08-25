@@ -97,7 +97,7 @@ export default class GameHandler {
 
     if(settings.countdownMode === "countdown" || settings.countdownMode === "countup"){
       roundResults = roundResults.map((result) => {
-        let countryLength = streakCodeCountdown.find(x=>result.streakCode && x.code === streakCodes[result.country]?.toLowerCase())?.names.replaceAll(" ","").replaceAll("-","").length
+        let countryLength = streakCodeCountdown.find(x=>result.streakCode && x.code === streakCodes[result.streakCode]?.toLowerCase())?.names.replaceAll(" ","").replaceAll("-","").length
         let countryLengthString = countryLength ? countryLength.toString() : "X"
         result.player.username = `(${countryLengthString}) ${result.player.username}`
         return result

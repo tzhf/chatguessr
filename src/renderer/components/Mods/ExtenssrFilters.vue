@@ -21,7 +21,7 @@ const settings = reactive(
 // Set initial post processing values
 if (window.pp) {
   const ppKeys = Object.keys(window.pp)
-  for (let key of Object.keys(settings)) {
+  for (const key of Object.keys(settings)) {
     if (ppKeys.includes(key)) {
       window.pp[key] = settings[key]
     }
@@ -29,9 +29,9 @@ if (window.pp) {
   if (window.ppController) {
     try {
       window.ppController.updateState(window.pp)
-    }catch(e) {
+    } catch (e) {
       window.pp = defaultPP()
-      for(let key of Object.keys(window.pp)) {
+      for (const key of Object.keys(window.pp)) {
         settings[key] = window.pp[key]
       }
       window.ppController.updateState(window.pp)
@@ -68,27 +68,27 @@ const toggleMode = (property: keyof typeof settings) => {
     window.pp[property] = settings[property]
     try {
       window.ppController.updateState(window.pp)
-    } catch(e) {
+    } catch (e) {
       console.log('Whoops, try to get back to a sane state')
       window.pp = defaultPP()
-      for (let key of Object.keys(window.pp)) {
+      for (const key of Object.keys(window.pp)) {
         settings[key] = window.pp[key]
       }
       window.ppController.updateState(window.pp)
-      return;
+      return
     }
     // Fixup after updating the state; some settings are mutually exclusive
-    for (let key of Object.keys(settings)) {
+    for (const key of Object.keys(settings)) {
       if (key !== property && settings[key] !== window.pp[key]) {
-        settings[key] = window.pp[key]
+        if (key !== 'noCompass') settings[key] = window.pp[key]
       }
     }
   }
 }
+
 const toggleGrayscaleMode = () => {
   document.body.style.filter = settings.grayscale ? 'grayscale(100%)' : 'none'
 }
-
 
 const onToonScaleChange = () => {
   if (window.ppController) {

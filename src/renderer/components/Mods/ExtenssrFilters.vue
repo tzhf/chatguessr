@@ -55,11 +55,25 @@ const compassRemover = createStyleElement(
 
 if (settings.noCompass) document.head.append(compassRemover)
 
+if (settings.grayscale) {
+  const next = document.querySelector('#__next') as HTMLElement
+  if (next) {
+    next.style.filter = 'grayscale(100%)'
+  }
+}
+
 const toggleNoCompassMode = () => {
   if (settings.noCompass) {
     document.head.append(compassRemover)
   } else {
     compassRemover.remove()
+  }
+}
+
+const toggleGrayscaleMode = () => {
+  const nextApp = document.querySelector('#__next') as HTMLElement
+  if (nextApp) {
+    nextApp.style.filter = settings.grayscale ? 'grayscale(100%)' : 'none'
   }
 }
 
@@ -80,14 +94,12 @@ const toggleMode = (property: keyof typeof settings) => {
     // Fixup after updating the state; some settings are mutually exclusive
     for (const key of Object.keys(settings)) {
       if (key !== property && settings[key] !== window.pp[key]) {
-        if (key !== 'noCompass') settings[key] = window.pp[key]
+        // exclude noCompass and grayscale
+        if (key === 'noCompass' || key === 'grayscale') return
+        settings[key] = window.pp[key]
       }
     }
   }
-}
-
-const toggleGrayscaleMode = () => {
-  document.body.style.filter = settings.grayscale ? 'grayscale(100%)' : 'none'
 }
 
 const onToonScaleChange = () => {

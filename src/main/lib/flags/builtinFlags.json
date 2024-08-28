@@ -7,6 +7,7 @@
     "names": "Checkered flag, Chequered flag, Racing flag",
     "emoji": "\uD83C\uDFC1"
   },
+  { "code": "dkborn", "names": "Bornholm", "emoji": "🇩🇰 (Bornholm)" },
   { "code": "esct", "names": "Catalonia, Catalunya, catalunia", "emoji": "🇪🇸 (CT)" },
   { "code": "esga", "names": "Galicia", "emoji": "🇪🇸 (GA)" },
   { "code": "espv", "names": "Basque Country, euskadi, Pais Vasco", "emoji": "🇪🇸 (PV)" },

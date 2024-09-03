@@ -26,6 +26,53 @@ function createGame() {
   return token
 }
 
+describe('userGuessedOnOngoingRound', () => {
+  it('returnsTrueWhenUserHasGuessed', () => {
+    const broadcaster = db.getOrCreateUser('BROADCASTER', 'BROADCASTER', undefined, undefined)
+    const user = db.getOrCreateUser('1234567', 'libjanosgeo', undefined, undefined)
+    const secondUser = db.getOrCreateUser('2345678', 'secondUser', undefined, undefined)
+
+    const token = createGame()
+    const firstRoundId = db.createRound(token, {
+      lat: 0,
+      lng: 0,
+      panoId: null,
+      heading: 0,
+      pitch: 0,
+      zoom: 0
+    })
+
+    expect(db.userGuessedOnOngoingRound(user!.id)).toEqual(false)
+    expect(db.userGuessedOnOngoingRound(secondUser!.id)).toEqual(false)
+
+    db.createGuess(firstRoundId, user!.id, {
+      location: { lat: 0, lng: 0 },
+      streakCode: null,
+      streak: 1,
+      lastStreak: null,
+      distance: 0,
+      score: 5000,
+      isRandomPlonk: null
+    })
+
+    expect(db.userGuessedOnOngoingRound(user!.id)).toEqual(true)
+    expect(db.userGuessedOnOngoingRound(secondUser!.id)).toEqual(false)
+
+    // When broadcaster has guessed, round ends
+    db.createGuess(firstRoundId, broadcaster!.id, {
+      location: { lat: 0, lng: 0 },
+      streakCode: null,
+      streak: 1,
+      lastStreak: null,
+      distance: 0,
+      score: 2500,
+      isRandomPlonk: null
+    })
+    expect(db.userGuessedOnOngoingRound(user!.id)).toEqual(false)
+    expect(db.userGuessedOnOngoingRound(secondUser!.id)).toEqual(false)
+  })
+})
+
 describe('getUserStats', () => {
   it('counts victories', () => {
     const user = db.getOrCreateUser('1234567', 'libreanna', undefined, undefined)
@@ -41,7 +88,7 @@ describe('getUserStats', () => {
       })
       db.createGuess(roundId, user!.id, {
         location: { lat: 0, lng: 0 },
-        country: null,
+        streakCode: null,
         streak: 0,
         lastStreak: null,
         distance: 0,
@@ -82,7 +129,7 @@ describe('getRoundResults', () => {
 
     db.createGuess(roundId, user2!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 1234,
@@ -91,7 +138,7 @@ describe('getRoundResults', () => {
     })
     db.createGuess(roundId, user!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 1000,
@@ -100,7 +147,7 @@ describe('getRoundResults', () => {
     })
     db.createGuess(roundId, user3!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 998,
@@ -129,7 +176,7 @@ describe('getRoundResults', () => {
 
     db.createGuess(roundId, user!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 12,
@@ -138,7 +185,7 @@ describe('getRoundResults', () => {
     })
     db.createGuess(roundId, user3!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 998,
@@ -147,7 +194,7 @@ describe('getRoundResults', () => {
     })
     const second5k = db.createGuess(roundId, user2!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 8,
@@ -183,7 +230,7 @@ describe('getRoundResults', () => {
 
     const non5k = db.createGuess(roundId, user!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 988,
@@ -200,7 +247,7 @@ describe('getRoundResults', () => {
 
     db.createGuess(roundId, user2!.id, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 8,
@@ -209,7 +256,7 @@ describe('getRoundResults', () => {
     })
     db.updateGuess(non5k, {
       location: { lat: 0, lng: 0 },
-      country: null,
+      streakCode: null,
       streak: 0,
       lastStreak: null,
       distance: 12,

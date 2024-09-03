@@ -1,12 +1,13 @@
 // Adapted from: https://greasyfork.org/en/scripts/438579-geoguessr-blink-mode
 import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
+// @ts-ignore
 ;(function blinkMode() {
   const settings = getLocalStorage('cg_blinkMode__settings', {
     enabled: false,
     timeLimit: 0.8,
     roundDelay: 1
   })
-
+// @ts-ignore
   window.toggleBlinkMode = (el) => {
     settings.enabled = el.checked
     setLocalStorage('cg_blinkMode__settings', settings)
@@ -16,7 +17,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
       } catch {}
     }
   }
-
+// @ts-ignore
   window.changeBlinkTime = (el) => {
     if (!isNaN(Number(el.value))) {
       settings.timeLimit = parseFloat(el.value)
@@ -24,7 +25,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
       document.getElementById('blinkTimeText')!.textContent = el.value + ' sec'
     }
   }
-
+// @ts-ignore
   window.changeDelayTime = (el) => {
     if (!isNaN(Number(el.value))) {
       settings.roundDelay = parseFloat(el.value)

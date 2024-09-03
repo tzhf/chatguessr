@@ -5,7 +5,7 @@ import { session } from 'electron'
  * Country code mapping for 2-character ISO codes that should be considered
  * part of another country for GeoGuessr streak purposes.
  */
-import countryCodes from '../lib/countryCodes.json'
+import streakCodes from '../lib/streakCodes.json'
 
 const GEOGUESSR_URL = 'https://geoguessr.com'
 const CG_API_URL = import.meta.env.VITE_CG_API_URL ?? 'https://chatguessr.com/api'
@@ -75,12 +75,12 @@ export function latLngEqual(a: LatLng, b: LatLng) {
 /**
  * Get the country code for a coordinate.
  */
-export async function getCountryCode(location: LatLng): Promise<string | undefined> {
+export async function getStreakCode(location: LatLng): Promise<string | undefined> {
   const localResults = countryIso(location.lat, location.lng, true)
   const localIso = localResults.length > 0 ? localResults[0] : undefined
   if (!localIso) return
 
-  return countryCodes[localIso]
+  return streakCodes[localIso]
 }
 
 /**
@@ -140,25 +140,25 @@ export function calculateScore(distance: number, scale: number, isCorrectCountry
     if (distance > 15000){
       return 4999 - Math.round(Math.round(19869 - distance)*0.2052)
     }
-    
+
     if (distance > 7500){
       return 4000 - Math.round(Math.round(15000  - distance)*0.4)
     }
-    
+
     if (distance > 5000){
       return 1000 - Math.round(Math.round(7500  - distance)*0.2)
     }
-    
+
     if (distance > 2500){
       return 500 - Math.round(Math.round(5000  - distance)*0.1)
     }
   }
-  
+
   if (distance > 100){
     return 250 - Math.round(Math.round(2500  - distance)*0.1)
   }
   return 0
-  
+
 }
 
 /**

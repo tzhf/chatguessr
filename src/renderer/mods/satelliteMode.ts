@@ -4,12 +4,12 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
     enabled: false,
     boundsLimit: 10
   })
-
+// @ts-ignore
   window.toggleSatelliteMode = (el) => {
     settings.enabled = el.checked
     setLocalStorage('cg_satelliteMode__settings', settings)
   }
-
+// @ts-ignore
   window.changeBoundsLimit = (el) => {
     if (!isNaN(Number(el.value))) {
       settings.boundsLimit = parseFloat(el.value)

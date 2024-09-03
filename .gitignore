@@ -4,3 +4,4 @@ out
 dist
 *.log*
 .env
+./idea/

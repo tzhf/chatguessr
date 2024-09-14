@@ -452,6 +452,12 @@ export default class Game {
   finishGame() {
     return this.#db.finishGame(this.seed!.token)
   }
+  setGameWinner(userId: string | undefined){
+    if(!userId){
+      return
+    }
+    return this.#db.setGameWinner(this.seed!.token, userId)
+  }
 
   /**
    * Get the combined scores for the current game, sorted from highest to lowest score.

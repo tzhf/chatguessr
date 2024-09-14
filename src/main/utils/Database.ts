@@ -195,6 +195,9 @@ const migrations: ((db: SQLite.Database) => void)[] = [
 // for users that move between versions.
 // NEVER modify existing migrations, ONLY add new ones.
 const customMigrations: ((db: SQLite.Database) => void)[] = [
+  function createGameWinner(db){
+    db.prepare(`ALTER TABLE games ADD COLUMN game_winner TEXT DEFAULT NULL`).run()
+    }
 ]
 
 class db {
@@ -710,7 +713,10 @@ ORDER BY
     const stmt = this.#db.prepare(`UPDATE games SET state = 'finished' WHERE id = ?`)
     stmt.run(gameId)
   }
-
+  setGameWinner(gameId: string, userId: string) {
+    const stmt = this.#db.prepare(`UPDATE games SET game_winner = :userId WHERE id = :gameId`)
+    stmt.run({ userId, gameId })
+  }
   /**
    * Get the total scores for a game, across all rounds, ordered from highest to lowest points.
    */
@@ -721,6 +727,7 @@ ORDER BY
 
     const stmt = this.#db.prepare(`
 			SELECT
+        users.id,
 				users.username,
 				users.avatar,
 				users.color,
@@ -757,6 +764,7 @@ ORDER BY
 		`)
 
     const records = stmt.all(gameId, gameId) as {
+      id: string
       username: string
       avatar: string | null
       color: string
@@ -772,6 +780,7 @@ ORDER BY
 
     return records.map((record) => ({
       player: {
+        userId: record.id,
         username: record.username,
         avatar: record.avatar,
         color: record.color,
@@ -938,20 +947,24 @@ ORDER BY
     ORDER BY streak DESC
     LIMIT 100
   `)
-
-    const victoriesQuery = this.#db.prepare(`
-    SELECT users.id, users.username, users.avatar, users.color, users.flag, COUNT(*) AS victories
+  const victoriesQuery = this.#db.prepare(`
+    SELECT CASE 
+        WHEN games.game_winner IS NOT NULL THEN games.game_winner
+        ELSE game_winners.user_id 
+    END AS uid, users.username, users.avatar, users.color, users.flag, COUNT(*) AS victories
     FROM game_winners, users
-    WHERE users.id = game_winners.user_id
-      AND game_winners.created_at > users.reset_at
-      AND game_winners.created_at > :since
-      ${endTimestamp ? `AND game_winners.created_at < ${endTimestamp}` : ''}
-      ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
+    LEFT JOIN 
+        games ON game_winners.id = games.id
+    WHERE users.id = uid
+    AND game_winners.created_at > users.reset_at
+    AND game_winners.created_at > :since
+    ${endTimestamp ? `AND game_winners.created_at < :endTimestamp` : ''}
+    ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
     GROUP BY users.id
     ORDER BY victories DESC
     LIMIT 100
-  `)
-
+    `);
+    
   const perfectQuery = this.#db.prepare(`
     SELECT users.id, users.username, users.avatar, users.color, users.flag, COUNT(guesses.id) AS perfects
     FROM users

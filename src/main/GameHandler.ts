@@ -75,10 +75,13 @@ export default class GameHandler {
     this.#backend?.sendMessage(settings.messageGuessesAreClosed, { system: true })
   }
 
-  nextRound(isRestartClick: boolean = false) {
+  async nextRound(isRestartClick: boolean = false) {
     if (this.#game.isFinished) {
       this.#game.finishGame()
-      this.#showGameResults()
+      let winner = await this.#showGameResults()
+      console.log("winner: ", winner)
+      this.#game.setGameWinner(winner)
+
     } else {
       this.#win.webContents.send('next-round', this.#game.isMultiGuess, this.#game.getLocation())
       if(settings.showRoundStarted && !isRestartClick)
@@ -185,6 +188,7 @@ export default class GameHandler {
 
   async #showGameResults() {
     var gameResults = this.#game.getGameResults()
+    console.log("gameResults: ", gameResults)
 
     if(settings.countdownMode !== "normal"){
 
@@ -438,6 +442,8 @@ export default class GameHandler {
       } ${this.#game.gamePointGift}`,
       { system: false }
     )
+    console.log("gameResults[0].player: ", gameResults[0].player)
+    return gameResults[0].player.userId
   }
 
   init() {

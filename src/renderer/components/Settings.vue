@@ -252,9 +252,9 @@
 
     <label
       class="form__group"
-      data-tip="Battle Royale Mode"
+      data-tip="Reguess Mode"
     >
-      Battle Royale Mode
+      Reguess Mode
       <input v-model="settings.isBRMode" type="checkbox" />
     </label>
     

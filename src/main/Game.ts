@@ -322,11 +322,9 @@ export default class Game {
     // Modify guess or push it
     let modified = false
     if ((this.isMultiGuess || brIsAllowedToReguess ) && existingGuess) {
-      console.log("handleUserGuess 1")
       this.#db.updateGuess(existingGuess.id, guess)
       modified = true
     } else {
-      console.log("handleUserGuess 2")
       this.#db.createGuess(this.#roundId!, dbUser.id, guess)
     }
 

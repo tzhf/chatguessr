@@ -816,6 +816,8 @@ export default class GameHandler {
     let returnString = ``
     if (settings.isClosestInWrongCountryModeActivated)
       returnString += `wrongCountryOnly: on | `
+    if (settings.isBRMode)
+      returnString += `Allowed Guess Changes: ${settings.battleRoyaleReguessLimit} | `
     if (settings.waterPlonkMode === "mandatory")
       returnString += `oceanPlonk: mandatory | `
     if (settings.waterPlonkMode === "illegal")

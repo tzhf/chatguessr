@@ -249,7 +249,6 @@ onBeforeUnmount(
 
 onBeforeUnmount(
   chatguessrApi.onReceiveGuess((guess) => {
-    console.log("guess recieving", guess)
     scoreboard.value!.renderGuess(guess)
   })
 )
@@ -257,7 +256,6 @@ onBeforeUnmount(
 onBeforeUnmount(
   chatguessrApi.onReceiveMultiGuesses((guess) => {
     try {
-    console.log("guess recieving multiguess", guess)
     guess["index"] = 0
     guess["totalScore"] = 0
     scoreboard.value!.renderMultiGuess(guess)

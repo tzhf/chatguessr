@@ -164,7 +164,6 @@ const props = defineProps<{
   onRoundResultRowClick: (index: number, position: LatLng) => void
   onGameResultRowClick: (row: GameResultDisplay) => void
 }>()
-var isBRModeActivated = props.isBRMode
 const tBody = shallowRef<HTMLDivElement | null>(null)
 const isDraggable = shallowRef(true)
 const isColumnVisibilityOpen = shallowRef(false)

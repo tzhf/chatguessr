@@ -24,21 +24,21 @@
         <div v-if="isColumnVisibilityOpen" class="column-visibility">
           <button
             :class="['btn', { active: settings.streak }]"
-            :disabled="isMultiGuess"
+            :disabled="isMultiGuess && !props.isBRMode"
             @click="settings.streak = !settings.streak"
           >
             {{ round_columns[2].name }}
           </button>
           <button
             :class="['btn', { active: settings.distance }]"
-            :disabled="isMultiGuess"
+            :disabled="isMultiGuess && !props.isBRMode"
             @click="settings.distance = !settings.distance"
           >
             {{ round_columns[3].name }}
           </button>
           <button
             :class="['btn', { active: settings.score }]"
-            :disabled="isMultiGuess"
+            :disabled="isMultiGuess && !props.isBRMode"
             @click="settings.score = !settings.score"
           >
             {{ round_columns[4].name }}
@@ -159,11 +159,12 @@ const { chatguessrApi } = window
 const props = defineProps<{
   gameState: GameState
   isMultiGuess: boolean
+  isBRMode: boolean
   modeHelp: string[]
   onRoundResultRowClick: (index: number, position: LatLng) => void
   onGameResultRowClick: (row: GameResultDisplay) => void
 }>()
-
+var isBRModeActivated = props.isBRMode
 const tBody = shallowRef<HTMLDivElement | null>(null)
 const isDraggable = shallowRef(true)
 const isColumnVisibilityOpen = shallowRef(false)
@@ -247,7 +248,7 @@ const end_columns: Column[] = [
 ]
 const activeRoundCols = computed(() =>
   props.gameState === 'in-round'
-    ? props.isMultiGuess
+    ? (props.isMultiGuess && !props.isBRMode)
       ? [round_columns[1]]
       : round_columns.filter(
           (f) => f.value === 'index' || f.value === 'player' || ( settings[f.value] === true && f.value !== 'totalScore' )
@@ -258,7 +259,7 @@ const activeRoundCols = computed(() =>
 )
 const activeEndCols = computed(() =>
   props.gameState === 'in-round'
-    ? props.isMultiGuess
+    ? (props.isMultiGuess && !props.isBRMode)
       ? [end_columns[1]]
       : end_columns.filter(
           (f) => f.value === 'index' || f.value === 'player' || settings[f.value] === true
@@ -277,6 +278,7 @@ function onStartRound() {
 }
  
 function renderGuess(guess: Guess) {
+
   const formatedRow = {
     index: { value: 0, display: '' },
     player: guess.player,
@@ -286,7 +288,8 @@ function renderGuess(guess: Guess) {
     },
     distance: { value: guess.distance, display: toMeter(guess.distance) },
     score: { value: guess.score, display: guess.score },
-    isRandomPlonk: guess.isRandomPlonk
+    isRandomPlonk: guess.isRandomPlonk,
+    modified: guess.modified
   }
   rows.push(formatedRow)
 
@@ -297,23 +300,58 @@ function renderGuess(guess: Guess) {
 }
 
 function renderMultiGuess(guess: Guess) {
-  const formatedRow = {
+
+  let formatedRow: ScoreboardRow = {
     player: guess.player,
     modified: guess.modified,
-    isRandomPlonk: guess.isRandomPlonk
+    isRandomPlonk: guess.isRandomPlonk,
+    streak: { value: 0, display: '' },
+    distance: { value: 0, display: '' },
+    score: { value: 0, display: '' }
   }
 
-  if (guess.modified) {
-    const index = rows.findIndex((row) => row.player.username == guess.player.username)
+  if (props.isBRMode) {
+    formatedRow = {
+      index: { value: 0, display: '' },
+      player: guess.player,
+      modified: guess.modified,
+      streak: {
+        value: guess.streak,
+        display: guess.lastStreak ? `${guess.streak} [${guess.lastStreak}]` : `${guess.streak}`
+      },
+      distance: { value: guess.distance, display: toMeter(guess.distance) },
+      score: { value: guess.score, display: `${guess.score}` },
+      isRandomPlonk: guess.isRandomPlonk
+    }
+  }
+
+  const index = rows.findIndex((row) => row.player.username == guess.player.username)
+
+  if (index !== -1) {
     rows.splice(index, 1)
-    // TODO maybe find a better soluion
+    // TODO maybe find a better solution
     // Animation is not triggered if we push too fast because key:username is remaining in the DOM
     setTimeout(() => {
+
       rows.push(formatedRow)
+      rows.sort((a, b) => a.distance!.value - b.distance!.value)
+
+for (let i = 0; i < rows.length; i++) {
+      rows[i].index = { value: i + 1, display: i + 1 }
+    }
+
     }, 50)
   } else {
     rows.push(formatedRow)
+    rows.sort((a, b) => a.distance!.value - b.distance!.value)
+
+for (let i = 0; i < rows.length; i++) {
+      rows[i].index = { value: i + 1, display: i + 1 }
+    }
+
   }
+
+
 }
 
 function restoreGuesses(restoredGuesses: RoundResult[]) {

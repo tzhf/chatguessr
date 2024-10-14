@@ -66,7 +66,9 @@ const defaultSettings = {
   includeBroadcasterDataInBest: true,
   isStartOfRoundCommandActive: false,
   startOfRoundCommand: "!botrandomplonk",
-  ABCModeLetters: "ABCDE"
+  ABCModeLetters: "ABCDE",
+  isBRMode: false,
+  battleRoyaleReguessLimit: 3
 }
 
 const settings = Object.assign({}, defaultSettings, storedSettings)

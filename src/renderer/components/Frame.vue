@@ -6,6 +6,7 @@
         ref="scoreboard"
         :game-state
         :is-multi-guess
+        :is-b-r-mode
         :mode-help
         :on-round-result-row-click
         :on-game-result-row-click
@@ -107,6 +108,7 @@ const leaderboardVisible = shallowRef(false)
 
 const gameState = shallowRef<GameState>('none')
 const isMultiGuess = shallowRef<boolean>(false)
+const isBRMode = shallowRef<boolean>(false)
 const modeHelp = shallowRef<string[]>([])
 const guessMarkersLimit = shallowRef<number | null>(null)
 const currentLocation = shallowRef<LatLng | null>(null)
@@ -192,8 +194,10 @@ watch(
 )
 
 onBeforeUnmount(
-  chatguessrApi.onGameStarted((_isMultiGuess, _modeHelp, restoredGuesses, location) => {
+  chatguessrApi.onGameStarted((_isMultiGuess, _isBRMode, _modeHelp, restoredGuesses, location) => {
     isMultiGuess.value = _isMultiGuess
+    isBRMode.value = _isBRMode
+    console.log("isBRMode", isBRMode.value)
     modeHelp.value = _modeHelp
     gameState.value = 'in-round'
 
@@ -205,7 +209,7 @@ onBeforeUnmount(
     }
 
     scoreboard.value!.onStartRound()
-
+    // CONTINUE HERE TOMORROW
     if (restoredGuesses.length > 0) {
       if (isMultiGuess.value) {
         scoreboard.value!.restoreMultiGuesses(restoredGuesses as Player[])
@@ -245,13 +249,21 @@ onBeforeUnmount(
 
 onBeforeUnmount(
   chatguessrApi.onReceiveGuess((guess) => {
+    console.log("guess recieving", guess)
     scoreboard.value!.renderGuess(guess)
   })
 )
 
 onBeforeUnmount(
   chatguessrApi.onReceiveMultiGuesses((guess) => {
+    try {
+    console.log("guess recieving multiguess", guess)
+    guess["index"] = 0
+    guess["totalScore"] = 0
     scoreboard.value!.renderMultiGuess(guess)
+    } catch (e) {
+      console.error(e)
+    }
   })
 )
 

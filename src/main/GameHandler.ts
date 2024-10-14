@@ -39,6 +39,8 @@ export default class GameHandler {
 
   #requestAuthentication: () => Promise<void>
 
+  #battleRoyaleCounter: { [key: string]: number } = {}
+
   constructor(
     db: Database,
     win: Electron.BrowserWindow,
@@ -50,6 +52,7 @@ export default class GameHandler {
     this.#socket = undefined
     this.#game = new Game(db, settings)
     this.#requestAuthentication = options.requestAuthentication
+    this.#battleRoyaleCounter = {}
     this.init()
   }
 
@@ -76,6 +79,8 @@ export default class GameHandler {
   }
 
   async nextRound(isRestartClick: boolean = false) {
+    this.#battleRoyaleCounter = {}
+
     if (this.#game.isFinished) {
       this.#game.finishGame()
       let winner = await this.#showGameResults()
@@ -459,9 +464,12 @@ export default class GameHandler {
             const restoredGuesses = this.#game.isMultiGuess
               ? this.#game.getRoundParticipants()
               : this.#game.getRoundResults()
+
+            console.log("settings in gamehandler init function:", settings.isBRMode)
             this.#win.webContents.send(
               'game-started',
               this.#game.isMultiGuess,
+              settings.isBRMode,
               this.#game.getModeHelp(),
               restoredGuesses,
               this.#game.getLocation()
@@ -717,7 +725,26 @@ export default class GameHandler {
     await once(this.#socket, 'connect')
   }
 
+  isUserAllowedToReguessBattleRoyale(userstate: UserData): boolean {
+    if (!settings.isBRMode) 
+      return false
+    const userId = userstate['user-id']
+    if (!userId) return false
+
+    if (this.#battleRoyaleCounter[userId] === undefined) {
+      this.#battleRoyaleCounter[userId] = 0
+    }
+
+    if (this.#battleRoyaleCounter[userId] >= settings.battleRoyaleReguessLimit) {
+      return false
+    }
+
+    this.#battleRoyaleCounter[userId]++
+    return true
+  }
+
   async #handleGuess(userstate: UserData, message: string, isRandomPlonk: boolean = false) {
+    console.log("inside handleGuess")
     if (!message.startsWith('!g') || !this.#game.guessesOpen) return
     // Ignore guesses made by the broadcaster with the CG map: prevents seemingly duplicate guesses
     //if (userstate.username?.toLowerCase() === settings.channelName.toLowerCase()) return
@@ -728,9 +755,16 @@ export default class GameHandler {
     if (!location) return
 
     try {
-      const guess = await this.#game.handleUserGuess(userstate, location, isRandomPlonk)
+      let userIsAllowedToReguessBattleRoyale = this.isUserAllowedToReguessBattleRoyale(userstate)
 
-      if (!this.#game.isMultiGuess) {
+      const guess = await this.#game.handleUserGuess(userstate, location, isRandomPlonk, userIsAllowedToReguessBattleRoyale)
+
+      let reguessAllowed = true;
+      if (!this.#game.isMultiGuess && !userIsAllowedToReguessBattleRoyale) {
+        reguessAllowed = false;
+      }
+      if (!reguessAllowed) {
+        
         this.#win.webContents.send('render-guess', guess)
         if (settings.showHasGuessed) {
           await this.#backend?.sendMessage(
@@ -755,6 +789,7 @@ export default class GameHandler {
         }
       }
     } catch (err: any) {
+      console.log("error: ", err)
       if (err.code === 'alreadyGuessed') {
         if (settings.showHasAlreadyGuessed) {
           await this.#backend?.sendMessage(

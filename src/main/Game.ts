@@ -241,7 +241,7 @@ export default class Game {
     })
   }
 
-  async handleUserGuess(userstate: UserData, location: LatLng, isRandomPlonk: boolean = false): Promise<Guess> {
+  async handleUserGuess(userstate: UserData, location: LatLng, isRandomPlonk: boolean = false, brIsAllowedToReguess = false): Promise<Guess> {
     var dbUser = this.#db.getUser(userstate['user-id'])
     if (!dbUser || !isRandomPlonk) {
       dbUser = this.#db.getOrCreateUser(
@@ -257,7 +257,7 @@ export default class Game {
     if (!dbUser) throw Object.assign(new Error('Something went wrong creating dbUser'))
 
     const existingGuess = this.#db.getUserGuess(this.#roundId!, dbUser.id)
-    if (existingGuess && !this.isMultiGuess) {
+    if (existingGuess && (!this.isMultiGuess && !brIsAllowedToReguess)) {
       throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' })
     }
 
@@ -289,7 +289,7 @@ export default class Game {
       this.#db.resetUserStreak(dbUser.id)
     }
 
-    if (!this.isMultiGuess) {
+    if (!this.isMultiGuess && !brIsAllowedToReguess) {
       if (correct) {
         this.#db.addUserStreak(dbUser.id, this.#roundId!)
       } else {
@@ -301,7 +301,7 @@ export default class Game {
 
     // Here we mimic addUserStreak() without committing for multiGuesses() mode
     // This might look weird but with this we no longer need to update guess streak in processMultiGuesses() which was slow
-    if (this.isMultiGuess) {
+    if (this.isMultiGuess || brIsAllowedToReguess) {
       if (correct) {
         streak ? streak.count++ : (streak = { count: 1 })
       } else {
@@ -321,10 +321,12 @@ export default class Game {
 
     // Modify guess or push it
     let modified = false
-    if (this.isMultiGuess && existingGuess) {
+    if ((this.isMultiGuess || brIsAllowedToReguess ) && existingGuess) {
+      console.log("handleUserGuess 1")
       this.#db.updateGuess(existingGuess.id, guess)
       modified = true
     } else {
+      console.log("handleUserGuess 2")
       this.#db.createGuess(this.#roundId!, dbUser.id, guess)
     }
 

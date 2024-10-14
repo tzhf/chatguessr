@@ -245,6 +245,26 @@
       Darts Target Score :
       <input v-model.trim="settings.dartsTargetScore" type="text" spellcheck="false" :disabled="!settings.isDartsMode"/>
     </label>
+    
+    <hr />
+
+    <h2>Battle Royale Settings</h2>
+
+    <label
+      class="form__group"
+      data-tip="Battle Royale Mode"
+    >
+      Battle Royale Mode
+      <input v-model="settings.isBRMode" type="checkbox" />
+    </label>
+    
+    <label 
+      class="form__group"
+      :class="{ 'form__group__disabled' : settings.isBRMode === false}" 
+      data-tip="Max Lives">
+      Maximum Number of Guess Changes Per Round:
+      <input v-model.trim="settings.battleRoyaleReguessLimit" type="text" spellcheck="false" :disabled="!settings.isBRMode"/>
+    </label>
 
     <hr />
   <h2>Countdown /-up / ABC / Alphabet Settings</h2>

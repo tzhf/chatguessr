@@ -817,7 +817,7 @@ export default class GameHandler {
     if (settings.isClosestInWrongCountryModeActivated)
       returnString += `wrongCountryOnly: on | `
     if (settings.isBRMode)
-      returnString += `Allowed Guess Changes: ${settings.battleRoyaleReguessLimit} | `
+      returnString += `Allowed Guesses in total: ${settings.battleRoyaleReguessLimit} | `
     if (settings.waterPlonkMode === "mandatory")
       returnString += `oceanPlonk: mandatory | `
     if (settings.waterPlonkMode === "illegal")
@@ -1157,7 +1157,7 @@ export default class GameHandler {
 
   isUserBanned(username: string) {
     const bannedUsers = this.#db.getBannedUsers()
-    const isBanned = bannedUsers.some((user) => user.username === username)
+    const isBanned = bannedUsers.some((user) => user.username.toLowerCase() === username.toLowerCase())
     return isBanned
   }
 }

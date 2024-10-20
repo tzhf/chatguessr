@@ -756,8 +756,10 @@ export default class GameHandler {
 
     try {
       let userIsAllowedToReguessBattleRoyale = this.isUserAllowedToReguessBattleRoyale(userstate)
-
-      const guess = await this.#game.handleUserGuess(userstate, location, isRandomPlonk, userIsAllowedToReguessBattleRoyale)
+      let brCounter = 1
+      if(userstate['user-id'])
+        brCounter = this.#battleRoyaleCounter[userstate['user-id']]
+      const guess = await this.#game.handleUserGuess(userstate, location, isRandomPlonk, userIsAllowedToReguessBattleRoyale, brCounter)
 
       let reguessAllowed = true;
       if (!this.#game.isMultiGuess && !userIsAllowedToReguessBattleRoyale) {
@@ -1109,7 +1111,7 @@ export default class GameHandler {
 
         // KEEP THIS AT THE END, BECAUSE OTHERWISE IT MIGHT CONFLICT WITH OTHER COMMANDS LIKE RANDOMPLONKWATER
     // if first chars of message are equal to settings of randomplonkcmd check if it is randomplonkcmd
-    if(message.startsWith(settings.randomPlonkCmd)){
+    if(message.startsWith(settings.randomPlonkCmd) || message == "!rp" || message.substring(0,3) == "!rp"){
       if (!this.#game.isInGame) return
 
       var { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds);

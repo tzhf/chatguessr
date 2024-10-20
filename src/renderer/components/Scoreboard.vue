@@ -118,7 +118,10 @@
                     }"
                   ></span>
                   <span class="username" :style="{ color: row.player.color }">
-                    {{ row.player.username }}{{ row.modified ? '*' : '' }}
+                    {{ row.player.username }}{{ (row.modified && !isBRMode) ? '*' : '' }}
+                    <template v-if="isBRMode">
+                      <sup>{{ row.brCounter }}</sup>
+                    </template>
                   </span>
                   <span
                     v-if="row.player.flag"
@@ -288,7 +291,8 @@ function renderGuess(guess: Guess) {
     distance: { value: guess.distance, display: toMeter(guess.distance) },
     score: { value: guess.score, display: guess.score },
     isRandomPlonk: guess.isRandomPlonk,
-    modified: guess.modified
+    modified: guess.modified,
+    brCounter: guess.brCounter
   }
   rows.push(formatedRow)
 
@@ -320,7 +324,8 @@ function renderMultiGuess(guess: Guess) {
       },
       distance: { value: guess.distance, display: toMeter(guess.distance) },
       score: { value: guess.score, display: `${guess.score}` },
-      isRandomPlonk: guess.isRandomPlonk
+      isRandomPlonk: guess.isRandomPlonk,
+      brCounter: guess.brCounter
     }
   }
 

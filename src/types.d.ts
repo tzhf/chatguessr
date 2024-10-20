@@ -33,6 +33,7 @@ interface Guess {
   score: number
   modified?: boolean
   isRandomPlonk?: boolean
+  brCounter?: number
 }
 
 interface RoundResult {
@@ -93,6 +94,7 @@ interface ScoreboardRow {
   totalDistance?: number
   disqualifiedMessage?: string | null
   isAllRandomPlonk?: boolean
+  brCounter?: number
 }
 
 type StatisticsInterval = 'day' | 'week' | 'month' | 'year' | 'all'

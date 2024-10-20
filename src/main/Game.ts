@@ -241,7 +241,7 @@ export default class Game {
     })
   }
 
-  async handleUserGuess(userstate: UserData, location: LatLng, isRandomPlonk: boolean = false, brIsAllowedToReguess = false): Promise<Guess> {
+  async handleUserGuess(userstate: UserData, location: LatLng, isRandomPlonk: boolean = false, brIsAllowedToReguess = false, brCounter:number = 1): Promise<Guess> {
     var dbUser = this.#db.getUser(userstate['user-id'])
     if (!dbUser || !isRandomPlonk) {
       dbUser = this.#db.getOrCreateUser(
@@ -316,7 +316,8 @@ export default class Game {
       lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
       distance,
       score,
-      isRandomPlonk: isRandomPlonk ? 1 : 0
+      isRandomPlonk: isRandomPlonk ? 1 : 0,
+
     }
 
     // Modify guess or push it
@@ -344,7 +345,8 @@ export default class Game {
       distance,
       score,
       modified,
-      isRandomPlonk
+      isRandomPlonk,
+      brCounter
     }
   }
 
@@ -393,6 +395,9 @@ export default class Game {
       if (this.#settings.chickenModeSurvivesWith5k){
         parts.push(`5k avoids chicken`)
       }
+    }
+    if(this.#settings.isBRMode){
+      parts.push("Battle Royale " + this.#settings.battleRoyaleReguessLimit + " guesses")
     }
 
 

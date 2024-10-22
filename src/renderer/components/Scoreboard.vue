@@ -302,6 +302,8 @@ function renderGuess(guess: Guess) {
   }
 }
 
+var brCounter = {}
+
 function renderMultiGuess(guess: Guess) {
 
   let formatedRow: ScoreboardRow = {
@@ -314,6 +316,7 @@ function renderMultiGuess(guess: Guess) {
   }
 
   if (props.isBRMode) {
+    brCounter[guess.player.username] = guess.brCounter
     formatedRow = {
       index: { value: 0, display: '' },
       player: guess.player,
@@ -384,6 +387,10 @@ function restoreMultiGuesses(players: Player[]) {
 
 function showRoundResults(round: number, roundResults: RoundResult[]) {
   const formatedRows = roundResults.map((result, i) => {
+    let brCount = 1
+    if (props.isBRMode) {
+      brCount = brCounter[result.player.username] || 1
+    }
     return {
       index: { value: i + 1, display: i + 1 },
       player: result.player,
@@ -407,7 +414,8 @@ function showRoundResults(round: number, roundResults: RoundResult[]) {
         display: result.totalScore
       },
       position: result.position,
-      isRandomPlonk: result.isRandomPlonk
+      isRandomPlonk: result.isRandomPlonk,
+      brCounter: brCount
     }
   })
   Object.assign(rows, formatedRows)

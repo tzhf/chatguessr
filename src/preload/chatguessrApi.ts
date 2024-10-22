@@ -128,7 +128,11 @@ export const chatguessrApi = {
 
   getTwitchConnectionState(): Promise<TwitchConnectionState> {
     return ipcRenderer.invoke('get-twitch-connection-state')
+  }, 
+  getRandomPlonkLatLng(): Promise<LatLng> {
+    return ipcRenderer.invoke('get-random-plonk-lat-lng')
   },
+
 
   onTwitchConnectionStateChange(callback: (state: TwitchConnectionState) => void) {
     return ipcRendererOn('twitch-connection-state', callback)

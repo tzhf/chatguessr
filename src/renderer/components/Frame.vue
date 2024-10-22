@@ -51,6 +51,16 @@
       <IconScoreboardVisible v-if="widgetVisibility.scoreboardAndGgInterfaceVisible" />
       <IconScoreboardHidden v-else />
     </button>
+    
+    <button
+      class="cg-button"
+      title="Randomplonk for Streamer"
+      :hidden="gameState === 'none'"
+      @click="onStreamerRandomplonk"
+    >
+      <IconScoreboardVisible v-if="widgetVisibility.scoreboardAndGgInterfaceVisible" />
+      <IconScoreboardHidden v-else />
+    </button>
 
     <button
       class="cg-button"
@@ -304,6 +314,48 @@ function onGameResultRowClick(row: GameResultDisplay) {
 
 function onClickCenterSatelliteView() {
   if (currentLocation.value) rendererApi.centerSatelliteView(currentLocation.value)
+}
+async function onStreamerRandomplonk() {
+  let latlng = await chatguessrApi.getRandomPlonkLatLng()
+  let {lat,lng} = {lat: latlng.lat, lng: latlng.lng}
+    
+ 
+
+ 
+    // Okay well played Geoguessr u got me there for a minute, but below should work.
+    // Below is the only intentionally complicated part of the code - it won't be simplified or explained for good reason.
+    // let element = document.getElementsByClassName("guess-map_canvas__JAHHT")[0]
+    let element = document.querySelectorAll('[class^="guess-map_canvas__"]')[0]
+
+    let keys = Object.keys(element)
+    let key = keys.find(key => key.startsWith("__reactFiber$"))
+    if (!key) return
+    let props = element[key]
+    let x = props.return.return.memoizedProps.map.__e3_.click
+    let objectKeys = Object.keys(x)
+    let y = objectKeys[objectKeys.length - 1]
+ 
+    const z = {
+        latLng:{
+            lat: () => lat,
+            lng: () => lng,
+        }
+    }
+ 
+    const xy = x[y]
+    const a = Object.keys(x[y])
+ 
+    for(let i = 0; i < a.length ;i++){
+        let q = a[i]
+        if (typeof xy[q] === "function"){
+            xy[q](z)
+        }
+    }
+    window.setTimeout(() => {
+        // click button element with data-qa="perform-guess"
+        const buttonElement = document.querySelector('[data-qa="perform-guess"]')
+        buttonElement?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    }, 200)
 }
 
 /** Load and update twitch connection state. */

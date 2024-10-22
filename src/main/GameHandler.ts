@@ -151,6 +151,7 @@ export default class GameHandler {
       { system: false }
     )
 
+    this.#battleRoyaleCounter = {}
   }
 
   dartsSort(a,b){
@@ -597,6 +598,9 @@ export default class GameHandler {
 
     ipcMain.on('delete-banned-user', (_event, username: string) => {
       this.#db.deleteBannedUser(username)
+    })
+    ipcMain.handle('get-random-plonk-lat-lng', () => {
+      return getRandomCoordsInLand(this.#game.seed!.bounds);
     })
   }
 
@@ -1111,7 +1115,7 @@ export default class GameHandler {
 
         // KEEP THIS AT THE END, BECAUSE OTHERWISE IT MIGHT CONFLICT WITH OTHER COMMANDS LIKE RANDOMPLONKWATER
     // if first chars of message are equal to settings of randomplonkcmd check if it is randomplonkcmd
-    if(message.startsWith(settings.randomPlonkCmd) || message == "!rp" || message.substring(0,3) == "!rp"){
+    if(message.startsWith(settings.randomPlonkCmd) || message.substring(0,3) == "!rp"){
       if (!this.#game.isInGame) return
 
       var { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds);

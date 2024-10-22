@@ -218,7 +218,7 @@ type TwitchConnectionState =
   | { state: 'connecting' }
   | { state: 'connected'; botUsername: string; channelName: string }
   | { state: 'error'; error: unknown }
-
+type LatLng = { lat: number; lng: number }
 type SocketConnectionState =
   | { state: 'disconnected' }
   | { state: 'connecting' }

@@ -37,6 +37,8 @@ export default class GameHandler {
 
   #game: Game
 
+  #streamerDidRandomPlonk: boolean
+
   #requestAuthentication: () => Promise<void>
 
   #battleRoyaleCounter: { [key: string]: number } = {}
@@ -53,6 +55,7 @@ export default class GameHandler {
     this.#game = new Game(db, settings)
     this.#requestAuthentication = options.requestAuthentication
     this.#battleRoyaleCounter = {}
+    this.#streamerDidRandomPlonk = false
     this.init()
   }
 
@@ -152,6 +155,7 @@ export default class GameHandler {
     )
 
     this.#battleRoyaleCounter = {}
+    this.#streamerDidRandomPlonk = false
   }
 
   dartsSort(a,b){
@@ -599,7 +603,9 @@ export default class GameHandler {
     ipcMain.on('delete-banned-user', (_event, username: string) => {
       this.#db.deleteBannedUser(username)
     })
-    ipcMain.handle('get-random-plonk-lat-lng', () => {
+    ipcMain.handle('get-streamer-random-plonk-lat-lng', () => {
+      this.#streamerDidRandomPlonk = true
+      this.#game.setStreamerDidRandomPlonk(this.#streamerDidRandomPlonk)
       return getRandomCoordsInLand(this.#game.seed!.bounds);
     })
   }

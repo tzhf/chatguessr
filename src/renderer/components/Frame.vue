@@ -58,8 +58,8 @@
       :hidden="gameState === 'none'"
       @click="onStreamerRandomplonk"
     >
-      <IconScoreboardVisible v-if="widgetVisibility.scoreboardAndGgInterfaceVisible" />
-      <IconScoreboardHidden v-else />
+      <IconDice v-if="widgetVisibility.scoreboardAndGgInterfaceVisible" />
+      <IconDice v-else />
     </button>
 
     <button
@@ -96,6 +96,7 @@ import Scoreboard from './Scoreboard.vue'
 import Leaderboard from './Leaderboard/Leaderboard.vue'
 import Timer from './Timer.vue'
 
+import IconDice from '@/assets/icons/dice.svg'
 import IconGear from '@/assets/icons/gear.svg'
 import IconLeaderboard from '@/assets/icons/leaderboard.svg'
 import IconTimerVisible from '@/assets/icons/timer_visible.svg'

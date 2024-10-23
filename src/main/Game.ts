@@ -44,6 +44,8 @@ export default class Game {
 
   isMultiGuess = false
 
+  streamerDidRandomPlonk = false
+
   // points-gifting
 
   isGiftingPointsRound = false
@@ -82,7 +84,7 @@ export default class Game {
     this.chickenMode5kGivesPoints = this.#settings.chickenMode5kGivesPoints
     this.waterPlonkMode = this.#settings.waterPlonkMode
     this.invertScoring = this.#settings.invertScoring
-
+    this.streamerDidRandomPlonk = false
 
     this.isInGame = true
     this.isMultiGuess = isMultiGuess
@@ -119,6 +121,9 @@ export default class Game {
 
   #streamerHasGuessed(seed: Seed) {
     return seed.player.guesses.length != this.seed!.player.guesses.length
+  }
+  setStreamerDidRandomPlonk(streamerDidRandomPlonk: boolean) {
+    this.streamerDidRandomPlonk = streamerDidRandomPlonk
   }
 
   #locHasChanged(seed: Seed) {
@@ -237,8 +242,9 @@ export default class Game {
       lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
       distance,
       score,
-      isRandomPlonk: 0
+      isRandomPlonk: this.streamerDidRandomPlonk ? 1 : 0
     })
+    this.streamerDidRandomPlonk = false
   }
 
   async handleUserGuess(userstate: UserData, location: LatLng, isRandomPlonk: boolean = false, brIsAllowedToReguess = false, brCounter:number = 1): Promise<Guess> {

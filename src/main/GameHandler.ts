@@ -828,6 +828,8 @@ export default class GameHandler {
     let returnString = ``
     if (settings.isClosestInWrongCountryModeActivated)
       returnString += `wrongCountryOnly: on | `
+    if (settings.exclusiveMode)
+      returnString += `Exclusive Mode: on | `
     if (settings.isBRMode)
       returnString += `Allowed Guesses in total: ${settings.battleRoyaleReguessLimit} | `
     if (settings.waterPlonkMode === "mandatory")

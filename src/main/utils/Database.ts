@@ -593,6 +593,25 @@ class db {
     })) as Player[]
   }
 
+  updateGuessesToExclusive(roundId: string) {
+    // update the scores to 0 for all guesses where the guesses.country is not unique in the round
+    const stmt = this.#db.prepare(`
+      UPDATE guesses
+      SET score = 0
+      WHERE round_id = :roundId
+        AND country NOT IN (
+          SELECT country
+          FROM guesses
+          WHERE round_id = :roundId
+          GROUP BY country
+          HAVING COUNT(country) = 1
+        )
+    `)
+    stmt.run({ roundId })
+  }
+
+
+
   /**
    * Get all the guesses for a round, sorted from closest distance to farthest away.
    * For 5000 scores, the time to arrive at the guess is used instead of distance.

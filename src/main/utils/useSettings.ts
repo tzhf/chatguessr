@@ -59,6 +59,7 @@ const defaultSettings = {
   waterPlonkMode: "normal",
   countdownMode: "normal",
   invertScoring: false,
+  exclusiveMode: false,
   dartsTargetScore: 25000,
   isDartsMode: false,
   isDartsModeBust: false,

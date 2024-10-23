@@ -59,6 +59,7 @@ export default class Game {
   isClosestInWrongCountryModeActivated = false
   waterPlonkMode = "normal"
   invertScoring = false
+  exclusiveMode = false
   isGameOfChickenModeActivated = false
   chickenModeSurvivesWith5k = false
   chickenMode5kGivesPoints = false
@@ -84,6 +85,7 @@ export default class Game {
     this.chickenMode5kGivesPoints = this.#settings.chickenMode5kGivesPoints
     this.waterPlonkMode = this.#settings.waterPlonkMode
     this.invertScoring = this.#settings.invertScoring
+    this.exclusiveMode = this.#settings.exclusiveMode
     this.streamerDidRandomPlonk = false
 
     this.isInGame = true
@@ -386,6 +388,11 @@ export default class Game {
       parts.push("Inverted scoring")
     }
 
+    if (this.#settings.exclusiveMode)
+      {
+        parts.push("Exclusive mode")
+      }
+  
     if (this.#settings.isClosestInWrongCountryModeActivated)
     {
       parts.push("Wrong country only")
@@ -457,6 +464,11 @@ export default class Game {
    * Get the scores for the current round, sorted by distance from closest to farthest away.
    */
   getRoundResults() {
+    let roundResults = this.#db.getRoundResults(this.#roundId!)
+    console.log(roundResults)
+    if(this.#settings.exclusiveMode){
+      this.#db.updateGuessesToExclusive(this.#roundId!)
+    }
     return this.#db.getRoundResults(this.#roundId!)
   }
 

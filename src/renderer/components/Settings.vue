@@ -182,14 +182,23 @@
       <input v-model="settings.isClosestInWrongCountryModeActivated" type="checkbox" />
     </label>
     
-  <label
-      class="form__group"
-      data-tip="Invert scoring (furthest plonk wins)"
-    >
-    Invert scoring (furthest plonk wins)
-      <input v-model="settings.invertScoring" type="checkbox" />
-    </label>
+    <label
+        class="form__group"
+        data-tip="Invert scoring (furthest plonk wins)"
+      >
+      Invert scoring (furthest plonk wins)
+        <input v-model="settings.invertScoring" type="checkbox" />
+      </label>
 
+    
+      <label
+      class="form__group"
+      data-tip="Exclusive mode"
+    >
+    Exclusive mode
+      <input v-model="settings.exclusiveMode" type="checkbox" />
+    </label>
+  
     <hr />
     <h2>Game of Chicken Settings</h2>
 

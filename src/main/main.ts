@@ -69,6 +69,7 @@ app.whenReady().then(async () => {
 
           const data = fs.readFileSync(filePath)
           // not saving the extension here so we can overwrite audio files having different extensions without extra logic
+          // @ts-ignore
           fs.writeFile(join(targetDirectory, 'timer_alert'), data, (err) => {
             if (err) return reject(err)
 

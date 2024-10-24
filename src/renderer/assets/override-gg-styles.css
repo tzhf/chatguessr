@@ -1,6 +1,7 @@
 /* GAME SETTINGS SCREEN */
 [data-qa='game-type-challenge'],
-[data-qa='game-type-single-player'] {
+[data-qa='game-type-single-player'],
+[data-qa='play-along'] {
   display: none !important;
 }
 [class^='play_map__'] {

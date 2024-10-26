@@ -43,8 +43,16 @@ export default class TwitchBackend extends EventEmitter {
     })
 
     this.#tmi.on('message', (_channel, userstate, message, self) => {
+      //console.log('message', userstate, message)
       if (self) return
       this.emit('message', userstate, message)
+    })
+
+    // on reward
+    this.#tmi.on('redeem', async (channel, username, reward) => {
+      console.log('redeem', channel, username, reward)
+      this.emit('reward', username, reward)
+
     })
   }
 

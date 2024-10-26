@@ -121,6 +121,10 @@ export default class Game {
     this.closeGuesses()
   }
 
+  getRoundId(){
+    return this.#roundId
+  }
+
   #streamerHasGuessed(seed: Seed) {
     return seed.player.guesses.length != this.seed!.player.guesses.length
   }
@@ -133,16 +137,43 @@ export default class Game {
   }
 
   // @ts-ignore
-  async refreshSeed() {
+  async refreshSeed(callbackFunctions: redeemCallbackFunctions = {}) {
     const newSeed = await this.#getSeed()
+    let omitBroadcasterGuess = false
+
     // If a guess has been committed, process streamer guess then return scores
     if (newSeed && this.#streamerHasGuessed(newSeed)) {
       this.closeGuesses()
+      if (Object.keys(callbackFunctions).indexOf("disappointed") !== -1) {
+        Object.keys(callbackFunctions.disappointed.callbacks).forEach((key) => {
+          if (key === "BROADCASTER") {
+            omitBroadcasterGuess = true
+          }
+          if(Object.keys(callbackFunctions).indexOf("pay2Win") !== -1){
+            if(Object.keys(callbackFunctions.pay2Win.callbacks).indexOf(key) === -1){
+              callbackFunctions.disappointed.callbacks[key]()
+            }
+          }
+          
+        })
+      }
+
+      if(Object.keys(callbackFunctions).indexOf("pay2Win") !== -1){
+        Object.keys(callbackFunctions.pay2Win.callbacks).forEach((key) => {
+          if (key === "BROADCASTER") {
+            omitBroadcasterGuess = true
+          }
+          callbackFunctions.pay2Win.callbacks[key]()
+        })
+      
+      }
+
+
 
       this.seed = newSeed
       const location = this.location
-      await this.#makeGuess()
-
+      await this.#makeGuess(omitBroadcasterGuess)
+      omitBroadcasterGuess = false
       const roundResults = this.getRoundResults()
 
       if (this.seed!.state !== 'finished') {
@@ -175,13 +206,13 @@ export default class Game {
     this.#db.setRoundStreakCode(this.#roundId!, this.#streakCode ?? null)
   }
 
-  async #makeGuess() {
+  async #makeGuess(omitBroadcasterGuess = false) {
     this.seed = await this.#getSeed()
 
     if (this.isMultiGuess) {
       await this.#processMultiGuesses()
     }
-    await this.#processStreamerGuess()
+    await this.#processStreamerGuess(omitBroadcasterGuess)
 
     this.lastLocation = { lat: this.location!.lat, lng: this.location!.lng }
   }
@@ -204,7 +235,7 @@ export default class Game {
     )
   }
 
-  async #processStreamerGuess() {
+  async #processStreamerGuess(omitBroadcasterGuess = false) {
     const index = this.seed!.state === 'finished' ? 1 : 2
     const streamerGuess = this.seed!.player.guesses[this.seed!.round - index]
     const location = { lat: streamerGuess.lat, lng: streamerGuess.lng }
@@ -215,6 +246,7 @@ export default class Game {
       this.#settings.avatar,
       '#FFF'
     )
+    if (omitBroadcasterGuess) return
     if (!dbUser) return
 
     const streakCode = await getStreakCode(location)
@@ -248,8 +280,9 @@ export default class Game {
     })
     this.streamerDidRandomPlonk = false
   }
+  
 
-  async handleUserGuess(userstate: UserData, location: LatLng, isRandomPlonk: boolean = false, brIsAllowedToReguess = false, brCounter:number = 1): Promise<Guess> {
+  async handleUserGuess(userstate: UserData, location: LatLng, isRandomPlonk: boolean = false, brIsAllowedToReguess = false, brCounter:number = 1, forceGuess = false): Promise<Guess> {
     var dbUser = this.#db.getUser(userstate['user-id'])
     if (!dbUser || !isRandomPlonk) {
       dbUser = this.#db.getOrCreateUser(
@@ -264,12 +297,19 @@ export default class Game {
 
     if (!dbUser) throw Object.assign(new Error('Something went wrong creating dbUser'))
 
-    const existingGuess = this.#db.getUserGuess(this.#roundId!, dbUser.id)
-    if (existingGuess && (!this.isMultiGuess && !brIsAllowedToReguess)) {
+    var existingGuess = this.#db.getUserGuess(this.#roundId!, dbUser.id)
+    if (forceGuess)
+    {
+      if (existingGuess) {
+        this.#db.deleteGuess(existingGuess.id)
+      }
+    }
+    existingGuess = this.#db.getUserGuess(this.#roundId!, dbUser.id)
+    if (existingGuess && (!this.isMultiGuess && !brIsAllowedToReguess) && !forceGuess) {
       throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' })
     }
 
-    if (dbUser.previousGuess && latLngEqual(dbUser.previousGuess, location)) {
+    if (dbUser.previousGuess && latLngEqual(dbUser.previousGuess, location) && !forceGuess) {
       throw Object.assign(new Error('Same guess'), { code: 'submittedPreviousGuess' })
     }
 

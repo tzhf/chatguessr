@@ -43,6 +43,12 @@ export default class GameHandler {
 
   #battleRoyaleCounter: { [key: string]: number } = {}
 
+  #disappointedUsers: UserData[] = []
+
+  #pay2WinUsers: UserData[] = []
+
+  #russianHitmans: UserData[] = []
+
   constructor(
     db: Database,
     win: Electron.BrowserWindow,
@@ -56,6 +62,9 @@ export default class GameHandler {
     this.#requestAuthentication = options.requestAuthentication
     this.#battleRoyaleCounter = {}
     this.#streamerDidRandomPlonk = false
+    this.#disappointedUsers = []
+    this.#pay2WinUsers = []
+    this.#russianHitmans = []
     this.init()
   }
 
@@ -105,6 +114,8 @@ export default class GameHandler {
 
   #showRoundResults(location: Location_, roundResults: RoundResult[]) {
     const round = this.#game.isFinished ? this.#game.round : this.#game.round - 1
+
+
 
     if(settings.countdownMode === "countdown" || settings.countdownMode === "countup"){
       roundResults = roundResults.map((result) => {
@@ -197,6 +208,7 @@ export default class GameHandler {
   }
 
   async #showGameResults() {
+
     var gameResults = this.#game.getGameResults()
     console.log("gameResults: ", gameResults)
 
@@ -541,11 +553,56 @@ export default class GameHandler {
       // Checks and update seed when the this.game has refreshed
       // update the current location if it was skipped
       // if the streamer has guessed returns scores
-      this.#game.refreshSeed().then((roundResults) => {
+          /// handle rewards
+
+    var callbackFunctions = {
+      disappointed:{
+        callbacks: {},
+      },
+      pay2Win:{
+        callbacks: {},
+      }
+    }
+    if (this.#disappointedUsers.length > 0) {
+      this.#disappointedUsers.forEach(user=>{
+        console.log("disappointed userrrrr: ", user)
+
+        const coordinatesLat = -50.607101021878165
+        const coordinatesLng = 165.97286224365234
+        if(user.username)
+          callbackFunctions.disappointed.callbacks[user['user-id']] = ()=>{this.#game.handleUserGuess(user, {lat: coordinatesLat, lng: coordinatesLng}, false, true, 0, true)}
+      
+      })
+      this.#disappointedUsers = []
+    }
+
+    if (this.#pay2WinUsers.length > 0) {
+      this.#pay2WinUsers.forEach(user=>{
+        // get current round
+        let currentLocation = this.#game.getLocation()
+
+        const coordinatesLat = currentLocation.lat
+        const coordinatesLng = currentLocation.lng
+        if(user.username)
+          callbackFunctions.pay2Win.callbacks[user['user-id']] = ()=>{this.#game.handleUserGuess(user, {lat: coordinatesLat, lng: coordinatesLng}, false, true, 0, true)}
+      
+      })
+      this.#pay2WinUsers = []
+    }
+
+      this.#game.refreshSeed(callbackFunctions).then((roundResults) => {
         if (roundResults && roundResults.location) {
           this.#showRoundResults(roundResults.location, roundResults.roundResults)
         }
       })
+      callbackFunctions = {
+        disappointed:{
+          callbacks: {},
+        },
+        pay2Win:{
+          callbacks: {},
+        }
+      }
     })
 
     ipcMain.on('next-round-click', () => {
@@ -755,6 +812,8 @@ export default class GameHandler {
 
   async #handleGuess(userstate: UserData, message: string, isRandomPlonk: boolean = false) {
     console.log("inside handleGuess")
+    console.log("userstate: ", userstate)
+    console.log("message: ", message)
     if (!message.startsWith('!g') || !this.#game.guessesOpen) return
     // Ignore guesses made by the broadcaster with the CG map: prevents seemingly duplicate guesses
     //if (userstate.username?.toLowerCase() === settings.channelName.toLowerCase()) return
@@ -871,6 +930,64 @@ export default class GameHandler {
   #cgCooldown: boolean = false
   #mapCooldown: boolean = false
   async #handleMessage(userstate: UserData, message: string) {
+  /////// custom rewards
+  
+
+  if(userstate["custom-reward-id"]){
+    const disappointmentIslandRewardId = 'fdb8170b-f862-4e80-8f4f-6355c8075578'
+    const pay2WinRewardId = 'b1385a52-6523-4405-b4a6-d15f2673626a'
+    const russianRouletteRewardId = '231b8fd6-185e-4297-9565-f92803f0733b'
+    if(userstate["custom-reward-id"] === disappointmentIslandRewardId){
+      // remove non ascii characters
+      let cleanedUsername = message.replace(/[^\x00-\x7F]/g, "")
+      // get rid of @ sign from username
+      cleanedUsername = cleanedUsername.replace("@", "")
+      let disappointedUser = this.#db.getUserByUsername(cleanedUsername)
+      if(disappointedUser){
+        let formated_disappointedUser = {
+          username: disappointedUser.username,
+          'user-id': disappointedUser.id,
+          'display-name': disappointedUser.username,
+          avatar: disappointedUser.avatar? disappointedUser.avatar : "",
+        }
+        this.#disappointedUsers.push(formated_disappointedUser)
+      }
+    }
+
+    if(userstate["custom-reward-id"] === pay2WinRewardId){
+      let pay2WinUser = this.#db.getUserByUsername(userstate["display-name"])
+      if(pay2WinUser){
+        let formated_pay2WinUser = {
+          username: pay2WinUser.username,
+          'user-id': pay2WinUser.id,
+          'display-name': pay2WinUser.username,
+          avatar: pay2WinUser.avatar? pay2WinUser.avatar : "",
+        }
+        this.#pay2WinUsers.push(formated_pay2WinUser)
+      }
+    }
+
+    if(userstate["custom-reward-id"] === russianRouletteRewardId){
+      let russianHitman = this.#db.getUserByUsername(userstate["display-name"])
+      if(russianHitman){
+        let formated_russianHitman = {
+          username: russianHitman.username,
+          'user-id': russianHitman.id,
+          'display-name': russianHitman.username,
+          avatar: russianHitman.avatar? russianHitman.avatar : "",
+        }
+        this.#russianHitmans.push(formated_russianHitman)
+      }
+    }
+
+
+
+    console.log("custom reward id: ", userstate["custom-reward-id"])
+  }
+    
+
+  //////////
+
     if (!message.startsWith('!')) return
     if (!userstate['user-id'] || !userstate['display-name']) return
 
@@ -1138,6 +1255,10 @@ export default class GameHandler {
         console.error(err)
       })
       return
+    }
+    if(message.startsWith("!forward")){
+      this.#win.webContents.send('move-forward', true)
+
     }
 
     // streamer commands

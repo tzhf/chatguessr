@@ -108,6 +108,8 @@ import IconStartFlag from '@/assets/icons/start_flag.svg'
 import { rendererApi } from '../rendererApi'
 const { chatguessrApi } = window
 
+
+
 // probably not necessary
 // defineOptions({
 //   inheritAttrs: false
@@ -124,6 +126,8 @@ const modeHelp = shallowRef<string[]>([])
 const guessMarkersLimit = shallowRef<number | null>(null)
 const currentLocation = shallowRef<LatLng | null>(null)
 const gameResultLocations = shallowRef<Location_[] | null>(null)
+var MWStreetViewInstance
+
 
 const widgetVisibility = reactive(
   getLocalStorage('cg_widget__visibility', {
@@ -238,7 +242,6 @@ onBeforeUnmount(
     scoreboard.value!.onStartRound()
   })
 )
-
 onBeforeUnmount(
   chatguessrApi.onRefreshRound((location) => {
     // this condition prevents gameState to switch to 'in-round' if 'onRefreshRound' is triggered (happens sometimes) on round results screen
@@ -251,6 +254,33 @@ onBeforeUnmount(
   })
 )
 
+onBeforeUnmount(
+  chatguessrApi.onMoveForward(() => {
+    // get latlng of pano in front of us
+
+    let pov = MWStreetViewInstance.getPov()
+    let heading = pov.heading
+    let pitch = pov.pitch
+    let latlng = MWStreetViewInstance.getPosition()
+    let lat = latlng.lat()
+    let lng = latlng.lng()
+    let newLat = lat + Math.cos(heading * Math.PI / 180) * 0.0001
+    let newLng = lng + Math.sin(heading * Math.PI / 180) * 0.0001
+    let newLatLng = new google.maps.LatLng(newLat, newLng)
+    MWStreetViewInstance.setPosition(newLatLng)
+    return 0
+    console.log("onMoveForward")
+    console.log(MWStreetViewInstance)
+    let newPov = {
+        heading: 0,
+        pitch: -90,
+      };
+    if (MWStreetViewInstance) {
+      
+      MWStreetViewInstance.setPov(newPov)
+    }
+    })
+)
 onBeforeUnmount(
   chatguessrApi.onGameQuit(() => {
     gameState.value = 'none'
@@ -367,6 +397,66 @@ function useTwitchConnectionState() {
   onMounted(async () => {
     const state = await chatguessrApi.getTwitchConnectionState()
     conn.value = state
+
+
+    function overrideOnLoad(googleScript, observer, overrider) {
+	const oldOnload = googleScript.onload
+	googleScript.onload = (event) => {
+			const google = window.google
+			if (google) {
+					observer.disconnect()
+					overrider(google)
+			}
+			if (oldOnload) {
+					oldOnload.call(googleScript, event)
+			}
+	}
+}
+ 
+function grabGoogleScript(mutations) {
+	for (const mutation of mutations) {
+			for (const newNode of mutation.addedNodes) {
+					const asScript = newNode
+					if (asScript && asScript.src && asScript.src.startsWith('https://maps.googleapis.com/')) {
+							return asScript
+					}
+			}
+	}
+	return null
+}
+ 
+function injecter(overrider) {
+	if (document.documentElement)
+	{
+			injecterCallback(overrider);
+	}
+}
+ 
+function injecterCallback(overrider)
+{
+	new MutationObserver((mutations, observer) => {
+			const googleScript = grabGoogleScript(mutations)
+			if (googleScript) {
+					overrideOnLoad(googleScript, observer, overrider)
+			}
+	}).observe(document.documentElement, { childList: true, subtree: true })
+}
+ 
+
+	injecter(() => {
+		google.maps.StreetViewPanorama = class extends google.maps.StreetViewPanorama {
+      constructor(...args: any[]) {
+          super(...args as [any, ...any[]]);
+					MWStreetViewInstance = this;
+			}
+		}
+	});
+
+console.log(MWStreetViewInstance, "MWStreetViewInstance")
+
+
+
+
   })
 
   onBeforeUnmount(

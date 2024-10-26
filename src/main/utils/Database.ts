@@ -852,6 +852,14 @@ ORDER BY
     return user ? this.#parseUser(user) : undefined
   }
 
+  getUserByUsername(username: string) {
+    // case-insensitive search
+    const user = this.#db.prepare('SELECT id, username, avatar, color, flag, previous_guess, reset_at FROM users WHERE username = ? COLLATE NOCASE').get(username)
+
+    return user ? this.#parseUser(user) : undefined
+  }
+
+
   getOrCreateUser(id: string, username: string, avatar: string | undefined, color = '#FFF') {
     const stmt = this.#db.prepare(`
       INSERT INTO users(id, username, avatar, color)
@@ -1217,6 +1225,17 @@ ORDER BY
       )
       .run({ username: username })
   }
+  deleteGuess(existingGuessId: string) {
+    this.#db
+      .prepare(
+        `
+          DELETE FROM guesses
+          WHERE id = :id
+      `
+      )
+      .run({ id: existingGuessId })
+  }
+
 
   /**
    * Check if the database contains any data.

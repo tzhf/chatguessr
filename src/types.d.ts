@@ -223,3 +223,12 @@ type SocketConnectionState =
   | { state: 'disconnected' }
   | { state: 'connecting' }
   | { state: 'connected' }
+
+type redeemCallbackFunctions = {
+  disappointed:{
+    callbacks: {},
+  },
+  pay2Win:{
+    callbacks: {},
+  }
+}

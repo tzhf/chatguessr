@@ -895,6 +895,12 @@ ORDER BY
     const record = stmt.get({ id: roundId }) as { rowCount: number } | undefined
     return record ? record.rowCount : 0
   }
+  getCurrentGameScore(userId: string, roundId: string): number {
+    // get the sum of all scores for the current game but exclude the current round
+    const stmt = this.#db.prepare(`select sum(score) as score from guesses where user_id = :userId and round_id in (select id from rounds where game_id = (select game_id from rounds where id = :id) and id != :id);`)
+    const record = stmt.get({ userId, id: roundId }) as { score: number } | undefined
+    return record ? record.score : 0
+  }
   didUserWinLastRound(userId: string, roundId: string, isInvertedScoring: boolean, surviveIf5k: boolean): boolean {
     var query = `select user_id from guesses where round_id = (select id from rounds where game_id = (select game_id from rounds where id = :id)
 	order by created_at desc

@@ -1256,6 +1256,30 @@ export default class GameHandler {
       })
       return
     }
+
+    if (message.startsWith("!currentscore")) {
+      if (!this.#game.isInGame) return
+      const currentRoundId = this.#game.getRoundId()
+      if (!currentRoundId){
+        await this.#backend?.sendMessage(
+          `No current round`
+        )
+        return
+      }
+      const userId = userstate.badges?.broadcaster === '1' ? 'BROADCASTER' : userstate['user-id']
+      const currentScore = this.#db.getCurrentGameScore(userId, currentRoundId)
+      if(currentScore === null){
+        await this.#backend?.sendMessage(
+          `Current score ${userstate.username}: 0`
+        )
+        return
+      }
+      await this.#backend?.sendMessage(
+        `Current score ${userstate.username}: ${currentScore}`
+      )
+      return
+    }
+
     if(message.startsWith("!moveforward")){
       console.log("moveForward command")
       this.#win.webContents.send('move-forward', true)

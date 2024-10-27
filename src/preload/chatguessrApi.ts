@@ -85,6 +85,27 @@ export const chatguessrApi = {
   onMoveForward(callback: (value) => void) {
     return ipcRendererOn('move-forward', callback)
   },
+  onMoveBackward(callback: (value) => void) {
+    return ipcRendererOn('move-backward', callback)
+  },
+  onPanLeft(callback: (value) => void) {
+    return ipcRendererOn('pan-left', callback)
+  },
+  onPanRight(callback: (value) => void) {
+    return ipcRendererOn('pan-right', callback)
+  },
+  onPanUp(callback: (value) => void) {
+    return ipcRendererOn('pan-up', callback)
+  },
+  onPanDown(callback: (value) => void) {
+    return ipcRendererOn('pan-down', callback)
+  },
+  onZoomIn(callback: (value) => void) {
+    return ipcRendererOn('zoom-in', callback)
+  },
+  onZoomOut(callback: (value) => void) {
+    return ipcRendererOn('zoom-out', callback)
+  },
 
   onShowRoundResults(
     callback: (

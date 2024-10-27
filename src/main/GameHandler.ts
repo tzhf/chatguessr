@@ -1256,9 +1256,75 @@ export default class GameHandler {
       })
       return
     }
-    if(message.startsWith("!forward")){
+    if(message.startsWith("!moveforward")){
+      console.log("moveForward command")
       this.#win.webContents.send('move-forward', true)
-
+    }
+    if(message.startsWith("!movebackwards")|| message.startsWith("!movebackward")){
+      this.#win.webContents.send('move-backward', true)
+    }
+    if(message.startsWith("!panleft")){
+      let degrees = 45
+      if(message.indexOf(" ") > 0){
+        let value = message.split(" ")[1]
+        if(!isNaN(Number(value))){
+          degrees = parseInt(value)
+        }
+      }
+      this.#win.webContents.send('pan-left', degrees)
+    }
+    if(message.startsWith("!panright")){
+      let degrees = 45
+      if(message.indexOf(" ") > 0){
+        let value = message.split(" ")[1]
+        if(!isNaN(Number(value))){
+          degrees = parseInt(value)
+        }
+      }
+      this.#win.webContents.send('pan-right', degrees)
+      
+    }
+    if(message.startsWith("!panup")){
+      let degrees = 45
+      if(message.indexOf(" ") > 0){
+        let value = message.split(" ")[1]
+        if(!isNaN(Number(value))){
+          degrees = parseInt(value)
+        }
+      }
+      this.#win.webContents.send('pan-up', degrees)
+      
+    }
+    if(message.startsWith("!pandown")){
+      let degrees = 45
+      if(message.indexOf(" ") > 0){
+        let value = message.split(" ")[1]
+        if(!isNaN(Number(value))){
+          degrees = parseInt(value)
+        }
+      }
+      this.#win.webContents.send('pan-down', degrees)
+      
+    }
+    if(message.startsWith("!zoomin")){
+      let zoomValue = 1
+      if(message.indexOf(" ") > 0){
+        let value = message.split(" ")[1]
+        if(!isNaN(Number(value))){
+          zoomValue = parseInt(value)
+        }
+      }
+      this.#win.webContents.send('zoom-in', zoomValue)
+    }
+    if(message.startsWith("!zoomout")){
+      let zoomValue = 1
+      if(message.indexOf(" ") > 0){
+        let value = message.split(" ")[1]
+        if(!isNaN(Number(value))){
+          zoomValue = parseInt(value)
+        }
+      }
+      this.#win.webContents.send('zoom-out', zoomValue)
     }
 
     // streamer commands

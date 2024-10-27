@@ -12,7 +12,13 @@
         :on-game-result-row-click
       />
     </transition>
+    <div id="debugElement" style="background: hotpink; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 1.5rem; display:none;">
+      <b>Debug stuff!</b>
+      <div id="map" style="height: 400px; width: 100%;"></div>
+    <div id="pano" style="height: 400px; width: 100%;"></div>
 
+
+    </div>
     <Timer
       :game-state
       :class="{ hidden: gameState !== 'in-round' || !widgetVisibility.timerVisible }"
@@ -235,6 +241,23 @@ onBeforeUnmount(
   })
 )
 
+function getClosestHeadingPano(currentHeading: number, streetViewInstance): string | boolean{
+  let links = streetViewInstance.getLinks()
+  let linksByDistance: { heading: number, distance: number, panoId: string }[] = []
+  links.map(link=>{
+    let heading = link.heading
+    let distance = Math.abs(heading - currentHeading)
+    linksByDistance.push({heading: heading, distance: distance, panoId: link.pano})
+  })
+  let closestDistance = Math.min(...linksByDistance.map(link=>link.distance))
+  if(closestDistance > 60){
+    return false
+  }
+  let closestLink = linksByDistance.find(link=>link.distance === closestDistance)
+  if(!closestLink) return false
+  return closestLink.panoId
+}
+
 onBeforeUnmount(
   chatguessrApi.onStartRound(() => {
     gameState.value = 'in-round'
@@ -253,34 +276,162 @@ onBeforeUnmount(
     }
   })
 )
-
+declare global {
+  interface Window {
+    initialize: () => void;
+  }
+}
 onBeforeUnmount(
   chatguessrApi.onMoveForward(() => {
     // get latlng of pano in front of us
+    let pov = MWStreetViewInstance.getPov()
+    console.log("initial heading", pov.heading)
+    let pano = getClosestHeadingPano(pov.heading, MWStreetViewInstance)
+    if(!pano) return
+    console.log("closest heading", pano)
+    MWStreetViewInstance.setPano(pano)
+    console.log(MWStreetViewInstance, "MWStreetViewInstance")
 
+return 0
+
+
+
+    function initialize() {
+  let fenway = { lat: 48.196102579488475, lng: 16.21028423309326};
+  const mapElement = document.getElementById("map") as HTMLElement;
+  const map = new google.maps.Map(mapElement, {
+    center: fenway,
+    zoom: 14
+  });
+  const panoElement = document.getElementById("pano") as HTMLElement;
+
+
+
+
+
+
+const request = {
+  location: fenway,
+  preference: google.maps.StreetViewPreference.NEAREST, // Set the preference
+  radius: 5000 // Search within a 50-meter radius
+};
+
+const streetViewService = new google.maps.StreetViewService();
+let closestPanoId;
+let lat;
+let lng;
+streetViewService.getPanorama(request, (panoramaData, status) => {
+  console.log("panoramaData", panoramaData)
+  console.log("status", status)
+  if (status === google.maps.StreetViewStatus.OK) {
+    console.log("panoramaData", panoramaData)
+    if(!panoramaData) return
+    if(!panoramaData.location) return
+    closestPanoId = panoramaData.location.pano;
+    if(!panoramaData.location.latLng) return
+    lat = panoramaData.location.latLng.lat();
+    lng = panoramaData.location.latLng.lng();
+    console.log('Closest Street View panorama ID:', closestPanoId);
+    fenway = { lat: lat, lng: lng};
+console.log("fenway", fenway)
+
+
+const panorama = new google.maps.StreetViewPanorama(
+    panoElement,
+    {
+      position: fenway,
+      pov: {
+        heading: 34,
+        pitch: 10
+      },
+      
+    }
+  );
+  map.setStreetView(panorama);
+
+  } else {
+    console.error('Street View data is not available for this location.');
+  }
+});
+
+
+
+
+
+}
+
+window.initialize = initialize
+window.initialize()
+console.log("after init")
+
+    })
+)
+
+onBeforeUnmount(
+  
+chatguessrApi.onMoveBackward(()=>{
+  let pov = MWStreetViewInstance.getPov()
+  let heading = (pov.heading + 180) % 360
+  let pano = getClosestHeadingPano(heading, MWStreetViewInstance)
+  if(!pano) return
+  MWStreetViewInstance.setPano(pano)
+  })
+)
+
+onBeforeUnmount(
+  chatguessrApi.onPanLeft((degrees) => {
     let pov = MWStreetViewInstance.getPov()
     let heading = pov.heading
     let pitch = pov.pitch
-    let latlng = MWStreetViewInstance.getPosition()
-    let lat = latlng.lat()
-    let lng = latlng.lng()
-    let newLat = lat + Math.cos(heading * Math.PI / 180) * 0.0001
-    let newLng = lng + Math.sin(heading * Math.PI / 180) * 0.0001
-    let newLatLng = new google.maps.LatLng(newLat, newLng)
-    MWStreetViewInstance.setPosition(newLatLng)
-    return 0
-    console.log("onMoveForward")
-    console.log(MWStreetViewInstance)
-    let newPov = {
-        heading: 0,
-        pitch: -90,
-      };
-    if (MWStreetViewInstance) {
-      
-      MWStreetViewInstance.setPov(newPov)
-    }
-    })
+    let newHeading = heading - degrees
+    MWStreetViewInstance.setPov({heading: newHeading, pitch: pitch})
+  })
 )
+onBeforeUnmount(
+  chatguessrApi.onPanRight((degrees) => {
+    let pov = MWStreetViewInstance.getPov()
+    let heading = pov.heading
+    let pitch = pov.pitch
+    let newHeading = heading + degrees
+    MWStreetViewInstance.setPov({heading: newHeading, pitch: pitch})
+  })
+)
+onBeforeUnmount(
+  chatguessrApi.onPanUp((degrees) => {
+    let pov = MWStreetViewInstance.getPov()
+    let heading = pov.heading
+    let pitch = pov.pitch
+    let newPitch = pitch + degrees
+    
+    if(newPitch > 89) newPitch = 89
+    MWStreetViewInstance.setPov({heading: heading, pitch: newPitch})
+  })
+)
+onBeforeUnmount(
+  chatguessrApi.onPanDown((degrees) => {
+    let pov = MWStreetViewInstance.getPov()
+    let heading = pov.heading
+    let pitch = pov.pitch
+    let newPitch = pitch - degrees
+    if(newPitch < -89) newPitch = -89
+    MWStreetViewInstance.setPov({heading: heading, pitch: newPitch})
+  })
+)
+onBeforeUnmount(
+  chatguessrApi.onZoomIn((value) => {
+    let zoom = MWStreetViewInstance.getZoom()
+    let newZoom = zoom + value
+    MWStreetViewInstance.setZoom(newZoom)
+  })
+)
+onBeforeUnmount(
+  chatguessrApi.onZoomOut((value) => {
+    let zoom = MWStreetViewInstance.getZoom()
+    let newZoom = zoom - value
+    MWStreetViewInstance.setZoom(newZoom)
+  })
+)
+
 onBeforeUnmount(
   chatguessrApi.onGameQuit(() => {
     gameState.value = 'none'

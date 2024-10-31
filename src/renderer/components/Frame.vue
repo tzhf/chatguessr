@@ -230,7 +230,6 @@ onBeforeUnmount(
     }
 
     scoreboard.value!.onStartRound()
-    // CONTINUE HERE TOMORROW
     if (restoredGuesses.length > 0) {
       if (isMultiGuess.value) {
         scoreboard.value!.restoreMultiGuesses(restoredGuesses as Player[])

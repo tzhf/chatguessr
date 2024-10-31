@@ -49,6 +49,10 @@ export default class GameHandler {
 
   #russianHitmans: UserData[] = []
 
+  #moveCommandTimeKeeper: { [key: string]: number } = {}
+  
+  TMPZ: boolean
+
   constructor(
     db: Database,
     win: Electron.BrowserWindow,
@@ -65,6 +69,7 @@ export default class GameHandler {
     this.#disappointedUsers = []
     this.#pay2WinUsers = []
     this.#russianHitmans = []
+    this.TMPZ = false
     this.init()
   }
 
@@ -809,6 +814,20 @@ export default class GameHandler {
     this.#battleRoyaleCounter[userId]++
     return true
   }
+  revertBattleRoyaleCounter(userstate: UserData): void {
+    if (!settings.isBRMode) 
+      return
+    const userId = userstate['user-id']
+    if (!userId) return
+
+    if (this.#battleRoyaleCounter[userId] === undefined) {
+      this.#battleRoyaleCounter[userId] = 0
+    }
+
+    if (this.#battleRoyaleCounter[userId] > 0) {
+      this.#battleRoyaleCounter[userId]--
+    }
+  }
 
   async #handleGuess(userstate: UserData, message: string, isRandomPlonk: boolean = false) {
     console.log("inside handleGuess")
@@ -868,6 +887,7 @@ export default class GameHandler {
           )
         }
       } else if (err.code === 'submittedPreviousGuess') {
+        this.revertBattleRoyaleCounter(userstate)
         if (settings.showSubmittedPreviousGuess) {
           await this.#backend?.sendMessage(
             settings.messageSubmittedPreviousGuess.replace('<username>', userstate['display-name'])
@@ -1279,77 +1299,102 @@ export default class GameHandler {
       )
       return
     }
+    
+    // move commands
+    if(this.#game && this.#game.seed && this.TMPZ){
+      if(userstate.username === "temp_rsix")
+        return
+      if(!this.#game.seed.forbidMoving){
+        if(userstate && userstate.username){
+          if(!this.#moveCommandTimeKeeper[userstate.username]){
+            this.#moveCommandTimeKeeper[userstate.username] = Date.now()
+          }
+          else{
+            if(Date.now() - this.#moveCommandTimeKeeper[userstate.username] < 5000){
+              this.#moveCommandTimeKeeper[userstate.username] = Date.now()
+              return
+            }
+          }
+        }
+        if(message.startsWith("!moveforward")){
+          console.log("moveForward command")
+          this.#win.webContents.send('move-forward', true)
+        }
+        if(message.startsWith("!movebackwards")|| message.startsWith("!movebackward")){
+          this.#win.webContents.send('move-backward', true)
+        }
+      }
+      if(!this.#game.seed.forbidRotating){
+        if(message.startsWith("!panleft")){
+          let degrees = 45
+          if(message.indexOf(" ") > 0){
+            let value = message.split(" ")[1]
+            if(!isNaN(Number(value))){
+              degrees = parseInt(value)
+            }
+          }
+          this.#win.webContents.send('pan-left', degrees)
+        }
+        if(message.startsWith("!panright")){
+          let degrees = 45
+          if(message.indexOf(" ") > 0){
+            let value = message.split(" ")[1]
+            if(!isNaN(Number(value))){
+              degrees = parseInt(value)
+            }
+          }
+          this.#win.webContents.send('pan-right', degrees)
+          
+        }
+        if(message.startsWith("!panup")){
+          let degrees = 45
+          if(message.indexOf(" ") > 0){
+            let value = message.split(" ")[1]
+            if(!isNaN(Number(value))){
+              degrees = parseInt(value)
+            }
+          }
+          this.#win.webContents.send('pan-up', degrees)
+          
+        }
+        if(message.startsWith("!pandown")){
+          let degrees = 45
+          if(message.indexOf(" ") > 0){
+            let value = message.split(" ")[1]
+            if(!isNaN(Number(value))){
+              degrees = parseInt(value)
+            }
+          }
+          this.#win.webContents.send('pan-down', degrees)
+          
+        }
+      }
+      if(!this.#game.seed.forbidZooming){
 
-    if(message.startsWith("!moveforward")){
-      console.log("moveForward command")
-      this.#win.webContents.send('move-forward', true)
-    }
-    if(message.startsWith("!movebackwards")|| message.startsWith("!movebackward")){
-      this.#win.webContents.send('move-backward', true)
-    }
-    if(message.startsWith("!panleft")){
-      let degrees = 45
-      if(message.indexOf(" ") > 0){
-        let value = message.split(" ")[1]
-        if(!isNaN(Number(value))){
-          degrees = parseInt(value)
+        if(message.startsWith("!zoomin")){
+          let zoomValue = 1
+          if(message.indexOf(" ") > 0){
+            let value = message.split(" ")[1]
+            if(!isNaN(Number(value))){
+              zoomValue = parseInt(value)
+            }
+          }
+          this.#win.webContents.send('zoom-in', zoomValue)
+        }
+        if(message.startsWith("!zoomout")){
+          let zoomValue = 1
+          if(message.indexOf(" ") > 0){
+            let value = message.split(" ")[1]
+            if(!isNaN(Number(value))){
+              zoomValue = parseInt(value)
+            }
+          }
+          this.#win.webContents.send('zoom-out', zoomValue)
         }
       }
-      this.#win.webContents.send('pan-left', degrees)
     }
-    if(message.startsWith("!panright")){
-      let degrees = 45
-      if(message.indexOf(" ") > 0){
-        let value = message.split(" ")[1]
-        if(!isNaN(Number(value))){
-          degrees = parseInt(value)
-        }
-      }
-      this.#win.webContents.send('pan-right', degrees)
-      
-    }
-    if(message.startsWith("!panup")){
-      let degrees = 45
-      if(message.indexOf(" ") > 0){
-        let value = message.split(" ")[1]
-        if(!isNaN(Number(value))){
-          degrees = parseInt(value)
-        }
-      }
-      this.#win.webContents.send('pan-up', degrees)
-      
-    }
-    if(message.startsWith("!pandown")){
-      let degrees = 45
-      if(message.indexOf(" ") > 0){
-        let value = message.split(" ")[1]
-        if(!isNaN(Number(value))){
-          degrees = parseInt(value)
-        }
-      }
-      this.#win.webContents.send('pan-down', degrees)
-      
-    }
-    if(message.startsWith("!zoomin")){
-      let zoomValue = 1
-      if(message.indexOf(" ") > 0){
-        let value = message.split(" ")[1]
-        if(!isNaN(Number(value))){
-          zoomValue = parseInt(value)
-        }
-      }
-      this.#win.webContents.send('zoom-in', zoomValue)
-    }
-    if(message.startsWith("!zoomout")){
-      let zoomValue = 1
-      if(message.indexOf(" ") > 0){
-        let value = message.split(" ")[1]
-        if(!isNaN(Number(value))){
-          zoomValue = parseInt(value)
-        }
-      }
-      this.#win.webContents.send('zoom-out', zoomValue)
-    }
+
+
 
     // streamer commands
     if (process.env.NODE_ENV !== 'development' || userstate.badges?.broadcaster !== '1') return

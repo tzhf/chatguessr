@@ -131,6 +131,11 @@
               Random plonk :
               <input v-model.trim="settings.randomPlonkCmd" type="text" spellcheck="false" />
             </label>
+            
+            <label class="form__group" data-tip="Allow Country Random Plonk.">
+              <i>Allow Country Random Plonk.</i>
+              <input v-model="settings.countryRandomPlonkAllowed" type="checkbox" />
+            </label>
             <label class="form__group" data-tip="Guess random coordinates in Water (default: !randomplonkwater)">
               Random plonk in international waters:
               <input v-model.trim="settings.randomPlonkWaterCmd" type="text" spellcheck="false" />

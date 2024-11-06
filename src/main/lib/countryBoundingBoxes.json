@@ -59,7 +59,7 @@
     "GE":{"name":"Georgia","boundingBox":{"minLat":41.0644446885,"minLng":39.9550085793,"maxLat":43.553104153,"maxLng":46.6379081561}},
     "GH":{"name":"Ghana","boundingBox":{"minLat":4.71046214438,"minLng":-3.24437008301,"maxLat":11.0983409693,"maxLng":1.0601216976}},
     "GN":{"name":"Guinea","boundingBox":{"minLat":7.3090373804,"minLng":-15.1303112452,"maxLat":12.5861829696,"maxLng":-7.83210038902}},
-    "GM":{"name":"Gambia","boundingBox":{"minLat":13.1302841252,"minLng":-16.8415246241,"maxLat":13.8764918075,"maxLng":-13.8449633448}},
+    "GM":{"name":"The Gambia","boundingBox":{"minLat":13.1302841252,"minLng":-16.8415246241,"maxLat":13.8764918075,"maxLng":-13.8449633448}},
     "GW":{"name":"Guinea Bissau","boundingBox":{"minLat":11.0404116887,"minLng":-16.6774519516,"maxLat":12.6281700708,"maxLng":-13.7004760401}},
     "GQ":{"name":"Eq. Guinea","boundingBox":{"minLat":1.01011953369,"minLng":9.3056132341,"maxLat":2.28386607504,"maxLng":11.285078973}},
     "GR":{"name":"Greece","boundingBox":{"minLat":34.9199876979,"minLng":20.1500159034,"maxLat":41.8269046087,"maxLng":26.6041955909}},

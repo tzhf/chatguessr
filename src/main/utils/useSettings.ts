@@ -69,7 +69,8 @@ const defaultSettings = {
   startOfRoundCommand: "!botrandomplonk",
   ABCModeLetters: "ABCDE",
   isBRMode: false,
-  battleRoyaleReguessLimit: 3
+  battleRoyaleReguessLimit: 3,
+  countryRandomPlonkAllowed: false,
 }
 
 const settings = Object.assign({}, defaultSettings, storedSettings)

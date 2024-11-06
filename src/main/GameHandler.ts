@@ -1304,7 +1304,7 @@ export default class GameHandler {
       })
       return
     }
-    if(message.startsWith("!countrycode")){
+    if(message.startsWith("!countrycode") && settings.countryRandomPlonkAllowed){
       this.#backend?.sendMessage("Country codes: https://pastebin.com/raw/xyrvw4R7")
     }
         // KEEP THIS AT THE END, BECAUSE OTHERWISE IT MIGHT CONFLICT WITH OTHER COMMANDS LIKE RANDOMPLONKWATER
@@ -1316,7 +1316,7 @@ export default class GameHandler {
       let value = message.split(" ")[1]
       console.log(`user: ${userstate.username} requested random plonk in country: ${value}`)
       let isCountryCode = checkCountryCodeValidity(value)
-      if(isCountryCode){
+      if(isCountryCode && settings.countryRandomPlonkAllowed){
         console.log("country code is valid")
         const newCoords = await getRandomCoordsInLandByCountryCode(value)
         if(newCoords.lat == 0 && newCoords.lng == 0){

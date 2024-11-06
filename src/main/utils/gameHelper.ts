@@ -247,8 +247,11 @@ export function checkCountryCodeValidity(countryCode: string): boolean {
 
 function randomLatitudeInBounds(minLat, maxLat) {
   // when picking random coords, mongolia comes up more often then it should because of the shape of the globe
+  // test with 10000 random plonks
   // occurances:  { MN: 85, TD: 56 }
   // to fix this, we correct for curvature of the earth by using the asin function
+  // reult after changes
+  // occurances:  { MN: 89, TD: 82 }
   const minLatRad = minLat * Math.PI / 180;  // Convert to radians
   const maxLatRad = maxLat * Math.PI / 180;  // Convert to radians
 

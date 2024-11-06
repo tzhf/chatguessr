@@ -355,7 +355,8 @@ export default class Game {
         streak ? streak.count++ : (streak = { count: 1 })
       } else {
         streak = undefined
-        this.#db.resetUserStreak(dbUser.id)
+        if(!this.isMultiGuess)
+          this.#db.resetUserStreak(dbUser.id)
       }
     }
 

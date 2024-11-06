@@ -244,6 +244,25 @@ export function checkCountryCodeValidity(countryCode: string): boolean {
   return countryBoundingBoxes.hasOwnProperty(countryCode)
 }
 
+
+function randomLatitudeInBounds(minLat, maxLat) {
+  // when picking random coords, mongolia comes up more often then it should because of the shape of the globe
+  // occurances:  { MN: 85, TD: 56 }
+  // to fix this, we correct for curvature of the earth by using the asin function
+  const minLatRad = minLat * Math.PI / 180;  // Convert to radians
+  const maxLatRad = maxLat * Math.PI / 180;  // Convert to radians
+
+  const u = Math.random();
+  const sinMinLat = Math.sin(minLatRad);
+  const sinMaxLat = Math.sin(maxLatRad);
+  const randomSinLat = sinMinLat + (sinMaxLat - sinMinLat) * u;
+
+  const randomLatRad = Math.asin(randomSinLat);
+  const randomLat = randomLatRad * 180 / Math.PI;  // Convert back to degrees
+
+  return randomLat;
+}
+
 export async function getRandomCoordsInLandByCountryCode(countryCode: string, i: number = 0): Promise<LatLng> {
   // send message to frontend if country code is invalid
   countryCode = countryCode.toUpperCase()
@@ -258,7 +277,7 @@ export async function getRandomCoordsInLandByCountryCode(countryCode: string, i:
   }
   const bounds = countryBoundingBoxes[countryCode].boundingBox
   if (!bounds) return { lat: 0, lng: 0 }
-  const lat = Math.random() * (bounds.maxLat - bounds.minLat) + bounds.minLat
+  const lat = randomLatitudeInBounds(bounds.minLat, bounds.maxLat)
   const lng = Math.random() * (bounds.maxLng - bounds.minLng) + bounds.minLng
   const localResults = countryIso(lat, lng, true)
   console.log("lat: " + lat + " lng: " + lng + " localResults: " + localResults + " countryTheCountryCodeIsIn: " + countryTheCountryCodeIsIn)
@@ -278,7 +297,8 @@ export async function getRandomCoordsInLand(bounds: Bounds | null = null, i: num
     lng_east = bounds.max.lng
     lng_west = bounds.min.lng
   }
-  const lat = Math.random() * (lat_north - lat_south) + lat_south
+  //const lat = Math.random() * (lat_north - lat_south) + lat_south
+  const lat = randomLatitudeInBounds(lat_south, lat_north)
   const lng = Math.random() * (lng_east - lng_west) + lng_west
   const localResults = countryIso(lat, lng, true)
   if (!localResults.length && i < 50) return await getRandomCoordsInLand(bounds, i + 1)
@@ -295,7 +315,7 @@ export async function getRandomCoordsNotInLand(bounds: Bounds | null = null, i: 
     lng_east = bounds.max.lng
     lng_west = bounds.min.lng
   }
-  const lat = Math.random() * (lat_north - lat_south) + lat_south
+  const lat = randomLatitudeInBounds(lat_south, lat_north)
   const lng = Math.random() * (lng_east - lng_west) + lng_west
   const localResults = countryIso(lat, lng, true)
   if (localResults.length && i < 50) return await getRandomCoordsNotInLand(bounds, i + 1)

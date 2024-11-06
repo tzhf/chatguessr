@@ -76,7 +76,6 @@ export default class GameHandler {
   }
 
   openGuesses() {
-    console.log("opening the guesses")
     this.#game.openGuesses()
     this.#win.webContents.send('switch-on')
     if(settings.showGuessesAreOpen)
@@ -103,7 +102,6 @@ export default class GameHandler {
     if (this.#game.isFinished) {
       this.#game.finishGame()
       let winner = await this.#showGameResults()
-      console.log("winner: ", winner)
       this.#game.setGameWinner(winner)
 
     } else {
@@ -217,8 +215,6 @@ export default class GameHandler {
   async #showGameResults() {
 
     var gameResults = this.#game.getGameResults()
-    console.log("gameResults: ", gameResults)
-
     if(settings.countdownMode !== "normal"){
 
       if(settings.countdownMode === "abc"){
@@ -489,7 +485,6 @@ export default class GameHandler {
               ? this.#game.getRoundParticipants()
               : this.#game.getRoundResults()
 
-            console.log("settings in gamehandler init function:", settings.isBRMode)
             this.#win.webContents.send(
               'game-started',
               this.#game.isMultiGuess,
@@ -572,8 +567,6 @@ export default class GameHandler {
     }
     if (this.#disappointedUsers.length > 0) {
       this.#disappointedUsers.forEach(user=>{
-        console.log("disappointed userrrrr: ", user)
-
         const coordinatesLat = -50.607101021878165
         const coordinatesLng = 165.97286224365234
         if(user.username)

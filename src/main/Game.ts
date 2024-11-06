@@ -209,7 +209,7 @@ export default class Game {
   async #makeGuess(omitBroadcasterGuess = false) {
     this.seed = await this.#getSeed()
 
-    if (this.isMultiGuess) {
+    if (this.isMultiGuess || this.#settings.isBRMode) {
       await this.#processMultiGuesses()
     }
     await this.#processStreamerGuess(omitBroadcasterGuess)
@@ -225,7 +225,9 @@ export default class Game {
     await pMap(
       guesses,
       async (guess) => {
-        if (guess.streakCode === this.#streakCode) {
+        console.log("guess inside processMultiGuesses", guess)
+        // if streak is correct and it is the first plonk, increase streak
+        if (guess.streakCode === this.#streakCode ) {
           this.#db.addUserStreak(guess.player.userId, this.#roundId!)
         } else {
           this.#db.resetUserStreak(guess.player.userId)
@@ -334,13 +336,17 @@ export default class Game {
       this.lastLocation &&
       !latLngEqual(lastStreak.lastLocation, this.lastLocation)
     ) {
+      console.log('Resetting streak for', dbUser.username)
       this.#db.resetUserStreak(dbUser.id)
     }
 
-    if (!this.isMultiGuess && !brIsAllowedToReguess) {
+    if (!this.isMultiGuess && !this.#settings.isBRMode) {
+      console.log(1)
       if (correct) {
+        console.log(2)
         this.#db.addUserStreak(dbUser.id, this.#roundId!)
       } else {
+        console.log(3)
         this.#db.resetUserStreak(dbUser.id)
       }
     }
@@ -349,11 +355,16 @@ export default class Game {
 
     // Here we mimic addUserStreak() without committing for multiGuesses() mode
     // This might look weird but with this we no longer need to update guess streak in processMultiGuesses() which was slow
-    if (this.isMultiGuess || brIsAllowedToReguess) {
+    if (this.isMultiGuess || this.#settings.isBRMode) {
+      console.log(4)
       if (correct) {
+        console.log(5)
+        console.log("streak before increase", streak)
         streak ? streak.count++ : (streak = { count: 1 })
       } else {
+        console.log(6)
         streak = undefined
+        this.#db.resetUserStreak(dbUser.id)
       }
     }
 
@@ -370,12 +381,17 @@ export default class Game {
 
     // Modify guess or push it
     let modified = false
-    if ((this.isMultiGuess || brIsAllowedToReguess ) && existingGuess) {
+    if (this.isMultiGuess && existingGuess) {
       this.#db.updateGuess(existingGuess.id, guess)
       modified = true
-    } else {
+    } else if(this.#settings.isBRMode && existingGuess){
+      this.#db.updateGuess(existingGuess.id, guess)
+      modified = true
+    }
+    else {
       this.#db.createGuess(this.#roundId!, dbUser.id, guess)
     }
+    
 
     // TODO save previous guess? No, fetch previous guess from the DB
     this.#db.setUserPreviousGuess(dbUser.id, location)

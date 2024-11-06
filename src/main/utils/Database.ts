@@ -1176,6 +1176,30 @@ ORDER BY
     // deleteEverything()
   }
 
+  getUserLastLoc(userId: string, roundId: string | undefined) {
+    if( roundId === undefined) {
+      roundId = "undefined"
+    }
+    // select the location and country for the user's last 5 guesses if the guess.round_id is not the current round
+    const stmt = this.#db.prepare(`
+      SELECT location,
+      country AS streakCode
+      FROM guesses
+      WHERE user_id = :userId
+        AND round_id != :roundId
+      ORDER BY created_at DESC
+      LIMIT 5
+    `)
+    const records = stmt.all({ userId, roundId }) as {
+      location: string
+      streakCode: string | null
+    }[]
+    return records.map((record) => ({
+      location: JSON.parse(record.location) as LatLng,
+      streakCode: record.streakCode
+    }))
+  }
+
   getLastlocs() {
     const lastlocsQuery = `
       SELECT

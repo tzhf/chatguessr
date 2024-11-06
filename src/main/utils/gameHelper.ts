@@ -1,6 +1,8 @@
 import axios from 'axios'
 import countryIso from 'coordinate_to_country'
 import { session } from 'electron'
+import countryBoundingBoxes from '../lib/countryBoundingBoxes.json'
+
 /**
  * Country code mapping for 2-character ISO codes that should be considered
  * part of another country for GeoGuessr streak purposes.
@@ -236,6 +238,35 @@ export async function fetchMap(mapToken: string): Promise<GeoGuessrMap | undefin
 /**
  * Returns random coordinates within land, no Antarctica
  */
+
+export function checkCountryCodeValidity(countryCode: string): boolean {
+  countryCode = countryCode.toUpperCase()
+  return countryBoundingBoxes.hasOwnProperty(countryCode)
+}
+
+export async function getRandomCoordsInLandByCountryCode(countryCode: string, i: number = 0): Promise<LatLng> {
+  // send message to frontend if country code is invalid
+  countryCode = countryCode.toUpperCase()
+  if(!checkCountryCodeValidity(countryCode)){
+    console.log("Invalid country code")
+    return { lat: 0, lng: 0 }
+  }
+  let countryTheCountryCodeIsIn = streakCodes[countryCode]
+  if (!countryTheCountryCodeIsIn){
+    console.log("Country code not in streakCodes")
+    return { lat: 0, lng: 0 }
+  }
+  const bounds = countryBoundingBoxes[countryCode].boundingBox
+  if (!bounds) return { lat: 0, lng: 0 }
+  const lat = Math.random() * (bounds.maxLat - bounds.minLat) + bounds.minLat
+  const lng = Math.random() * (bounds.maxLng - bounds.minLng) + bounds.minLng
+  const localResults = countryIso(lat, lng, true)
+  console.log("lat: " + lat + " lng: " + lng + " localResults: " + localResults + " countryTheCountryCodeIsIn: " + countryTheCountryCodeIsIn)
+  if ((!localResults.length && i < 50) || (localResults[0]!=countryTheCountryCodeIsIn && i < 50)) return await getRandomCoordsInLandByCountryCode(countryCode, i + 1)
+  return { lat, lng }
+
+}
+
 export async function getRandomCoordsInLand(bounds: Bounds | null = null, i: number = 0): Promise<LatLng> {
   let lat_north = 85,
     lat_south = -60,

@@ -15,7 +15,9 @@ import {
   getRandomCoordsInLand,
   getRandomCoordsNotInLand,
   getStreamerAvatar,
-  parseUserDate
+  parseUserDate,
+  getRandomCoordsInLandByCountryCode,
+  checkCountryCodeValidity,
 } from './utils/gameHelper'
 import { getEmoji, randomCountryFlag, selectFlag } from './lib/flags/flags'
 import streakCodes from './lib/streakCodes.json'
@@ -665,6 +667,15 @@ export default class GameHandler {
     ipcMain.on('delete-banned-user', (_event, username: string) => {
       this.#db.deleteBannedUser(username)
     })
+    ipcMain.on('return-my-last-loc', (_event, url: string, username: string) => {
+      console.log("inside backend getting the url: ", url)
+      console.log("this.#backend: ", this.#backend)
+      if(!url || url === ""){
+        this.#backend?.sendMessage(username+': There is no official coverage within 250km of your latest guess.', { system: true })  
+      }
+      else
+        this.#backend?.sendMessage(username+': The closest official coverage to your last guess is: '+url, { system: true })
+    })
     ipcMain.handle('get-streamer-random-plonk-lat-lng', () => {
       this.#streamerDidRandomPlonk = true
       this.#game.setStreamerDidRandomPlonk(this.#streamerDidRandomPlonk)
@@ -1101,6 +1112,49 @@ export default class GameHandler {
       return
     }
 
+
+    //if (message.split(' ')[0] === settings.mylastlocCmd) {
+    if (message.split(' ')[0].startsWith("!mylastloc")) {
+      // check if second word is an integer
+      const secondWord = message.split(' ')[1]
+      let locationNumber = 1
+      //check if second word is an int
+      if (secondWord && !isNaN(parseInt(secondWord))) {
+        locationNumber = parseInt(secondWord)
+      }
+      locationNumber = locationNumber - 1
+      const last5Locations = this.#db.getUserLastLoc(userId, this.#game.getRoundId())
+      if (!last5Locations.length) {
+        await this.#backend?.sendMessage('No locations saved yet.')
+        return
+      }
+      if (locationNumber < 0) {
+        await this.#backend?.sendMessage('Location number out of range. Must be 1-5.')
+        return
+      }
+      if (locationNumber >= last5Locations.length) {
+        await this.#backend?.sendMessage('Location number out of range. Must be 5 or less.')
+        return
+      }
+      const lastLocation = last5Locations[locationNumber]
+      let username = userstate['display-name']
+      this.#win.webContents.send('retrieve-my-last-loc', lastLocation.location, username)
+
+      return
+      const streetViewService = new google.maps.StreetViewService();
+      const request = {
+        location: { lat: lastLocation.location.lat, lng: lastLocation.location.lng },
+        preference: google.maps.StreetViewPreference.NEAREST, // Set the preference
+        radius: 5000 // Search within a 5000-meter radius
+      };
+      streetViewService.getPanorama(request, (data, status) => {
+        if (status === 'OK') {
+          console.log('Street View data:', data);
+
+        }
+      })
+    }
+
     if(message === settings.modeCmd){
       if (!this.#game.isInGame || !this.#game.seed || !this.#game.seed.map) {
         return
@@ -1257,11 +1311,33 @@ export default class GameHandler {
       })
       return
     }
-
+    if(message.startsWith("!countrycode")){
+      this.#backend?.sendMessage("Country codes: https://pastebin.com/raw/xyrvw4R7")
+    }
         // KEEP THIS AT THE END, BECAUSE OTHERWISE IT MIGHT CONFLICT WITH OTHER COMMANDS LIKE RANDOMPLONKWATER
     // if first chars of message are equal to settings of randomplonkcmd check if it is randomplonkcmd
-    if(message.startsWith(settings.randomPlonkCmd) || message.substring(0,3) == "!rp"){
+    if(message.startsWith(settings.randomPlonkCmd) || message.substring(0,3) == "!rp" || message.substring(0,3) == "!рп"){
       if (!this.#game.isInGame) return
+
+    if(message.indexOf(" ") >= 0){
+      let value = message.split(" ")[1]
+      console.log(`user: ${userstate.username} requested random plonk in country: ${value}`)
+      let isCountryCode = checkCountryCodeValidity(value)
+      if(isCountryCode){
+        console.log("country code is valid")
+        const newCoords = await getRandomCoordsInLandByCountryCode(value)
+        if(newCoords.lat == 0 && newCoords.lng == 0){
+          console.log("no country found")
+          this.#backend?.sendMessage("No country found with that code")
+        }
+        const randomGuess = `!g ${newCoords.lat}, ${newCoords.lng}`
+        this.#handleGuess(userstate, randomGuess, false).catch((err) => {
+          console.error(err)
+        })
+        return
+      }
+    }
+
 
       var { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds);
       if (this.#game.waterPlonkMode === "mandatory") {

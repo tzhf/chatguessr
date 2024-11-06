@@ -263,8 +263,8 @@
       class="form__group"
       data-tip="Reguess Mode"
     >
-      Reguess Mode
-      <input v-model="settings.isBRMode" type="checkbox" />
+      Reguess Mode (deactivates Multi Guess)
+      <input v-model="settings.isBRMode" @change="modifyIsMultiGusssOnBRMode" type="checkbox" />
     </label>
     
     <label 
@@ -624,6 +624,13 @@ const removeBannedUser = (index: number, user: { username: string }) => {
 }
 
 const currentVerion = shallowRef(await chatguessrApi.getCurrentVersion())
+
+function modifyIsMultiGusssOnBRMode(event) {
+
+  if(event.target.checked)
+    settings.isMultiGuess = false
+}
+
 </script>
 
 <style scoped>

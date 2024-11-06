@@ -432,6 +432,64 @@ onBeforeUnmount(
 )
 
 onBeforeUnmount(
+  chatguessrApi.onRetrieveMyLastLoc(async (location, username) => {
+    function computeDistanceBetween(coords1, coords2) {
+      return google.maps.geometry.spherical.computeDistanceBetween(
+        coords1,
+        coords2,
+      );
+    }
+    function makeMapsUrlPanoId(panoId: string): string {
+      return `https://www.google.com/maps/@?api=1&map_action=pano&pano=${panoId}`
+    }
+
+    let searchRadius = 250000
+    let radius = searchRadius
+    let oldRadius = searchRadius
+    let pano = {
+      radius: 0,
+      url: ''
+    }
+    //let closestPanoId;
+    const streetViewService = new google.maps.StreetViewService();
+    while (true) {
+      try {
+      let panorama = await streetViewService.getPanorama({
+        location: {lat: location.lat, lng: location.lng},
+        preference: google.maps.StreetViewPreference.NEAREST, // Set the preference
+        source: google.maps.StreetViewSource.OUTDOOR, // Get outdoor panoramas
+        radius: radius // Search within a 5000-meter radius
+      });
+      if(!panorama) return
+      if(!panorama.data) return
+      if(!panorama.data.location) return
+      radius = computeDistanceBetween({lat: location.lat, lng: location.lng}, panorama.data.location.latLng);
+      pano.radius = radius;
+      pano.url = makeMapsUrlPanoId(panorama.data.location.pano);
+ 
+      if (oldRadius && radius >= oldRadius) break;
+      oldRadius = radius;
+    } catch (e) {
+      console.error(e)
+      break;
+    }
+  }
+  chatguessrApi.returnMyLastLoc(pano.url, username)        
+
+
+
+
+
+
+
+
+
+
+
+  })
+)
+
+onBeforeUnmount(
   chatguessrApi.onGameQuit(() => {
     gameState.value = 'none'
     rendererApi.clearMarkers()

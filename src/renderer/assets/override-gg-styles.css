@@ -86,9 +86,13 @@
   color: #ffffff;
   text-align: center;
   font-weight: 700;
+  height: 4.3rem;
 }
 .gm-style-iw-d .username {
   font-weight: 400;
+}
+.gm-style-iw-d .flag-icon{
+  font-size: 1rem;
 }
 .gm-ui-hover-effect {
   display: none !important;

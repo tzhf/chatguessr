@@ -1371,7 +1371,7 @@ export default class GameHandler {
     
     // move commands
     if(this.#game && this.#game.seed && this.TMPZ){
-      if(userstate.username === "temp_rsix")
+      if(userstate.username === "temp_rsix" || userstate.username === "twitchsmurf_rl")
         return
       if(!this.#game.seed.forbidMoving){
         if(userstate && userstate.username){

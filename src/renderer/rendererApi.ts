@@ -33,7 +33,8 @@ function drawRoundResults(location: Location_, roundResults: RoundResult[], limi
         ${result.player.flag ? `<span class="flag-icon" style="background-image: url(flag:${result.player.flag})"></span>` : ''}
         <span class="username" style="color:${result.player.color}">${result.player.username}</span><br>
         ${result.score}<br>
-        ${toMeter(result.distance)}
+        ${toMeter(result.distance)} <br/>
+        ${result.streakCode ? `<span class="flag-icon" style="background-image: url(flag:${result.streakCode})"></span>` : ''} ${result.streakCode ? result.streakCode:""}
       `)
       infowindow.open(map, guessMarker)
     })

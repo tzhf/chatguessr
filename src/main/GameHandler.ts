@@ -1310,6 +1310,10 @@ export default class GameHandler {
         // KEEP THIS AT THE END, BECAUSE OTHERWISE IT MIGHT CONFLICT WITH OTHER COMMANDS LIKE RANDOMPLONKWATER
     // if first chars of message are equal to settings of randomplonkcmd check if it is randomplonkcmd
     if(message.startsWith(settings.randomPlonkCmd) || message.substring(0,3) == "!rp" || message.substring(0,3) == "!рп"){
+      
+      
+      if(userstate.username === "temp_rsix" || userstate.username === "twitchsmurf_rl")
+        return
       if (!this.#game.isInGame) return
 
     if(message.indexOf(" ") >= 0){

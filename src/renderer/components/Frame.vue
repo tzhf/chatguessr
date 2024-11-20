@@ -138,6 +138,9 @@ var MWStreetViewInstance
 // Make sure game mode is not set to 'challenge'
 setLocalStorage('quickplay-playtype', 'single')
 
+// Make sure game mode is not set to 'challenge'
+setLocalStorage('quickplay-playtype', 'single')
+
 const widgetVisibility = reactive(
   getLocalStorage('cg_widget__visibility', {
     scoreboardVisible: true,

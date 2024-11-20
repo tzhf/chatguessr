@@ -4,6 +4,7 @@ import BlinkMode from './BlinkMode.vue'
 </script>
 
 <template>
+  aaaaa
   <BlinkMode />
   <SatelliteMode />
 </template>

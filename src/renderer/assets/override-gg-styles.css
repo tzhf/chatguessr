@@ -17,9 +17,13 @@
   display: none !important;
 }
 
-/* Start page tweaks */
-[class^='startpage_button__'],
-[class^='signed-in-start-page_dailyReminderContainer__'] {
+/* Hide community page menu links */
+[class^='community-navigation-v2_header__'] {
+  display: none !important;
+}
+
+
+[class^='maps_back__'] [class^='back-button_round__'] {
   display: none;
 }
 

@@ -20,7 +20,7 @@ export default function createWindow() {
   })
 
   win.setMenuBarVisibility(false)
-  win.loadURL('https://www.geoguessr.com/community/maps')
+  win.loadURL('https://www.geoguessr.com/maps/community')
 
   // Open links in default OS browser
   // Allow GeoGuessr socials login to open a new window

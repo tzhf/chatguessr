@@ -73,7 +73,7 @@ export default class GameHandler {
 
   returnToMapPage() {
     const mapUrl = this.#game.seed?.map
-    this.#win.loadURL(`https://www.geoguessr.com/maps/${mapUrl}/play`)
+    this.#win.loadURL(`https://www.geoguessr.com/maps/${mapUrl}`)
   }
 
   #showRoundResults(location: Location_, roundResults: RoundResult[]) {

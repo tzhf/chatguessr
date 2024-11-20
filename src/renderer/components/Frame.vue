@@ -121,6 +121,9 @@ const guessMarkersLimit = shallowRef<number | null>(null)
 const currentLocation = shallowRef<LatLng | null>(null)
 const gameResultLocations = shallowRef<Location_[] | null>(null)
 
+// Make sure game mode is not set to 'challenge'
+setLocalStorage('quickplay-playtype', 'single')
+
 const widgetVisibility = reactive(
   getLocalStorage('cg_widget__visibility', {
     scoreboardVisible: true,

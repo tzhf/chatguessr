@@ -24,7 +24,7 @@ modsControls.id = 'mods-controls'
 createApp(ModsControls).mount(modsControls)
 
 const appendModsControlsComponent = () => {
-  const targetElement = document.querySelector('[class^="section_sectionMedium__"]')
+  const targetElement = document.querySelector('[class^="map-block_mapStatsContainer__"]')
   if (targetElement) {
     const wrapperExists = document.getElementById('mods-controls')
     if (!wrapperExists) {

@@ -9,6 +9,9 @@ import BlinkMode from './BlinkMode.vue'
 </template>
 
 <style>
+label {
+  text-align: center;
+}
 .section_sizeMedium h3 {
   color: var(--ds-color-white-60);
   font-size: var(--font-size-12);

@@ -20,7 +20,7 @@ export default function createWindow() {
   })
 
   win.setMenuBarVisibility(false)
-  win.loadURL('https://www.geoguessr.com/community/maps')
+  win.loadURL('https://www.geoguessr.com/maps/community')
 
   // Adapt all calls for api/v3/search/any to api/v3/search/map
   win.webContents.session.webRequest.onBeforeRequest(

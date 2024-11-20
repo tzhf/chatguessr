@@ -17,15 +17,12 @@
   display: none !important;
 }
 
-/* Hide community page menu links */
-[class^='community-navigation-v2_header__'] {
-  display: none !important;
-}
-
-
-[class^='maps_back__'] [class^='back-button_round__'] {
+/* Start page tweaks */
+[class^='startpage_button__'],
+[class^='signed-in-start-page_dailyReminderContainer__'] {
   display: none;
 }
+
 
 /* Hides friends list bar */
 [class^='version4_sidebar__'] {
@@ -34,7 +31,6 @@
 [class^='version4_content__'] {
   max-width: 100% !important;
 }
-
 
 /* Hide results overlay */
 [class^='result-overlay_overlay__'],

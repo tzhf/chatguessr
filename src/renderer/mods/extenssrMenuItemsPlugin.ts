@@ -145,7 +145,7 @@ export default class MenuItemsPlugin {
     }
 
     const communityMaps = createMenuItem({
-      href: '/community/maps',
+      href: '/maps/community',
       textContent: 'Community Maps'
     })
 

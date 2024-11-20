@@ -102,7 +102,9 @@ export default class MenuItemsPlugin {
       customMenuItemTemplate
     const container =
       referenceElement.closest('ol') ??
-      document.querySelector('[data-qa="header-current-user-pin"]')?.parentNode
+      document
+        .querySelector('[class^="header-tablet-desktop_profile"]')
+        ?.querySelector('[class^="menu-item_container"]')?.parentNode
 
     const createMenuItem = (props: {
       href: string
@@ -179,7 +181,9 @@ export default class MenuItemsPlugin {
     } else {
       container?.insertBefore(
         likedMaps,
-        document.querySelector('[data-qa="header-current-user-pin"]')
+        document
+          .querySelector('[class^="header-tablet-desktop_profile"]')
+          ?.querySelector('[class^="menu-item_container"]') ?? null
       )
       container?.insertBefore(myMaps, likedMaps)
       container?.insertBefore(communityMaps, myMaps)

@@ -135,6 +135,9 @@ const gameResultLocations = shallowRef<Location_[] | null>(null)
 var MWStreetViewInstance
 
 
+// Make sure game mode is not set to 'challenge'
+setLocalStorage('quickplay-playtype', 'single')
+
 const widgetVisibility = reactive(
   getLocalStorage('cg_widget__visibility', {
     scoreboardVisible: true,

@@ -1,14 +1,30 @@
 /* GAME SETTINGS SCREEN */
-[data-qa='game-type-challenge'],
-[data-qa='game-type-single-player'] {
+[class^='map-mode-select_container__'],
+[class^='map-selector_divider__'] {
   display: none !important;
 }
 
-[class^='play_map__'] {
-  height: 9rem !important;
+[class^="header-tablet-desktop_desktopSectionLeft__"] > *:not(:first-child) {
+  display: none;
 }
-[class^='start-standard-game_body__'] {
-  margin-top: 0 !important;
+
+[class^='map-selector_selector__'] {
+  display: flex;
+}
+
+/* Hide promo and daily challenge from menu  */
+[class^="quick-search_wrapper__"] + * {
+  display: none !important;
+}
+
+/* Hide community page menu links */
+[class^='community-navigation-v2_header__'] {
+  display: none !important;
+}
+
+
+[class^='maps_back__'] [class^='back-button_round__'] {
+  display: none;
 }
 
 /* Hides friends list bar */
@@ -19,27 +35,6 @@
   max-width: 100% !important;
 }
 
-/* Hide promo and daily challenge from menu  */
-[class^='header_promoDealButtonWrapper'] {
-  display: none !important;
-}
-
-[class^='header_context__'] > :nth-child(3) {
-  display: none !important;
-}
-[class^='header_loginButton__'] {
-  display: block !important;
-}
-
-/* Hide Return to Home Top Left menu */
-[class^='header_mainNavigation__'] {
-  display: none !important;
-}
-
-/* Hide community page menu links */
-[class^='community-navigation_tabsWrapper__'] a:not([href='/community/maps']) {
-  display: none;
-}
 
 /* Hide results overlay */
 [class^='result-overlay_overlay__'],

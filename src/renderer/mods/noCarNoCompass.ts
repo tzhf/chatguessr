@@ -141,7 +141,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
       <div style="display: flex; justify-content: space-between">
         <div style="display: flex; align-items: center;">
           <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">Crt</span>
-          <input type="checkbox" id="enableCrt" onclick="toggleCrtMode(this)" class="toggle_toggle__qfXpL">
+          <input type="checkbox" id="enableCrtMode" onclick="toggleCrtMode(this)" class="toggle_toggle__qfXpL">
         </div>
         <div style="display: flex; align-items: center;">
           <span class="game-options_optionLabel__Vk5xN" style="margin: 0; padding-right: 6px;">Min</span>
@@ -157,11 +157,13 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
 
   const checkInsertGui = () => {
     if (
-      document.querySelector('[class^="radio-box_root__"]') &&
+      document.querySelector('#mods-controls') &&
       document.querySelector('#enableNoCar') === null
     ) {
+      console.log("inserting gui")
+      console.log(settings)
       document
-        .querySelector('[class^="section_sectionMedium__"]')
+        .querySelector('#mods-controls')
         ?.insertAdjacentHTML('beforeend', classicGameGuiHTML)
 
       if (settings.noCar) {
@@ -181,7 +183,7 @@ import { getLocalStorage, setLocalStorage } from '../useLocalStorage'
         ;(document.querySelector('#enablePixelateMode') as HTMLInputElement).checked = true
       }
       if (settings.greyscale) {
-        ;(document.querySelector('#enablePixelateMode') as HTMLInputElement).checked = true
+        ;(document.querySelector('#enableGreyscale') as HTMLInputElement).checked = true
       }
       if (settings.toon) {
         ;(document.querySelector('#enableToonMode') as HTMLInputElement).checked = true

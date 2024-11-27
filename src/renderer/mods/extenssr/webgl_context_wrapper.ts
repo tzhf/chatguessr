@@ -131,6 +131,7 @@ export default class WebGLContextWrapper {
 		this.offscreenContext.drawElements = this.oldDrawElements;
 		const dirtifier = this.dirtifier;
 		// OK, this is actually an on-screen canvas AND is related to streetview.
+		///// ######################## error might be somewhere around here - V
 		if (this.canvas.parentElement && this.canvas.classList.contains('widget-scene-canvas')) {
 			const thees = this;
 			const webglContext = this.contextCreator('webgl') as WebGLRenderingContext;

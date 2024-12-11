@@ -4,7 +4,7 @@
   display: none !important;
 }
 
-[class^="header-tablet-desktop_desktopSectionLeft__"] > *:not(:first-child) {
+[class^="header-desktop_desktopSectionLeft__"] > *:not(:first-child) {
   display: none;
 }
 

@@ -103,7 +103,7 @@ export default class MenuItemsPlugin {
     const container =
       referenceElement.closest('ol') ??
       document
-        .querySelector('[class^="header-tablet-desktop_profile"]')
+        .querySelector('[class^="header-desktop_profile"]')
         ?.querySelector('[class^="menu-item_container"]')?.parentNode
 
     const createMenuItem = (props: {
@@ -182,7 +182,7 @@ export default class MenuItemsPlugin {
       container?.insertBefore(
         likedMaps,
         document
-          .querySelector('[class^="header-tablet-desktop_profile"]')
+          .querySelector('[class^="header-desktop_profile"]')
           ?.querySelector('[class^="menu-item_container"]') ?? null
       )
       container?.insertBefore(myMaps, likedMaps)

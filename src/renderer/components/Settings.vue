@@ -22,7 +22,7 @@
             type="range"
             min="10"
             step="5"
-            max="100"
+            max="200"
           />
         </label>
       </div>

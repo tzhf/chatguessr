@@ -1079,7 +1079,7 @@ ORDER BY
       streak: number
     }[]
 
-    const streaks = streaksRecord.map((record) => ({
+    let streaks = streaksRecord.map((record) => ({
       player: {
         userId: record.id,
         username: record.username,
@@ -1090,7 +1090,7 @@ ORDER BY
       count: record.streak
     }))
 
-    const victoriesRecord = victoriesQuery.all({ since: sinceTime }) as {
+    let victoriesRecord = victoriesQuery.all({ since: sinceTime }) as {
       id: string
       username: string
       avatar: string | null
@@ -1099,7 +1099,7 @@ ORDER BY
       victories: number
     }[]
 
-    const victories = victoriesRecord.map((record) => ({
+    let victories = victoriesRecord.map((record) => ({
       player: {
         userId: record.id,
         username: record.username,
@@ -1110,7 +1110,7 @@ ORDER BY
       count: record.victories
     }))
 
-    const perfectsRecord = perfectQuery.all({ since: sinceTime }) as {
+    let perfectsRecord = perfectQuery.all({ since: sinceTime }) as {
       id: string
       username: string
       avatar: string | null
@@ -1119,7 +1119,7 @@ ORDER BY
       perfects: number
     }[]
 
-    const perfects = perfectsRecord.map((record) => ({
+    let perfects = perfectsRecord.map((record) => ({
       player: {
         userId: record.id,
         username: record.username,
@@ -1130,6 +1130,10 @@ ORDER BY
       count: record.perfects
     }))
 
+    const banned_users = this.getBannedUsers()
+    streaks = streaks.filter((streak) => !banned_users.some((banned) => banned.username.toLowerCase() === streak.player.username.toLowerCase()))
+    victories = victories.filter((victory) => !banned_users.some((banned) => banned.username.toLowerCase() === victory.player.username.toLowerCase()))
+    perfects = perfects.filter((perfect) => !banned_users.some((banned) => banned.username.toLowerCase() === perfect.player.username.toLowerCase()))
     return {
       streaks,
       victories,

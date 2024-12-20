@@ -258,6 +258,10 @@ export default class GameHandler {
     ipcMain.on('delete-banned-user', (_event, username: string) => {
       this.#db.deleteBannedUser(username)
     })
+
+    ipcMain.handle('get-streamer-random-plonk-lat-lng', () => {
+      return getRandomCoordsInLand(this.#game.seed!.bounds)
+    })
   }
 
   getTwitchConnectionState(): TwitchConnectionState {

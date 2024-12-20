@@ -56,6 +56,15 @@
 
     <button
       class="cg-button"
+      title="Randomplonk for Streamer"
+      :hidden="gameState !== 'in-round'"
+      @click="onStreamerRandomplonk"
+    >
+      <IconDice />
+    </button>
+
+    <button
+      class="cg-button"
       title="Center view"
       :hidden="!satelliteMode.value.enabled || gameState !== 'in-round'"
       @click="onClickCenterSatelliteView"
@@ -101,6 +110,7 @@ import IconScoreboardHidden from '@/assets/icons/scoreboard_hidden.svg'
 import IconTimerHidden from '@/assets/icons/timer_hidden.svg'
 import IconStartFlag from '@/assets/icons/start_flag.svg'
 import IconExtenssrFilters from '@/assets/icons/extenssr_filters.svg'
+import IconDice from '@/assets/icons/dice.svg'
 
 import { rendererApi } from '../rendererApi'
 const { chatguessrApi } = window
@@ -290,6 +300,47 @@ function onGameResultRowClick(row: GameResultDisplay) {
 
 function onClickCenterSatelliteView() {
   if (currentLocation.value) rendererApi.centerSatelliteView(currentLocation.value)
+}
+
+async function onStreamerRandomplonk() {
+  if (gameState.value !== 'in-round') return
+  const { lat, lng } = await chatguessrApi.getRandomPlonkLatLng()
+
+  // Okay well played Geoguessr u got me there for a minute, but below should work.
+  // Below is the only intentionally complicated part of the code - it won't be simplified or explained for good reason.
+  const element = document.querySelectorAll('[class^="guess-map_canvas__"]')[0]
+
+  const keys = Object.keys(element)
+  const key = keys.find((key) => key.startsWith('__reactFiber$'))
+  if (!key) return
+
+  const props = element[key]
+  const x = props.return.return.memoizedProps.map.__e3_.click
+  const objectKeys = Object.keys(x)
+  const y = objectKeys[objectKeys.length - 1]
+
+  const z = {
+    latLng: {
+      lat: () => lat,
+      lng: () => lng
+    }
+  }
+
+  const xy = x[y]
+  const a = Object.keys(x[y])
+
+  for (let i = 0; i < a.length; i++) {
+    const q = a[i]
+    if (typeof xy[q] === 'function') {
+      xy[q](z)
+    }
+  }
+
+  window.setTimeout(() => {
+    // click button element with data-qa="perform-guess"
+    const buttonElement = document.querySelector('[data-qa="perform-guess"]')
+    buttonElement?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  }, 200)
 }
 
 /** Load and update twitch connection state. */

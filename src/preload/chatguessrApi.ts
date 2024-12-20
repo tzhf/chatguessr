@@ -23,6 +23,10 @@ export const chatguessrApi = {
     ipcRenderer.send('return-to-map-page')
   },
 
+  getRandomPlonkLatLng(): Promise<LatLng> {
+    return ipcRenderer.invoke('get-streamer-random-plonk-lat-lng')
+  },
+
   getSettings(): Promise<Settings> {
     return ipcRenderer.invoke('get-settings')
   },

@@ -18,6 +18,7 @@ const defaultSettings = {
   flagsCmd: '!flags',
   getUserStatsCmd: '!me',
   getBestStatsCmd: '!best',
+  excludeBroadcasterDataInBest: false,
   clearUserStatsCmd: '!clear',
   randomPlonkCmd: '!randomplonk',
   showHasGuessed: true,

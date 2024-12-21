@@ -847,13 +847,14 @@ class db {
       })
   }
 
-  statsQueries() {
+  statsQueries(since: number, excludeBroadcaster: boolean) {
     const streakQuery = this.#db.prepare(`
       SELECT users.id, users.username, users.avatar, users.color, users.flag, MAX(streaks.count) AS streak
       FROM users, streaks
       WHERE streaks.user_id = users.id
         AND streaks.updated_at > users.reset_at
-        AND streaks.updated_at > :since
+        AND streaks.updated_at > ${since}
+        ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
       GROUP BY users.id
       ORDER BY streak DESC
       LIMIT 100
@@ -864,7 +865,8 @@ class db {
       FROM game_winners, users
       WHERE users.id = game_winners.user_id
         AND game_winners.created_at > users.reset_at
-        AND game_winners.created_at > :since
+        AND game_winners.created_at > ${since}
+        ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
       GROUP BY users.id
       ORDER BY victories DESC
       LIMIT 100
@@ -875,8 +877,9 @@ class db {
       FROM users
       LEFT JOIN guesses ON guesses.user_id = users.id
         AND guesses.created_at > users.reset_at
-        AND guesses.created_at > :since
+        AND guesses.created_at > ${since}
         WHERE guesses.score = 5000
+        ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
       GROUP BY users.id
       ORDER BY perfects DESC
       LIMIT 100
@@ -888,8 +891,9 @@ class db {
       LEFT JOIN guesses ON guesses.user_id = users.id
       JOIN rounds on guesses.round_id = rounds.id
         AND guesses.created_at > users.reset_at
-        AND guesses.created_at > :since
+        AND guesses.created_at > ${since}
         WHERE guesses.is_random_plonk = 1
+        ${excludeBroadcaster ? `AND users.id != 'BROADCASTER'` : ''}
         ORDER BY guesses.score DESC
       LIMIT 1
     `)
@@ -900,19 +904,22 @@ class db {
   /**
    *   Get best stats for !best command
    */
-  getBestStats(sinceTime: number = 0) {
-    const { streakQuery, victoriesQuery, perfectQuery, randomQuery } = this.statsQueries()
+  getBestStats(sinceTime: number = 0, excludeBroadcaster = false) {
+    const { streakQuery, victoriesQuery, perfectQuery, randomQuery } = this.statsQueries(
+      sinceTime,
+      excludeBroadcaster
+    )
 
-    const bestStreak = streakQuery.get({ since: sinceTime }) as
+    const bestStreak = streakQuery.get() as
       | { id: string; username: string; streak: number }
       | undefined
-    const mostVictories = victoriesQuery.get({ since: sinceTime }) as
+    const mostVictories = victoriesQuery.get() as
       | { id: string; username: string; victories: number }
       | undefined
-    const mostPerfects = perfectQuery.get({ since: sinceTime }) as
+    const mostPerfects = perfectQuery.get() as
       | { id: string; username: string; perfects: number }
       | undefined
-    const bestRandom = randomQuery.get({ since: sinceTime }) as
+    const bestRandom = randomQuery.get() as
       | { id: string; username: string; score: number; distance: number }
       | undefined
 
@@ -927,10 +934,13 @@ class db {
   /**
    *  Get all sorted stats in given interval for Leaderboard
    */
-  getGlobalStats(sinceTime: number = 0): Statistics {
-    const { streakQuery, victoriesQuery, perfectQuery } = this.statsQueries()
+  getGlobalStats(sinceTime: number = 0, excludeBroadcaster: boolean = false): Statistics {
+    const { streakQuery, victoriesQuery, perfectQuery } = this.statsQueries(
+      sinceTime,
+      excludeBroadcaster
+    )
 
-    const streaksRecord = streakQuery.all({ since: sinceTime }) as {
+    const streaksRecord = streakQuery.all() as {
       id: string
       username: string
       avatar: string | null
@@ -950,7 +960,7 @@ class db {
       count: record.streak
     }))
 
-    const victoriesRecord = victoriesQuery.all({ since: sinceTime }) as {
+    const victoriesRecord = victoriesQuery.all() as {
       id: string
       username: string
       avatar: string | null
@@ -970,7 +980,7 @@ class db {
       count: record.victories
     }))
 
-    const perfectsRecord = perfectQuery.all({ since: sinceTime }) as {
+    const perfectsRecord = perfectQuery.all() as {
       id: string
       username: string
       avatar: string | null

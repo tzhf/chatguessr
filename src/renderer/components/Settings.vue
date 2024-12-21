@@ -83,6 +83,13 @@
               Get channel best stats :
               <input v-model.trim="settings.getBestStatsCmd" type="text" spellcheck="false" />
             </label>
+            <label
+              class="form__group"
+              data-tip="Exclude streamer stats from leaderboard and !best command"
+            >
+              Exclude streamer stats :
+              <input v-model="settings.excludeBroadcasterDataInBest" type="checkbox" />
+            </label>
             <label class="form__group" data-tip="Get flags list  (default: !flags)">
               Get flags list :
               <input v-model.trim="settings.flagsCmd" type="text" spellcheck="false" />
@@ -355,7 +362,7 @@ span.error {
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-bottom: 8px solid rgba(50, 50, 50, 0.8);
+  border-bottom: 8px solid rgba(0, 0, 0, 0.8);
 }
 [data-tip]:after {
   content: attr(data-tip);
@@ -364,7 +371,7 @@ span.error {
   padding: 0.7rem 1rem;
   text-align: center;
   color: #ffffff;
-  background: rgba(50, 50, 50, 0.8);
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 4px;
 }
 [data-tip]:hover:after,

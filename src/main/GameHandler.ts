@@ -234,7 +234,7 @@ export default class GameHandler {
 
     ipcMain.handle('get-global-stats', async (_event, sinceTime: StatisticsInterval) => {
       const date = await parseUserDate(sinceTime)
-      return this.#db.getGlobalStats(date.timeStamp)
+      return this.#db.getGlobalStats(date.timeStamp, settings.excludeBroadcasterDataInBest)
     })
 
     ipcMain.handle('clear-global-stats', async (_event, sinceTime: StatisticsInterval) => {
@@ -619,9 +619,10 @@ export default class GameHandler {
         return
       }
       const { streak, victories, perfects, bestRandomPlonk } = this.#db.getBestStats(
-        dateInfo.timeStamp
+        dateInfo.timeStamp,
+        settings.excludeBroadcasterDataInBest
       )
-      if (!streak && !victories && !perfects) {
+      if (!streak && !victories && !perfects && !bestRandomPlonk) {
         await this.#backend?.sendMessage('No stats available.')
       } else {
         let msg = ''

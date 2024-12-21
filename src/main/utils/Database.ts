@@ -182,6 +182,9 @@ const migrations: ((db: SQLite.Database) => void)[] = [
   },
   function removeUsersLastLocationField(db) {
     db.prepare(`ALTER TABLE users DROP COLUMN last_location`).run()
+  },
+  function createIsRandomPlonk(db) {
+    db.prepare(`ALTER TABLE guesses ADD COLUMN is_random_plonk INTEGER DEFAULT NULL`).run()
   }
 ]
 
@@ -247,7 +250,7 @@ class db {
         )
         SELECT CASE WHEN EXISTS (
           SELECT * FROM users_guessed_on_last_round
-          WHERE ? in users_guessed_on_last_round and 
+          WHERE ? in users_guessed_on_last_round and
           'BROADCASTER' not in users_guessed_on_last_round
         )
         THEN CAST(1 AS BIT)
@@ -325,12 +328,13 @@ class db {
       lastStreak: number | null
       distance: number
       score: number
+      isRandomPlonk: number | null
     }
   ) {
     const id = randomUUID()
     const insertGuess = this.#db.prepare(`
-      INSERT INTO guesses(id, round_id, user_id, location, country, streak, last_streak, distance, score, created_at)
-      VALUES (:id, :roundId, :userId, :location, :streakCode, :streak, :lastStreak, :distance, :score, :createdAt)
+      INSERT INTO guesses(id, round_id, user_id, location, country, streak, last_streak, distance, score, created_at, is_random_plonk)
+      VALUES (:id, :roundId, :userId, :location, :streakCode, :streak, :lastStreak, :distance, :score, :createdAt, :isRandomPlonk)
     `)
 
     insertGuess.run({
@@ -343,7 +347,8 @@ class db {
       lastStreak: guess.lastStreak,
       distance: guess.distance,
       score: guess.score,
-      createdAt: timestamp()
+      createdAt: timestamp(),
+      isRandomPlonk: guess.isRandomPlonk
     })
 
     return id
@@ -360,6 +365,7 @@ class db {
         guesses.country AS streakCode,
         guesses.streak,
         guesses.last_streak AS lastStreak,
+        guesses.is_random_plonk AS isRandomPlonk,
         guesses.distance,
         guesses.score
       FROM guesses
@@ -401,6 +407,7 @@ class db {
       lastStreak: number | null
       distance: number
       score: number
+      isRandomPlonk: number | null
     }
   ) {
     const updateGuess = this.#db.prepare(`
@@ -410,6 +417,7 @@ class db {
         country = :streakCode,
         streak = :streak,
         last_streak = :lastStreak,
+        is_random_plonk = :isRandomPlonk,
         distance = :distance,
         score = :score,
         created_at = :updatedAt
@@ -422,6 +430,7 @@ class db {
       streakCode: guess.streakCode,
       streak: guess.streak,
       lastStreak: guess.lastStreak,
+      isRandomPlonk: guess.isRandomPlonk,
       distance: guess.distance,
       score: guess.score,
       updatedAt: timestamp()
@@ -542,6 +551,7 @@ class db {
 				guesses.streak,
         guesses.country as streakCode,
 				guesses.last_streak,
+        guesses.is_random_plonk,
 				guesses.distance,
 				guesses.score,
 				guesses.created_at - rounds.created_at AS time,
@@ -566,6 +576,7 @@ class db {
       streak: number
       streakCode: string | null
       last_streak: number | null
+      is_random_plonk: number | null
       distance: number
       score: number
       time: number
@@ -583,6 +594,7 @@ class db {
       streak: record.streak,
       streakCode: record.streakCode,
       lastStreak: record.last_streak,
+      isRandomPlonk: record.is_random_plonk?.valueOf() === 1,
       distance: record.distance,
       score: record.score,
       time: record.time,
@@ -657,7 +669,11 @@ class db {
 						AND ig.user_id = users.id
 					ORDER BY ig.created_at DESC
 					LIMIT 1
-				) AS streak
+				) AS streak,
+      CASE
+        WHEN SUM(guesses.is_random_plonk) = COUNT(guesses.id) THEN 1
+        ELSE 0
+      END AS is_random_plonk_matches
 			FROM rounds
 			JOIN users ON users.id IN (
 				SELECT DISTINCT g.user_id
@@ -682,6 +698,7 @@ class db {
       distances: string
       total_score: number
       total_distance: number
+      is_random_plonk_matches: number
     }[]
 
     return records.map((record) => ({
@@ -696,7 +713,8 @@ class db {
       scores: JSON.parse(record.scores),
       distances: JSON.parse(record.distances),
       totalScore: record.total_score,
-      totalDistance: record.total_distance
+      totalDistance: record.total_distance,
+      isAllRandomPlonk: record.is_random_plonk_matches === 1
     })) as GameResult[]
   }
 
@@ -762,6 +780,12 @@ class db {
 
   getUserStats(userId: string, sinceTimestamp: number = 0) {
     const stmt = this.#db.prepare(`
+      WITH random_plonk_stats AS (
+        SELECT MAX(score) AS bestRandomPlonkScore, MIN(distance) AS bestRandomPlonkDistance
+        FROM guesses
+        JOIN rounds ON guesses.round_id = rounds.id
+        WHERE user_id = :id AND guesses.created_at > (SELECT reset_at FROM users WHERE id = :id) AND guesses.created_at > :since AND is_random_plonk = 1
+      )
       SELECT
         username,
         flag,
@@ -771,7 +795,9 @@ class db {
         (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND streak > 0 AND created_at > users.reset_at AND created_at > :since) AS correct_guesses,
         (SELECT COUNT(*) FROM guesses WHERE user_id = :id AND score = 5000 AND created_at > users.reset_at AND created_at > :since) AS perfects,
         (SELECT AVG(score) FROM guesses WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since) AS average,
-        (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since) AS victories
+        (SELECT COUNT(*) FROM game_winners WHERE user_id = users.id AND created_at > users.reset_at AND created_at > :since) AS victories,
+        (SELECT bestRandomPlonkScore FROM random_plonk_stats) AS bestRandomPlonkScore,
+        (SELECT bestRandomPlonkDistance FROM random_plonk_stats) AS bestRandomPlonkDistance
       FROM users
       LEFT JOIN streaks current_streak ON current_streak.id = users.current_streak_id
       WHERE users.id = :id
@@ -788,6 +814,8 @@ class db {
           perfects: number
           average: number
           victories: number
+          bestRandomPlonkScore: number
+          bestRandomPlonkDistance: number
         }
       | undefined
 
@@ -801,7 +829,11 @@ class db {
           correctGuesses: record.correct_guesses,
           meanScore: record.average,
           perfects: record.perfects,
-          victories: record.victories
+          victories: record.victories,
+          bestRandomPlonk: {
+            score: record.bestRandomPlonkScore,
+            distance: record.bestRandomPlonkDistance
+          }
         }
       : undefined
   }
@@ -817,47 +849,59 @@ class db {
 
   statsQueries() {
     const streakQuery = this.#db.prepare(`
-    SELECT users.id, users.username, users.avatar, users.color, users.flag, MAX(streaks.count) AS streak
-    FROM users, streaks
-    WHERE streaks.user_id = users.id
-      AND streaks.updated_at > users.reset_at
-      AND streaks.updated_at > :since
-    GROUP BY users.id
-    ORDER BY streak DESC
-    LIMIT 100
-  `)
+      SELECT users.id, users.username, users.avatar, users.color, users.flag, MAX(streaks.count) AS streak
+      FROM users, streaks
+      WHERE streaks.user_id = users.id
+        AND streaks.updated_at > users.reset_at
+        AND streaks.updated_at > :since
+      GROUP BY users.id
+      ORDER BY streak DESC
+      LIMIT 100
+    `)
 
     const victoriesQuery = this.#db.prepare(`
-    SELECT users.id, users.username, users.avatar, users.color, users.flag, COUNT(*) AS victories
-    FROM game_winners, users
-    WHERE users.id = game_winners.user_id
-      AND game_winners.created_at > users.reset_at
-      AND game_winners.created_at > :since
-    GROUP BY users.id
-    ORDER BY victories DESC
-    LIMIT 100
-  `)
+      SELECT users.id, users.username, users.avatar, users.color, users.flag, COUNT(*) AS victories
+      FROM game_winners, users
+      WHERE users.id = game_winners.user_id
+        AND game_winners.created_at > users.reset_at
+        AND game_winners.created_at > :since
+      GROUP BY users.id
+      ORDER BY victories DESC
+      LIMIT 100
+    `)
 
     const perfectQuery = this.#db.prepare(`
-    SELECT users.id, users.username, users.avatar, users.color, users.flag, COUNT(guesses.id) AS perfects
-    FROM users
-    LEFT JOIN guesses ON guesses.user_id = users.id
-      AND guesses.created_at > users.reset_at
-      AND guesses.created_at > :since
-      WHERE guesses.score = 5000
-    GROUP BY users.id
-    ORDER BY perfects DESC
-    LIMIT 100
-  `)
+      SELECT users.id, users.username, users.avatar, users.color, users.flag, COUNT(guesses.id) AS perfects
+      FROM users
+      LEFT JOIN guesses ON guesses.user_id = users.id
+        AND guesses.created_at > users.reset_at
+        AND guesses.created_at > :since
+        WHERE guesses.score = 5000
+      GROUP BY users.id
+      ORDER BY perfects DESC
+      LIMIT 100
+    `)
 
-    return { streakQuery, victoriesQuery, perfectQuery }
+    const randomQuery = this.#db.prepare(`
+      SELECT users.id, users.username, users.avatar, users.color, users.flag, guesses.score, guesses.distance
+      FROM users
+      LEFT JOIN guesses ON guesses.user_id = users.id
+      JOIN rounds on guesses.round_id = rounds.id
+        AND guesses.created_at > users.reset_at
+        AND guesses.created_at > :since
+        WHERE guesses.is_random_plonk = 1
+        ORDER BY guesses.score DESC
+      LIMIT 1
+    `)
+
+    return { streakQuery, victoriesQuery, perfectQuery, randomQuery }
   }
 
   /**
    *   Get best stats for !best command
    */
   getBestStats(sinceTime: number = 0) {
-    const { streakQuery, victoriesQuery, perfectQuery } = this.statsQueries()
+    const { streakQuery, victoriesQuery, perfectQuery, randomQuery } = this.statsQueries()
 
     const bestStreak = streakQuery.get({ since: sinceTime }) as
       | { id: string; username: string; streak: number }
@@ -868,11 +912,15 @@ class db {
     const mostPerfects = perfectQuery.get({ since: sinceTime }) as
       | { id: string; username: string; perfects: number }
       | undefined
+    const bestRandom = randomQuery.get({ since: sinceTime }) as
+      | { id: string; username: string; score: number; distance: number }
+      | undefined
 
     return {
       streak: bestStreak,
       victories: mostVictories,
-      perfects: mostPerfects
+      perfects: mostPerfects,
+      bestRandomPlonk: bestRandom
     }
   }
 

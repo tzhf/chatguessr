@@ -355,7 +355,7 @@ span.error {
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-bottom: 8px solid rgb(127 127 127);
+  border-bottom: 8px solid rgba(50, 50, 50, 0.8);
 }
 [data-tip]:after {
   content: attr(data-tip);
@@ -364,7 +364,7 @@ span.error {
   padding: 0.7rem 1rem;
   text-align: center;
   color: #ffffff;
-  background: rgb(127 127 127);
+  background: rgba(50, 50, 50, 0.8);
   border-radius: 4px;
 }
 [data-tip]:hover:after,

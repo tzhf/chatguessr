@@ -278,16 +278,11 @@ img[src$="#custom_marker"]{
   height: 13px;
 }
 
-.username,
-.gm-style-iw-d .username {
+.username {
   padding: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 15px;
   text-shadow: 1px 1px 0px #000;
-}
-.gm-style-iw-d .username {
-  font-size: 16px;
-  font-weight: bold;
 }

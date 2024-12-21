@@ -272,3 +272,7 @@ export async function parseUserDate(
   }
   return { timeStamp: timeStamp, description: description }
 }
+
+export function parseDistance(distance: number): string {
+  return distance >= 1 ? distance.toFixed(1) + 'km' : Math.floor(distance * 1000) + 'm'
+}

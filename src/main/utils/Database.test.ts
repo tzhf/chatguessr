@@ -51,7 +51,8 @@ describe('userGuessedOnOngoingRound', () => {
       streak: 1,
       lastStreak: null,
       distance: 0,
-      score: 5000
+      score: 5000,
+      isRandomPlonk: null
     })
 
     expect(db.userGuessedOnOngoingRound(user!.id)).toEqual(true)
@@ -64,7 +65,8 @@ describe('userGuessedOnOngoingRound', () => {
       streak: 1,
       lastStreak: null,
       distance: 0,
-      score: 2500
+      score: 2500,
+      isRandomPlonk: null
     })
     expect(db.userGuessedOnOngoingRound(user!.id)).toEqual(false)
     expect(db.userGuessedOnOngoingRound(secondUser!.id)).toEqual(false)
@@ -90,7 +92,8 @@ describe('getUserStats', () => {
         streak: 0,
         lastStreak: null,
         distance: 0,
-        score: 5000
+        score: 5000,
+        isRandomPlonk: 0
       })
     }
 
@@ -130,7 +133,8 @@ describe('getRoundResults', () => {
       streak: 0,
       lastStreak: null,
       distance: 1234,
-      score: 3000
+      score: 3000,
+      isRandomPlonk: 0
     })
     db.createGuess(roundId, user!.id, {
       location: { lat: 0, lng: 0 },
@@ -138,7 +142,8 @@ describe('getRoundResults', () => {
       streak: 0,
       lastStreak: null,
       distance: 1000,
-      score: 3600
+      score: 3600,
+      isRandomPlonk: 0
     })
     db.createGuess(roundId, user3!.id, {
       location: { lat: 0, lng: 0 },
@@ -146,7 +151,8 @@ describe('getRoundResults', () => {
       streak: 0,
       lastStreak: null,
       distance: 998,
-      score: 3600
+      score: 3600,
+      isRandomPlonk: 0
     })
 
     const leaderboard = db.getRoundResults(roundId).map((score) => score.player.username)
@@ -174,7 +180,8 @@ describe('getRoundResults', () => {
       streak: 0,
       lastStreak: null,
       distance: 12,
-      score: 5000
+      score: 5000,
+      isRandomPlonk: 0
     })
     db.createGuess(roundId, user3!.id, {
       location: { lat: 0, lng: 0 },
@@ -182,7 +189,8 @@ describe('getRoundResults', () => {
       streak: 0,
       lastStreak: null,
       distance: 998,
-      score: 4800
+      score: 4800,
+      isRandomPlonk: 0
     })
     const second5k = db.createGuess(roundId, user2!.id, {
       location: { lat: 0, lng: 0 },
@@ -190,7 +198,8 @@ describe('getRoundResults', () => {
       streak: 0,
       lastStreak: null,
       distance: 8,
-      score: 5000
+      score: 5000,
+      isRandomPlonk: 0
     })
 
     // `second5k` was closer, but 20 seconds later,
@@ -225,7 +234,8 @@ describe('getRoundResults', () => {
       streak: 0,
       lastStreak: null,
       distance: 988,
-      score: 4924
+      score: 4924,
+      isRandomPlonk: 0
     })
     // adjust `non5k` to be significantly earlier than user2's 5K,
     // so it is earlier but worse by not being a 5K. Then we can check that after
@@ -241,7 +251,8 @@ describe('getRoundResults', () => {
       streak: 0,
       lastStreak: null,
       distance: 8,
-      score: 5000
+      score: 5000,
+      isRandomPlonk: 0
     })
     db.updateGuess(non5k, {
       location: { lat: 0, lng: 0 },
@@ -249,7 +260,8 @@ describe('getRoundResults', () => {
       streak: 0,
       lastStreak: null,
       distance: 12,
-      score: 5000
+      score: 5000,
+      isRandomPlonk: 0
     })
 
     const leaderboard = db.getRoundResults(roundId).map((score) => score.player.username)

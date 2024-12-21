@@ -43,6 +43,8 @@ export default class Game {
 
   isMultiGuess = false
 
+  streamerDidRandomPlonk = false
+
   constructor(db: Database, settings: Settings) {
     this.#db = db
     this.#settings = settings
@@ -52,6 +54,7 @@ export default class Game {
   async start(url: string, isMultiGuess: boolean) {
     this.isInGame = true
     this.isMultiGuess = isMultiGuess
+
     if (this.#url === url) {
       await this.refreshSeed()
     } else {
@@ -196,11 +199,17 @@ export default class Game {
       streak: streak?.count ?? 0,
       lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
       distance,
-      score
+      score,
+      isRandomPlonk: this.streamerDidRandomPlonk ? 1 : 0
     })
+    this.streamerDidRandomPlonk = false
   }
 
-  async handleUserGuess(userstate: UserData, location: LatLng): Promise<Guess> {
+  async handleUserGuess(
+    userstate: UserData,
+    location: LatLng,
+    isRandomPlonk: boolean = false
+  ): Promise<Guess> {
     const dbUser = this.#db.getOrCreateUser(
       userstate['user-id'],
       userstate['display-name'],
@@ -261,7 +270,8 @@ export default class Game {
       streak: streak?.count ?? 0,
       lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
       distance,
-      score
+      score,
+      isRandomPlonk: isRandomPlonk ? 1 : 0
     }
 
     // Modify guess or push it
@@ -288,7 +298,8 @@ export default class Game {
       lastStreak: lastStreak?.count && !correct ? lastStreak.count : null,
       distance,
       score,
-      modified
+      modified,
+      isRandomPlonk
     }
   }
 

@@ -12,7 +12,8 @@ import {
   parseCoordinates,
   getRandomCoordsInLand,
   getStreamerAvatar,
-  parseUserDate
+  parseUserDate,
+  parseDistance
 } from './utils/gameHelper'
 import { getEmoji, randomCountryFlag, selectFlag } from './lib/flags/flags'
 
@@ -260,6 +261,7 @@ export default class GameHandler {
     })
 
     ipcMain.handle('get-streamer-random-plonk-lat-lng', () => {
+      this.#game.streamerDidRandomPlonk = true
       return getRandomCoordsInLand(this.#game.seed!.bounds)
     })
   }
@@ -389,7 +391,7 @@ export default class GameHandler {
     await once(this.#socket, 'connect')
   }
 
-  async #handleGuess(userstate: UserData, message: string) {
+  async #handleGuess(userstate: UserData, message: string, isRandomPlonk: boolean = false) {
     if (!message.startsWith('!g') || !this.#game.guessesOpen) return
     // Ignore guesses made by the broadcaster with the CG map: prevents seemingly duplicate guesses
     if (userstate.username?.toLowerCase() === settings.channelName.toLowerCase()) return
@@ -400,7 +402,7 @@ export default class GameHandler {
     if (!location) return
 
     try {
-      const guess = await this.#game.handleUserGuess(userstate, location)
+      const guess = await this.#game.handleUserGuess(userstate, location, isRandomPlonk)
 
       if (!this.#game.isMultiGuess) {
         this.#win.webContents.send('render-guess', guess)
@@ -568,6 +570,7 @@ export default class GameHandler {
         await this.#backend?.sendMessage(`${userstate['display-name']}: ${dateInfo.description}.`)
         return
       }
+
       const hasGuessedOnOngoingRound = this.#db.userGuessedOnOngoingRound(userId)
       if (hasGuessedOnOngoingRound) {
         await this.#backend?.sendMessage(
@@ -575,8 +578,9 @@ export default class GameHandler {
         )
         return
       }
-      const userInfo = this.#db.getUserStats(userId, dateInfo.timeStamp)
-      if (!userInfo) {
+
+      const userStats = this.#db.getUserStats(userId, dateInfo.timeStamp)
+      if (!userStats) {
         if (dateInfo.timeStamp === 0) {
           await this.#backend?.sendMessage(`${userstate['display-name']} you've never guessed yet.`)
         } else {
@@ -585,22 +589,23 @@ export default class GameHandler {
           )
         }
       } else {
-        let msg = `${getEmoji(userInfo.flag)} ${userInfo.username}: `
+        let msg = `${getEmoji(userStats.flag)} ${userStats.username}: `
         if (dateInfo.description) {
           msg += `Stats for ${dateInfo.description}: `
         }
         msg += `
-					Current streak: ${userInfo.streak}.
-					Best streak: ${userInfo.bestStreak}.
-					Correct countries: ${userInfo.correctGuesses}/${userInfo.nbGuesses}${
-            userInfo.nbGuesses > 0
-              ? ` (${((userInfo.correctGuesses / userInfo.nbGuesses) * 100).toFixed(2)}%).`
+					Current streak: ${userStats.streak}.
+					Best streak: ${userStats.bestStreak}.
+					Correct countries: ${userStats.correctGuesses}/${userStats.nbGuesses}${
+            userStats.nbGuesses > 0
+              ? ` (${((userStats.correctGuesses / userStats.nbGuesses) * 100).toFixed(2)}%).`
               : '.'
           }
-					Avg. score: ${Math.round(userInfo.meanScore)}.
-					Victories: ${userInfo.victories}.
-					5ks: ${userInfo.perfects}.
-				`
+					Avg. score: ${Math.round(userStats.meanScore)}.
+					Victories: ${userStats.victories}.
+					5ks: ${userStats.perfects}.
+          ${userStats.bestRandomPlonk.score ? `Best Random Plonk: ${userStats.bestRandomPlonk.score} (${parseDistance(userStats.bestRandomPlonk.distance)}).` : ''}
+          `
         await this.#backend?.sendMessage(msg)
       }
       return
@@ -613,7 +618,9 @@ export default class GameHandler {
         await this.#backend?.sendMessage(`${userstate['display-name']}: ${dateInfo.description}.`)
         return
       }
-      const { streak, victories, perfects } = this.#db.getBestStats(dateInfo.timeStamp)
+      const { streak, victories, perfects, bestRandomPlonk } = this.#db.getBestStats(
+        dateInfo.timeStamp
+      )
       if (!streak && !victories && !perfects) {
         await this.#backend?.sendMessage('No stats available.')
       } else {
@@ -626,6 +633,9 @@ export default class GameHandler {
         }
         if (perfects) {
           msg += `5ks: ${perfects.perfects} (${perfects.username}). `
+        }
+        if (bestRandomPlonk) {
+          msg += `Best Random Plonk: ${bestRandomPlonk.score} (${parseDistance(bestRandomPlonk.distance)}) by ${bestRandomPlonk.username}. `
         }
         if (!dateInfo.description) {
           await this.#backend?.sendMessage(`Channels best: ${msg}`)
@@ -654,7 +664,7 @@ export default class GameHandler {
 
       const { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds)
       const randomGuess = `!g ${lat}, ${lng}`
-      this.#handleGuess(userstate, randomGuess).catch((err) => {
+      this.#handleGuess(userstate, randomGuess, true).catch((err) => {
         console.error(err)
       })
       return
@@ -679,7 +689,8 @@ export default class GameHandler {
             'display-name': `fake_${i}`,
             color: `#${Math.random().toString(16).slice(2, 8).padStart(6, '0')}`
           },
-          `!g ${lat},${lng}`
+          `!g ${lat},${lng}`,
+          true
         )
         i++
         if (i === max) {

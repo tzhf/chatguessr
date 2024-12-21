@@ -5,7 +5,7 @@
     v-model:w="position.w"
     v-model:h="position.h"
     :draggable="isDraggable"
-    :min-w="340"
+    :min-w="360"
     :min-h="179"
     :parent="true"
     class="scoreboard"
@@ -108,6 +108,7 @@
                       backgroundImage: `url('flag:${row.player.flag}')`
                     }"
                   ></span>
+                  <span v-if="row.isRandomPlonk || row.isAllRandomPlonk">🎲</span>
                 </div>
                 <div v-else>{{ row[col.value].display }}</div>
               </td>
@@ -141,12 +142,10 @@ const isColumnVisibilityOpen = shallowRef(false)
 const title = shallowRef('GUESSES')
 const switchState = shallowRef(true)
 
-const position = shallowReactive({ x: 20, y: 50, w: 340, h: 390 })
+const defaultPosition = { x: 20, y: 50, w: 360, h: 390 }
+const position = shallowReactive(defaultPosition)
 onMounted(async () => {
-  Object.assign(
-    position,
-    getLocalStorage('cg_scoreboard__position', { x: 20, y: 50, w: 340, h: 390 })
-  )
+  Object.assign(position, getLocalStorage('cg_scoreboard__position', defaultPosition))
 })
 
 const settings = reactive(
@@ -204,8 +203,9 @@ function renderGuess(guess: Guess) {
       value: guess.streak,
       display: guess.lastStreak ? guess.streak + ` [` + guess.lastStreak + `]` : guess.streak
     },
-    distance: { value: guess.distance, display: toMeter(guess.distance) },
-    score: { value: guess.score, display: guess.score }
+    distance: { value: guess.distance, display: parseDistance(guess.distance) },
+    score: { value: guess.score, display: guess.score },
+    isRandomPlonk: guess.isRandomPlonk
   }
   rows.push(formatedRow)
 
@@ -218,7 +218,8 @@ function renderGuess(guess: Guess) {
 function renderMultiGuess(guess: Guess) {
   const formatedRow = {
     player: guess.player,
-    modified: guess.modified
+    modified: guess.modified,
+    isRandomPlonk: guess.isRandomPlonk
   }
 
   if (guess.modified) {
@@ -243,8 +244,9 @@ function restoreGuesses(restoredGuesses: RoundResult[]) {
         value: guess.streak,
         display: guess.lastStreak ? guess.streak + ` [` + guess.lastStreak + `]` : guess.streak
       },
-      distance: { value: guess.distance, display: toMeter(guess.distance) },
-      score: { value: guess.score, display: guess.score }
+      distance: { value: guess.distance, display: parseDistance(guess.distance) },
+      score: { value: guess.score, display: guess.score },
+      isRandomPlonk: guess.isRandomPlonk
     }
   })
   Object.assign(rows, formatedRows)
@@ -270,14 +272,15 @@ function showRoundResults(round: number, roundResults: RoundResult[]) {
         value: result.distance,
         display:
           result.score === 5000
-            ? toMeter(result.distance) + ` [` + formatDuration(result.time * 1000) + `]`
-            : toMeter(result.distance)
+            ? parseDistance(result.distance) + ` [` + formatDuration(result.time * 1000) + `]`
+            : parseDistance(result.distance)
       },
       score: {
         value: result.score,
         display: result.score
       },
-      position: result.position
+      position: result.position,
+      isRandomPlonk: result.isRandomPlonk
     }
   })
   Object.assign(rows, formatedRows)
@@ -300,7 +303,7 @@ function showGameResults(gameResults: GameResult[]) {
       },
       distance: {
         value: result.totalDistance,
-        display: toMeter(result.totalDistance)
+        display: parseDistance(result.totalDistance)
       },
       score: {
         value: result.totalScore,
@@ -310,7 +313,8 @@ function showGameResults(gameResults: GameResult[]) {
       scores: result.scores,
       distances: result.distances,
       totalScore: result.totalScore,
-      totalDistance: result.totalDistance
+      totalDistance: result.totalDistance,
+      isAllRandomPlonk: result.isAllRandomPlonk
     }
   })
   Object.assign(rows, formatedRows)
@@ -401,7 +405,7 @@ function setSwitchState(state: boolean) {
   switchState.value = state
 }
 
-function toMeter(distance: number) {
+function parseDistance(distance: number): string {
   return distance >= 1 ? distance.toFixed(1) + 'km' : Math.floor(distance * 1000) + 'm'
 }
 

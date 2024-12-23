@@ -69,8 +69,16 @@ hr {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   height: 24px;
   margin-bottom: 0.3rem;
+}
+.form__group label {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
 }
 
 .form__group input,
@@ -82,7 +90,7 @@ hr {
   font-weight: 700;
   text-align: center;
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.5);
   border-radius: 4px;
   outline: 0;
   cursor: pointer;
@@ -90,14 +98,21 @@ hr {
 
 .form__group input:hover,
 .form__group select:hover {
-  filter: brightness(120%);
+  background: rgba(0, 0, 0, 0.6);
 }
 
 .form__group input[type='color'] {
   padding: 1px 2px;
 }
 
-.form__group input[type='text'],
+.form__group input[type='text'].full {
+  width: 100%;
+  min-width: 520px;
+}
+.form__group input[type='text'][disabled] {
+  color:gray
+}
+
 .form__group input[type='range'],
 .form__group select {
   width: 150px;
@@ -189,8 +204,8 @@ textarea {
   border-radius: 5px;
   outline: 0;
 }
-textarea:focus {
-  border: 1px solid var(--primary);
+textarea:hover {
+  background: rgba(0, 0, 0, 0.6);
 }
 
 .form__group .btn {

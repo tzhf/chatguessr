@@ -221,11 +221,23 @@ export default class Game {
 
     const existingGuess = this.#db.getUserGuess(this.#roundId!, dbUser.id)
     if (existingGuess && !this.isMultiGuess) {
-      throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' })
+      throw Object.assign(new Error('User already guessed'), {
+        code: 'alreadyGuessed',
+        player: {
+          username: dbUser.username,
+          flag: dbUser.flag
+        }
+      })
     }
 
     if (dbUser.previousGuess && latLngEqual(dbUser.previousGuess, location)) {
-      throw Object.assign(new Error('Same guess'), { code: 'submittedPreviousGuess' })
+      throw Object.assign(new Error('Same guess'), {
+        code: 'submittedPreviousGuess',
+        player: {
+          username: dbUser.username,
+          flag: dbUser.flag
+        }
+      })
     }
 
     const distance = haversineDistance(location, this.location!)

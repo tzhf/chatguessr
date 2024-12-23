@@ -52,13 +52,13 @@ export default class GameHandler {
   openGuesses() {
     this.#game.openGuesses()
     this.#win.webContents.send('switch-on')
-    this.#backend?.sendMessage('Guesses are open...', { system: true })
+    this.sendNotification('guessesAreOpen')
   }
 
   closeGuesses() {
     this.#game.closeGuesses()
     this.#win.webContents.send('switch-off')
-    this.#backend?.sendMessage('Guesses are closed.', { system: true })
+    this.sendNotification('guessesAreClosed')
   }
 
   nextRound() {
@@ -67,7 +67,7 @@ export default class GameHandler {
       this.#showGameResults()
     } else {
       this.#win.webContents.send('next-round', this.#game.isMultiGuess, this.#game.getLocation())
-      this.#backend?.sendMessage(`🌎 Round ${this.#game.round} has started`, { system: true })
+      this.sendNotification('roundStarted', { round: this.#game.round })
       this.openGuesses()
     }
   }
@@ -87,12 +87,11 @@ export default class GameHandler {
       roundResults,
       settings.guessMarkersLimit
     )
-    this.#backend?.sendMessage(
-      `🌎 Round ${round} has finished. Congrats ${getEmoji(roundResults[0].player.flag)} ${
-        roundResults[0].player.username
-      } !`,
-      { system: true }
-    )
+    this.sendNotification('roundFinished', {
+      round: round,
+      username: roundResults[0].player.username,
+      flag: roundResults[0].player.flag
+    })
   }
 
   async #showGameResults() {
@@ -116,12 +115,11 @@ export default class GameHandler {
     } catch (err) {
       console.error('could not upload summary', err)
     }
-    await this.#backend?.sendMessage(
-      `🌎 Game finished. Congrats ${getEmoji(gameResults[0].player.flag)} ${gameResults[0].player.username} 🏆! ${
-        link != undefined ? `Game summary: ${link}` : ''
-      }`,
-      { system: true }
-    )
+    this.sendNotification('gameFinished', {
+      username: gameResults[0].player.username,
+      flag: gameResults[0].player.flag,
+      link: link
+    })
   }
 
   init() {
@@ -149,13 +147,9 @@ export default class GameHandler {
                 system: true
               })
             } else if (this.#game.round === 1) {
-              this.#backend?.sendMessage(`🌎 A new seed of ${this.#game.mapName} has started`, {
-                system: true
-              })
+              this.sendNotification('seedStarted', { mapName: this.#game.mapName })
             } else {
-              this.#backend?.sendMessage(`🌎 Round ${this.#game.round} has started`, {
-                system: true
-              })
+              this.sendNotification('roundStarted')
             }
 
             this.openGuesses()
@@ -234,7 +228,7 @@ export default class GameHandler {
 
     ipcMain.handle('get-global-stats', async (_event, sinceTime: StatisticsInterval) => {
       const date = await parseUserDate(sinceTime)
-      return this.#db.getGlobalStats(date.timeStamp, settings.excludeBroadcasterDataInBest)
+      return this.#db.getGlobalStats(date.timeStamp, settings.excludeBroadcasterData)
     })
 
     ipcMain.handle('clear-global-stats', async (_event, sinceTime: StatisticsInterval) => {
@@ -406,39 +400,35 @@ export default class GameHandler {
 
       if (!this.#game.isMultiGuess) {
         this.#win.webContents.send('render-guess', guess)
-        if (settings.showHasGuessed) {
-          await this.#backend?.sendMessage(
-            `${getEmoji(guess.player.flag)} ${guess.player.username} has guessed`
-          )
-        }
+        this.sendNotification('hasGuessed', {
+          username: guess.player.username,
+          flag: guess.player.flag
+        })
       } else {
         this.#win.webContents.send('render-multiguess', guess)
-
         if (!guess.modified) {
-          if (settings.showHasGuessed) {
-            await this.#backend?.sendMessage(
-              `${getEmoji(guess.player.flag)} ${guess.player.username} has guessed`
-            )
-          }
+          this.sendNotification('hasGuessed', {
+            username: guess.player.username,
+            flag: guess.player.flag
+          })
         } else {
-          if (settings.showGuessChanged) {
-            await this.#backend?.sendMessage(
-              `${getEmoji(guess.player.flag)} ${guess.player.username} guess changed`
-            )
-          }
+          this.sendNotification('guessChanged', {
+            username: guess.player.username,
+            flag: guess.player.flag
+          })
         }
       }
     } catch (err: any) {
       if (err.code === 'alreadyGuessed') {
-        if (settings.showHasAlreadyGuessed) {
-          await this.#backend?.sendMessage(`${userstate['display-name']} you already guessed`)
-        }
+        this.sendNotification('alreadyGuessed', {
+          username: err.player.username,
+          flag: err.player.flag
+        })
       } else if (err.code === 'submittedPreviousGuess') {
-        if (settings.showSubmittedPreviousGuess) {
-          await this.#backend?.sendMessage(
-            `${userstate['display-name']} you submitted your previous guess`
-          )
-        }
+        this.sendNotification('submittedPreviousGuess', {
+          username: err.player.username,
+          flag: err.player.flag
+        })
       } else {
         console.error(err)
       }
@@ -454,17 +444,20 @@ export default class GameHandler {
     const userId = userstate.badges?.broadcaster === '1' ? 'BROADCASTER' : userstate['user-id']
     message = message.trim().toLowerCase()
 
-    if (message === settings.cgCmd) {
+    if (message === settings.commands.getChatguessrMap.command) {
       if (this.#cgCooldown && userId !== 'BROADCASTER') return
 
       await this.#backend?.sendMessage(
-        settings.cgMsg.replace('<your cg link>', `chatguessr.com/map/${this.#backend?.botUsername}`)
+        settings.commands.getChatguessrMap.message.replace(
+          '<your cg link>',
+          `chatguessr.com/map/${this.#backend?.botUsername}`
+        )
       )
 
       this.#cgCooldown = true
       setTimeout(() => {
         this.#cgCooldown = false
-      }, settings.cgCmdCooldown * 1000)
+      }, settings.commands.getChatguessrMap.cooldown * 1000)
       return
     }
 
@@ -492,17 +485,17 @@ export default class GameHandler {
           return
         }
       }
+
       this.#db.setUserFlag(dbUser.id, newFlag)
       return
     }
 
-    if (message === settings.flagsCmd) {
+    if (message === settings.commands.getFlagsLink.command) {
       await this.#backend?.sendMessage('Available flags: chatguessr.com/flags')
       return
     }
 
-    // check if first word of message equals to settings.lastlocCmd
-    if (message.split(' ')[0] === settings.lastlocCmd) {
+    if (message.split(' ')[0] === settings.commands.getLastLoc.command) {
       // check if second word is an integer
       const secondWord = message.split(' ')[1]
       let locationNumber = 1
@@ -541,7 +534,7 @@ export default class GameHandler {
       return
     }
 
-    if (message === settings.mapCmd) {
+    if (message === settings.commands.getGeoguessrMap.command) {
       // We'll only have a map ID if we're
       if (!this.#game.isInGame || !this.#game.seed || !this.#game.seed.map) {
         return
@@ -559,11 +552,11 @@ export default class GameHandler {
 
       setTimeout(() => {
         this.#mapCooldown = false
-      }, settings.mapCmdCooldown * 1000)
+      }, settings.commands.getGeoguessrMap.cooldown * 1000)
       return
     }
 
-    if (message.split(' ')[0] === settings.getUserStatsCmd) {
+    if (message.split(' ')[0] === settings.commands.getUserStats.command) {
       const date = message.split(' ')[1]
       const dateInfo = await parseUserDate(date)
       if (dateInfo.timeStamp < 0) {
@@ -574,7 +567,7 @@ export default class GameHandler {
       const hasGuessedOnOngoingRound = this.#db.userGuessedOnOngoingRound(userId)
       if (hasGuessedOnOngoingRound) {
         await this.#backend?.sendMessage(
-          `${userstate['display-name']}: ${settings.getUserStatsCmd} cannot be used after guessing during an ongoing round.`
+          `${userstate['display-name']}: ${settings.commands.getUserStats.command} cannot be used after guessing during an ongoing round.`
         )
         return
       }
@@ -611,7 +604,7 @@ export default class GameHandler {
       return
     }
 
-    if (message.split(' ')[0] === settings.getBestStatsCmd) {
+    if (message.split(' ')[0] === settings.commands.getBestStats.command) {
       const date = message.split(' ')[1]
       const dateInfo = await parseUserDate(date)
       if (dateInfo.timeStamp < 0) {
@@ -620,7 +613,7 @@ export default class GameHandler {
       }
       const { streak, victories, perfects, bestRandomPlonk } = this.#db.getBestStats(
         dateInfo.timeStamp,
-        settings.excludeBroadcasterDataInBest
+        settings.excludeBroadcasterData
       )
       if (!streak && !victories && !perfects && !bestRandomPlonk) {
         await this.#backend?.sendMessage('No stats available.')
@@ -647,7 +640,7 @@ export default class GameHandler {
       return
     }
 
-    if (message === settings.clearUserStatsCmd) {
+    if (message === settings.commands.clearUserStats.command) {
       const dbUser = this.#db.getUser(userId)
       if (dbUser) {
         this.#db.resetUserStats(dbUser.id)
@@ -660,7 +653,7 @@ export default class GameHandler {
       return
     }
 
-    if (message === settings.randomPlonkCmd) {
+    if (message === settings.commands.randomPlonk.command) {
       if (!this.#game.isInGame) return
 
       const { lat, lng } = await getRandomCoordsInLand(this.#game.seed!.bounds)
@@ -699,6 +692,33 @@ export default class GameHandler {
         }
       }, 200)
     }
+  }
+
+  async sendNotification(
+    notification: keyof Settings['notifications'],
+    options?: {
+      username?: string
+      flag?: string | null
+      mapName?: string
+      round?: number
+      link?: string
+    }
+  ) {
+    if (
+      !settings.notifications[notification].enabled ||
+      !settings.notifications[notification].message
+    )
+      return
+
+    let message = settings.notifications[notification].message
+
+    if (options?.username) message = message.replace('<username>', options.username)
+    if (options?.flag) message = message.replace('<flag>', getEmoji(options.flag))
+    if (options?.round !== undefined) message = message.replace('<round>', options.round.toString())
+    if (options?.link) message = message.replace('<link>', options.link)
+    if (options?.mapName) message = message.replace('<map>', options.mapName)
+
+    await this.#backend?.sendMessage(message, { system: true })
   }
 
   isUserBanned(username: string) {

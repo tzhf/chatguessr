@@ -68,7 +68,7 @@ export async function fetchSeed(url: string): Promise<Seed | undefined> {
 /**
  * Compare two coordinates
  */
-export function latLngEqual(a: LatLng, b: LatLng) {
+export function compareLatLng(a: LatLng, b: LatLng) {
   return a.lat === b.lat && a.lng === b.lng
 }
 

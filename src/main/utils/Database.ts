@@ -185,6 +185,9 @@ const migrations: ((db: SQLite.Database) => void)[] = [
   },
   function createIsRandomPlonk(db) {
     db.prepare(`ALTER TABLE guesses ADD COLUMN is_random_plonk INTEGER DEFAULT NULL`).run()
+  },
+  function removeUsersPreviousGuessField(db) {
+    db.prepare(`ALTER TABLE users DROP COLUMN previous_guess`).run()
   }
 ]
 
@@ -499,14 +502,7 @@ class db {
   }
 
   resetUserStreak(userId: string) {
-    // In handleUserGuess() we need to get lastLocation from the previous streak in order to reset the streak if the player skipped a round
-    // so we don't need to return last streak from here anymore, it also saves a query in processMultiGuess() when streak is reseted
-    // const tx = this.#db.transaction(() => {
-    //   const streak = this.getUserStreak(userId)
     this.#db.prepare('UPDATE users SET current_streak_id = NULL WHERE id = ?').run(userId)
-    // return streak
-    // })
-    // return tx()?.count ?? null
   }
 
   /**
@@ -724,7 +720,6 @@ class db {
     avatar: string | null
     color: string
     flag: string | null
-    previousGuess: LatLng
     resetAt: number
   } {
     return {
@@ -733,16 +728,13 @@ class db {
       avatar: record.avatar,
       color: record.color,
       flag: record.flag,
-      previousGuess: record.previous_guess ? JSON.parse(record.previous_guess) : null,
       resetAt: record.reset_at * 1000
     }
   }
 
   getUser(id: string) {
     const user = this.#db
-      .prepare(
-        'SELECT id, username, avatar, color, flag, previous_guess, reset_at FROM users WHERE id = ?'
-      )
+      .prepare('SELECT id, username, avatar, color, flag, reset_at FROM users WHERE id = ?')
       .get(id)
 
     return user ? this.#parseUser(user) : undefined
@@ -771,11 +763,12 @@ class db {
     })
   }
 
-  setUserPreviousGuess(userId: string, previousGuess: LatLng) {
-    this.#db.prepare(`UPDATE users SET previous_guess = :previousGuess WHERE id = :id`).run({
-      id: userId,
-      previousGuess: JSON.stringify(previousGuess)
-    })
+  getUserPreviousGuess(userId: string): LatLng | undefined {
+    const stmt = this.#db.prepare(
+      `SELECT location FROM guesses WHERE user_id = ? ORDER BY created_at DESC LIMIT 1`
+    )
+    const record = stmt.get(userId) as { location: string } | undefined
+    return record ? JSON.parse(record.location) : undefined
   }
 
   getUserStats(userId: string, sinceTimestamp: number = 0) {

@@ -7,6 +7,11 @@ declare global {
 }
 
 const defaultSettings = {
+  channelName: '',
+  avatar: '',
+  isMultiGuess: false,
+  excludeBroadcasterData: false,
+  guessMarkersLimit: 50,
   commands: {
     getChatguessrMap: {
       command: '!cg',
@@ -77,12 +82,7 @@ const defaultSettings = {
       enabled: true,
       message: '<username> <flag> you submitted your previous guess'
     }
-  },
-  channelName: '',
-  avatar: '',
-  isMultiGuess: false,
-  excludeBroadcasterData: false,
-  guessMarkersLimit: 50
+  }
 }
 
 const settings = Object.assign({}, defaultSettings, storedSettings)

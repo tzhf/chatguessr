@@ -695,7 +695,7 @@ export default class GameHandler {
   }
 
   async sendNotification(
-    notification: keyof Settings['notifications'],
+    type: keyof Settings['notifications'],
     options?: {
       username?: string
       flag?: string | null
@@ -704,19 +704,23 @@ export default class GameHandler {
       link?: string
     }
   ) {
-    if (
-      !settings.notifications[notification].enabled ||
-      !settings.notifications[notification].message
-    )
-      return
+    const notification = settings.notifications[type]
+    if (!notification.enabled || !notification.message) return
 
-    let message = settings.notifications[notification].message
+    let message = notification.message
 
-    if (options?.username) message = message.replace('<username>', options.username)
-    if (options?.flag) message = message.replace('<flag>', getEmoji(options.flag))
-    if (options?.round !== undefined) message = message.replace('<round>', options.round.toString())
-    if (options?.link) message = message.replace('<link>', options.link)
-    if (options?.mapName) message = message.replace('<map>', options.mapName)
+    const placeholders = {
+      '<username>': options?.username ?? '',
+      '<flag>': options?.flag ? getEmoji(options.flag) : '',
+      '<round>': options?.round?.toString() ?? '',
+      '<link>': options?.link ?? '',
+      '<map>': options?.mapName ?? ''
+    }
+
+    Object.entries(placeholders).forEach(([placeholder, value]) => {
+      const regex = new RegExp(placeholder, 'g')
+      message = message.replace(regex, value)
+    })
 
     await this.#backend?.sendMessage(message, { system: true })
   }

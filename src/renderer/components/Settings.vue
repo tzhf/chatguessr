@@ -25,6 +25,13 @@
             max="200"
           />
         </label>
+        <label
+          class="form__group"
+          data-tip="Only Randomplonks"
+        >
+          Only Randomplonks
+          <input v-model="settings.isRandomPlonkOnlyMode" type="checkbox" />
+        </label>
       </div>
       <hr />
 

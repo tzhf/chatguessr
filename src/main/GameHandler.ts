@@ -834,6 +834,7 @@ export default class GameHandler {
   }
 
   async #handleGuess(userstate: UserData, message: string, isRandomPlonk: boolean = false) {
+    if(settings.isRandomPlonkOnlyMode && !isRandomPlonk) return
     console.log("inside handleGuess")
     console.log("userstate: ", userstate)
     console.log("message: ", message)

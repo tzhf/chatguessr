@@ -6,7 +6,7 @@
     v-model:h="position.h"
     :draggable="isDraggable"
     :min-w="360"
-    :min-h="179"
+    :min-h="190"
     :parent="true"
     class="scoreboard"
     class-name-handle="scoreboard_handle"
@@ -53,6 +53,7 @@
         </label>
       </div>
     </div>
+    <div :class="['scoreboard-hint', { hidden: !invertScoring }]">Antipode Mode</div>
     <div :class="['scoreboard-hint', { hidden: !isMultiGuess || gameState !== 'in-round' }]">
       Guess change allowed
     </div>
@@ -121,7 +122,16 @@
 </template>
 
 <script setup lang="ts">
-import { shallowRef, shallowReactive, reactive, onMounted, toRef, watch, computed } from 'vue'
+import {
+  shallowRef,
+  shallowReactive,
+  reactive,
+  onMounted,
+  toRef,
+  watch,
+  computed,
+  nextTick
+} from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import formatDuration from 'format-duration'
 import { getLocalStorage, setLocalStorage } from '@/useLocalStorage'
@@ -132,6 +142,7 @@ const { chatguessrApi } = window
 const props = defineProps<{
   gameState: GameState
   isMultiGuess: boolean
+  invertScoring: boolean
   onRoundResultRowClick: (index: number, position: LatLng) => void
   onGameResultRowClick: (row: GameResultDisplay) => void
 }>()
@@ -145,6 +156,8 @@ const switchState = shallowRef(true)
 const defaultPosition = { x: 20, y: 50, w: 360, h: 390 }
 const position = shallowReactive(defaultPosition)
 onMounted(async () => {
+  await nextTick() // Waits until the component is actually rendered, preventing potential null values
+
   Object.assign(position, getLocalStorage('cg_scoreboard__position', defaultPosition))
 })
 
@@ -539,7 +552,7 @@ input:checked + .switch:before {
 }
 
 .table-container {
-  height: calc(100% - 55px);
+  height: calc(100% - 66px);
   overflow: auto;
 }
 

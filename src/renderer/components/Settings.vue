@@ -15,6 +15,13 @@
         </div>
 
         <div class="form__group">
+          <label data-tip="Invert scoring (furthest plonk wins)">
+            <input v-model="settings.invertScoring" type="checkbox" />
+            Antipode mode
+          </label>
+        </div>
+
+        <div class="form__group">
           <label data-tip="Exclude streamer stats from leaderboard and !best command">
             <input v-model="settings.excludeBroadcasterData" type="checkbox" />
             Exclude streamer stats

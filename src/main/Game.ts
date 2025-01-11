@@ -43,6 +43,8 @@ export default class Game {
 
   isMultiGuess = false
 
+  invertScoring = false
+
   streamerDidRandomPlonk = false
 
   constructor(db: Database, settings: Settings) {
@@ -51,9 +53,10 @@ export default class Game {
     this.lastLocation = this.#db.getLastRoundLocation()
   }
 
-  async start(url: string, isMultiGuess: boolean) {
+  async start(url: string, isMultiGuess: boolean, invertScoring: boolean) {
     this.isInGame = true
     this.isMultiGuess = isMultiGuess
+    this.invertScoring = invertScoring
 
     if (this.#url === url) {
       await this.refreshSeed()
@@ -189,7 +192,9 @@ export default class Game {
     }
 
     const distance = haversineDistance(location, this.location!)
-    const score = streamerGuess.timedOut ? 0 : calculateScore(distance, this.mapScale!)
+    const score = streamerGuess.timedOut
+      ? 0
+      : calculateScore(distance, this.mapScale!, this.invertScoring)
 
     const streak = this.#db.getUserStreak(dbUser.id)
 
@@ -242,7 +247,7 @@ export default class Game {
     }
 
     const distance = haversineDistance(location, this.location!)
-    const score = calculateScore(distance, this.mapScale!)
+    const score = calculateScore(distance, this.mapScale!, this.invertScoring)
 
     const streakCode = await getStreakCode(location)
     const correct = streakCode === this.#streakCode

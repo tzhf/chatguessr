@@ -66,7 +66,12 @@ export default class GameHandler {
       this.#game.finishGame()
       this.#showGameResults()
     } else {
-      this.#win.webContents.send('next-round', this.#game.isMultiGuess, this.#game.getLocation())
+      this.#win.webContents.send(
+        'next-round',
+        this.#game.isMultiGuess,
+        this.#game.invertScoring,
+        this.#game.getLocation()
+      )
       this.sendNotification('roundStarted', { round: this.#game.round })
       this.openGuesses()
     }
@@ -130,7 +135,7 @@ export default class GameHandler {
         if (!this.#backend) return
 
         this.#game
-          .start(url, settings.isMultiGuess)
+          .start(url, settings.isMultiGuess, settings.invertScoring)
           .then(() => {
             const restoredGuesses = this.#game.isMultiGuess
               ? this.#game.getRoundParticipants()
@@ -138,6 +143,7 @@ export default class GameHandler {
             this.#win.webContents.send(
               'game-started',
               this.#game.isMultiGuess,
+              this.#game.invertScoring,
               restoredGuesses,
               this.#game.getLocation()
             )
@@ -727,7 +733,9 @@ export default class GameHandler {
 
   isUserBanned(username: string) {
     const bannedUsers = this.#db.getBannedUsers()
-    const isBanned = bannedUsers.some((user) => user.username === username)
+    const isBanned = bannedUsers.some(
+      (user) => user.username.toLowerCase() === username.toLowerCase()
+    )
     return isBanned
   }
 }

@@ -127,9 +127,19 @@ export function haversineDistance(mk1: LatLng, mk2: LatLng): number {
 /**
  * Returns score based on distance and scale
  */
-export function calculateScore(distance: number, scale: number): number {
-  if (distance * 1000 < 25) return 5000
+export function calculateScore(distance: number, scale: number, invertScoring: boolean): number {
+  if (distance * 1000 < 25) return invertScoring ? 0 : 5000
+
+  if (invertScoring) {
+    return Math.round(5000 * Math.pow(0.99866017, ((20000 - distance) * 1000) / scale))
+  }
+
+  // Normal scoring
   return Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale))
+}
+
+export function parseDistance(distance: number): string {
+  return distance >= 1 ? distance.toFixed(1) + 'km' : Math.floor(distance * 1000) + 'm'
 }
 
 /**
@@ -271,8 +281,4 @@ export async function parseUserDate(
     description = 'this year'
   }
   return { timeStamp: timeStamp, description: description }
-}
-
-export function parseDistance(distance: number): string {
-  return distance >= 1 ? distance.toFixed(1) + 'km' : Math.floor(distance * 1000) + 'm'
 }

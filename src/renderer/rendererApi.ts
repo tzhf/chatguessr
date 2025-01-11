@@ -33,7 +33,7 @@ function drawRoundResults(location: Location_, roundResults: RoundResult[], limi
         ${result.player.flag ? `<span class="flag-icon" style="background-image: url(flag:${result.player.flag})"></span>` : ''}
         <span class="username" style="color:${result.player.color}">${result.player.username}</span><br>
         ${result.score}<br>
-        ${toMeter(result.distance)}
+        ${parseDistance(result.distance)}
       `)
       infowindow.open(map, guessMarker)
     })
@@ -71,7 +71,7 @@ function drawPlayerResults(locations: Location_[], result: GameResultDisplay) {
 				${result.player.flag ? `<span class="flag-icon" style="background-image: url(flag:${result.player.flag})"></span>` : ''}
         <span class="username" style="color:${result.player.color}">${result.player.username}</span><br>
         ${result.scores[index]}<br>
-				${toMeter(result.distances[index]!)}
+				${parseDistance(result.distances[index]!)}
 			`)
       infowindow.open(map, guessMarker)
     })
@@ -177,7 +177,7 @@ function getBounds(location: LatLng, limitInKm: number) {
   return { north, south, west, east }
 }
 
-function toMeter(distance: number) {
+function parseDistance(distance: number) {
   return distance >= 1 ? distance.toFixed(1) + 'km' : Math.floor(distance * 1000) + 'm'
 }
 

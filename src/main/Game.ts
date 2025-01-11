@@ -310,7 +310,9 @@ export default class Game {
       throw Object.assign(new Error('User already guessed'), { code: 'alreadyGuessed' })
     }
 
-    if (dbUser.previousGuess && latLngEqual(dbUser.previousGuess, location) && !forceGuess) {
+    const previousGuess = this.#db.getUserPreviousGuess(dbUser.id)
+
+    if (previousGuess && latLngEqual(previousGuess, location) && !forceGuess) {
       throw Object.assign(new Error('Same guess'), { code: 'submittedPreviousGuess' })
     }
 
@@ -383,10 +385,6 @@ export default class Game {
     else {
       this.#db.createGuess(this.#roundId!, dbUser.id, guess)
     }
-    
-
-    // TODO save previous guess? No, fetch previous guess from the DB
-    this.#db.setUserPreviousGuess(dbUser.id, location)
 
     return {
       player: {

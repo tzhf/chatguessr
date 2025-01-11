@@ -606,7 +606,7 @@ const tabs = shallowRef([
 
 const settings = reactive<Settings>(await chatguessrApi.getSettings())
 watch(settings, () => {
-  chatguessrApi.saveSettings({ ...settings })
+  chatguessrApi.saveSettings(JSON.parse(JSON.stringify(settings)))
 })
 
 const newChannelName = shallowRef(settings.channelName)

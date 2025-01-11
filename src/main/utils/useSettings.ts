@@ -71,7 +71,7 @@ const defaultSettings = {
   isBRMode: false,
   battleRoyaleReguessLimit: 3,
   countryRandomPlonkAllowed: false,
-  isRandomPlonkOnlyMode: true,
+  isRandomPlonkOnlyMode: false,
 }
 
 const settings = Object.assign({}, defaultSettings, storedSettings)

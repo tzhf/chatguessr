@@ -24,7 +24,7 @@
         <div class="form__group">
           <label data-tip="Exclude streamer stats from leaderboard and !best command">
             <input v-model="settings.excludeBroadcasterData" type="checkbox" />
-            Exclude streamer stats
+            Exclude streamer from stats
           </label>
         </div>
 

@@ -131,7 +131,26 @@ export function calculateScore(distance: number, scale: number, invertScoring: b
   if (distance * 1000 < 25) return invertScoring ? 0 : 5000
 
   if (invertScoring) {
-    return Math.round(5000 * Math.pow(0.99866017, ((20000 - distance) * 1000) / scale))
+    // return Math.round(5000 * Math.pow(0.99866017, ((20000 - distance) * 1000) / scale))
+    if (distance > 15000) {
+      return 4999 - Math.round(Math.round(19869 - distance) * 0.2052)
+    }
+
+    if (distance > 7500) {
+      return 4000 - Math.round(Math.round(15000 - distance) * 0.4)
+    }
+
+    if (distance > 5000) {
+      return 1000 - Math.round(Math.round(7500 - distance) * 0.2)
+    }
+
+    if (distance > 2500) {
+      return 500 - Math.round(Math.round(5000 - distance) * 0.1)
+    }
+
+    if (distance > 100) {
+      return 250 - Math.round(Math.round(2500 - distance) * 0.1)
+    }
   }
 
   // Normal scoring

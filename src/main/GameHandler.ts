@@ -144,6 +144,7 @@ export default class GameHandler {
               'game-started',
               this.#game.isMultiGuess,
               this.#game.invertScoring,
+              settings.showStreamerRandomPlonkButton,
               restoredGuesses,
               this.#game.getLocation()
             )

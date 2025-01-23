@@ -13,6 +13,7 @@ const defaultSettings = {
   invertScoring: false,
   excludeBroadcasterData: false,
   guessMarkersLimit: 50,
+  showStreamerRandomPlonkButton: true,
   commands: {
     getChatguessrMap: {
       command: '!cg',

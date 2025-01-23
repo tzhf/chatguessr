@@ -58,7 +58,7 @@
     <button
       class="cg-button"
       title="Randomplonk for Streamer"
-      :hidden="gameState !== 'in-round'"
+      :hidden="gameState !== 'in-round' || !showRandomPlonkButton"
       @click="onStreamerRandomplonk"
     >
       <IconDice />
@@ -76,7 +76,7 @@
 
   <Suspense>
     <Modal mode="v-if" :is-visible="settingsVisible" @close="settingsVisible = false">
-      <Settings :socket-connection-state :twitch-connection-state />
+      <Settings :socket-connection-state :twitch-connection-state :set-show-random-plonk-button="setShowRandomPlonkButton"/>
     </Modal>
   </Suspense>
 
@@ -132,6 +132,11 @@ const invertScoring = shallowRef<boolean>(false)
 const guessMarkersLimit = shallowRef<number | null>(null)
 const currentLocation = shallowRef<LatLng | null>(null)
 const gameResultLocations = shallowRef<Location_[] | null>(null)
+const showRandomPlonkButton = shallowRef<boolean>(true)
+
+const setShowRandomPlonkButton = (value: boolean) => {
+  showRandomPlonkButton.value = value;
+};
 
 // Make sure game mode is not set to 'challenge'
 setLocalStorage('quickplay-playtype', 'single')
@@ -201,7 +206,7 @@ watch(
 )
 
 onBeforeUnmount(
-  chatguessrApi.onGameStarted((_isMultiGuess, _invertScoring, restoredGuesses, location) => {
+  chatguessrApi.onGameStarted((_isMultiGuess, _invertScoring, _showRandomPlonkButton, restoredGuesses, location) => {
     isMultiGuess.value = _isMultiGuess
     invertScoring.value = _invertScoring
     gameState.value = 'in-round'
@@ -212,7 +217,7 @@ onBeforeUnmount(
     } else {
       rendererApi.hideSatelliteMap()
     }
-
+    showRandomPlonkButton.value = _showRandomPlonkButton
     scoreboard.value!.onStartRound()
 
     if (restoredGuesses.length > 0) {

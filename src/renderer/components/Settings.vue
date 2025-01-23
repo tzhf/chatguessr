@@ -42,6 +42,18 @@
             max="100"
           />
         </div>
+
+        <div class="form__group">
+          <label data-tip="The button is shown on the right menu during games. Clicking the buttom will end the round and make a random guess for the streamer">
+            <input v-model="settings.showStreamerRandomPlonkButton" type="checkbox" @change="(e) => {
+              const target = e.target as HTMLInputElement | null;
+              if (target) {
+                setShowRandomPlonkButton(target.checked);
+              }
+            }"/>
+            Show streamer random plonk button during rounds
+          </label>
+        </div>
       </div>
     </div>
 
@@ -436,9 +448,10 @@ import IconTwitch from '@/assets/icons/twitch.svg'
 const { chatguessrApi } = window
 const { copy, copied } = useClipboard()
 
-const { socketConnectionState, twitchConnectionState } = defineProps<{
+const { socketConnectionState, twitchConnectionState, setShowRandomPlonkButton } = defineProps<{
   twitchConnectionState: TwitchConnectionState
   socketConnectionState: SocketConnectionState
+  setShowRandomPlonkButton: (showButton: boolean) => void
 }>()
 
 const currentTab = shallowRef(

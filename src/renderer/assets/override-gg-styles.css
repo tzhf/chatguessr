@@ -63,6 +63,10 @@
   opacity: 0.4;
 }
 
+.toggle_toggle:checked {
+  background: var(--ds-color-purple-30);
+}
+
 /* Info Window */
 .gm-style-iw-chr {
   display: none !important;

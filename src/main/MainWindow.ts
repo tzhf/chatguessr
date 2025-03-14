@@ -10,12 +10,11 @@ export default function createWindow() {
     ...(process.platform === 'linux' ? { icon: join(__dirname, '../../build/icon.png') } : {}),
     webPreferences: {
       preload: join(__dirname, './preload.js'),
-      // devTools: isDev ? true : false,
+      devTools: isDev ? true : false,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
-      // only needed for timer sound alert
-      webSecurity: false
+      webSecurity: true
     }
   })
 

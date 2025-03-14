@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { join } from 'path'
+import path, { join } from 'path'
 import { app, BrowserWindow, ipcMain, protocol, dialog } from 'electron'
 import { updateElectronApp } from 'update-electron-app'
 
@@ -21,6 +21,11 @@ const db = database(dbPath)
 // This method will be called when Electron has finished initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  protocol.registerFileProtocol('localfile', (request, callback) => {
+    const filePath = request.url.replace('localfile://', '')
+    callback({ path: path.normalize(filePath) })
+  })
+
   serveAssets()
   await serveFlags()
 

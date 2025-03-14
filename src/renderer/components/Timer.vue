@@ -223,7 +223,7 @@ let pausedDifference = 0
 let frameInterval = () => {}
 
 onMounted(async () => {
-  audioPath.value = await chatguessrApi.appDataPathExists('\\timer\\timer_alert')
+  audioPath.value = 'localfile://' + (await chatguessrApi.appDataPathExists('\\timer\\timer_alert'))
 
   updateDisplay(settings.timeLimit * 1000)
 

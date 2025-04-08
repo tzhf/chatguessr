@@ -94,7 +94,9 @@ export default class Game {
   }
 
   #locHasChanged(seed: Seed) {
-    return !compareLatLng(seed.rounds.at(-1)!, this.getLocation())
+    const loc = this.getLocation()
+    if (!loc) return false
+    return !compareLatLng(seed.rounds.at(-1)!, loc)
   }
 
   // @ts-ignore
@@ -319,7 +321,8 @@ export default class Game {
     }
   }
 
-  getLocation(): Location_ {
+  getLocation(): Location_ | undefined {
+    if (!this.seed) return
     return this.seed!.rounds.at(-1)!
   }
 

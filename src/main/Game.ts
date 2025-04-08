@@ -135,6 +135,7 @@ export default class Game {
 
   async #assignStreakCode() {
     this.location = this.getLocation()
+    if (!this.location) return
     this.#streakCode = await getStreakCode(this.location)
 
     this.#db.setRoundStreakCode(this.#roundId!, this.#streakCode ?? null)

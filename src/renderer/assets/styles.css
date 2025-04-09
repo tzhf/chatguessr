@@ -61,10 +61,6 @@ hr {
   z-index: 9;
 }
 
-.hidden {
-  visibility: hidden;
-}
-
 .form__group {
   display: flex;
   align-items: center;
@@ -278,19 +274,35 @@ textarea:hover {
 }
 
 /* GLOBAL MAP RENDERER */
-/* Small trick to select guess marker avatars cause we cannot add CSS class to google.maps.Marker */
-img[src$="#custom_marker"]{
-  border: 2px solid white !important;
-  border-radius: 50%;
+.custom-guess-marker {
+  position: relative;
+  pointer-events: auto !important;
+  top: 16px;
+  width: 30px;
+  height: 30px;
 }
-
-.guess-marker-label {
+.custom-guess-marker--avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  outline: 3px solid white;
+  border-radius: 100%;
+}
+.custom-guess-marker--label {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  left: 20px;
+  top: 20px;
+  width: 16px;
+  height: 16px;
   background-color: white;
+  border: 1px solid black;
   border-radius: 50%;
-  font-size: 10px !important;
+  font-size: 11px;
   font-weight: bold;
-  width: 13px;
-  height: 13px;
+  color: black;
 }
 
 .username {

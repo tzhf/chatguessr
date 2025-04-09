@@ -24,13 +24,16 @@
   background: var(--warning);
 }
 
+.hidden {
+  visibility: hidden;
+}
+
 /******** SPACING ********/
 .relative {
   position: relative;
 }
 .flex {
   display: flex;
-  /* align-items: center; */
 }
 .flex-col {
   flex-direction: column;

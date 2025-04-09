@@ -3,43 +3,52 @@ import { getLocalStorage, setLocalStorage } from './useLocalStorage'
 let globalMap: google.maps.Map | undefined = undefined
 const mapReady = hijackMap()
 
-let guessMarkers: google.maps.Marker[] = []
+let guessMarkers: google.maps.marker.AdvancedMarkerElement[] = []
 let polylines: google.maps.Polyline[] = []
 
 let satelliteLayer: google.maps.Map | undefined = undefined
-let satelliteMarker: google.maps.Marker | undefined = undefined
+let satelliteMarker: google.maps.marker.AdvancedMarkerElement | undefined = undefined
 const satelliteCanvas = document.createElement('div')
 satelliteCanvas.id = 'satelliteCanvas'
 
-function drawRoundResults(location: Location_, roundResults: RoundResult[], limit: number = 100) {
+async function loadMarkerLibrary() {
+  return (await google.maps.importLibrary('marker')) as unknown as google.maps.MarkerLibrary
+}
+
+async function drawRoundResults(
+  location: Location_,
+  roundResults: RoundResult[],
+  limit: number = 100
+) {
+  const { AdvancedMarkerElement } = await loadMarkerLibrary()
+
   const map = globalMap
-  const infowindow = new google.maps.InfoWindow()
+
+  const infoWindow = createInfoWindow()
 
   roundResults.forEach((result, index) => {
     if (index >= limit) return
 
-    const guessMarker = new google.maps.Marker({
+    const guessMarkerContent = createCustomGuessMarker(result.player.avatar, index)
+    const guessMarker = new AdvancedMarkerElement({
       map,
       position: result.position,
-      icon: makeIcon(result.player.avatar),
-      label: {
-        className: 'guess-marker-label',
-        text: `${index + 1}`
-      },
-      optimized: true
+      content: guessMarkerContent
     })
-    guessMarker.addListener('mouseover', () => {
-      infowindow.setContent(`
+
+    guessMarkerContent.addEventListener('mouseover', () => {
+      infoWindow.setContent(`
         ${result.player.flag ? `<span class="flag-icon" style="background-image: url(flag:${result.player.flag})"></span>` : ''}
         <span class="username" style="color:${result.player.color}">${result.player.username}</span><br>
         ${result.score}<br>
         ${parseDistance(result.distance)}
       `)
-      infowindow.open(map, guessMarker)
+      infoWindow.open(map, guessMarker)
     })
-    guessMarker.addListener('mouseout', () => {
-      infowindow.close()
+    guessMarkerContent.addEventListener('mouseout', () => {
+      infoWindow.close()
     })
+
     guessMarkers.push(guessMarker)
 
     polylines.push(
@@ -55,28 +64,36 @@ function drawRoundResults(location: Location_, roundResults: RoundResult[], limi
   })
 }
 
-function drawPlayerResults(locations: Location_[], result: GameResultDisplay) {
+async function drawPlayerResults(locations: Location_[], result: GameResultDisplay) {
+  const { AdvancedMarkerElement } = await loadMarkerLibrary()
+
   const map = globalMap
+
   clearMarkers()
 
-  const infowindow = new google.maps.InfoWindow()
-  const icon = makeIcon(result.player.avatar)
+  const infoWindow = createInfoWindow()
 
   result.guesses.forEach((guess, index) => {
     if (!guess) return
-    // We cannot apply classes if 'optimized' is set to true, anyway it's just 5 markers here
-    const guessMarker = new google.maps.Marker({ map, position: guess, icon, optimized: false })
-    guessMarker.addListener('mouseover', () => {
-      infowindow.setContent(`
+
+    const guessMarkerContent = createCustomGuessMarker(result.player.avatar)
+    const guessMarker = new AdvancedMarkerElement({
+      map,
+      position: guess,
+      content: guessMarkerContent
+    })
+
+    guessMarkerContent.addEventListener('mouseover', () => {
+      infoWindow.setContent(`
 				${result.player.flag ? `<span class="flag-icon" style="background-image: url(flag:${result.player.flag})"></span>` : ''}
         <span class="username" style="color:${result.player.color}">${result.player.username}</span><br>
         ${result.scores[index]}<br>
 				${parseDistance(result.distances[index]!)}
 			`)
-      infowindow.open(map, guessMarker)
+      infoWindow.open(map, guessMarker)
     })
-    guessMarker.addListener('mouseout', () => {
-      infowindow.close()
+    guessMarkerContent.addEventListener('mouseout', () => {
+      infoWindow.close()
     })
     guessMarkers.push(guessMarker)
 
@@ -99,19 +116,38 @@ function focusOnGuess(location: LatLng) {
   globalMap.setZoom(8)
 }
 
-function makeIcon(_avatar: string | null): google.maps.Icon {
-  const avatar = _avatar ?? 'asset:avatar-default.jpg'
-  return {
-    url: avatar + '#custom_marker',
-    scaledSize: new google.maps.Size(32, 32),
-    anchor: new google.maps.Point(16, 16),
-    labelOrigin: new google.maps.Point(27, 27)
+function createInfoWindow() {
+  return new google.maps.InfoWindow({
+    pixelOffset: new google.maps.Size(0, 10)
+  })
+}
+
+function createCustomGuessMarker(avatar: string | null, index?: number) {
+  const markerEl = document.createElement('div')
+  markerEl.className = 'custom-guess-marker'
+
+  const avatarImg = document.createElement('img')
+  avatarImg.src = avatar ?? 'asset:avatar-default.jpg'
+  avatarImg.className = 'custom-guess-marker--avatar'
+  markerEl.appendChild(avatarImg)
+
+  if (index !== undefined) {
+    const labelText = document.createElement('span')
+    labelText.textContent = `${index + 1}`
+
+    const labelSpan = document.createElement('span')
+    labelSpan.className = 'custom-guess-marker--label'
+    labelSpan.appendChild(labelText)
+
+    markerEl.appendChild(labelSpan)
   }
+
+  return markerEl
 }
 
 function clearMarkers() {
   for (const marker of guessMarkers) {
-    marker.setMap(null)
+    marker.map = null
   }
   for (const line of polylines) {
     line.setMap(null)
@@ -122,6 +158,7 @@ function clearMarkers() {
 
 async function showSatelliteMap(location: LatLng) {
   await mapReady
+  const { AdvancedMarkerElement } = await loadMarkerLibrary()
 
   const satelliteMode = getLocalStorage('cg_satelliteMode__settings', { boundsLimit: 10 })
 
@@ -136,6 +173,7 @@ async function showSatelliteMap(location: LatLng) {
   })
 
   satelliteLayer.setOptions({
+    mapId: 'SATELLITE_LAYER',
     restriction: {
       latLngBounds: getBounds(location, satelliteMode.boundsLimit),
       strictBounds: true
@@ -145,9 +183,9 @@ async function showSatelliteMap(location: LatLng) {
   satelliteLayer.setCenter(location)
   satelliteLayer.setZoom(15)
 
-  satelliteMarker?.setMap(null)
+  if (satelliteMarker) satelliteMarker.map = null
 
-  satelliteMarker = new google.maps.Marker({
+  satelliteMarker = new AdvancedMarkerElement({
     position: location,
     map: satelliteLayer
   })
@@ -254,7 +292,7 @@ async function hijackMap() {
     const isGamePage = () =>
       location.pathname.startsWith('/results/') || location.pathname.startsWith('/game/')
 
-    function onMapUpdate(map: google.maps.Map) {
+    async function onMapUpdate(map: google.maps.Map) {
       try {
         if (!isGamePage()) return
         globalMap = map

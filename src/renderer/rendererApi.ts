@@ -15,10 +15,16 @@ async function loadMarkerLibrary() {
   return (await google.maps.importLibrary('marker')) as unknown as google.maps.MarkerLibrary
 }
 
+const lineSymbol = {
+  path: 'M 0,-1 0,1',
+  strokeOpacity: 1,
+  scale: 2
+}
+
 async function drawRoundResults(
   location: Location_,
   roundResults: RoundResult[],
-  limit: number = 100
+  limit: number = 99
 ) {
   const { AdvancedMarkerElement } = await loadMarkerLibrary()
 
@@ -29,7 +35,7 @@ async function drawRoundResults(
   roundResults.forEach((result, index) => {
     if (index >= limit) return
 
-    const guessMarkerContent = createCustomGuessMarker(result.player.avatar, index)
+    const guessMarkerContent = createCustomGuessMarker(result.player, index)
     const guessMarker = new AdvancedMarkerElement({
       map,
       position: result.position,
@@ -51,13 +57,20 @@ async function drawRoundResults(
 
     guessMarkers.push(guessMarker)
 
+    if (result.player.userId === 'BROADCASTER') return
+
     polylines.push(
       new google.maps.Polyline({
         path: [result.position, location],
         map,
-        strokeColor: result.player.color,
-        strokeWeight: 4,
-        strokeOpacity: 0.6,
+        strokeOpacity: 0,
+        icons: [
+          {
+            icon: lineSymbol,
+            offset: '0',
+            repeat: '8px'
+          }
+        ],
         geodesic: true
       })
     )
@@ -76,7 +89,7 @@ async function drawPlayerResults(locations: Location_[], result: GameResultDispl
   result.guesses.forEach((guess, index) => {
     if (!guess) return
 
-    const guessMarkerContent = createCustomGuessMarker(result.player.avatar)
+    const guessMarkerContent = createCustomGuessMarker(result.player)
     const guessMarker = new AdvancedMarkerElement({
       map,
       position: guess,
@@ -97,13 +110,20 @@ async function drawPlayerResults(locations: Location_[], result: GameResultDispl
     })
     guessMarkers.push(guessMarker)
 
+    if (result.player.userId === 'BROADCASTER') return
+
     polylines.push(
       new google.maps.Polyline({
         path: [guess, locations[index]],
         map,
-        strokeColor: result.player.color,
-        strokeWeight: 4,
-        strokeOpacity: 0.6,
+        strokeOpacity: 0,
+        icons: [
+          {
+            icon: lineSymbol,
+            offset: '0',
+            repeat: '8px'
+          }
+        ],
         geodesic: true
       })
     )
@@ -118,17 +138,18 @@ function focusOnGuess(location: LatLng) {
 
 function createInfoWindow() {
   return new google.maps.InfoWindow({
-    pixelOffset: new google.maps.Size(0, 10)
+    pixelOffset: new google.maps.Size(0, 15)
   })
 }
 
-function createCustomGuessMarker(avatar: string | null, index?: number) {
+function createCustomGuessMarker(player: Player, index?: number) {
   const markerEl = document.createElement('div')
   markerEl.className = 'custom-guess-marker'
 
   const avatarImg = document.createElement('img')
-  avatarImg.src = avatar ?? 'asset:avatar-default.jpg'
+  avatarImg.src = player.avatar ?? 'asset:avatar-default.jpg'
   avatarImg.className = 'custom-guess-marker--avatar'
+  avatarImg.style.border = `3px solid ${player.color}`
   markerEl.appendChild(avatarImg)
 
   if (index !== undefined) {

@@ -76,7 +76,11 @@
 
   <Suspense>
     <Modal mode="v-if" :is-visible="settingsVisible" @close="settingsVisible = false">
-      <Settings :socket-connection-state :twitch-connection-state :set-show-random-plonk-button="setShowRandomPlonkButton"/>
+      <Settings
+        :socket-connection-state
+        :twitch-connection-state
+        :set-show-random-plonk-button="setShowRandomPlonkButton"
+      />
     </Modal>
   </Suspense>
 
@@ -135,8 +139,8 @@ const gameResultLocations = shallowRef<Location_[] | null>(null)
 const showRandomPlonkButton = shallowRef<boolean>(true)
 
 const setShowRandomPlonkButton = (value: boolean) => {
-  showRandomPlonkButton.value = value;
-};
+  showRandomPlonkButton.value = value
+}
 
 // Make sure game mode is not set to 'challenge'
 setLocalStorage('quickplay-playtype', 'single')
@@ -161,27 +165,27 @@ const satelliteMode = {
 }
 
 // Remove the game's own markers while on a results screen (where we draw our own)
-const markerRemover = useStyleTag(
-  '[data-qa="result-view-top"] [data-qa="guess-marker"], [class^="coordinate-result-map_line__"] { display: none; }',
-  {
-    id: 'cg-marker-remover',
-    manual: true
-  }
-)
-const removeMarkers = computed(
-  () => gameState.value === 'round-results' || gameState.value === 'game-results'
-)
-watch(
-  removeMarkers,
-  (load) => {
-    if (load) {
-      markerRemover.load()
-    } else {
-      markerRemover.unload()
-    }
-  },
-  { immediate: true }
-)
+// const markerRemover = useStyleTag(
+//   '[data-qa="result-view-top"] [data-qa="guess-marker"] { display: none; }',
+//   {
+//     id: 'cg-marker-remover',
+//     manual: true
+//   }
+// )
+// const removeMarkers = computed(
+//   () => gameState.value === 'round-results' || gameState.value === 'game-results'
+// )
+// watch(
+//   removeMarkers,
+//   (load) => {
+//     if (load) {
+//       markerRemover.load()
+//     } else {
+//       markerRemover.unload()
+//     }
+//   },
+//   { immediate: true }
+// )
 
 // Remove the game's controls when in satellite mode.
 const gameControlsRemover = useStyleTag(
@@ -206,28 +210,30 @@ watch(
 )
 
 onBeforeUnmount(
-  chatguessrApi.onGameStarted((_isMultiGuess, _invertScoring, _showRandomPlonkButton, restoredGuesses, location) => {
-    isMultiGuess.value = _isMultiGuess
-    invertScoring.value = _invertScoring
-    gameState.value = 'in-round'
+  chatguessrApi.onGameStarted(
+    (_isMultiGuess, _invertScoring, _showRandomPlonkButton, restoredGuesses, location) => {
+      isMultiGuess.value = _isMultiGuess
+      invertScoring.value = _invertScoring
+      gameState.value = 'in-round'
 
-    currentLocation.value = location
-    if (satelliteMode.value.enabled) {
-      rendererApi.showSatelliteMap(location)
-    } else {
-      rendererApi.hideSatelliteMap()
-    }
-    showRandomPlonkButton.value = _showRandomPlonkButton
-    scoreboard.value!.onStartRound()
-
-    if (restoredGuesses.length > 0) {
-      if (isMultiGuess.value) {
-        scoreboard.value!.restoreMultiGuesses(restoredGuesses as Player[])
+      currentLocation.value = location
+      if (satelliteMode.value.enabled) {
+        rendererApi.showSatelliteMap(location)
       } else {
-        scoreboard.value!.restoreGuesses(restoredGuesses as RoundResult[])
+        rendererApi.hideSatelliteMap()
+      }
+      showRandomPlonkButton.value = _showRandomPlonkButton
+      scoreboard.value!.onStartRound()
+
+      if (restoredGuesses.length > 0) {
+        if (isMultiGuess.value) {
+          scoreboard.value!.restoreMultiGuesses(restoredGuesses as Player[])
+        } else {
+          scoreboard.value!.restoreGuesses(restoredGuesses as RoundResult[])
+        }
       }
     }
-  })
+  )
 )
 
 onBeforeUnmount(

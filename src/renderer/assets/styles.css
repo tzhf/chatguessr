@@ -277,24 +277,24 @@ textarea:hover {
 .custom-guess-marker {
   position: relative;
   pointer-events: auto !important;
-  top: 16px;
-  width: 30px;
-  height: 30px;
+  top: 22px;
+  left: -1px;
+
 }
 .custom-guess-marker--avatar {
-  width: 100%;
-  height: 100%;
+  width: 40px;
+  height: 40px;
   object-fit: cover;
-  outline: 3px solid white;
   border-radius: 100%;
+  box-shadow: 0 0.375rem 0.625rem #1a1a1a47
 }
 .custom-guess-marker--label {
   position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
-  left: 20px;
-  top: 20px;
+  left: 26px;
+  top: 28px;
   width: 16px;
   height: 16px;
   background-color: white;

@@ -10,7 +10,6 @@ const defaultSettings = {
   channelName: '',
   avatar: '',
   isMultiGuess: false,
-  invertScoring: false,
   excludeBroadcasterData: false,
   guessMarkersLimit: 50,
   showStreamerRandomPlonkButton: true,

@@ -15,16 +15,29 @@
         </div>
 
         <div class="form__group">
-          <label data-tip="Invert scoring (furthest plonk wins)">
-            <input v-model="settings.invertScoring" type="checkbox" />
-            Antipode mode
+          <label data-tip="Exclude streamer stats from leaderboard and !best command">
+            <input v-model="settings.excludeBroadcasterData" type="checkbox" />
+            Exclude streamer from stats
           </label>
         </div>
 
         <div class="form__group">
-          <label data-tip="Exclude streamer stats from leaderboard and !best command">
-            <input v-model="settings.excludeBroadcasterData" type="checkbox" />
-            Exclude streamer from stats
+          <label
+            data-tip="The button is shown on the right menu during games. Clicking the button will end the round and make a random guess for the streamer"
+          >
+            <input
+              v-model="settings.showStreamerRandomPlonkButton"
+              type="checkbox"
+              @change="
+                (e) => {
+                  const target = e.target as HTMLInputElement | null
+                  if (target) {
+                    setShowRandomPlonkButton(target.checked)
+                  }
+                }
+              "
+            />
+            Show streamer random plonk button during rounds
           </label>
         </div>
 
@@ -41,26 +54,6 @@
             step="5"
             max="99"
           />
-        </div>
-
-        <div class="form__group">
-          <label
-            data-tip="The button is shown on the right menu during games. Clicking the buttom will end the round and make a random guess for the streamer"
-          >
-            <input
-              v-model="settings.showStreamerRandomPlonkButton"
-              type="checkbox"
-              @change="
-                (e) => {
-                  const target = e.target as HTMLInputElement | null
-                  if (target) {
-                    setShowRandomPlonkButton(target.checked)
-                  }
-                }
-              "
-            />
-            Show streamer random plonk button during rounds
-          </label>
         </div>
       </div>
     </div>
@@ -416,6 +409,7 @@
     </div>
 
     <div v-show="currentTab === 'ban-list'" class="content">
+      <h2>Ban List</h2>
       <div class="form__group">
         <div class="flex gap-03">
           <input
@@ -427,7 +421,7 @@
           <button type="button" class="btn bg-danger" @click="addBannedUser()">Ban User</button>
         </div>
       </div>
-      <h3>Banned users :</h3>
+
       <div class="flex flex-wrap gap-03 mb-1">
         <span
           v-for="(user, index) of bannedUsers"
@@ -584,7 +578,6 @@ span.error {
   top: 30px;
   left: 0;
   padding: 0.7rem 1rem;
-  text-align: center;
   color: #ffffff;
   background: rgba(0, 0, 0, 0.8);
   border-radius: 4px;

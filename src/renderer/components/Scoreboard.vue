@@ -53,7 +53,6 @@
         </label>
       </div>
     </div>
-    <div :class="['scoreboard-hint', { hidden: !invertScoring }]">Antipode Mode</div>
     <div :class="['scoreboard-hint', { hidden: !isMultiGuess || gameState !== 'in-round' }]">
       Guess change allowed
     </div>
@@ -142,7 +141,6 @@ const { chatguessrApi } = window
 const props = defineProps<{
   gameState: GameState
   isMultiGuess: boolean
-  invertScoring: boolean
   onRoundResultRowClick: (index: number, position: LatLng) => void
   onGameResultRowClick: (row: GameResultDisplay) => void
 }>()

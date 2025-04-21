@@ -127,34 +127,19 @@ export function haversineDistance(mk1: LatLng, mk2: LatLng): number {
 /**
  * Returns score based on distance and scale
  */
-export function calculateScore(distance: number, scale: number, invertScoring: boolean): number {
-  if (distance * 1000 < 25) return invertScoring ? 0 : 5000
-
-  if (invertScoring) {
-    // return Math.round(5000 * Math.pow(0.99866017, ((20000 - distance) * 1000) / scale))
-    if (distance > 15000) {
-      return 4999 - Math.round(Math.round(19869 - distance) * 0.2052)
-    }
-
-    if (distance > 7500) {
-      return 4000 - Math.round(Math.round(15000 - distance) * 0.4)
-    }
-
-    if (distance > 5000) {
-      return 1000 - Math.round(Math.round(7500 - distance) * 0.2)
-    }
-
-    if (distance > 2500) {
-      return 500 - Math.round(Math.round(5000 - distance) * 0.1)
-    }
-
-    if (distance > 100) {
-      return 250 - Math.round(Math.round(2500 - distance) * 0.1)
-    }
+export function calculateScore(
+  distance: number,
+  mapScale: number,
+  maxErrorDistance?: number
+): number {
+  // Old scoring system, fallback in case we fail to fetch the maxErrorDistance
+  if (!maxErrorDistance) {
+    const score = 5000 * Math.pow(0.99866017, (distance * 1000) / mapScale)
+    return Math.round(score)
   }
 
-  // Normal scoring
-  return Math.round(5000 * Math.pow(0.99866017, (distance * 1000) / scale))
+  const score = 5000 * Math.exp(-10 * ((distance * 1000) / maxErrorDistance))
+  return Math.round(score)
 }
 
 export function parseDistance(distance: number): string {
@@ -229,8 +214,12 @@ export async function fetchMap(mapToken: string): Promise<GeoGuessrMap | undefin
     return
   }
 
-  const { data } = await axios.get(`${GEOGUESSR_URL}/api/maps/${mapToken}`, { headers: cookies })
-  return data
+  try {
+    const { data } = await axios.get(`${GEOGUESSR_URL}/api/maps/${mapToken}`, { headers: cookies })
+    return data
+  } catch (e) {
+    return undefined
+  }
 }
 
 /**

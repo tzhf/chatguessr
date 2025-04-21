@@ -66,12 +66,7 @@ export default class GameHandler {
       this.#game.finishGame()
       this.#showGameResults()
     } else {
-      this.#win.webContents.send(
-        'next-round',
-        this.#game.isMultiGuess,
-        this.#game.invertScoring,
-        this.#game.getLocation()
-      )
+      this.#win.webContents.send('next-round', this.#game.isMultiGuess, this.#game.getLocation())
       this.sendNotification('roundStarted', { round: this.#game.round })
       this.openGuesses()
     }
@@ -135,7 +130,7 @@ export default class GameHandler {
         if (!this.#backend) return
 
         this.#game
-          .start(url, settings.isMultiGuess, settings.invertScoring)
+          .start(url, settings.isMultiGuess)
           .then(() => {
             const restoredGuesses = this.#game.isMultiGuess
               ? this.#game.getRoundParticipants()
@@ -143,7 +138,6 @@ export default class GameHandler {
             this.#win.webContents.send(
               'game-started',
               this.#game.isMultiGuess,
-              this.#game.invertScoring,
               settings.showStreamerRandomPlonkButton,
               restoredGuesses,
               this.#game.getLocation()

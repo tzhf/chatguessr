@@ -4,6 +4,7 @@ import {
   compareLatLng,
   calculateScale,
   fetchSeed,
+  fetchMap,
   getStreakCode,
   haversineDistance,
   calculateScore
@@ -33,6 +34,8 @@ export default class Game {
 
   mapScale: number | undefined
 
+  maxErrorDistance: number | undefined
+
   location: Location_ | undefined
 
   lastLocation: LatLng | undefined
@@ -43,8 +46,6 @@ export default class Game {
 
   isMultiGuess = false
 
-  invertScoring = false
-
   streamerDidRandomPlonk = false
 
   constructor(db: Database, settings: Settings) {
@@ -53,10 +54,9 @@ export default class Game {
     this.lastLocation = this.#db.getLastRoundLocation()
   }
 
-  async start(url: string, isMultiGuess: boolean, invertScoring: boolean) {
+  async start(url: string, isMultiGuess: boolean) {
     this.isInGame = true
     this.isMultiGuess = isMultiGuess
-    this.invertScoring = invertScoring
 
     if (this.#url === url) {
       await this.refreshSeed()
@@ -79,7 +79,13 @@ export default class Game {
         }
       }
 
+      const fetchedMap = await fetchMap(this.seed.map)
+      if (fetchedMap) {
+        this.maxErrorDistance = fetchedMap.maxErrorDistance
+      }
+      // Only needed in case we fail to get maxErrorDistance from fetchMap
       this.mapScale = calculateScale(this.seed.bounds)
+
       this.#assignStreakCode()
     }
   }
@@ -197,7 +203,7 @@ export default class Game {
     const distance = haversineDistance(location, this.location!)
     const score = streamerGuess.timedOut
       ? 0
-      : calculateScore(distance, this.mapScale!, this.invertScoring)
+      : calculateScore(distance, this.mapScale!, this.maxErrorDistance)
 
     const streak = this.#db.getUserStreak(dbUser.id)
 
@@ -250,7 +256,7 @@ export default class Game {
     }
 
     const distance = haversineDistance(location, this.location!)
-    const score = calculateScore(distance, this.mapScale!, this.invertScoring)
+    const score = calculateScore(distance, this.mapScale!, this.maxErrorDistance)
 
     const streakCode = await getStreakCode(location)
     const correct = streakCode === this.#streakCode

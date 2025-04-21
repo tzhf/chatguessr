@@ -648,6 +648,7 @@ class db {
 
     const stmt = this.#db.prepare(`
 			SELECT
+        users.id,
 				users.username,
 				users.avatar,
 				users.color,
@@ -684,6 +685,7 @@ class db {
 		`)
 
     const records = stmt.all(gameId, gameId) as {
+      id: string
       username: string
       avatar: string | null
       color: string
@@ -699,6 +701,7 @@ class db {
 
     return records.map((record) => ({
       player: {
+        userId: record.id,
         username: record.username,
         avatar: record.avatar,
         color: record.color,

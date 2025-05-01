@@ -1,5 +1,5 @@
 import fs from 'fs'
-import path, { join } from 'path'
+import { join, basename, dirname } from 'path'
 import { app, BrowserWindow, ipcMain, protocol, dialog } from 'electron'
 import started from 'electron-squirrel-startup'
 import { updateElectronApp } from 'update-electron-app'
@@ -24,14 +24,7 @@ if (started) {
   app.quit()
 }
 
-// This method will be called when Electron has finished initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  protocol.registerFileProtocol('localfile', (request, callback) => {
-    const filePath = request.url.replace('localfile://', '')
-    callback({ path: path.normalize(filePath) })
-  })
-
   serveAssets()
   await serveFlags()
 
@@ -50,15 +43,21 @@ app.whenReady().then(async () => {
     await authenticateWithTwitch(gameHandler, mainWindow)
   })
 
-  ipcMain.handle('app-data-path-exists', (_event, subdir) => {
-    let _path = appDataPath
-    if (subdir) _path = join(appDataPath, subdir)
-    if (!fs.existsSync(_path)) return false
-    return _path
+  ipcMain.handle('read-audio-file-as-buffer', async (_event, pathArg: string) => {
+    const audioPath = getAppDataPathIfExists(pathArg)
+    if (!audioPath) return
+
+    try {
+      const data = await fs.promises.readFile(decodeURIComponent(audioPath))
+      return Buffer.from(data) // Return the audio data as a buffer
+    } catch (err) {
+      console.error('Failed to load audio:', err)
+      throw new Error('FILE_NOT_FOUND')
+    }
   })
 
-  ipcMain.handle('import-audio-file', async () => {
-    return new Promise((resolve, reject) => {
+  ipcMain.handle('save-audio-file', async (_event, pathArg: string) => {
+    return new Promise<void>((resolve, reject) => {
       dialog
         .showOpenDialog(mainWindow, {
           title: 'Import audio file',
@@ -66,29 +65,27 @@ app.whenReady().then(async () => {
           filters: [{ name: 'Audio Files', extensions: ['mp3', 'wav', 'ogg'] }]
         })
         .then((result) => {
-          if (result.canceled) return resolve(null)
+          if (result.canceled) return resolve()
 
           const filePath = result.filePaths[0]
           if (!filePath) return reject('Error locating path')
 
-          const targetDirectory = join(appDataPath, 'timer')
+          const fileName = basename(pathArg)
+          const targetSubdir = dirname(pathArg)
+          const targetDirectory = join(appDataPath, targetSubdir)
+
           if (!fs.existsSync(targetDirectory)) {
-            fs.mkdir(targetDirectory, (err) => {
-              if (err) return reject(err)
-            })
+            fs.mkdirSync(targetDirectory, { recursive: true })
           }
 
           const data = fs.readFileSync(filePath)
           // not saving the extension here so we can overwrite audio files having different extensions without extra logic
-          fs.writeFile(join(targetDirectory, 'timer_alert'), data, (err) => {
+          fs.writeFile(join(targetDirectory, fileName), data, (err) => {
             if (err) return reject(err)
-
-            resolve(join(targetDirectory, 'timer_alert'))
+            resolve()
           })
         })
-        .catch((err) => {
-          reject(err)
-        })
+        .catch(reject)
     })
   })
 
@@ -103,6 +100,23 @@ app.whenReady().then(async () => {
   })
 
   await authenticateWithTwitch(gameHandler, mainWindow)
+})
+
+// Quit when all windows are closed, except on macOS. There, it's common
+// for applications and their menu bar to stay active until the user quits
+// explicitly with Cmd + Q.
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
+
+app.on('activate', () => {
+  // On OS X it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows o
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createMainWindow()
+  }
 })
 
 async function authenticateWithTwitch(gameHandler: GameHandler, parentWindow: BrowserWindow) {
@@ -148,23 +162,6 @@ async function authenticateWithTwitch(gameHandler: GameHandler, parentWindow: Br
   })
 }
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows o
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createMainWindow()
-  }
-})
-
 // Serve assets to 'asset:' file protocol
 // Assets must be placed in the public folder
 function serveAssets() {
@@ -190,4 +187,12 @@ async function serveFlags() {
       callback({ statusCode: 500, data: err.message })
     }
   })
+}
+
+/**
+ * Returns the full path to a file or directory inside appData if it exists, otherwise returns false
+ */
+function getAppDataPathIfExists(subpath: string): string | false {
+  const fullPath = subpath ? join(appDataPath, subpath) : appDataPath
+  return fs.existsSync(fullPath) ? fullPath : false
 }

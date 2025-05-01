@@ -1,161 +1,3 @@
-<template>
-  <Vue3DraggableResizable
-    v-model:x="position.x"
-    v-model:y="position.y"
-    :draggable="!settingsVisibility"
-    :resizable="false"
-    :parent="true"
-    style="transform: translateX(50%)"
-    @drag-end="setLocalStorage('cg_timer__position', position)"
-  >
-    <div
-      class="timer"
-      @mouseover="iconsVisibility = true"
-      @mouseleave="!settingsVisibility ? (iconsVisibility = false) : true"
-    >
-      <div
-        :style="{
-          fontFamily: settings.fontFamily,
-          fontSize: settings.fontSize + 'px',
-          color: settings.color,
-          textShadow: `${settings.shadowOffsetX}px ${settings.shadowOffsetY}px ${settings.shadowBlur}px ${settings.shadowColor}`,
-          WebkitTextStroke: `${settings.borderWidth}px ${settings.borderColor}`,
-          paddingBottom: '0.5rem',
-          cursor: 'move'
-        }"
-      >
-        <div>{{ display }}</div>
-        <div v-if="isTimeToPlonk">{{ settings.timeToPlonkMsg }}</div>
-      </div>
-
-      <div :class="iconsVisibility ? 'expanded' : 'collapsed'">
-        <div class="flex items-center justify-center gap-05">
-          <IconStart v-if="!isStarted || isPaused" @click="start" />
-          <IconPause v-else @click="pause" />
-          <IconStop v-if="isStarted" @click="reset" />
-          <IconGearStroke @click="settingsVisibility = !settingsVisibility" />
-        </div>
-      </div>
-
-      <div
-        :class="['timer-settings', settingsVisibility ? 'expanded' : 'collapsed']"
-        :hidden="!settingsVisibility"
-      >
-        <label class="form__group"
-          >Start timer at round start :
-          <input v-model="settings.autoStart" type="checkbox" />
-        </label>
-        <label class="form__group"
-          >Close guesses when time's up :
-          <input v-model="settings.autoCloseGuesses" type="checkbox" />
-        </label>
-        <hr />
-
-        <label class="form__group"
-          >Time ({{ settings.timeLimit }} sec) :
-          <input
-            v-model.number="settings.timeLimit"
-            type="range"
-            min="5"
-            max="600"
-            step="5"
-            @input="reset()"
-          />
-        </label>
-        <label class="form__group"
-          >Time's up message :
-          <input v-model="settings.timesUpMsg" type="text" spellcheck="false" />
-        </label>
-        <label class="form__group"
-          >Time to plonk ({{ settings.timeToPlonk }} sec) :
-          <input
-            v-model.number="settings.timeToPlonk"
-            type="range"
-            min="5"
-            :max="settings.timeLimit"
-            step="5"
-            @input="reset()"
-          />
-        </label>
-        <label class="form__group"
-          >Time to plonk message :
-          <input v-model="settings.timeToPlonkMsg" type="text" spellcheck="false" />
-        </label>
-        <hr />
-
-        <label class="form__group"
-          >Play sound when it's time to plonk :
-          <input v-model="settings.playAudio" type="checkbox" />
-        </label>
-        <div class="form__group">
-          <label>Load audio file :</label>
-          <div class="flex items-center justify-center gap-05">
-            <button class="btn bg-primary" type="button" @click="handleImportAudioFile">
-              Import
-            </button>
-            <IconAudio v-if="audioPath" class="icon" @click="playAudio()" />
-          </div>
-        </div>
-        <label class="form__group"
-          >Sound volume ({{ settings.audioVolume * 100 }} %) :
-          <input v-model.number="settings.audioVolume" type="range" min="0" max="1" step="0.1" />
-        </label>
-        <hr />
-
-        <label class="form__group"
-          >Font :
-          <select v-model="settings.fontFamily">
-            <option
-              v-for="font in availableFonts"
-              :key="font"
-              :value="font"
-              :style="{ fontFamily: font }"
-            >
-              {{ font }}
-            </option>
-          </select>
-        </label>
-        <label class="form__group"
-          >Font size ({{ settings.fontSize }}px) :
-          <input v-model="settings.fontSize" type="range" min="10" max="170" />
-        </label>
-        <label class="form__group"
-          >Color :
-          <input v-model="settings.color" type="color" />
-        </label>
-        <hr />
-
-        <label class="form__group"
-          >Border width ({{ settings.borderWidth }}px) :
-          <input v-model="settings.borderWidth" type="range" min="0" max="10" step="0.1" />
-        </label>
-        <label class="form__group"
-          >Border color :
-          <input v-model="settings.borderColor" type="color" />
-        </label>
-        <hr />
-
-        <label class="form__group"
-          >Shadow offset X ({{ settings.shadowOffsetX }}px) :
-          <input v-model="settings.shadowOffsetX" type="range" min="-20" max="20" step="1" />
-        </label>
-        <label class="form__group"
-          >Shadow offset Y ({{ settings.shadowOffsetY }}px) :
-          <input v-model="settings.shadowOffsetY" type="range" min="-20" max="20" step="1" />
-        </label>
-        <label class="form__group"
-          >Shadow blur ({{ settings.shadowBlur }}px) :
-          <input v-model="settings.shadowBlur" type="range" min="0" max="20" step="1" />
-        </label>
-        <label class="form__group"
-          >Shadow color :
-          <input v-model="settings.shadowColor" type="color" />
-        </label>
-      </div>
-    </div>
-  </Vue3DraggableResizable>
-</template>
-
 <script setup lang="ts">
 import { shallowRef, watch, reactive, onMounted } from 'vue'
 import { getLocalStorage, setLocalStorage } from '@/useLocalStorage'
@@ -182,6 +24,7 @@ watch(
 )
 
 const position = reactive(getLocalStorage('cg_timer__position', { x: 450, y: 50 }))
+
 const settings = reactive(
   getLocalStorage('cg_timer__settings', {
     timeLimit: 90,
@@ -213,7 +56,7 @@ const isStarted = shallowRef(false)
 const isPaused = shallowRef(false)
 const isTimeToPlonk = shallowRef(false)
 
-const audioPath = shallowRef<string | false>(false)
+const audioPath = shallowRef<string | undefined>(undefined)
 const availableFonts = shallowRef()
 const settingsVisibility = shallowRef(false)
 const iconsVisibility = shallowRef(false)
@@ -223,7 +66,7 @@ let pausedDifference = 0
 let frameInterval = () => {}
 
 onMounted(async () => {
-  audioPath.value = 'localfile://' + (await chatguessrApi.appDataPathExists('\\timer\\timer_alert'))
+  audioPath.value = await loadAudio()
 
   updateDisplay(settings.timeLimit * 1000)
 
@@ -424,24 +267,186 @@ const updateDisplay = (targetTime?: number) => {
   display.value = numM.toString().padStart(2, '0') + ':' + numS.toString().padStart(2, '0')
 }
 
-const playAudio = () => {
-  if (!audioPath.value) return
+const playAudio = async () => {
   const audio = new Audio(audioPath.value)
+  if (!audio) return
   audio.volume = settings.audioVolume
   audio.play()
 }
 
-const handleImportAudioFile = async () => {
+const loadAudio = async () => {
+  const audioBuffer = await chatguessrApi.readAudioFileAsBuffer('timer/timer_alert')
+  if (!audioBuffer || !audioBuffer.length) return
+
+  const audioBlob = new Blob([audioBuffer], { type: 'audio/wav' })
+  return URL.createObjectURL(audioBlob)
+}
+
+const saveAudioFile = async () => {
   try {
-    const path = await chatguessrApi.importAudioFile()
-    if (path) {
-      audioPath.value = path + '?cb=' + new Date().getTime()
-    }
+    await chatguessrApi.saveAudioFile('timer/timer_alert')
+    audioPath.value = await loadAudio()
   } catch (err) {
-    console.error(err)
+    console.error('Failed to save audio file:', err)
   }
 }
 </script>
+
+<template>
+  <Vue3DraggableResizable
+    v-model:x="position.x"
+    v-model:y="position.y"
+    :draggable="!settingsVisibility"
+    :resizable="false"
+    :parent="true"
+    style="transform: translateX(50%)"
+    @drag-end="setLocalStorage('cg_timer__position', position)"
+  >
+    <div
+      class="timer"
+      @mouseover="iconsVisibility = true"
+      @mouseleave="!settingsVisibility ? (iconsVisibility = false) : true"
+    >
+      <div
+        :style="{
+          fontFamily: settings.fontFamily,
+          fontSize: settings.fontSize + 'px',
+          color: settings.color,
+          textShadow: `${settings.shadowOffsetX}px ${settings.shadowOffsetY}px ${settings.shadowBlur}px ${settings.shadowColor}`,
+          WebkitTextStroke: `${settings.borderWidth}px ${settings.borderColor}`,
+          paddingBottom: '0.5rem',
+          cursor: 'move'
+        }"
+      >
+        <div>{{ display }}</div>
+        <div v-if="isTimeToPlonk">{{ settings.timeToPlonkMsg }}</div>
+      </div>
+
+      <div :class="iconsVisibility ? 'expanded' : 'collapsed'">
+        <div class="flex items-center justify-center gap-05">
+          <IconStart v-if="!isStarted || isPaused" @click="start" />
+          <IconPause v-else @click="pause" />
+          <IconStop v-if="isStarted" @click="reset" />
+          <IconGearStroke @click="settingsVisibility = !settingsVisibility" />
+        </div>
+      </div>
+
+      <div
+        :class="['timer-settings', settingsVisibility ? 'expanded' : 'collapsed']"
+        :hidden="!settingsVisibility"
+      >
+        <label class="form__group"
+          >Start timer at round start :
+          <input v-model="settings.autoStart" type="checkbox" />
+        </label>
+        <label class="form__group"
+          >Close guesses when time's up :
+          <input v-model="settings.autoCloseGuesses" type="checkbox" />
+        </label>
+        <hr />
+
+        <label class="form__group"
+          >Time ({{ settings.timeLimit }} sec) :
+          <input
+            v-model.number="settings.timeLimit"
+            type="range"
+            min="5"
+            max="600"
+            step="5"
+            @input="reset()"
+          />
+        </label>
+        <label class="form__group"
+          >Time's up message :
+          <input v-model="settings.timesUpMsg" type="text" spellcheck="false" />
+        </label>
+        <label class="form__group"
+          >Time to plonk ({{ settings.timeToPlonk }} sec) :
+          <input
+            v-model.number="settings.timeToPlonk"
+            type="range"
+            min="5"
+            :max="settings.timeLimit"
+            step="5"
+            @input="reset()"
+          />
+        </label>
+        <label class="form__group"
+          >Time to plonk message :
+          <input v-model="settings.timeToPlonkMsg" type="text" spellcheck="false" />
+        </label>
+        <hr />
+
+        <label class="form__group"
+          >Play sound when it's time to plonk :
+          <input v-model="settings.playAudio" type="checkbox" />
+        </label>
+        <div class="form__group">
+          <label>Load audio file :</label>
+          <div class="flex items-center justify-center gap-05">
+            <button class="btn bg-primary" type="button" @click="saveAudioFile">Import</button>
+            <IconAudio v-if="audioPath" class="icon" @click="playAudio()" />
+          </div>
+        </div>
+        <label class="form__group"
+          >Sound volume ({{ settings.audioVolume * 100 }} %) :
+          <input v-model.number="settings.audioVolume" type="range" min="0" max="1" step="0.1" />
+        </label>
+        <hr />
+
+        <label class="form__group"
+          >Font :
+          <select v-model="settings.fontFamily">
+            <option
+              v-for="font in availableFonts"
+              :key="font"
+              :value="font"
+              :style="{ fontFamily: font }"
+            >
+              {{ font }}
+            </option>
+          </select>
+        </label>
+        <label class="form__group"
+          >Font size ({{ settings.fontSize }}px) :
+          <input v-model="settings.fontSize" type="range" min="10" max="170" />
+        </label>
+        <label class="form__group"
+          >Color :
+          <input v-model="settings.color" type="color" />
+        </label>
+        <hr />
+
+        <label class="form__group"
+          >Border width ({{ settings.borderWidth }}px) :
+          <input v-model="settings.borderWidth" type="range" min="0" max="10" step="0.1" />
+        </label>
+        <label class="form__group"
+          >Border color :
+          <input v-model="settings.borderColor" type="color" />
+        </label>
+        <hr />
+
+        <label class="form__group"
+          >Shadow offset X ({{ settings.shadowOffsetX }}px) :
+          <input v-model="settings.shadowOffsetX" type="range" min="-20" max="20" step="1" />
+        </label>
+        <label class="form__group"
+          >Shadow offset Y ({{ settings.shadowOffsetY }}px) :
+          <input v-model="settings.shadowOffsetY" type="range" min="-20" max="20" step="1" />
+        </label>
+        <label class="form__group"
+          >Shadow blur ({{ settings.shadowBlur }}px) :
+          <input v-model="settings.shadowBlur" type="range" min="0" max="20" step="1" />
+        </label>
+        <label class="form__group"
+          >Shadow color :
+          <input v-model="settings.shadowColor" type="color" />
+        </label>
+      </div>
+    </div>
+  </Vue3DraggableResizable>
+</template>
 
 <style scoped>
 .timer {

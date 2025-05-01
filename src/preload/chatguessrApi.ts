@@ -55,14 +55,6 @@ export const chatguessrApi = {
     ipcRenderer.send('delete-banned-user', username)
   },
 
-  appDataPathExists(subdir?: string): Promise<string | false> {
-    return ipcRenderer.invoke('app-data-path-exists', subdir)
-  },
-
-  importAudioFile(): Promise<unknown> {
-    return ipcRenderer.invoke('import-audio-file')
-  },
-
   onGameStarted(
     callback: (
       isMultiGuess: boolean,
@@ -119,6 +111,14 @@ export const chatguessrApi = {
         unlisten()
       }
     }
+  },
+
+  saveAudioFile(pathArg: string): Promise<void> {
+    return ipcRenderer.invoke('save-audio-file', pathArg)
+  },
+
+  readAudioFileAsBuffer(pathArg: string): Promise<Buffer | undefined> {
+    return ipcRenderer.invoke('read-audio-file-as-buffer', pathArg)
   },
 
   reconnect(): void {

@@ -24,7 +24,9 @@ whenDomReady().then(() => {
 })
 
 window.onmessage = (ev: MessageEvent) => {
-  ev.data.payload === 'removeLoading' && removeLoading()
+  if (ev.data.payload === 'removeLoading') {
+    removeLoading()
+  }
 }
 setTimeout(removeLoading, 4999)
 

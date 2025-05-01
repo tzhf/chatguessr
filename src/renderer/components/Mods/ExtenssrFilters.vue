@@ -29,7 +29,7 @@ if (window.pp) {
   if (window.ppController) {
     try {
       window.ppController.updateState(window.pp)
-    } catch (e) {
+    } catch {
       window.pp = defaultPP()
       for (const key of Object.keys(window.pp)) {
         settings[key] = window.pp[key]
@@ -79,10 +79,11 @@ const toggleGrayscaleMode = () => {
 
 const toggleMode = (property: keyof typeof settings) => {
   if (window.ppController) {
+    // @ts-expect-error
     window.pp[property] = settings[property]
     try {
       window.ppController.updateState(window.pp)
-    } catch (e) {
+    } catch {
       console.log('Whoops, try to get back to a sane state')
       window.pp = defaultPP()
       for (const key of Object.keys(window.pp)) {

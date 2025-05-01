@@ -58,7 +58,7 @@ export async function fetchSeed(url: string): Promise<Seed | undefined> {
         headers: cookies
       })
       return response.data
-    } catch (error: any) {
+    } catch {
       retries++
     }
   }
@@ -202,7 +202,7 @@ async function shortenMapsUrl(url: string): Promise<string | undefined> {
       const [shortened]: string = JSON.parse(data.split('\n')[1])
       return shortened
     }
-  } catch (e) {
+  } catch {
     return undefined
   }
   return undefined
@@ -217,7 +217,7 @@ export async function fetchMap(mapToken: string): Promise<GeoGuessrMap | undefin
   try {
     const { data } = await axios.get(`${GEOGUESSR_URL}/api/maps/${mapToken}`, { headers: cookies })
     return data
-  } catch (e) {
+  } catch {
     return undefined
   }
 }
@@ -247,7 +247,7 @@ export async function getStreamerAvatar(channel: string): Promise<{ avatar: stri
   try {
     const { data } = await axios.get<{ avatar: string }>(`${CG_API_URL}/channel/${channel}`)
     return data
-  } catch (e) {
+  } catch {
     return { avatar: undefined }
   }
 }

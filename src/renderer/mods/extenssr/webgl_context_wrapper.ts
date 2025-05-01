@@ -1,4 +1,3 @@
-//@ts-ignore
 import { aliasConfig } from './aliasing'
 import type { ContextCreator } from './canvas_manager'
 import { PostprocessHandler } from './postprocess_handler'
@@ -47,7 +46,7 @@ export default class WebGLContextWrapper {
     this.canvas = canvas
     this.offscreenCanvas = offscreenCanvas
     this.controller = controller
-    //@ts-ignore
+    // @ts-ignore
     this.offscreenContext = Object.assign(offscreenContext, {
       hideCar: false,
       isMainProgram: false,
@@ -55,9 +54,9 @@ export default class WebGLContextWrapper {
     })
     this.contextCreator = contextCreator
 
-    //@ts-ignore
+    // @ts-ignore
     this.oldDrawArrays = this.offscreenContext.drawArrays
-    //@ts-ignore
+    // @ts-ignore
     this.oldDrawElements = this.offscreenContext.drawElements
 
     this.dirtifier = {
@@ -68,26 +67,20 @@ export default class WebGLContextWrapper {
 
     const thees = this
     aliasConfig(this.offscreenContext, {
-      //@ts-ignore
       drawElements: (oldDrawElements) =>
-        //@ts-ignore
         function (...args) {
           thees.#preDraw()
           oldDrawElements.apply(offscreenContext, args)
           thees.#onFirstDraw()
         },
-      //@ts-ignore
       drawArrays: (oldDrawArrays) =>
-        //@ts-ignore
         function (...args) {
           thees.#preDraw()
           oldDrawArrays.apply(offscreenContext, args)
           thees.#onFirstDraw()
         },
-      //@ts-ignore
       // TODO: this is a hack for the no car script; make this a proper postprocess step.
       shaderSource: (oldShaderSource) =>
-        //@ts-ignore
         function (...args) {
           const shader = args[0]
           const source = args[1] as string
@@ -99,9 +92,7 @@ export default class WebGLContextWrapper {
           }
           return oldShaderSource.apply(thees.offscreenContext, [shader, noCarFragmentShader])
         },
-      //@ts-ignore
       linkProgram: (oldLinkProgram) =>
-        //@ts-ignore
         function (...args) {
           oldLinkProgram.apply(thees.offscreenContext, args)
           const program = args[0] as WebGLProgram
@@ -125,9 +116,9 @@ export default class WebGLContextWrapper {
   // Check if this should
   #onFirstDraw(): void {
     // First, revert alises.
-    //@ts-ignore
+    // @ts-ignore
     this.offscreenContext.drawArrays = this.oldDrawArrays
-    //@ts-ignore
+    // @ts-ignore
     this.offscreenContext.drawElements = this.oldDrawElements
     const dirtifier = this.dirtifier
     // OK, this is actually an on-screen canvas AND is related to streetview.
@@ -152,9 +143,7 @@ export default class WebGLContextWrapper {
         })
       cb()
       aliasConfig(this.offscreenContext, {
-        //@ts-ignore
         drawElements: (oldDrawElements) =>
-          //@ts-ignore
           function (...args) {
             thees.#preDraw()
             if (thees.offscreenContext.isMainProgram) {
@@ -165,9 +154,7 @@ export default class WebGLContextWrapper {
             oldDrawElements.apply(thees.offscreenContext, args)
             dirtifier.dirtify()
           },
-        //@ts-ignore
         drawArrays: (oldDrawArrays) =>
-          //@ts-ignore
           function (...args) {
             thees.#preDraw()
             oldDrawArrays.apply(thees.offscreenContext, args)
@@ -191,17 +178,13 @@ export default class WebGLContextWrapper {
         })
       cb()
       aliasConfig(this.offscreenContext, {
-        //@ts-ignore
         drawElements: (oldDrawElements) =>
-          //@ts-ignore
           function (...args) {
             thees.#preDraw()
             oldDrawElements.apply(thees.offscreenContext, args)
             dirtifier.dirtify()
           },
-        //@ts-ignore
         drawArrays: (oldDrawArrays) =>
-          //@ts-ignore
           function (...args) {
             thees.#preDraw()
             oldDrawArrays.apply(thees.offscreenContext, args)

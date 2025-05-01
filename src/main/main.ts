@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path, { join } from 'path'
 import { app, BrowserWindow, ipcMain, protocol, dialog } from 'electron'
+import started from 'electron-squirrel-startup'
 import { updateElectronApp } from 'update-electron-app'
 
 import createMainWindow from './MainWindow'
@@ -17,6 +18,11 @@ if (process.platform == 'win32') updateElectronApp()
 const appDataPath = app.getPath('userData')
 const dbPath = join(appDataPath, 'scores.db')
 const db = database(dbPath)
+
+// Handle creating/removing shortcuts on Windows when installing/uninstalling.
+if (started) {
+  app.quit()
+}
 
 // This method will be called when Electron has finished initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -74,7 +80,6 @@ app.whenReady().then(async () => {
 
           const data = fs.readFileSync(filePath)
           // not saving the extension here so we can overwrite audio files having different extensions without extra logic
-          // @ts-ignore
           fs.writeFile(join(targetDirectory, 'timer_alert'), data, (err) => {
             if (err) return reject(err)
 
@@ -159,11 +164,6 @@ app.on('activate', () => {
     createMainWindow()
   }
 })
-
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
-  app.quit()
-}
 
 // Serve assets to 'asset:' file protocol
 // Assets must be placed in the public folder

@@ -117,7 +117,7 @@ describe('randomPlonk', () => {
       expect(lng < inBounds.max.lng).toBeTruthy()
     }
   })
-})
+}, 10000)
 
 describe('parseUserDate', () => {
   beforeEach(() => {

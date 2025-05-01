@@ -111,6 +111,7 @@ const migrations: ((db: SQLite.Database) => void)[] = [
 
     db.prepare(`ALTER TABLE users ADD COLUMN current_streak_id TEXT DEFAULT NULL`).run()
   },
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function createGameWinnersObsolete(_db) {
     // This used to create a game_winners view, but that was obsoleted by the next migration.
@@ -1123,5 +1124,5 @@ class db {
 export const database = (dbPath: string) => new db(dbPath)
 
 declare global {
-  interface Database extends db {}
+  type Database = db
 }

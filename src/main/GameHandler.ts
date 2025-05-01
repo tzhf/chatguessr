@@ -1,5 +1,4 @@
 import { ipcMain } from 'electron'
-import { once } from 'events'
 import { io } from 'socket.io-client'
 import Game from './Game'
 import TwitchBackend from './utils/useTwitchJS'
@@ -383,7 +382,10 @@ export default class GameHandler {
       })
     })
 
-    await once(this.#socket, 'connect')
+    if (!this.#socket) {
+      throw new Error('Socket is not initialized')
+    }
+    await new Promise<void>((resolve) => this.#socket!.once('connect', resolve))
   }
 
   async #handleGuess(userstate: UserData, message: string, isRandomPlonk: boolean = false) {

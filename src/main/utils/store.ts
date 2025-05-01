@@ -5,4 +5,4 @@ type Schema = {
   session: Session | null
 }
 
-export const store: ElectronStore<Schema> = new ElectronStore()
+export const store = new ElectronStore<Schema>()

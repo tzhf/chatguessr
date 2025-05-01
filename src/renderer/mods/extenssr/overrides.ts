@@ -10,7 +10,7 @@ export type ElementCreatorFactory = (elementName: string) => HTMLElement
 export function injectionStartup(controller: PostProcessingController): ExtenssrOverrides {
   const elementCreator = document.createElement
   const elementFactory: ElementCreatorFactory = (elementName: string): HTMLElement =>
-    elementCreator.apply(document, [elementName as any])
+    elementCreator.apply(document, [elementName as 'webview'])
   // Currently, we're only supporting webgl 1 backed post processing.
   const webGLStrings = ['webgl', 'experimental-webgl', 'moz-webgl', 'webkit-3d']
   const detectWebGLSupport = (): boolean => {
@@ -36,10 +36,8 @@ export function injectionStartup(controller: PostProcessingController): Extenssr
     const manager = new CanvasManager(elementFactory, controller)
     // Now wrap it up.
     aliasConfig(document, {
-      //@ts-ignore
       createElement: (oldCreateElement) =>
         function (...args) {
-          // const hasUnityScript = document.querySelectorAll('mmap,kmap,sat-map,msmap,ymaps,lmap').length > 0
           if (args[0] && typeof args[0] === 'string' && args[0].toLowerCase() === 'canvas') {
             return manager.createNewCanvas()
           }

@@ -105,7 +105,7 @@ export default class Game {
     return !compareLatLng(seed.rounds.at(-1)!, loc)
   }
 
-  // @ts-ignore
+  // @ts-expect-error
   async refreshSeed() {
     const newSeed = await this.#getSeed()
     // If a guess has been committed, process streamer guess then return scores
@@ -285,7 +285,11 @@ export default class Game {
     // This might look weird but with this we no longer need to update guess streak in processMultiGuesses() which was slow
     if (this.isMultiGuess) {
       if (correct) {
-        streak ? streak.count++ : (streak = { count: 1 })
+        if (streak) {
+          streak.count++
+        } else {
+          streak = { count: 1 }
+        }
       } else {
         streak = undefined
       }

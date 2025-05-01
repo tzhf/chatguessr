@@ -4,7 +4,7 @@ import WebGLContextWrapper from './webgl_context_wrapper'
 import type { ContextObserver } from './webgl_context_wrapper'
 
 export type ElementCreatorFactory = (elementName: string) => HTMLElement
-export type ContextCreator = (...args: any) => RenderingContext
+export type ContextCreator = (...args: unknown[]) => RenderingContext
 
 export default class CanvasManager {
   factory: ElementCreatorFactory
@@ -20,9 +20,9 @@ export default class CanvasManager {
     const thees: CanvasManager = this
     aliasConfig(canvas, {
       getContext: (oldGetContext: {
-        apply: (arg0: HTMLCanvasElement, arg1: any[]) => RenderingContext
+        apply: (arg0: HTMLCanvasElement, arg1: unknown[]) => RenderingContext
       }) =>
-        function (...args: any[]) {
+        function (...args: unknown[]) {
           if (canvas.getAttribute('data-engine') !== null) {
             return oldGetContext.apply(canvas, args)
           }
@@ -34,11 +34,11 @@ export default class CanvasManager {
     })
     return canvas
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   onContextRequested(
     canvas: HTMLCanvasElement,
     contextCreator: ContextCreator,
-    args: any[]
+    args: unknown[]
   ): RenderingContext {
     const contextType = args[0] as string
     // OK, this could be a canvas used to render Streetview

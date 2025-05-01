@@ -24,12 +24,14 @@ const mutuallyExclusiveShaderToggles = [
   'motion_blur',
   'scramble',
   'water'
-] as const
-const regularShaderToggles = ['bloom', 'toon', 'snow', 'sobel', 'vignette'] as const
-const shaderToggles = [...mutuallyExclusiveShaderToggles, ...regularShaderToggles] as const
-const nonShaderToggles = ['hideCar'] as const
+]
+const regularShaderToggles = ['bloom', 'toon', 'snow', 'sobel', 'vignette']
+const shaderToggles = [...mutuallyExclusiveShaderToggles, ...regularShaderToggles]
+const nonShaderToggles = ['hideCar']
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const toggles = [...shaderToggles, ...nonShaderToggles] as const
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const sliders = ['pixelScale', 'toonScale'] as const
 
 type MutuallyExclusiveToggleTypes = (typeof mutuallyExclusiveShaderToggles)[number]
@@ -125,6 +127,7 @@ function shuffleArray(arr: number[]) {
 }
 
 export function defaultPP(): PostProcessingState {
+  // @ts-expect-error
   return {
     bloom: false,
     crt: false,
@@ -232,7 +235,7 @@ export default class PostProcessingController {
       if (visible) {
         let oldPov = streetView.getPov()
         this.updateSpeeds(0, 0)
-        let timer: number | undefined = undefined
+        let timer: NodeJS.Timeout | undefined = undefined
         listener = streetView.addListener('pov_changed', () => {
           const newPov = streetView.getPov()
           clearTimeout(timer)
@@ -250,7 +253,7 @@ export default class PostProcessingController {
           timer = setTimeout(() => {
             oldPov = streetView.getPov()
             this.updateSpeeds(0, 0)
-          }, 100) as any
+          }, 100)
         })
       }
     })

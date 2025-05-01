@@ -119,11 +119,6 @@ import IconDice from '@/assets/icons/dice.svg'
 import { rendererApi } from '../rendererApi'
 const { chatguessrApi } = window
 
-// probably not necessary
-// defineOptions({
-//   inheritAttrs: false
-// })
-
 const scoreboard = shallowRef<InstanceType<typeof Scoreboard> | null>(null)
 const settingsVisible = shallowRef(false)
 const leaderboardVisible = shallowRef(false)

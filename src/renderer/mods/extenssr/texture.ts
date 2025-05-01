@@ -22,7 +22,6 @@ export default class Texture {
   }
   bindToActiveTexture(activeTexture: number): void {
     const gl = this.webglContext
-    //@ts-ignore
     gl.activeTexture(gl['TEXTURE' + activeTexture])
     gl.bindTexture(gl.TEXTURE_2D, this.textureId)
   }

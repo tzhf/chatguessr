@@ -3,8 +3,6 @@
 // https://gitlab.com/nonreviad/extenssr/-/blob/c795a07e0eb64cb5b32d60e6f3784b044becb1c1/src/content_scripts/plugins/global/menu_items_plugin.ts
 // https://gitlab.com/nonreviad/extenssr/-/blob/c795a07e0eb64cb5b32d60e6f3784b044becb1c1/src/content_scripts/endpoint_transition_handler.ts
 
-import axios from 'axios'
-
 type MapCreator = {
   email?: string
   nick: string
@@ -21,26 +19,34 @@ type Map = {
 }
 
 class MapsApi {
-  private client = axios.create({ baseURL: 'https://www.geoguessr.com' })
+  private baseURL = 'https://www.geoguessr.com'
+
+  private async request<T>(endpoint: string, params?: Record<string, unknown>): Promise<T> {
+    const url = new URL(endpoint, this.baseURL)
+
+    if (params) {
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined) {
+          url.searchParams.set(key, String(value))
+        }
+      }
+    }
+
+    const res = await fetch(url.toString(), { credentials: 'include' })
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+    return res.json()
+  }
 
   async getMapData(mapId: string): Promise<Map> {
-    return (await this.client.get<Map>(`/api/maps/${mapId}`)).data
+    return this.request<Map>(`/api/maps/${mapId}`)
   }
 
   async getMyMaps(page = 0, count = 25): Promise<Map[]> {
-    const { data } = await this.client.get<Map[]>('/api/v3/profiles/maps', {
-      params: { page, count }
-    })
-
-    return data
+    return this.request<Map[]>('/api/v3/profiles/maps', { page, count })
   }
 
   async getLikedMaps(page = 0, count = 25): Promise<Map[]> {
-    const { data } = await this.client.get<Map[]>('/api/v3/likes', {
-      params: { page, count }
-    })
-
-    return data
+    return this.request<Map[]>('/api/v3/likes', { page, count })
   }
 }
 

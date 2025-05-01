@@ -2,8 +2,6 @@ import type { Scope, ScopeIndex } from '@shaderfrog/glsl-parser/dist/parser/pars
 import { parser } from '@shaderfrog/glsl-parser'
 import { UniformType } from './uniform'
 import type { Uniform } from './uniform'
-//@ts-ignore
-import hash from 'string-hash'
 import defaultFragment from './shaders/simple_fragment.glsl?raw'
 import defaultVertex from './shaders/simple_vertex.glsl?raw'
 
@@ -71,21 +69,20 @@ export class ShaderPass {
       const allVariables = scopes
         .flatMap((scope) => Object.entries(scope.bindings))
         .filter(([_, data]) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const fullData = data as any as ScopeIndex & { initializer: { type: string } }
+          const fullData = data as unknown as ScopeIndex & { initializer: { type: string } }
           return (
             fullData.initializer.type === 'identifier' ||
             fullData.initializer.type === 'parameter_declaration'
           )
         })
-        .map(([key, _]) => key)
+        .map(([key]) => key)
       const takesInput = allVariables.includes('inputColor')
       const uniforms = allVariables
         .filter((name) => !['texture', 'inputColor', 'vTexCoord'].includes(name))
         .filter((name) => !name.startsWith('gl_'))
       return new ShaderPass(rawString, functionName, takesInput, uniforms)
     } catch (e) {
-      //@ts-ignore
+      // @ts-expect-error
       return new ShaderError(e.message, e.location)
     }
   }
@@ -146,7 +143,7 @@ export class Shader {
   hashString: string
   constructor(info: ShaderInfo) {
     this.info = info
-    this.hashString = hash(this.info.rawString) as string
+    this.hashString = hash(this.info.rawString) as unknown as string
   }
   compileInWebGL(context: WebGLRenderingContext): WebGLShader | ShaderError {
     const shader = context.createShader(
@@ -297,4 +294,18 @@ export function CombinePasses(
     type: ShaderType.FRAGMENT,
     uniforms: uniforms.filter((uniformName) => !BAKED_IN_UNIFORMS.has(uniformName.name))
   }
+}
+
+function hash(str: string) {
+  let hash = 5381,
+    i = str.length
+
+  while (i) {
+    hash = (hash * 33) ^ str.charCodeAt(--i)
+  }
+
+  /* JavaScript does bitwise operations (like XOR, above) on 32-bit signed
+   * integers. Since we want the results to be always positive, convert the
+   * signed int to an unsigned by doing an unsigned bitshift. */
+  return hash >>> 0
 }

@@ -405,7 +405,11 @@ function scrollToTop() {
 
 function toggleAutoScroll() {
   settings.autoScroll = !settings.autoScroll
-  settings.autoScroll ? resume() : pause()
+  if (settings.autoScroll) {
+    resume()
+  } else {
+    pause()
+  }
 }
 
 function toggleGuesses(e: Event) {

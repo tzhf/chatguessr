@@ -16,7 +16,7 @@
           <span v-else>{{ i + 1 }}</span>
         </td>
         <td>
-          <div class="flex items-center gap-02">
+          <div class="flex items-center gap-03">
             <span
               class="avatar"
               :style="{

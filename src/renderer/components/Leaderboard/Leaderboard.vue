@@ -2,7 +2,7 @@
   <div class="container">
     <div class="flex items-center justify-center gap-05 mb-05">
       <IconCup />
-      <h1>LEADERBOARD</h1>
+      <h1 class="my-1">LEADERBOARD</h1>
       <IconCup />
     </div>
 
@@ -15,14 +15,13 @@
 
     <div>
       <a
-        :class="[
-          'my-2',
+        :class="
           clearStats.state === 'confirm'
             ? 'warning'
             : clearStats.state === 'success'
               ? 'primary'
               : 'danger'
-        ]"
+        "
         @click="handleClearStatsClick(currentTab)"
       >
         {{ clearStats.text }}
@@ -113,9 +112,7 @@ const handleClearStatsClick = async (sinceTime: StatisticsInterval) => {
   text-align: center;
   padding: 0.5rem 1rem;
 }
-h1 {
-  font-weight: 400;
-}
+
 a:hover {
   font-weight: bold;
 }

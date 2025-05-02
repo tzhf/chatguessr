@@ -121,6 +121,10 @@ export const chatguessrApi = {
     return ipcRenderer.invoke('read-audio-file-as-buffer', pathArg)
   },
 
+  getFonts(): Promise<string[]> {
+    return ipcRenderer.invoke('get-fonts')
+  },
+
   reconnect(): void {
     ipcRenderer.send('reconnect')
   },

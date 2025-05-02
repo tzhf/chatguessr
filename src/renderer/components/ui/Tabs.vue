@@ -33,12 +33,12 @@ defineEmits(['change'])
   font-size: 12px;
   letter-spacing: 1px;
   color: #fff;
-  transition: 0.3s;
+  transition: 0.2s;
   cursor: pointer;
 }
 
 .tab button {
-  background-color: rgb(34, 34, 34);
+  background-color: rgb(34, 34, 34, 0.7);
 }
 .tab button:not(:last-child) {
   border-right: solid 1px rgb(129 129 129);

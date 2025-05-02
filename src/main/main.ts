@@ -3,6 +3,7 @@ import { join, basename, dirname } from 'path'
 import { app, BrowserWindow, ipcMain, protocol, dialog } from 'electron'
 import started from 'electron-squirrel-startup'
 import { updateElectronApp } from 'update-electron-app'
+import fontList from 'font-list'
 
 import createMainWindow from './MainWindow'
 import createAuthWindow from '../auth/AuthWindow'
@@ -89,6 +90,11 @@ app.whenReady().then(async () => {
     })
   })
 
+  ipcMain.handle('get-fonts', async () => {
+    const fonts = await fontList.getFonts()
+    return fonts
+  })
+
   ipcMain.handle('get-current-version', () => version)
 
   supabase.auth.onAuthStateChange((event, session) => {
@@ -100,6 +106,14 @@ app.whenReady().then(async () => {
   })
 
   await authenticateWithTwitch(gameHandler, mainWindow)
+
+  app.on('activate', () => {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows o
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createMainWindow()
+    }
+  })
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -108,14 +122,6 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
-  }
-})
-
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows o
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createMainWindow()
   }
 })
 

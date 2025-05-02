@@ -1,6 +1,6 @@
 <template>
   <div class="content mb-03">
-    <div class="flex-1 relative">
+    <div class="flex-1 relative mb-03">
       <h2>VICTORIES</h2>
       <div class="table-container">
         <Table :stats="stats.victories" text="Victories" />
@@ -30,7 +30,7 @@ defineProps<{ stats: Statistics }>()
 
 <style scoped>
 h2 {
-  margin: 0.3rem 0;
+  margin: 0;
 }
 .content {
   display: flex;

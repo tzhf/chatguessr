@@ -6,7 +6,7 @@
     v-model:h="position.h"
     :draggable="isDraggable"
     :min-w="360"
-    :min-h="190"
+    :min-h="176"
     :parent="true"
     class="scoreboard"
     class-name-handle="scoreboard_handle"
@@ -45,13 +45,13 @@
           </button>
         </div>
       </div>
-      <div class="scoreboard-title">{{ title }} ({{ rows.length }})</div>
-      <div style="width: 65px">
+      <span class="scoreboard-title">{{ title }} ({{ rows.length }})</span>
+      <span style="width: 55px">
         <label :class="['switch-container', { hidden: gameState !== 'in-round' }]">
           <input type="checkbox" :checked="switchState" @input="(e) => toggleGuesses(e)" />
           <div class="switch"></div>
         </label>
-      </div>
+      </span>
     </div>
     <div :class="['scoreboard-hint', { hidden: !isMultiGuess || gameState !== 'in-round' }]">
       Guess change allowed
@@ -88,7 +88,7 @@
                 <div
                   v-if="col.value === 'player'"
                   :class="[
-                    'flex items-center gap-02',
+                    'flex items-center gap-03',
                     { 'justify-center': activeCols.length <= 2 }
                   ]"
                 >
@@ -183,7 +183,7 @@ type Column = {
   sortable: boolean
 }
 const columns: Column[] = [
-  { name: '#', value: 'index', width: '25px', sortable: true },
+  { name: '#', value: 'index', width: '28px', sortable: true },
   { name: 'Player', value: 'player', width: '100%', sortable: false },
   { name: 'Streak', value: 'streak', width: '48px', sortable: true },
   { name: 'Distance', value: 'distance', width: '80px', sortable: true },
@@ -440,7 +440,6 @@ defineExpose({
 .scoreboard {
   font-family: 'Montserrat', sans-serif;
   text-align: center;
-  padding: 2px;
   color: #fff;
   font-size: 13px;
   background-color: var(--bg-dark-transparent);
@@ -455,15 +454,16 @@ defineExpose({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 3px 0 3px;
+  padding: 12px 8px 0 8px;
 }
 .scoreboard-settings {
-  width: 70px;
+  width: 68px;
   display: flex;
-  gap: 0.2rem;
+  gap: 3px;
 }
 
 .scoreboard-title {
+  font-weight: 700;
   font-size: 16px;
 }
 
@@ -514,7 +514,7 @@ defineExpose({
   display: flex;
   gap: 0.19rem;
   margin-top: -7px;
-  left: 75px;
+  left: 78px;
   padding: 0.2rem;
   font-size: 12px;
   background-color: #000;
@@ -543,18 +543,18 @@ defineExpose({
   background-position: right center;
 }
 .btn.active:not([disabled]) {
-  background-image: linear-gradient(to right, #1cd997 0%, #33b09b 51%, #1cd997 100%);
+  background-image: linear-gradient(to right, #59f3b3 0%, #33b09b 51%, #59f3b3 100%);
 }
 
 input:checked + .switch {
-  background-color: #1cd997;
+  background-color: #59f3b3;
 }
 input:checked + .switch:before {
   transform: translateX(11px);
 }
 
 .table-container {
-  height: calc(100% - 66px);
+  height: calc(100% - 55px);
   overflow: auto;
 }
 

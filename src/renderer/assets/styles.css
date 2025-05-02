@@ -86,7 +86,7 @@ hr {
   font-weight: 700;
   text-align: center;
   color: #ffffff;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   outline: 0;
   cursor: pointer;
@@ -94,7 +94,7 @@ hr {
 
 .form__group input:hover,
 .form__group select:hover {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .form__group input[type='color'] {
@@ -196,12 +196,12 @@ textarea {
   font-weight: 700;
   padding: 0.5rem;
   color: #ffffff;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 5px;
   outline: 0;
 }
 textarea:hover {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .form__group .btn {

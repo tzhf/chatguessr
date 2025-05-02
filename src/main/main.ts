@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { join, basename, dirname } from 'path'
-import { app, BrowserWindow, ipcMain, protocol, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, protocol, dialog, shell } from 'electron'
 import started from 'electron-squirrel-startup'
 import { updateElectronApp } from 'update-electron-app'
 import fontList from 'font-list'
@@ -93,6 +93,16 @@ app.whenReady().then(async () => {
   ipcMain.handle('get-fonts', async () => {
     const fonts = await fontList.getFonts()
     return fonts
+  })
+
+  ipcMain.handle('open-custom-flags-folder', async () => {
+    const flagsPath = join(appDataPath, 'flags')
+
+    if (!fs.existsSync(flagsPath)) {
+      fs.mkdirSync(flagsPath, { recursive: true })
+    }
+
+    await shell.openPath(flagsPath)
   })
 
   ipcMain.handle('get-current-version', () => version)

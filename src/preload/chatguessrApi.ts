@@ -125,6 +125,10 @@ export const chatguessrApi = {
     return ipcRenderer.invoke('get-fonts')
   },
 
+  openFlagsFolder() {
+    return ipcRenderer.invoke('open-custom-flags-folder')
+  },
+
   reconnect(): void {
     ipcRenderer.send('reconnect')
   },

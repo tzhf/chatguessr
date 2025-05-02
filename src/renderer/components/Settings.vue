@@ -1,10 +1,77 @@
+<script setup lang="ts">
+import { shallowRef, shallowReactive, reactive, watch } from 'vue'
+import { useClipboard } from '@vueuse/core'
+import Tabs from './ui/Tabs.vue'
+import IconTwitch from '@/assets/icons/twitch.svg'
+
+const { chatguessrApi } = window
+const { copy, copied } = useClipboard()
+
+const { socketConnectionState, twitchConnectionState, setShowRandomPlonkButton } = defineProps<{
+  twitchConnectionState: TwitchConnectionState
+  socketConnectionState: SocketConnectionState
+  setShowRandomPlonkButton: (showButton: boolean) => void
+}>()
+
+const currentTab = shallowRef(
+  twitchConnectionState.state === 'disconnected' ? 'twitch-connect' : 'game-settings'
+)
+const tabs = shallowRef([
+  { name: 'game-settings', value: 'Game Settings' },
+  { name: 'chat-commands', value: 'Chat Commands & Notifications' },
+  { name: 'twitch-connect', value: 'Twitch Connect' },
+  { name: 'ban-list', value: 'Ban List' }
+])
+
+const settings = reactive<Settings>(await chatguessrApi.getSettings())
+watch(settings, () => {
+  chatguessrApi.saveSettings(JSON.parse(JSON.stringify(settings)))
+})
+
+const newChannelName = shallowRef(settings.channelName)
+const onChannelNameUpdate = () => {
+  settings.channelName = newChannelName.value
+  chatguessrApi.reconnect()
+}
+
+const cgLink = shallowRef(
+  twitchConnectionState.state === 'connected'
+    ? `chatguessr.com/map/${twitchConnectionState.botUsername}`
+    : ''
+)
+
+const bannedUsers = shallowReactive<{ username: string }[]>(await chatguessrApi.getBannedUsers())
+const newBannedUser = shallowRef('')
+const addBannedUser = () => {
+  if (!newBannedUser.value) return
+  bannedUsers.push({ username: newBannedUser.value })
+  chatguessrApi.addBannedUser(newBannedUser.value)
+  newBannedUser.value = ''
+}
+
+const removeBannedUser = (index: number, user: { username: string }) => {
+  chatguessrApi.deleteBannedUser(user.username)
+  bannedUsers.splice(index, 1)
+}
+
+const openFlagsFolder = async () => {
+  try {
+    await chatguessrApi.openFlagsFolder()
+  } catch (err) {
+    console.error('Failed to open folder:', err)
+  }
+}
+
+const currentVerion = shallowRef(await chatguessrApi.getCurrentVersion())
+</script>
+
 <template>
-  <div class="container">
+  <div class="wrapper">
     <Tabs :tabs :current-tab @change="(tab) => (currentTab = tab)" />
 
     <div v-show="currentTab === 'game-settings'" class="content">
       <h2>Game Settings</h2>
-      <div class="ml-05">
+      <div class="container">
         <div class="form__group">
           <label
             data-tip="Players can change their guess. Streaks, scores & distances won't be displayed on the scoreboard"
@@ -56,11 +123,27 @@
           />
         </div>
       </div>
+
+      <hr />
+
+      <h2>Custom flags</h2>
+      <div class="container">
+        <div class="flex items-center justify-between">
+          <p>
+            Place your custom flags in this folder.<br />
+            Rename each image to match the desired Twitch command.<br />
+            <small style="color: lightgray">
+              Supported formats (.svg, .png, .jpg, .jpeg, .webp, .gif, .apng)
+            </small>
+          </p>
+          <button class="btn bg-primary" @click="openFlagsFolder">Custom flags folder</button>
+        </div>
+      </div>
     </div>
 
     <div v-show="currentTab === 'chat-commands'" class="content">
-      <h2>Chat commands <small style="color: darkgray">(leave empty to disable)</small></h2>
-      <div class="ml-05">
+      <h2>Chat commands <small style="color: lightgray">(leave empty to disable)</small></h2>
+      <div class="container">
         <div class="grid-col">
           <div>
             <label class="form__group">
@@ -168,7 +251,7 @@
       </div>
       <hr />
       <h2>Chat notifications</h2>
-      <div class="ml-05">
+      <div class="container">
         <div class="form__group">
           <label>
             <input v-model="settings.notifications.seedStarted.enabled" type="checkbox" />
@@ -369,7 +452,7 @@
         </div>
       </div>
       <h2>Status :</h2>
-      <div class="ml-05">
+      <div class="container">
         <div class="form__group">
           Twitch :<span :class="[twitchConnectionState.state]">{{
             twitchConnectionState.state
@@ -435,70 +518,10 @@
     </div>
 
     <div class="footer">
-      <hr />
       <small>ChatGuessr version {{ currentVerion }}</small>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { shallowRef, shallowReactive, reactive, watch } from 'vue'
-import { useClipboard } from '@vueuse/core'
-import Tabs from './ui/Tabs.vue'
-import IconTwitch from '@/assets/icons/twitch.svg'
-
-const { chatguessrApi } = window
-const { copy, copied } = useClipboard()
-
-const { socketConnectionState, twitchConnectionState, setShowRandomPlonkButton } = defineProps<{
-  twitchConnectionState: TwitchConnectionState
-  socketConnectionState: SocketConnectionState
-  setShowRandomPlonkButton: (showButton: boolean) => void
-}>()
-
-const currentTab = shallowRef(
-  twitchConnectionState.state === 'disconnected' ? 'twitch-connect' : 'game-settings'
-)
-const tabs = shallowRef([
-  { name: 'game-settings', value: 'Game Settings' },
-  { name: 'chat-commands', value: 'Chat Commands & Notifications' },
-  { name: 'twitch-connect', value: 'Twitch Connect' },
-  { name: 'ban-list', value: 'Ban List' }
-])
-
-const settings = reactive<Settings>(await chatguessrApi.getSettings())
-watch(settings, () => {
-  chatguessrApi.saveSettings(JSON.parse(JSON.stringify(settings)))
-})
-
-const newChannelName = shallowRef(settings.channelName)
-const onChannelNameUpdate = () => {
-  settings.channelName = newChannelName.value
-  chatguessrApi.reconnect()
-}
-
-const cgLink = shallowRef(
-  twitchConnectionState.state === 'connected'
-    ? `chatguessr.com/map/${twitchConnectionState.botUsername}`
-    : ''
-)
-
-const bannedUsers = shallowReactive<{ username: string }[]>(await chatguessrApi.getBannedUsers())
-const newBannedUser = shallowRef('')
-const addBannedUser = () => {
-  if (!newBannedUser.value) return
-  bannedUsers.push({ username: newBannedUser.value })
-  chatguessrApi.addBannedUser(newBannedUser.value)
-  newBannedUser.value = ''
-}
-
-const removeBannedUser = (index: number, user: { username: string }) => {
-  chatguessrApi.deleteBannedUser(user.username)
-  bannedUsers.splice(index, 1)
-}
-
-const currentVerion = shallowRef(await chatguessrApi.getCurrentVersion())
-</script>
 
 <style scoped>
 textarea {
@@ -508,13 +531,17 @@ h2 small {
   font-size: 0.8rem;
 }
 
-.container {
+.wrapper {
   width: 870px;
   min-height: 700px;
 }
 
 .content {
   padding: 0.5rem 1rem;
+}
+
+.container {
+  margin: 0 0.5rem 1rem 0.5rem;
 }
 
 .grid-col {

@@ -58,7 +58,6 @@ export const chatguessrApi = {
   onGameStarted(
     callback: (
       isMultiGuess: boolean,
-      showRandomPlonkButton: boolean,
       restoredGuesses: RoundResult[] | Player[],
       location: Location_
     ) => void

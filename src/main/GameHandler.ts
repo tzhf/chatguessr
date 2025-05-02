@@ -137,7 +137,6 @@ export default class GameHandler {
             this.#win.webContents.send(
               'game-started',
               this.#game.isMultiGuess,
-              settings.showStreamerRandomPlonkButton,
               restoredGuesses,
               this.#game.getLocation()
             )

@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { shallowRef, shallowReactive, reactive, watch } from 'vue'
+import { shallowRef, shallowReactive } from 'vue'
+import { useSettings } from '@/useSettings'
 import { useClipboard } from '@vueuse/core'
+
 import Tabs from './ui/Tabs.vue'
 import IconTwitch from '@/assets/icons/twitch.svg'
 
 const { chatguessrApi } = window
+
+const { settings } = useSettings()
 const { copy, copied } = useClipboard()
 
-const { socketConnectionState, twitchConnectionState, setShowRandomPlonkButton } = defineProps<{
+const { socketConnectionState, twitchConnectionState } = defineProps<{
   twitchConnectionState: TwitchConnectionState
   socketConnectionState: SocketConnectionState
-  setShowRandomPlonkButton: (showButton: boolean) => void
 }>()
 
 const currentTab = shallowRef(
@@ -22,11 +25,6 @@ const tabs = shallowRef([
   { name: 'twitch-connect', value: 'Twitch Connect' },
   { name: 'ban-list', value: 'Ban List' }
 ])
-
-const settings = reactive<Settings>(await chatguessrApi.getSettings())
-watch(settings, () => {
-  chatguessrApi.saveSettings(JSON.parse(JSON.stringify(settings)))
-})
 
 const newChannelName = shallowRef(settings.channelName)
 const onChannelNameUpdate = () => {
@@ -92,18 +90,7 @@ const currentVerion = shallowRef(await chatguessrApi.getCurrentVersion())
           <label
             data-tip="The button is shown on the right menu during games. Clicking the button will end the round and make a random guess for the streamer"
           >
-            <input
-              v-model="settings.showStreamerRandomPlonkButton"
-              type="checkbox"
-              @change="
-                (e) => {
-                  const target = e.target as HTMLInputElement | null
-                  if (target) {
-                    setShowRandomPlonkButton(target.checked)
-                  }
-                }
-              "
-            />
+            <input v-model="settings.showStreamerRandomPlonkButton" type="checkbox" />
             Show streamer random plonk button during rounds
           </label>
         </div>

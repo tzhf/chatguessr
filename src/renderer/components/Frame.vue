@@ -174,7 +174,7 @@ watch(
   { immediate: true }
 )
 
-onBeforeUnmount(
+const unsubIpcRenderers = [
   chatguessrApi.onGameStarted((_isMultiGuess, restoredGuesses, location) => {
     isMultiGuess.value = _isMultiGuess
     gameState.value = 'in-round'
@@ -194,18 +194,14 @@ onBeforeUnmount(
         scoreboard.value!.restoreGuesses(restoredGuesses as RoundResult[])
       }
     }
-  })
-)
+  }),
 
-onBeforeUnmount(
   chatguessrApi.onStartRound(() => {
     gameState.value = 'in-round'
     rendererApi.clearMarkers()
     scoreboard.value!.onStartRound()
-  })
-)
+  }),
 
-onBeforeUnmount(
   chatguessrApi.onRefreshRound((location) => {
     // this condition prevents gameState to switch to 'in-round' if 'onRefreshRound' is triggered (happens sometimes) on round results screen
     // this is because of "did-frame-finish-load" based logic, ideally we would want something else
@@ -214,53 +210,47 @@ onBeforeUnmount(
     if (satelliteMode.value.enabled) {
       rendererApi.showSatelliteMap(location)
     }
-  })
-)
+  }),
 
-onBeforeUnmount(
   chatguessrApi.onGameQuit(() => {
     gameState.value = 'none'
     rendererApi.clearMarkers()
-  })
-)
+  }),
 
-onBeforeUnmount(
   chatguessrApi.onReceiveGuess((guess) => {
     scoreboard.value!.renderGuess(guess)
-  })
-)
+  }),
 
-onBeforeUnmount(
   chatguessrApi.onReceiveMultiGuesses((guess) => {
     scoreboard.value!.renderMultiGuess(guess)
-  })
-)
+  }),
 
-onBeforeUnmount(
   chatguessrApi.onShowRoundResults((round, location, roundResults, _guessMarkersLimit) => {
     gameState.value = 'round-results'
     guessMarkersLimit.value = _guessMarkersLimit
 
     rendererApi.drawRoundResults(location, roundResults, _guessMarkersLimit)
     scoreboard.value!.showRoundResults(round, roundResults)
-  })
-)
+  }),
 
-onBeforeUnmount(
   chatguessrApi.onShowGameResults((locations, gameResults) => {
     gameState.value = 'game-results'
     gameResultLocations.value = locations
 
     rendererApi.drawPlayerResults(locations, gameResults[0])
     scoreboard.value!.showGameResults(gameResults)
-  })
-)
+  }),
 
-onBeforeUnmount(
   chatguessrApi.onGuessesOpenChanged((open) => {
     scoreboard.value!.setSwitchState(open)
   })
-)
+]
+
+// actually onBeforeUnmount may never be called during normal runtime, because the component is never actually unmounted,
+// only destroyed on hard refresh or full app reload
+onBeforeUnmount(() => {
+  unsubIpcRenderers.forEach((unsub) => unsub())
+})
 
 function onRoundResultRowClick(index: number, position: LatLng) {
   if (guessMarkersLimit.value && index <= guessMarkersLimit.value) {
@@ -367,6 +357,12 @@ function useSocketConnectionState() {
   return conn
 }
 </script>
+
+<style>
+[data-qa='perform-guess'] {
+  min-width: 0;
+}
+</style>
 
 <style scoped>
 [hidden] {

@@ -5,7 +5,6 @@ export const defaultSettings = {
   isMultiGuess: false,
   excludeBroadcasterData: false,
   guessMarkersLimit: 50,
-  showStreamerRandomPlonkButton: true,
   commands: {
     getChatguessrMap: {
       command: '!cg',

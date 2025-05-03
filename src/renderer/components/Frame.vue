@@ -56,20 +56,20 @@
 
     <button
       class="cg-button"
-      title="Randomplonk for Streamer"
-      :hidden="gameState !== 'in-round' || !settings.showStreamerRandomPlonkButton"
-      @click="onStreamerRandomplonk"
-    >
-      <IconDice />
-    </button>
-
-    <button
-      class="cg-button"
       title="Center view"
       :hidden="!satelliteMode.value.enabled || gameState !== 'in-round'"
       @click="onClickCenterSatelliteView"
     >
       <IconStartFlag />
+    </button>
+
+    <button
+      ref="streamerButton"
+      class="cg-button"
+      title="Randomplonk"
+      @click="onStreamerRandomplonk"
+    >
+      <IconDice />
     </button>
   </div>
 
@@ -93,7 +93,6 @@
 <script lang="ts" setup>
 import { shallowRef, reactive, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { useStyleTag } from '@vueuse/core'
-import { useSettings } from '@/useSettings'
 import { getLocalStorage, setLocalStorage } from '@/useLocalStorage'
 
 import { rendererApi } from '../rendererApi'
@@ -116,8 +115,6 @@ import IconExtenssrFilters from '@/assets/icons/extenssr_filters.svg'
 import IconDice from '@/assets/icons/dice.svg'
 
 const { chatguessrApi } = window
-
-const { settings } = useSettings()
 
 const scoreboard = shallowRef<InstanceType<typeof Scoreboard> | null>(null)
 const settingsVisible = shallowRef(false)
@@ -206,9 +203,15 @@ const unsubIpcRenderers = [
     // this condition prevents gameState to switch to 'in-round' if 'onRefreshRound' is triggered (happens sometimes) on round results screen
     // this is because of "did-frame-finish-load" based logic, ideally we would want something else
     if (gameState.value !== 'round-results') gameState.value = 'in-round'
+
     currentLocation.value = location
+
     if (satelliteMode.value.enabled) {
       rendererApi.showSatelliteMap(location)
+    }
+
+    if (gameState.value === 'in-round') {
+      appendRandomPlonkButton()
     }
   }),
 
@@ -265,6 +268,23 @@ function onGameResultRowClick(row: GameResultDisplay) {
 
 function onClickCenterSatelliteView() {
   if (currentLocation.value) rendererApi.centerSatelliteView(currentLocation.value)
+}
+
+// Append the streamer random plonk button next to the guess button
+const streamerButton = shallowRef<HTMLElement | null>(null)
+function appendRandomPlonkButton() {
+  const guessButtonElem: HTMLElement | null = document.querySelector(
+    '[class^="guess-map_guessButton"]'
+  )
+  if (guessButtonElem && streamerButton.value) {
+    // Prevent duplicates
+    if (!guessButtonElem.contains(streamerButton.value)) {
+      guessButtonElem.style.display = 'flex'
+      guessButtonElem.style.alignItems = 'center'
+      guessButtonElem.style.gap = '8px'
+      guessButtonElem.appendChild(streamerButton.value)
+    }
+  }
 }
 
 async function onStreamerRandomplonk() {

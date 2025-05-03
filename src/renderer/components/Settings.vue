@@ -88,15 +88,6 @@ const currentVerion = shallowRef(await chatguessrApi.getCurrentVersion())
 
         <div class="form__group">
           <label
-            data-tip="The button is shown on the right menu during games. Clicking the button will end the round and make a random guess for the streamer"
-          >
-            <input v-model="settings.showStreamerRandomPlonkButton" type="checkbox" />
-            Show streamer random plonk button during rounds
-          </label>
-        </div>
-
-        <div class="form__group">
-          <label
             data-tip="Drawing too much guess markers on the map may affect performance (default: 50)"
           >
             Guess markers limit ({{ settings.guessMarkersLimit }})

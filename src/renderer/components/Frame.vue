@@ -67,6 +67,7 @@
       ref="streamerButton"
       class="cg-button"
       title="Randomplonk"
+      :hidden="gameState !== 'in-round'"
       @click="onStreamerRandomplonk"
     >
       <IconDice />

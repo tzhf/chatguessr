@@ -57,7 +57,7 @@ export const defaultSettings = {
     },
     gameFinished: {
       enabled: true,
-      message: '🌎 Game finished. Congrats <username> <flag> ! 🏆 Game Summary: <link>'
+      message: '🌎 Game finished. Congrats 🏆 <username> <flag> 🏆 Game Summary: <link>'
     },
     hasGuessed: {
       enabled: true,

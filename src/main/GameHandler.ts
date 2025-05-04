@@ -21,17 +21,11 @@ const SOCKET_SERVER_URL =
 
 export default class GameHandler {
   #db: Database
-
   #win: Electron.BrowserWindow
-
   #session: Session | undefined
-
   #backend: TwitchBackend | undefined
-
   #socket: Socket | undefined
-
   #game: Game
-
   #requestAuthentication: () => Promise<void>
 
   constructor(
@@ -45,33 +39,157 @@ export default class GameHandler {
     this.#socket = undefined
     this.#game = new Game(db, settings)
     this.#requestAuthentication = options.requestAuthentication
-    this.init()
+    this.#init()
   }
 
-  openGuesses() {
+  #init() {
+    this.#setupIPCEvents()
+    this.#setupWebContentsEvents()
+  }
+
+  #setupIPCEvents() {
+    ipcMain.on('reconnect', () => this.#requestAuthentication())
+
+    ipcMain.on('next-round-click', () => this.#nextRound())
+    ipcMain.on('open-guesses', () => this.#openGuesses())
+    ipcMain.on('close-guesses', () => {
+      if (this.#game.guessesOpen) this.#closeGuesses()
+    })
+    ipcMain.on('return-to-map-page', () => this.#returnToMapPage())
+
+    ipcMain.handle('get-settings', () => settings)
+    ipcMain.on('save-settings', (_event, settings_: Settings) => saveSettings(settings_))
+
+    ipcMain.handle('get-global-stats', async (_event, sinceTime: StatisticsInterval) => {
+      const date = await parseUserDate(sinceTime)
+      return this.#db.getGlobalStats(date.timeStamp, settings.excludeBroadcasterData)
+    })
+    ipcMain.handle('clear-global-stats', async (_event, sinceTime: StatisticsInterval) => {
+      const date = await parseUserDate(sinceTime)
+      try {
+        await this.#db.deleteGlobalStats(date.timeStamp)
+        return true
+      } catch (e) {
+        console.error(e)
+        return false
+      }
+    })
+
+    ipcMain.handle('get-banned-users', () => this.#db.getBannedUsers())
+    ipcMain.on('add-banned-user', (_event, username: string) => this.#db.addBannedUser(username))
+    ipcMain.on('delete-banned-user', (_event, username: string) =>
+      this.#db.deleteBannedUser(username)
+    )
+
+    ipcMain.handle('get-streamer-random-plonk-lat-lng', () => {
+      this.#game.streamerDidRandomPlonk = true
+      return getRandomCoordsInLand(this.#game.seed!.bounds)
+    })
+  }
+
+  // Browser Listening
+  #setupWebContentsEvents() {
+    this.#win.webContents.on('did-navigate-in-page', (_event, url) => {
+      if (isGameURL(url)) {
+        // TODO(reanna) warn about the thing not being connected
+        if (!this.#backend) return
+
+        this.#game
+          .start(url, settings.isMultiGuess)
+          .then(() => {
+            const restoredGuesses = this.#game.isMultiGuess
+              ? this.#game.getRoundParticipants()
+              : this.#game.getRoundResults()
+            this.#win.webContents.send(
+              'game-started',
+              this.#game.isMultiGuess,
+              restoredGuesses,
+              this.#game.getLocation()
+            )
+
+            if (restoredGuesses.length > 0) {
+              this.#backend?.sendMessage(`🌎 Round ${this.#game.round} has resumed`, {
+                system: true
+              })
+            } else if (this.#game.round === 1) {
+              this.#sendNotification('seedStarted', {
+                mapName: this.#game.mapName
+              })
+            } else {
+              this.#sendNotification('roundStarted')
+            }
+
+            this.#openGuesses()
+          })
+          .catch((err) => {
+            console.error(err)
+          })
+      } else {
+        this.#game.outGame()
+        this.#win.webContents.send('game-quitted')
+      }
+    })
+
+    this.#win.webContents.on('did-frame-finish-load', () => {
+      if (!this.#game.isInGame) return
+
+      this.#win.webContents.executeJavaScript(`
+              window.nextRoundBtn = document.querySelector('[data-qa="close-round-result"]');
+              window.playAgainBtn = document.querySelector('[data-qa="play-again-button"]');
+
+              if (window.nextRoundBtn) {
+                  nextRoundBtn.addEventListener("click", () => {
+                      nextRoundBtn.setAttribute('disabled', 'disabled');
+                      chatguessrApi.startNextRound();
+                  });
+              }
+
+              if (window.playAgainBtn) {
+                  playAgainBtn.addEventListener("click", () => {
+                      playAgainBtn.setAttribute('disabled', 'disabled');
+                      chatguessrApi.returnToMapPage();
+                  });
+              }
+          `)
+
+      if (this.#game.isFinished) return
+
+      this.#win.webContents.send('refreshed-in-game', this.#game.getLocation())
+      // Checks and update seed when the this.game has refreshed
+      // update the current location if it was skipped
+      // if the streamer has guessed returns scores
+      this.#game.refreshSeed().then((roundResults) => {
+        if (roundResults && roundResults.location) {
+          this.#showRoundResults(roundResults.location, roundResults.roundResults)
+        }
+      })
+    })
+  }
+
+  #openGuesses() {
     this.#game.openGuesses()
     this.#win.webContents.send('switch-on')
-    this.sendNotification('guessesAreOpen')
+    this.#sendNotification('guessesAreOpen')
   }
 
-  closeGuesses() {
+  #closeGuesses() {
     this.#game.closeGuesses()
     this.#win.webContents.send('switch-off')
-    this.sendNotification('guessesAreClosed')
+    this.#sendNotification('guessesAreClosed')
   }
 
-  nextRound() {
+  #nextRound() {
     if (this.#game.isFinished) {
       this.#game.finishGame()
       this.#showGameResults()
     } else {
       this.#win.webContents.send('next-round', this.#game.isMultiGuess, this.#game.getLocation())
-      this.sendNotification('roundStarted', { round: this.#game.round })
-      this.openGuesses()
+      this.#sendNotification('roundStarted', { round: this.#game.round })
+      this.#openGuesses()
     }
   }
 
-  returnToMapPage() {
+  #returnToMapPage() {
     const mapUrl = this.#game.seed?.map
     this.#win.loadURL(`https://www.geoguessr.com/maps/${mapUrl}`)
   }
@@ -86,7 +204,7 @@ export default class GameHandler {
       roundResults,
       settings.guessMarkersLimit
     )
-    this.sendNotification('roundFinished', {
+    this.#sendNotification('roundFinished', {
       round: round,
       username: roundResults[0].player.username,
       flag: roundResults[0].player.flag
@@ -114,148 +232,10 @@ export default class GameHandler {
     } catch (err) {
       console.error('could not upload summary', err)
     }
-    this.sendNotification('gameFinished', {
+    this.#sendNotification('gameFinished', {
       username: gameResults[0].player.username,
       flag: gameResults[0].player.flag,
       link: link
-    })
-  }
-
-  init() {
-    // Browser Listening
-    this.#win.webContents.on('did-navigate-in-page', (_event, url) => {
-      if (isGameURL(url)) {
-        // TODO(reanna) warn about the thing not being connected
-        if (!this.#backend) return
-
-        this.#game
-          .start(url, settings.isMultiGuess)
-          .then(() => {
-            const restoredGuesses = this.#game.isMultiGuess
-              ? this.#game.getRoundParticipants()
-              : this.#game.getRoundResults()
-            this.#win.webContents.send(
-              'game-started',
-              this.#game.isMultiGuess,
-              restoredGuesses,
-              this.#game.getLocation()
-            )
-
-            if (restoredGuesses.length > 0) {
-              this.#backend?.sendMessage(`🌎 Round ${this.#game.round} has resumed`, {
-                system: true
-              })
-            } else if (this.#game.round === 1) {
-              this.sendNotification('seedStarted', { mapName: this.#game.mapName })
-            } else {
-              this.sendNotification('roundStarted')
-            }
-
-            this.openGuesses()
-          })
-          .catch((err) => {
-            console.error(err)
-          })
-      } else {
-        this.#game.outGame()
-        this.#win.webContents.send('game-quitted')
-      }
-    })
-
-    this.#win.webContents.on('did-frame-finish-load', () => {
-      if (!this.#game.isInGame) return
-
-      this.#win.webContents.executeJavaScript(`
-          window.nextRoundBtn = document.querySelector('[data-qa="close-round-result"]');
-          window.playAgainBtn = document.querySelector('[data-qa="play-again-button"]');
-
-          if (window.nextRoundBtn) {
-              nextRoundBtn.addEventListener("click", () => {
-                  nextRoundBtn.setAttribute('disabled', 'disabled');
-                  chatguessrApi.startNextRound();
-              });
-          }
-
-          if (window.playAgainBtn) {
-              playAgainBtn.addEventListener("click", () => {
-                  playAgainBtn.setAttribute('disabled', 'disabled');
-                  chatguessrApi.returnToMapPage();
-              });
-          }
-      `)
-
-      if (this.#game.isFinished) return
-
-      this.#win.webContents.send('refreshed-in-game', this.#game.getLocation())
-      // Checks and update seed when the this.game has refreshed
-      // update the current location if it was skipped
-      // if the streamer has guessed returns scores
-      this.#game.refreshSeed().then((roundResults) => {
-        if (roundResults && roundResults.location) {
-          this.#showRoundResults(roundResults.location, roundResults.roundResults)
-        }
-      })
-    })
-
-    ipcMain.on('next-round-click', () => {
-      this.nextRound()
-    })
-
-    ipcMain.on('return-to-map-page', () => {
-      this.returnToMapPage()
-    })
-
-    ipcMain.on('open-guesses', () => {
-      this.openGuesses()
-    })
-
-    ipcMain.on('close-guesses', () => {
-      if (this.#game.guessesOpen) this.closeGuesses()
-    })
-
-    ipcMain.handle('get-settings', () => {
-      return settings
-    })
-
-    ipcMain.on('save-settings', (_event, settings_: Settings) => {
-      saveSettings(settings_)
-    })
-
-    ipcMain.on('reconnect', () => {
-      this.#requestAuthentication()
-    })
-
-    ipcMain.handle('get-global-stats', async (_event, sinceTime: StatisticsInterval) => {
-      const date = await parseUserDate(sinceTime)
-      return this.#db.getGlobalStats(date.timeStamp, settings.excludeBroadcasterData)
-    })
-
-    ipcMain.handle('clear-global-stats', async (_event, sinceTime: StatisticsInterval) => {
-      const date = await parseUserDate(sinceTime)
-      try {
-        await this.#db.deleteGlobalStats(date.timeStamp)
-        return true
-      } catch (e) {
-        console.error(e)
-        return false
-      }
-    })
-
-    ipcMain.handle('get-banned-users', () => {
-      return this.#db.getBannedUsers()
-    })
-
-    ipcMain.on('add-banned-user', (_event, username: string) => {
-      this.#db.addBannedUser(username)
-    })
-
-    ipcMain.on('delete-banned-user', (_event, username: string) => {
-      this.#db.deleteBannedUser(username)
-    })
-
-    ipcMain.handle('get-streamer-random-plonk-lat-lng', () => {
-      this.#game.streamerDidRandomPlonk = true
-      return getRandomCoordsInLand(this.#game.seed!.bounds)
     })
   }
 
@@ -392,7 +372,7 @@ export default class GameHandler {
     // Ignore guesses made by the broadcaster with the CG map: prevents seemingly duplicate guesses
     if (userstate.username?.toLowerCase() === settings.channelName.toLowerCase()) return
     // Check if user is banned
-    if (this.isUserBanned(userstate.username!)) return
+    if (this.#isUserBanned(userstate.username!)) return
 
     const location = parseCoordinates(message.replace(/^!g\s+/, ''))
     if (!location) return
@@ -402,19 +382,19 @@ export default class GameHandler {
 
       if (!this.#game.isMultiGuess) {
         this.#win.webContents.send('render-guess', guess)
-        this.sendNotification('hasGuessed', {
+        this.#sendNotification('hasGuessed', {
           username: guess.player.username,
           flag: guess.player.flag
         })
       } else {
         this.#win.webContents.send('render-multiguess', guess)
         if (!guess.modified) {
-          this.sendNotification('hasGuessed', {
+          this.#sendNotification('hasGuessed', {
             username: guess.player.username,
             flag: guess.player.flag
           })
         } else {
-          this.sendNotification('guessChanged', {
+          this.#sendNotification('guessChanged', {
             username: guess.player.username,
             flag: guess.player.flag
           })
@@ -422,12 +402,12 @@ export default class GameHandler {
       }
     } catch (err: any) {
       if (err.code === 'alreadyGuessed') {
-        this.sendNotification('alreadyGuessed', {
+        this.#sendNotification('alreadyGuessed', {
           username: err.player.username,
           flag: err.player.flag
         })
       } else if (err.code === 'submittedPreviousGuess') {
-        this.sendNotification('submittedPreviousGuess', {
+        this.#sendNotification('submittedPreviousGuess', {
           username: err.player.username,
           flag: err.player.flag
         })
@@ -696,7 +676,7 @@ export default class GameHandler {
     }
   }
 
-  async sendNotification(
+  async #sendNotification(
     type: keyof Settings['notifications'],
     options?: {
       username?: string
@@ -727,7 +707,7 @@ export default class GameHandler {
     await this.#backend?.sendMessage(message, { system: true })
   }
 
-  isUserBanned(username: string) {
+  #isUserBanned(username: string) {
     const bannedUsers = this.#db.getBannedUsers()
     const isBanned = bannedUsers.some(
       (user) => user.username.toLowerCase() === username.toLowerCase()

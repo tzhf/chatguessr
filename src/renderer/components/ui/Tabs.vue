@@ -38,7 +38,7 @@ defineEmits(['change'])
 }
 
 .tab button {
-  background-color: rgb(34, 34, 34, 0.7);
+  background-color: var(--bg-dark-transparent);
 }
 .tab button:not(:last-child) {
   border-right: solid 1px rgb(129 129 129);

@@ -52,7 +52,7 @@ onClickOutside(target, () => emit('close'))
   font-size: 13px;
   color: white;
   border-radius: 5px;
-  background-color: rgba(51, 51, 51, 0.6);
+  background-color: var(--bg-dark-transparent);
   backdrop-filter: blur(10px);
   border: 1px solid rgb(99, 99, 99);
   box-shadow: 0 2px 8px #000c;

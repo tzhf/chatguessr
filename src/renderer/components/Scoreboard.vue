@@ -668,3 +668,34 @@ th.sortable:hover {
   }
 }
 </style>
+
+<style>
+/* These Scoreboard styles cannot be scoped in so we put em in here  */
+.scoreboard_handle {
+  display: block !important;
+  background: none;
+  border: none;
+}
+.scoreboard_handle-tm,
+.scoreboard_handle-bm {
+  height: 12px;
+  width: 100%;
+  left: 0;
+  margin: 0;
+}
+.scoreboard_handle-ml,
+.scoreboard_handle-mr {
+  width: 12px;
+  height: 100%;
+  top: 0;
+  margin: 0;
+}
+.scoreboard_handle-tl,
+.scoreboard_handle-tr,
+.scoreboard_handle-bl,
+.scoreboard_handle-br {
+  width: 12px;
+  height: 12px;
+  z-index: 99;
+}
+</style>

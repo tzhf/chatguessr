@@ -379,12 +379,6 @@ function useSocketConnectionState() {
 }
 </script>
 
-<style>
-[data-qa='perform-guess'] {
-  min-width: 0;
-}
-</style>
-
 <style scoped>
 [hidden] {
   display: none !important;

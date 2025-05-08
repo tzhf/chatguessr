@@ -46,7 +46,7 @@ h2 {
   right: 0px;
   border-radius: 9px;
   overflow-x: hidden;
-  background-color: rgba(0, 0, 0, 0.15);
+  background-color: var(--bg-dark-transparent);
   border: 1px solid rgb(255, 255, 255, 0.15);
   scrollbar-color: #bbbbbb transparent;
   scrollbar-width: thin;

@@ -4,7 +4,7 @@
   display: none !important;
 }
 
-[class^="header-desktop_desktopSectionLeft__"] > *:not(:first-child) {
+[class^='header-desktop_desktopSectionLeft__'] > *:not(:first-child) {
   display: none;
 }
 
@@ -13,7 +13,7 @@
 }
 
 /* Hide promo and daily challenge from menu  */
-[class^="quick-search_wrapper__"] + * {
+[class^='quick-search_wrapper__'] + * {
   display: none !important;
 }
 
@@ -22,7 +22,6 @@
 [class^='signed-in-start-page_dailyReminderContainer__'] {
   display: none;
 }
-
 
 /* Hides friends list bar */
 [class^='version4_sidebar__'] {
@@ -53,13 +52,18 @@
   width: 150px;
 }
 
+[data-qa='perform-guess'] {
+  min-width: 0;
+}
+
 /* CG Guess Markers InfoWindow */
-[data-qa="correct-location-marker"] {
+[data-qa='correct-location-marker'] {
   position: relative;
   z-index: 999;
 }
+
 /* change opacity of correct-location-marker on hover */
-[data-qa="correct-location-marker"]:hover {
+[data-qa='correct-location-marker']:hover {
   opacity: 0.4;
 }
 

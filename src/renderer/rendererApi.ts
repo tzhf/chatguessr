@@ -44,7 +44,7 @@ async function drawRoundResults(
 
     guessMarkerContent.addEventListener('mouseover', () => {
       infoWindow.setContent(`
-        ${result.player.flag ? `<span class="flag-icon" style="background-image: url(flag:${result.player.flag})"></span>` : ''}
+        ${result.player.flag ? `<span class="flag" style="background-image: url(flag:${result.player.flag})"></span>` : ''}
         <span class="username" style="color:${result.player.color}">${result.player.username}</span><br>
         ${result.score}<br>
         ${parseDistance(result.distance)}
@@ -98,7 +98,7 @@ async function drawPlayerResults(locations: Location_[], result: GameResultDispl
 
     guessMarkerContent.addEventListener('mouseover', () => {
       infoWindow.setContent(`
-				${result.player.flag ? `<span class="flag-icon" style="background-image: url(flag:${result.player.flag})"></span>` : ''}
+				${result.player.flag ? `<span class="flag" style="background-image: url(flag:${result.player.flag})"></span>` : ''}
         <span class="username" style="color:${result.player.color}">${result.player.username}</span><br>
         ${result.scores[index]}<br>
 				${parseDistance(result.distances[index]!)}

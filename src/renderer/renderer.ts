@@ -24,11 +24,13 @@ modsControls.id = 'mods-controls'
 createApp(ModsControls).mount(modsControls)
 
 const appendModsControlsComponent = () => {
-  const targetElement = document.querySelector('[class^="map-block_mapStatsContainer__"]')
+  const targetElement: HTMLElement | null = document.querySelector(
+    '[class^="community-map-block_header__"]'
+  )
   if (targetElement) {
     const wrapperExists = document.getElementById('mods-controls')
     if (!wrapperExists) {
-      targetElement.appendChild(modsControls)
+      targetElement.after(modsControls)
     }
   }
 }

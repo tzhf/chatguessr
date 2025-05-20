@@ -13,8 +13,8 @@
 }
 
 /* Hide promo and daily challenge from menu  */
-[class^='quick-search_wrapper__'] + * {
-  display: none !important;
+[class^='live-players-count_container__'] {
+  display: none;
 }
 
 /* Start page tweaks */

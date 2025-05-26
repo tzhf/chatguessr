@@ -42,8 +42,11 @@ export default async function createAuthWindow(
   if (options.clearStorageData) {
     await win.webContents.session.clearStorageData()
   }
+  const authHtmlPath = isDev
+    ? `file://${path.resolve(__dirname, '../../src/auth/index.html')}`
+    : `file://${path.resolve(__dirname, '../../.vite/build/auth/index.html')}`
 
-  win.loadURL(options.authUrl ?? `file://${path.join(__dirname, `../../src/auth/index.html`)}`)
+  win.loadURL(options.authUrl ?? authHtmlPath)
 
   if (isDev) win.webContents.openDevTools()
 

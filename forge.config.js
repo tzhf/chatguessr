@@ -52,7 +52,7 @@ module.exports = {
         { entry: 'src/preload/preload.ts', config: 'vite.preload.config.mjs', target: 'preload' },
         { entry: 'src/renderer/renderer.ts', config: 'vite.renderer.config.mjs' },
         { entry: 'src/auth/auth_preload.ts', config: 'vite.auth_preload.config.mjs' },
-        { entry: 'src/auth/auth_impl.ts', config: 'vite.auth_impl.config.mjs' }
+        { entry: 'src/auth/index.html', config: 'vite.auth.config.mjs' }
       ],
       renderer: []
     })

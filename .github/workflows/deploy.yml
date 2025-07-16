@@ -20,7 +20,7 @@ jobs:
       matrix:
         # There's an issue with github actions making only arm64 builds,
         # for now the workaround is to build on macos-13 (x86_64 so we get builds for both architectures)
-        os: [windows-latest, macos-13, ubuntu-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
     steps:
       - name: Checkout sources

@@ -1,7 +1,7 @@
 {
   "name": "chatguessr",
   "productName": "ChatGuessr",
-  "version": "3.1.3",
+  "version": "3.1.4",
   "description": "The GeoGuessr Twitch chatbot",
   "repository": "https://github.com/tzhf/chatguessr",
   "homepage": "https://chatguessr.com",

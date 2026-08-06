@@ -1,14 +1,16 @@
 import { defineConfig } from 'vite'
 import path from 'path'
 
+const rootDir = import.meta.dirname
+
 export default defineConfig({
-  root: path.resolve(__dirname, 'src/auth'),
+  root: path.resolve(rootDir, 'src/auth'),
   base: './',
   build: {
-    outDir: path.resolve(__dirname, '.vite/build/auth'),
+    outDir: path.resolve(rootDir, '.vite/build/auth'),
     emptyOutDir: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'src/auth/index.html')
+      input: path.resolve(rootDir, 'src/auth/index.html')
     }
   }
 })

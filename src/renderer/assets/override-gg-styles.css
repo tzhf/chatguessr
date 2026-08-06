@@ -1,7 +1,6 @@
 /* GAME SETTINGS SCREEN */
-[class^='map-mode-select_container__'],
-[class^='map-selector_divider__'] {
-  display: none !important;
+[class^='play-bar_settings__'] > :first-child {
+  display: none;
 }
 
 [class^='header-desktop_desktopSectionLeft__'] > *:not(:first-child) {
@@ -32,8 +31,8 @@
 }
 
 /* Hide results overlay */
-[class^='result-overlay_overlay__'],
-[class^='result-overlay_overlayContent__'],
+[class^='result-overlay-2025_overlay__'],
+[class^='result-overlay-2025_overlayContents__'],
 [class^='result-overlay_overlayXpBar__'],
 [class^='result-layout_adWrapper__'],
 [class^='standard-final-result_challengeWrapper__'] {

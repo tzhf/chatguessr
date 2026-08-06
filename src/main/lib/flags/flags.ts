@@ -74,37 +74,30 @@ export function setCustomFlags(flags: Flag[]) {
   customFlags = flags
 }
 
-export async function findFlagFile(id: string): Promise<Electron.ProtocolResponse> {
-  //try to find the flag in the custom flags directory with extension .svg, .png, .jpg, .jpeg, .webp, .gif, .apng
-
-  const extensions = ['.svg', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.apng']
-  const customFlagPaths = extensions.map((ext) => path.join(customFlagsDir, `${id}${ext}`))
-
-  // Check if the flag exists in the custom flags directory.
-
-  for (const customFlagPath of customFlagPaths) {
-    try {
-      await fs.access(customFlagPath)
-      return { path: customFlagPath }
-    } catch {
-      // Flag file doesn't exist. Try the next, or fall back to builtin flags.
-    }
-  }
-
-  for (const customFlagPath of customFlagPaths) {
-    try {
-      await fs.access(customFlagPath)
-      return { path: customFlagPath }
-    } catch {
-      // Flag file doesn't exist. Try the next, or fall back to builtin flags.
-    }
-  }
-
-  // We always return a path to the builtin SVGs because it's easy.
-  // electron will return a 404 for us if the file doesn't exist.
-  return { path: path.join(__dirname, `./assets/flags/${id.toUpperCase()}.svg`) }
+function getAssetsDir() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'assets')
+    : path.join(process.cwd(), 'public', 'assets')
 }
 
+export async function findFlagFile(id: string): Promise<string> {
+  const extensions = ['.svg', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.apng']
+
+  // First try custom flags
+  for (const ext of extensions) {
+    const customFlagPath = path.join(customFlagsDir, `${id}${ext}`)
+
+    try {
+      await fs.access(customFlagPath)
+      return customFlagPath
+    } catch {
+      // Try next extension
+    }
+  }
+
+  // Fall back to built-in SVGs
+  return path.join(getAssetsDir(), 'flags', `${id.toUpperCase()}.svg`)
+}
 /**
  * Find a flag code based on user input.
  */

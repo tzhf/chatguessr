@@ -503,15 +503,18 @@ export default class GameHandler {
 
       const lastLocation = last5Locations[locationNumber]
 
-      let returnNumber = ''
-      if (locationNumber === 0) returnNumber = 'The last location'
-      else if (locationNumber === 1) returnNumber = 'The 2nd to last location'
-      else if (locationNumber === 2) returnNumber = 'The 3rd to last location'
-      else returnNumber = `The ${locationNumber + 1}th to last location`
+      const suffix =
+        locationNumber === 0
+          ? 'The last location'
+          : locationNumber === 1
+            ? 'The 2nd to last location'
+            : locationNumber === 2
+              ? 'The 3rd to last location'
+              : `The ${locationNumber + 1}th to last location`
 
       const url = await makeMapsUrl(lastLocation.location)
       await this.#backend?.sendMessage(
-        `${returnNumber} was on the map "${lastLocation.map_name}": ${url}`
+        `${suffix} was on the map "${lastLocation.map_name}": ${url}`
       )
       return
     }

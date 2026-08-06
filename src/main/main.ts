@@ -1,7 +1,14 @@
+import { app, BrowserWindow, ipcMain, protocol, dialog, shell, net } from 'electron'
+import started from 'electron-squirrel-startup'
+
+// Handle creating/removing shortcuts on Windows when installing/uninstalling.²
+if (started) {
+  app.quit()
+}
+
 import fs from 'fs'
 import { join, basename, dirname } from 'path'
-import { app, BrowserWindow, ipcMain, protocol, dialog, shell } from 'electron'
-import started from 'electron-squirrel-startup'
+import { pathToFileURL } from 'url'
 import { updateElectronApp } from 'update-electron-app'
 import fontList from 'font-list'
 
@@ -20,10 +27,10 @@ const appDataPath = app.getPath('userData')
 const dbPath = join(appDataPath, 'scores.db')
 const db = database(dbPath)
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (started) {
-  app.quit()
-}
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'asset', privileges: { standard: true, secure: true, supportFetchAPI: true } },
+  { scheme: 'flag', privileges: { standard: true, secure: true, supportFetchAPI: true } }
+])
 
 app.whenReady().then(async () => {
   serveAssets()
@@ -53,7 +60,7 @@ app.whenReady().then(async () => {
       return Buffer.from(data) // Return the audio data as a buffer
     } catch (err) {
       console.error('Failed to load audio:', err)
-      throw new Error('FILE_NOT_FOUND')
+      throw new Error('FILE_NOT_FOUND', { cause: err })
     }
   })
 
@@ -178,30 +185,37 @@ async function authenticateWithTwitch(gameHandler: GameHandler, parentWindow: Br
   })
 }
 
+function getAssetsDir() {
+  return app.isPackaged
+    ? join(process.resourcesPath, 'assets')
+    : join(process.cwd(), 'public', 'assets')
+}
+
 // Serve assets to 'asset:' file protocol
 // Assets must be placed in the public folder
 function serveAssets() {
-  const assetDir = join(__dirname, './assets')
-  protocol.interceptFileProtocol('asset', (request, callback) => {
-    const assetFile = join(assetDir, new URL(request.url).pathname)
+  const assetDir = getAssetsDir()
+
+  console.log('Serving assets from:', assetDir)
+
+  protocol.handle('asset', (request) => {
+    const url = new URL(request.url)
+    const assetFile = join(assetDir, url.hostname, url.pathname === '/' ? '' : url.pathname)
     if (!assetFile.startsWith(assetDir)) {
-      callback({ statusCode: 404, data: 'Not Found' })
-    } else {
-      callback({ path: assetFile })
+      return new Response('Not Found', { status: 404 })
     }
+    return net.fetch(pathToFileURL(assetFile).toString())
   })
 }
 
 async function serveFlags() {
   await loadCustomFlags()
 
-  protocol.interceptFileProtocol('flag', async (request, callback) => {
-    const name = request.url.replace(/^flag:/, '')
-    try {
-      callback(await findFlagFile(name))
-    } catch (err: any) {
-      callback({ statusCode: 500, data: err.message })
-    }
+  await protocol.handle('flag', async (request) => {
+    const name = new URL(request.url).hostname
+    const filePath = await findFlagFile(name)
+
+    return net.fetch(`file://${filePath}`)
   })
 }
 

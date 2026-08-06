@@ -149,9 +149,14 @@ const playAudio = async () => {
 
 const loadAudio = async () => {
   const audioBuffer = await chatguessrApi.readAudioFileAsBuffer('timer/timer_alert')
-  if (!audioBuffer || !audioBuffer.length) return
 
-  const audioBlob = new Blob([audioBuffer], { type: 'audio/wav' })
+  if (!audioBuffer?.length) return
+
+  const arrayBuffer = new Uint8Array(audioBuffer).slice().buffer
+  const audioBlob = new Blob([arrayBuffer], {
+    type: 'audio/wav'
+  })
+
   return URL.createObjectURL(audioBlob)
 }
 

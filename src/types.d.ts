@@ -214,6 +214,4 @@ type TwitchConnectionState =
   | { state: 'error'; error: unknown }
 
 type SocketConnectionState =
-  | { state: 'disconnected' }
-  | { state: 'connecting' }
-  | { state: 'connected' }
+  { state: 'disconnected' } | { state: 'connecting' } | { state: 'connected' }

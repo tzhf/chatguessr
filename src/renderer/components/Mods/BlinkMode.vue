@@ -85,7 +85,7 @@ observer.observe(document.body, {
 </script>
 
 <template>
-  <div class="section_sizeMedium mb-1">
+  <div class="mb-1">
     <div class="bars_root bars_center">
       <div class="bars_before"></div>
       <span class="bars_content"><h3>Blink Mode</h3></span>

@@ -8,24 +8,31 @@ const { VitePlugin } = require('@electron-forge/plugin-vite')
 const { PublisherGithub } = require('@electron-forge/publisher-github')
 
 // Modules to resolve at build time
-const modulesToScanRecursively = ['coordinate_to_country']
-const modulesToIncludeManually = ['better-sqlite3', 'bindings', 'file-uri-to-path']
+const modulesToScanRecursively = []
+const modulesToIncludeManually = [
+  'better-sqlite3',
+  'bindings',
+  'file-uri-to-path',
+  '@osm_borders/maritime_10m'
+]
 
 /** @type {import('@electron-forge/shared-types').ForgeConfig} */
 module.exports = {
   packagerConfig: {
     asar: true,
-    icon: 'build/icon',
-    executableName: 'ChatGuessr'
+    icon: './build/icon',
+    executableName: 'ChatGuessr',
+    extraResource: ['public/assets']
   },
+
   rebuildConfig: {},
 
   makers: [
     new MakerSquirrel({
       name: 'chatguessr',
-      setupIcon: 'build/icon.ico',
-      loadingGif: 'build/icon_installer.gif',
-      iconUrl: 'file://build/icon.ico'
+      setupIcon: './build/icon.ico',
+      loadingGif: './build/icon_installer.gif',
+      iconUrl: 'https://raw.githubusercontent.com/tzhf/chatguessr/refs/heads/master/build/icon.ico'
     }),
 
     new MakerZIP({}, ['darwin']),
@@ -37,7 +44,8 @@ module.exports = {
 
   publishers: [
     new PublisherGithub({
-      repository: { owner: 'tzhf', name: 'chatguessr' }
+      repository: { owner: 'tzhf', name: 'chatguessr' },
+      prerelease: true // <-- ensures it treats the target as a pre-release
     })
   ],
 

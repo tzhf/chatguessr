@@ -6,7 +6,12 @@ export default defineConfig({
     rollupOptions: {
       // Some third-party Node.js libraries may not be built correctly by Vite,
       // we can use `external` to exclude them to ensure they work correctly.
-      external: ['better-sqlite3', 'coordinate_to_country', 'bufferutil', 'utf-8-validate']
+      external: [
+        'better-sqlite3',
+        'bufferutil',
+        'utf-8-validate',
+        '@osm_borders/maritime_10m'
+      ]
     }
   }
 })

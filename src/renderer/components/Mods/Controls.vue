@@ -48,7 +48,7 @@ label {
 }
 
 .game-options_optionLabel {
-  color: var(--ds-color-white);
+  color: var(--ds-color-white-100);
   font-size: var(--font-size-12);
   font-weight: 700;
   line-height: var(--line-height-12);
@@ -67,7 +67,8 @@ label {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background: var(--ds-color-white-10);
+  background: var(--ds-color-white-500);
+  overflow: hidden;
   border: 0;
   border-radius: 2rem;
   cursor: pointer;
@@ -78,21 +79,22 @@ label {
   width: 2.5rem;
 }
 .toggle_toggle:checked {
-  background: var(--ds-color-purple-50);
+  opacity: 1;
+  background: var(--ds-color-brand-50);
 }
 .toggle_toggle:before {
-  background: var(--ds-color-purple-50);
+  background: var(--ds-color-brand-50);
   content: '';
   height: 100%;
   left: 0;
-  opacity: 0;
+  opacity: 0.3;
   position: absolute;
   top: 0;
   transition: opacity 0.3s ease;
   width: 100%;
 }
 .toggle_toggle:after {
-  background: var(--ds-color-white);
+  background: var(--ds-color-white-100);
   border-radius: 100%;
   content: '';
   height: 1rem;

@@ -21,16 +21,17 @@ createApp(Frame)
 // MODS CONTROLS
 const modsControls = document.createElement('div')
 modsControls.id = 'mods-controls'
+modsControls.style.width = '100%'
 createApp(ModsControls).mount(modsControls)
 
 const appendModsControlsComponent = () => {
-  const targetElement: HTMLElement | null = document.querySelector(
-    '[class^="community-map-block_header__"]'
-  )
+  const targetElement: HTMLElement | null = document.querySelector('[class^="play-bar_root__"]')
   if (targetElement) {
     const wrapperExists = document.getElementById('mods-controls')
     if (!wrapperExists) {
-      targetElement.after(modsControls)
+      targetElement.appendChild(modsControls)
+      targetElement.style.borderRadius = '2rem'
+      targetElement.style.padding = '2rem'
     }
   }
 }

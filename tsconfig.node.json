@@ -5,7 +5,7 @@
     "target": "esnext",
     "module": "esnext",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
@@ -15,5 +15,5 @@
     "noImplicitAny": false,
     "noImplicitReturns": true,
     "noEmit": true
-  },
+  }
 }

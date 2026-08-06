@@ -1,5 +1,5 @@
 import axios from 'axios'
-import countryIso from 'coordinate_to_country'
+import coordinateToCountry from '../lib/coordinateToCountry'
 import { session } from 'electron'
 /**
  * Streak code mapping for 2-character ISO codes that should be considered
@@ -77,7 +77,7 @@ export function compareLatLng(a: LatLng, b: LatLng) {
  * be used in comparisons with other streak codes, not for display.
  */
 export async function getStreakCode(location: LatLng): Promise<string | undefined> {
-  const localResults = countryIso(location.lat, location.lng, true)
+  const localResults = coordinateToCountry(location.lat, location.lng, true)
   const localIso = localResults.length > 0 ? localResults[0] : undefined
   if (!localIso) return
 
@@ -238,7 +238,7 @@ export async function getRandomCoordsInLand(bounds: Bounds | null = null): Promi
   }
   const lat = Math.random() * (lat_north - lat_south) + lat_south
   const lng = Math.random() * (lng_east - lng_west) + lng_west
-  const localResults = countryIso(lat, lng, true)
+  const localResults = coordinateToCountry(lat, lng, true)
   if (!localResults.length) return await getRandomCoordsInLand(bounds)
   return { lat, lng }
 }

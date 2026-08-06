@@ -908,17 +908,13 @@ class db {
     )
 
     const bestStreak = streakQuery.get() as
-      | { id: string; username: string; streak: number }
-      | undefined
+      { id: string; username: string; streak: number } | undefined
     const mostVictories = victoriesQuery.get() as
-      | { id: string; username: string; victories: number }
-      | undefined
+      { id: string; username: string; victories: number } | undefined
     const mostPerfects = perfectQuery.get() as
-      | { id: string; username: string; perfects: number }
-      | undefined
+      { id: string; username: string; perfects: number } | undefined
     const bestRandom = randomQuery.get() as
-      | { id: string; username: string; score: number; distance: number }
-      | undefined
+      { id: string; username: string; score: number; distance: number } | undefined
 
     return {
       streak: bestStreak,
@@ -1104,8 +1100,7 @@ class db {
    */
   isEmpty(): boolean {
     const result = this.#db.prepare('SELECT COUNT(*) as count FROM users;').get() as
-      | { count: number }
-      | undefined
+      { count: number } | undefined
     return !result || result.count === 0
   }
 

@@ -14,7 +14,7 @@ watch(settings, () => {
 </script>
 
 <template>
-  <div class="section_sizeMedium">
+  <div>
     <div class="bars_root bars_center">
       <div class="bars_before"></div>
       <span class="bars_content"><h3>Satellite Mode</h3></span>
